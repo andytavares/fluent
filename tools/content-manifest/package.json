@@ -7,7 +7,7 @@
     "content-manifest": "./dist/build.js"
   },
   "scripts": {
-    "build": "esbuild src/build.ts --bundle --platform=node --target=node20 --outfile=dist/build.js",
+    "build": "esbuild src/build.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/build.js",
     "start": "tsx src/build.ts ../../content ../../apps/web/public/content",
     "dev": "echo 'content-manifest: no dev server (run: pnpm start to rebuild manifest)'",
     "typecheck": "tsc --noEmit"

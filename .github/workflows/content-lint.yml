@@ -41,6 +41,11 @@ jobs:
 
       - name: Run linter on changed exercises
         run: |
-          echo "${{ steps.changed.outputs.folders }}" | while read folder; do
-            [ -d "$folder" ] && node tools/content-linter/dist/cli.js "$folder"
+          FOLDERS="${{ steps.changed.outputs.folders }}"
+          if [ -z "$FOLDERS" ]; then
+            echo "No content changes to lint"
+            exit 0
+          fi
+          echo "$FOLDERS" | while read folder; do
+            [ -n "$folder" ] && [ -d "$folder" ] && node tools/content-linter/dist/cli.js "$folder"
           done
