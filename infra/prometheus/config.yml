@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# 30-day retention per FR-053
+storage:
+  tsdb:
+    retention.time: 30d
+
+scrape_configs:
+  - job_name: "fluent-api"
+    static_configs:
+      - targets: ["api:3001"]
+    metrics_path: /metrics
+
+  - job_name: "fluent-sandbox"
+    static_configs:
+      - targets: ["sandbox:3002"]
+    metrics_path: /metrics

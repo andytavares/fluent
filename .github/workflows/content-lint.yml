@@ -1,0 +1,46 @@
+name: Content Lint
+
+on:
+  pull_request:
+    paths:
+      - "content/**"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build content linter
+        run: pnpm --filter @fluent/content-linter build
+
+      - name: Get changed exercise folders
+        id: changed
+        run: |
+          CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD \
+            | grep '^content/tracks/' \
+            | awk -F'/' '{print $1"/"$2"/"$3"/"$4"/"$5}' \
+            | sort -u)
+          echo "folders=${CHANGED}" >> $GITHUB_OUTPUT
+
+      - name: Run linter on changed exercises
+        run: |
+          echo "${{ steps.changed.outputs.folders }}" | while read folder; do
+            [ -d "$folder" ] && node tools/content-linter/dist/cli.js "$folder"
+          done

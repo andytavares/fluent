@@ -1,0 +1,31 @@
+/* Rosetta light theme — swap semantic token layer only. */
+[data-theme="light"] {
+  --color-surface-base: #ffffff;
+  --color-surface-raised: #f8fafc;
+  --color-surface-overlay: #f1f5f9;
+  --color-surface-sunken: #e2e8f0;
+
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #64748b;
+  --color-text-disabled: #cbd5e1;
+  --color-text-inverse: #ffffff;
+  --color-text-link: #4f46e5;
+
+  --color-border-default: #e2e8f0;
+  --color-border-subtle: #f1f5f9;
+  --color-border-focus: #6366f1;
+
+  --color-status-success-bg: #22c55e;
+  --color-status-success-text: #16a34a;
+  --color-status-warning-bg: #fbbf24;
+  --color-status-warning-text: #f59e0b;
+  --color-status-error-bg: #ef4444;
+  --color-status-error-text: #dc2626;
+
+  --color-interactive-primary: #4f46e5;
+  --color-interactive-primary-hover: #4338ca;
+  --color-interactive-primary-text: #ffffff;
+  --color-interactive-secondary: #e2e8f0;
+  --color-interactive-secondary-hover: #cbd5e1;
+  --color-interactive-secondary-text: #0f172a;
+}

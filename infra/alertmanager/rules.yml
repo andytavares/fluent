@@ -1,0 +1,48 @@
+groups:
+  - name: fluent.sandbox
+    rules:
+      - alert: SandboxP95Latency
+        expr: histogram_quantile(0.95, rate(execution_duration_seconds_bucket[5m])) > 10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Sandbox execution p95 latency > 10s"
+          description: "p95 execution time is {{ $value }}s over the last 5 minutes"
+
+      - alert: SandboxErrorRateHigh
+        expr: |
+          rate(executions_total{status="error"}[5m])
+          /
+          rate(executions_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Sandbox error rate > 5%"
+          description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes"
+
+  - name: fluent.capstone
+    rules:
+      - alert: CapstoneProvisionFailureHigh
+        expr: rate(capstone_provision_failures_total[10m]) > 0.01
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Capstone provision failure rate > 1%"
+          description: "Capstone provision failure rate is {{ $value }} over the last 10 minutes"
+
+  - name: fluent.api
+    rules:
+      - alert: APIHighErrorRate
+        expr: |
+          rate(http_requests_total{status=~"5.."}[5m])
+          /
+          rate(http_requests_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "API 5xx error rate > 5%"
+          description: "API error rate is {{ $value | humanizePercentage }}"

@@ -1,0 +1,4 @@
+@import "tailwindcss";
+@source "../../../../packages/ui/src";
+@import "@fluent/ui/themes/dark.css";
+@import "@fluent/ui/themes/motion.css";

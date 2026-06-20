@@ -1,0 +1,62 @@
+name: Content Preview (FR-039)
+
+on:
+  pull_request:
+    paths:
+      - "content/**"
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build content linter
+        run: pnpm --filter @fluent/content-linter build
+
+      - name: Build content manifest
+        run: |
+          pnpm --filter @fluent/content-manifest build
+          node tools/content-manifest/dist/build.js content/ /tmp/preview-manifest/
+
+      - name: Comment PR with preview manifest
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const manifest = fs.readFileSync('/tmp/preview-manifest/manifest.json', 'utf8');
+            const parsed = JSON.parse(manifest);
+            const tracks = Object.keys(parsed);
+            const body = [
+              '## Content Preview',
+              '',
+              `Built manifest with ${tracks.length} track(s):`,
+              ...tracks.map(t => `- **${t}**: ${parsed[t].concepts?.length ?? 0} concepts`),
+              '',
+              `Preview deploy URL: https://preview-pr-${{ github.event.number }}.fluent-preview.dev`,
+            ].join('\n');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });

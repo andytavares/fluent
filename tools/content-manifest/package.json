@@ -1,0 +1,24 @@
+{
+  "name": "@fluent/content-manifest",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "content-manifest": "./dist/build.js"
+  },
+  "scripts": {
+    "build": "esbuild src/build.ts --bundle --platform=node --target=node20 --outfile=dist/build.js",
+    "start": "tsx src/build.ts ../../content ../../apps/web/public/content",
+    "dev": "echo 'content-manifest: no dev server (run: pnpm start to rebuild manifest)'",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "esbuild": "^0.21.0",
+    "tsx": "^4.15.0",
+    "typescript": "^5.4.0"
+  }
+}

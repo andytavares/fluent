@@ -1,0 +1,81 @@
+{
+  "go": {
+    "slug": "go",
+    "title": "Go Fundamentals",
+    "description": "Learn Go from first principles — syntax, types, concurrency, and the standard library — culminating in a real CRUD API capstone project.",
+    "language": "go",
+    "status": "draft",
+    "concepts": [
+      {
+        "slug": "variables-and-types",
+        "title": "Variables & Types",
+        "position": 1,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "functions",
+        "title": "Functions",
+        "position": 2,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "control-flow",
+        "title": "Control Flow",
+        "position": 3,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "arrays-and-slices",
+        "title": "Arrays & Slices",
+        "position": 4,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "maps",
+        "title": "Maps",
+        "position": 5,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "structs",
+        "title": "Structs",
+        "position": 6,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "interfaces",
+        "title": "Interfaces",
+        "position": 7,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "error-handling",
+        "title": "Error Handling",
+        "position": 8,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "goroutines",
+        "title": "Goroutines",
+        "position": 9,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "channels",
+        "title": "Channels",
+        "position": 10,
+        "has_testout": false,
+        "status": "published"
+      }
+    ]
+  }
+}

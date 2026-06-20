@@ -1,0 +1,7 @@
+{
+  "slug": "go-crud-api",
+  "title": "Go CRUD API",
+  "description": "Build a REST API with a real PostgreSQL database across 6 incremental steps.",
+  "language": "go",
+  "steps": 6
+}
