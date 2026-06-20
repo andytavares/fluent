@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/pre-push-review.sh",
+            "timeout": 120,
+            "statusMessage": "Running Google code review..."
+          }
+        ]
+      }
+    ]
+  }
+}
