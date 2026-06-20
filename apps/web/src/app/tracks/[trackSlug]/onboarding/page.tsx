@@ -62,21 +62,28 @@ export default function OnboardingPage() {
   }
 
   if (step === "confidence") {
+    const trackTitle = trackQuery.data?.title ?? trackSlug;
+    const isBusy = createEnrollment.isPending || startPlacement.isPending;
     return (
       <main className="mx-auto max-w-lg px-6 py-16">
         <h1 className="mb-2 text-center text-2xl font-bold text-[var(--color-text-primary)]">
-          Welcome to the Go track
+          Welcome to {trackTitle}
         </h1>
         <p className="mb-8 text-center text-[var(--color-text-secondary)]">
           Tell us your experience level so we can personalize your path.
         </p>
         <ConfidenceSelector value={confidence} onChange={setConfidence} />
+        {createEnrollment.error && (
+          <p className="mt-3 text-center text-sm text-red-400">
+            {createEnrollment.error.message}
+          </p>
+        )}
         <button
           onClick={handleConfidenceContinue}
-          disabled={!confidence}
+          disabled={!confidence || !trackQuery.data || isBusy}
           className="mt-6 w-full rounded-lg bg-[var(--color-interactive-primary)] px-4 py-2.5 text-sm font-medium text-[var(--color-interactive-primary-text)] disabled:opacity-50"
         >
-          Continue
+          {isBusy ? "Setting up…" : "Continue"}
         </button>
       </main>
     );

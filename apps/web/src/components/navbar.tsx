@@ -21,6 +21,7 @@ export function Navbar() {
     : enrollmentsQuery.data?.[0];
 
   const activeTrackSlug = trackSlug ?? enrollment?.track.slug;
+  const activeTrackTitle = enrollment?.track.title ?? activeTrackSlug;
 
   return (
     <nav className="h-12 shrink-0 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-base)] flex items-center px-4 gap-6 z-50">
@@ -52,7 +53,7 @@ export function Navbar() {
                 : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
             }
           >
-            Go Track
+            {activeTrackTitle}
           </Link>
         )}
 

@@ -1,4 +1,162 @@
 {
+  "c": {
+    "slug": "c",
+    "title": "C Foundations",
+    "description": "Learn C — the language closest to the machine. Understand memory, pointers, and systems programming from first principles.",
+    "language": "c",
+    "status": "draft",
+    "concepts": [
+      {
+        "slug": "variables-and-types",
+        "title": "Variables & Types",
+        "position": 1,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "functions",
+        "title": "Functions",
+        "position": 2,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "pointers",
+        "title": "Pointers",
+        "position": 3,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "arrays-and-strings",
+        "title": "Arrays & Strings",
+        "position": 4,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "structs",
+        "title": "Structs",
+        "position": 5,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "control-flow",
+        "title": "Control Flow",
+        "position": 6,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "dynamic-memory",
+        "title": "Dynamic Memory",
+        "position": 7,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "file-io",
+        "title": "File I/O",
+        "position": 8,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "preprocessor",
+        "title": "The Preprocessor",
+        "position": 9,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "linked-lists",
+        "title": "Linked Lists",
+        "position": 10,
+        "has_testout": false,
+        "status": "wip"
+      }
+    ]
+  },
+  "cpp": {
+    "slug": "cpp",
+    "title": "Modern C++",
+    "description": "Learn C++ with a modern mindset — RAII, smart pointers, templates, and the STL. Write expressive, efficient, safe C++.",
+    "language": "cpp",
+    "status": "draft",
+    "concepts": [
+      {
+        "slug": "classes-and-objects",
+        "title": "Classes & Objects",
+        "position": 1,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "templates",
+        "title": "Templates",
+        "position": 2,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "stl-containers",
+        "title": "STL Containers",
+        "position": 3,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "smart-pointers",
+        "title": "Smart Pointers",
+        "position": 4,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "lambda-expressions",
+        "title": "Lambda Expressions",
+        "position": 5,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "inheritance-and-polymorphism",
+        "title": "Inheritance & Polymorphism",
+        "position": 6,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "move-semantics",
+        "title": "Move Semantics",
+        "position": 7,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "exception-handling",
+        "title": "Exception Handling",
+        "position": 8,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "concurrency",
+        "title": "Concurrency",
+        "position": 9,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "raii-and-resource-management",
+        "title": "RAII & Resource Management",
+        "position": 10,
+        "has_testout": false,
+        "status": "wip"
+      }
+    ]
+  },
   "go": {
     "slug": "go",
     "title": "Go Fundamentals",
@@ -75,6 +233,243 @@
         "position": 10,
         "has_testout": false,
         "status": "published"
+      }
+    ]
+  },
+  "java": {
+    "slug": "java",
+    "title": "Java Essentials",
+    "description": "Learn Java — a statically typed, object-oriented language built for large-scale systems. Master classes, interfaces, generics, and the streams API.",
+    "language": "java",
+    "status": "draft",
+    "concepts": [
+      {
+        "slug": "classes-and-objects",
+        "title": "Classes & Objects",
+        "position": 1,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "interfaces",
+        "title": "Interfaces",
+        "position": 2,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "generics",
+        "title": "Generics",
+        "position": 3,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "streams-api",
+        "title": "Streams API",
+        "position": 4,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "optional",
+        "title": "Optional",
+        "position": 5,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "inheritance-and-polymorphism",
+        "title": "Inheritance & Polymorphism",
+        "position": 6,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "collections-framework",
+        "title": "Collections Framework",
+        "position": 7,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "exception-handling",
+        "title": "Exception Handling",
+        "position": 8,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "concurrency",
+        "title": "Concurrency",
+        "position": 9,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "functional-interfaces",
+        "title": "Functional Interfaces",
+        "position": 10,
+        "has_testout": false,
+        "status": "wip"
+      }
+    ]
+  },
+  "javascript": {
+    "slug": "javascript",
+    "title": "JavaScript Fundamentals",
+    "description": "Master modern JavaScript — the language of the web. Learn the syntax, idioms, and async patterns every JS engineer uses daily.",
+    "language": "javascript",
+    "status": "draft",
+    "concepts": [
+      {
+        "slug": "variables-and-types",
+        "title": "Variables & Types",
+        "position": 1,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "functions",
+        "title": "Functions",
+        "position": 2,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "arrays-and-objects",
+        "title": "Arrays & Objects",
+        "position": 3,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "closures",
+        "title": "Closures",
+        "position": 4,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "error-handling",
+        "title": "Error Handling",
+        "position": 5,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "control-flow",
+        "title": "Control Flow",
+        "position": 6,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "async-javascript",
+        "title": "Async JavaScript",
+        "position": 7,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "classes",
+        "title": "Classes",
+        "position": 8,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "destructuring-and-spread",
+        "title": "Destructuring & Spread",
+        "position": 9,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "modules",
+        "title": "Modules",
+        "position": 10,
+        "has_testout": false,
+        "status": "wip"
+      }
+    ]
+  },
+  "typescript": {
+    "slug": "typescript",
+    "title": "TypeScript Essentials",
+    "description": "Add static types to JavaScript. Learn TypeScript's type system, generics, and tooling to write safer, more maintainable code.",
+    "language": "typescript",
+    "status": "draft",
+    "concepts": [
+      {
+        "slug": "types-and-interfaces",
+        "title": "Types & Interfaces",
+        "position": 1,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "functions-and-generics",
+        "title": "Functions & Generics",
+        "position": 2,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "union-types",
+        "title": "Union Types & Narrowing",
+        "position": 3,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "utility-types",
+        "title": "Utility Types",
+        "position": 4,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "type-guards",
+        "title": "Type Guards",
+        "position": 5,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "enums",
+        "title": "Enums",
+        "position": 6,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "classes-with-types",
+        "title": "Classes with Types",
+        "position": 7,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "mapped-types",
+        "title": "Mapped Types & Conditional Types",
+        "position": 8,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "template-literal-types",
+        "title": "Template Literal Types",
+        "position": 9,
+        "has_testout": false,
+        "status": "wip"
+      },
+      {
+        "slug": "declaration-merging-and-modules",
+        "title": "Declaration Merging & Modules",
+        "position": 10,
+        "has_testout": false,
+        "status": "wip"
       }
     ]
   }

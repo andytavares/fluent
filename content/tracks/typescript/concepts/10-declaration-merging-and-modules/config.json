@@ -1,0 +1,1 @@
+{"slug":"declaration-merging-and-modules","title":"Declaration Merging & Modules","description":"Augment existing interfaces and modules with declaration merging, extend global or third-party types safely, and write ambient declarations for untyped code.","position":10,"has_testout":false,"status":"wip"}

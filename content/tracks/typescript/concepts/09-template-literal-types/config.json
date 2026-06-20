@@ -1,0 +1,1 @@
+{"slug":"template-literal-types","title":"Template Literal Types","description":"Compose string types at the type level using template literal syntax, combine unions to generate type-safe string sets, and use intrinsic string manipulation types.","position":9,"has_testout":false,"status":"wip"}

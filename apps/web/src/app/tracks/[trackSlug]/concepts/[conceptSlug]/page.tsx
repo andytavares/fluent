@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { CodeEditor, OutputPane, TestOutModal, CongratsModal } from "@fluent/ui";
@@ -12,12 +12,20 @@ function countPassedTests(lines: { type: string; data?: string }[]): number {
   return (text.match(/^--- PASS:/gm) ?? []).length;
 }
 
+function extractTaskPrompt(instructions: string): string {
+  const match = instructions.match(/## The task\n([\s\S]*?)(?=\n## |$)/);
+  return match?.[1]?.trim() ?? "";
+}
+
 export default function LessonPage() {
   const { trackSlug, conceptSlug } = useParams<{ trackSlug: string; conceptSlug: string }>();
   const router = useRouter();
   const [testOutOpen, setTestOutOpen] = useState(false);
   const [congratsOpen, setCongratsOpen] = useState(false);
   const [code, setCode] = useState("");
+  // null = no testout result yet; object = result after testout submission completes
+  const [testOutResult, setTestOutResult] = useState<{ passed: boolean } | null>(null);
+  const isTestOutRef = useRef(false);
 
   const conceptQuery = trpc.tracks.getConceptLesson.useQuery({ trackSlug, conceptSlug });
 
@@ -39,6 +47,11 @@ export default function LessonPage() {
     conceptId: conceptQuery.data?.id ?? "",
     enrollmentId: enrollment?.id ?? "",
     onComplete: (passed) => {
+      if (isTestOutRef.current) {
+        setTestOutResult({ passed });
+        isTestOutRef.current = false;
+        return;
+      }
       if (passed && isSuite) {
         setCongratsOpen(true);
       }
@@ -47,7 +60,7 @@ export default function LessonPage() {
 
   // Also catch isSuite=true runs that complete with exitCode 0 (onComplete fires before isSuite state propagates)
   useEffect(() => {
-    if (state === "complete" && exitCode === 0 && isSuite) {
+    if (state === "complete" && exitCode === 0 && isSuite && !isTestOutRef.current) {
       setCongratsOpen(true);
     }
   }, [state, exitCode, isSuite]);
@@ -61,9 +74,11 @@ export default function LessonPage() {
 
   const nextConceptSlug = concept.nextConceptSlug;
   const passCount = countPassedTests(lines);
+  const taskPrompt = concept.instructions ? extractTaskPrompt(concept.instructions) : "";
 
   function handleNextLesson() {
     setCongratsOpen(false);
+    setTestOutOpen(false);
     if (nextConceptSlug) {
       router.push(`/tracks/${trackSlug}/concepts/${nextConceptSlug}`);
     } else {
@@ -80,7 +95,7 @@ export default function LessonPage() {
         <div className="flex gap-2">
           {concept.hasTestout && (
             <button
-              onClick={() => setTestOutOpen(true)}
+              onClick={() => { setTestOutResult(null); setTestOutOpen(true); }}
               className="rounded-lg border border-[var(--color-border-default)] px-3 py-1.5 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
             >
               Test out →
@@ -152,13 +167,17 @@ export default function LessonPage() {
         onClose={() => setTestOutOpen(false)}
         concept={{
           title: concept.title,
-          stub: `package main\n\nfunc main() {\n  // Test out: ${concept.title}\n}\n`,
+          stub: concept.stub ?? `// ${concept.title}\n`,
+          taskPrompt,
         }}
         onSubmit={(testCode) => {
+          isTestOutRef.current = true;
           void submit(testCode, true);
-          setTestOutOpen(false);
         }}
         onEscape={() => setTestOutOpen(false)}
+        isSubmitting={state === "streaming" || state === "submitting"}
+        result={testOutResult}
+        onNext={handleNextLesson}
       />
 
       <CongratsModal

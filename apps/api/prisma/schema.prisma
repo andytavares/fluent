@@ -85,6 +85,7 @@ model Track {
 }
 
 enum TrackStatus {
+  coming_soon
   draft
   published
 }

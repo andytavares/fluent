@@ -40,7 +40,7 @@ export default function TrackPathPage() {
       <div className="mb-8 flex items-start justify-between">
         <div>
           <h1 className="mb-1 text-xl font-bold text-[var(--color-text-primary)]">
-            Go Fundamentals
+            {enrollment.track.title}
           </h1>
           <p className="text-sm text-[var(--color-text-secondary)]">
             {conceptStatesQuery.data?.filter((cs) => cs.state === "mastered" || cs.state === "completed").length ?? 0} concepts done
@@ -60,22 +60,40 @@ export default function TrackPathPage() {
       </div>
 
       {conceptStatesQuery.data ? (
-        <LearningPath
-          trackSlug={trackSlug}
-          conceptStates={
-            conceptStatesQuery.data.map((cs) => ({
-              conceptId: cs.conceptId,
-              state: cs.state as "locked" | "available" | "in_progress" | "mastered" | "completed",
-              achievedVia: cs.achievedVia as "placement" | "test_out" | "lesson" | null,
-              concept: {
-                slug: cs.concept.slug,
-                title: cs.concept.title,
-                position: cs.concept.position,
-              },
-            }))
-          }
-          hasCapstone
-        />
+        conceptStatesQuery.data.length === 0 ? (
+          <div className="rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)] px-4 py-6 text-center">
+            <p className="text-sm text-[var(--color-text-secondary)]">
+              No lessons found — this can happen if the track was updated after you enrolled.
+            </p>
+            <button
+              onClick={() => {
+                if (confirm("Reset enrollment and start fresh?")) {
+                  resetEnrollment.mutate({ trackId: enrollment.track.id });
+                }
+              }}
+              className="mt-3 text-sm text-[var(--color-text-link)] hover:underline"
+            >
+              Reset and re-enroll →
+            </button>
+          </div>
+        ) : (
+          <LearningPath
+            trackSlug={trackSlug}
+            conceptStates={
+              conceptStatesQuery.data.map((cs) => ({
+                conceptId: cs.conceptId,
+                state: cs.state as "locked" | "available" | "in_progress" | "mastered" | "completed",
+                achievedVia: cs.achievedVia as "placement" | "test_out" | "lesson" | null,
+                concept: {
+                  slug: cs.concept.slug,
+                  title: cs.concept.title,
+                  position: cs.concept.position,
+                },
+              }))
+            }
+            hasCapstone
+          />
+        )
       ) : (
         <div className="text-[var(--color-text-secondary)]">Loading…</div>
       )}

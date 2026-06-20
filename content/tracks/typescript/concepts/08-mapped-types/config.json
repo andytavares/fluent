@@ -1,0 +1,1 @@
+{"slug":"mapped-types","title":"Mapped Types & Conditional Types","description":"Build types programmatically by iterating over keys with mapped types, branch on type relationships with conditional types, and use infer to extract nested types.","position":8,"has_testout":false,"status":"wip"}

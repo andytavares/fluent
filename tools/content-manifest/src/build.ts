@@ -17,7 +17,7 @@ const trackConfigSchema = z.object({
   title: z.string(),
   description: z.string(),
   language: z.string(),
-  status: z.enum(["draft", "published"]).default("draft"),
+  status: z.enum(["coming_soon", "draft", "published"]).default("draft"),
 });
 
 async function buildManifest(contentDir: string, outDir: string) {

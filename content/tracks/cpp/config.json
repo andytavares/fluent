@@ -1,0 +1,7 @@
+{
+  "slug": "cpp",
+  "title": "Modern C++",
+  "description": "Learn C++ with a modern mindset — RAII, smart pointers, templates, and the STL. Write expressive, efficient, safe C++.",
+  "language": "cpp",
+  "status": "draft"
+}
