@@ -1,0 +1,31 @@
+apps/api/src/service/placement.ts
+  s_e2ab65ecf488dc::t_deb407bc323f25 19
+apps/api/src/router/concepts.ts
+  s_e2ab65ecf488dc::t_37b44947656773 8-38,42
+apps/web/src/app/dashboard/page.tsx
+  s_e2ab65ecf488dc::t_ac96f3451137cb 12-14
+  s_e2ab65ecf488dc::t_92fd53ce7d38f8 70,74,87-102,104
+apps/web/src/app/tracks/[trackSlug]/onboarding/page.tsx
+  s_e2ab65ecf488dc::t_4c4f8124e2781d 69-83
+  s_e2ab65ecf488dc::t_ab0d3c6a0778c2 151-152
+packages/ui/src/components/PlacementTask.tsx
+  s_e2ab65ecf488dc::t_a5166ee0782cfd 25
+  s_e2ab65ecf488dc::t_511f9c65355ea7 65
+  s_e2ab65ecf488dc::t_8f828257abf458 13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "6577fef6c0923c3da628c7db498980620c6188dc",
+  "prompts": {},
+  "sessions": {
+    "s_e2ab65ecf488dc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0d28a109-d065-49d4-add5-4dedbe42f9c1",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
