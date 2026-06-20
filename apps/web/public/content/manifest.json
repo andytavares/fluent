@@ -11,70 +11,70 @@
         "title": "Variables & Types",
         "position": 1,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "functions",
         "title": "Functions",
         "position": 2,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "pointers",
         "title": "Pointers",
         "position": 3,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "arrays-and-strings",
         "title": "Arrays & Strings",
         "position": 4,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "structs",
         "title": "Structs",
         "position": 5,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "control-flow",
         "title": "Control Flow",
         "position": 6,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "dynamic-memory",
         "title": "Dynamic Memory",
         "position": 7,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "file-io",
         "title": "File I/O",
         "position": 8,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "preprocessor",
         "title": "The Preprocessor",
         "position": 9,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "linked-lists",
         "title": "Linked Lists",
         "position": 10,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       }
     ]
   },
@@ -90,70 +90,70 @@
         "title": "Classes & Objects",
         "position": 1,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "templates",
         "title": "Templates",
         "position": 2,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "stl-containers",
         "title": "STL Containers",
         "position": 3,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "smart-pointers",
         "title": "Smart Pointers",
         "position": 4,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "lambda-expressions",
         "title": "Lambda Expressions",
         "position": 5,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "inheritance-and-polymorphism",
         "title": "Inheritance & Polymorphism",
         "position": 6,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "move-semantics",
         "title": "Move Semantics",
         "position": 7,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "exception-handling",
         "title": "Exception Handling",
         "position": 8,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "concurrency",
         "title": "Concurrency",
         "position": 9,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "raii-and-resource-management",
         "title": "RAII & Resource Management",
         "position": 10,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       }
     ]
   },
@@ -248,70 +248,70 @@
         "title": "Classes & Objects",
         "position": 1,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "interfaces",
         "title": "Interfaces",
         "position": 2,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "generics",
         "title": "Generics",
         "position": 3,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "streams-api",
         "title": "Streams API",
         "position": 4,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "optional",
         "title": "Optional",
         "position": 5,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "inheritance-and-polymorphism",
         "title": "Inheritance & Polymorphism",
         "position": 6,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "collections-framework",
         "title": "Collections Framework",
         "position": 7,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "exception-handling",
         "title": "Exception Handling",
         "position": 8,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "concurrency",
         "title": "Concurrency",
         "position": 9,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "functional-interfaces",
         "title": "Functional Interfaces",
         "position": 10,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       }
     ]
   },
@@ -327,70 +327,70 @@
         "title": "Variables & Types",
         "position": 1,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "functions",
         "title": "Functions",
         "position": 2,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "arrays-and-objects",
         "title": "Arrays & Objects",
         "position": 3,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "closures",
         "title": "Closures",
         "position": 4,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "error-handling",
         "title": "Error Handling",
         "position": 5,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "control-flow",
         "title": "Control Flow",
         "position": 6,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "async-javascript",
         "title": "Async JavaScript",
         "position": 7,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "classes",
         "title": "Classes",
         "position": 8,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "destructuring-and-spread",
         "title": "Destructuring & Spread",
         "position": 9,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "modules",
         "title": "Modules",
         "position": 10,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       }
     ]
   },
@@ -406,70 +406,70 @@
         "title": "Types & Interfaces",
         "position": 1,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "functions-and-generics",
         "title": "Functions & Generics",
         "position": 2,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "union-types",
         "title": "Union Types & Narrowing",
         "position": 3,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "utility-types",
         "title": "Utility Types",
         "position": 4,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "type-guards",
         "title": "Type Guards",
         "position": 5,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "enums",
         "title": "Enums",
         "position": 6,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "classes-with-types",
         "title": "Classes with Types",
         "position": 7,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "mapped-types",
         "title": "Mapped Types & Conditional Types",
         "position": 8,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "template-literal-types",
         "title": "Template Literal Types",
         "position": 9,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       },
       {
         "slug": "declaration-merging-and-modules",
         "title": "Declaration Merging & Modules",
         "position": 10,
         "has_testout": false,
-        "status": "wip"
+        "status": "published"
       }
     ]
   }

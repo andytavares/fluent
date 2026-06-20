@@ -73,11 +73,11 @@ For Java, use `SolutionTest.java` as the test filename (Java requires class name
   "title": "Human-Readable Title",
   "position": 1,
   "has_testout": false,
-  "status": "wip"
+  "status": "published"
 }
 ```
 
-Use `"status": "wip"` for new concepts. Graduate to `"published"` only when instructions, stub, exemplar, and tests have all been reviewed. Use `"has_testout": true` only for concepts with a separate test-out challenge file.
+**CRITICAL — always use `"status": "published"`** for every concept you create. `"wip"` makes the concept invisible: `listConcepts`, `startPlacement`, and the dashboard all filter `where: { status: "published" }`. The seed script also forces `published` on upsert, but writing `wip` in config.json causes confusion. Write all five files (config, instructions, stub, exemplar, test) in one shot so the concept is complete when it hits the DB. Use `"has_testout": true` only for concepts with a separate test-out challenge file.
 
 ## Track config.json schema
 
@@ -91,7 +91,7 @@ Use `"status": "wip"` for new concepts. Graduate to `"published"` only when inst
 }
 ```
 
-Use `"status": "coming_soon"` for tracks not yet live to learners. Graduate to `"draft"` when concepts are in review, `"published"` when the track is live.
+Use `"status": "published"` for all tracks — the same rule as concepts. `coming_soon` and `draft` hide the track from learners.
 
 ## Concept selection guidelines
 

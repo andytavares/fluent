@@ -3,5 +3,5 @@
   "title": "Go Fundamentals",
   "description": "Learn Go from first principles — syntax, types, concurrency, and the standard library — culminating in a real CRUD API capstone project.",
   "language": "go",
-  "status": "draft"
+  "status": "published"
 }

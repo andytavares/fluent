@@ -3,5 +3,5 @@
   "title": "TypeScript Essentials",
   "description": "Add static types to JavaScript. Learn TypeScript's type system, generics, and tooling to write safer, more maintainable code.",
   "language": "typescript",
-  "status": "draft"
+  "status": "published"
 }
