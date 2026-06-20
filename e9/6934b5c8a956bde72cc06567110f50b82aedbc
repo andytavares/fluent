@@ -1,0 +1,142 @@
+content/tracks/java/concepts/07-collections-framework/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/cpp/concepts/08-exception-handling/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/typescript/concepts/02-functions-and-generics/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/c/concepts/10-linked-lists/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/javascript/concepts/04-closures/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/c/concepts/03-pointers/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/c/concepts/09-preprocessor/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/javascript/concepts/02-functions/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/c/concepts/06-control-flow/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/java/concepts/03-generics/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/typescript/concepts/09-template-literal-types/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/cpp/concepts/09-concurrency/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/typescript/concepts/01-types-and-interfaces/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/c/concepts/02-functions/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/c/concepts/08-file-io/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/java/concepts/01-classes-and-objects/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+apps/api/src/router/placement.ts
+  s_e2ab65ecf488dc::t_39d73c412bf556 2-4,8-34,40-67
+content/tracks/typescript/concepts/05-type-guards/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/javascript/concepts/06-control-flow/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/typescript/concepts/06-enums/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/typescript/concepts/03-union-types/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/javascript/config.json
+  s_e2ab65ecf488dc::t_5b50b0b31fdfe1 6
+content/tracks/typescript/concepts/07-classes-with-types/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/cpp/config.json
+  s_e2ab65ecf488dc::t_5b50b0b31fdfe1 6
+content/tracks/cpp/concepts/05-lambda-expressions/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/cpp/concepts/04-smart-pointers/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+apps/api/prisma/seed.ts
+  s_e2ab65ecf488dc::t_ec9ff4c3648fbb 2-4,8-9,11-17,19-35,37-42,44-48,52-69,72-78,81-84,89-99,102,105-106,108-111,114-116,119,121-124,126-127,130
+content/tracks/c/concepts/01-variables-and-types/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/c/concepts/05-structs/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/java/concepts/02-interfaces/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/cpp/concepts/03-stl-containers/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/cpp/concepts/07-move-semantics/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/typescript/config.json
+  s_e2ab65ecf488dc::t_5b50b0b31fdfe1 6
+packages/ui/src/components/PlacementTask.tsx
+  s_e2ab65ecf488dc::t_c5a91338a92bb3 10,13,15,21,24,26,30-71,83-87
+content/tracks/cpp/concepts/01-classes-and-objects/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/java/concepts/05-optional/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+.claude/agents/content-author.md
+  s_e2ab65ecf488dc::t_2ab8d9f9960e18 76,80
+  s_e2ab65ecf488dc::t_9a467f391765c5 94
+content/tracks/java/concepts/09-concurrency/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/typescript/concepts/04-utility-types/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/c/concepts/07-dynamic-memory/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/go/config.json
+  s_e2ab65ecf488dc::t_5b50b0b31fdfe1 6
+content/tracks/javascript/concepts/01-variables-and-types/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/cpp/concepts/02-templates/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/typescript/concepts/08-mapped-types/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/java/concepts/04-streams-api/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/java/concepts/06-inheritance-and-polymorphism/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/javascript/concepts/05-error-handling/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/c/concepts/04-arrays-and-strings/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+apps/web/tsconfig.tsbuildinfo
+  s_e2ab65ecf488dc::t_8e4d66f19249f6 1
+content/tracks/javascript/concepts/10-modules/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/java/config.json
+  s_e2ab65ecf488dc::t_5b50b0b31fdfe1 6
+apps/web/src/app/tracks/[trackSlug]/onboarding/page.tsx
+  s_e2ab65ecf488dc::t_64651f8e975d08 3,8,11-17,25,27,35-53,62,71-78,83,86,92-102,132,134,143-144,146-149
+content/tracks/cpp/concepts/10-raii-and-resource-management/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/javascript/concepts/03-arrays-and-objects/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/java/concepts/08-exception-handling/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/cpp/concepts/06-inheritance-and-polymorphism/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/javascript/concepts/07-async-javascript/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/javascript/concepts/09-destructuring-and-spread/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/java/concepts/10-functional-interfaces/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/typescript/concepts/10-declaration-merging-and-modules/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/javascript/concepts/08-classes/config.json
+  s_e2ab65ecf488dc::t_2595f6d661aa1f 1
+content/tracks/c/config.json
+  s_e2ab65ecf488dc::t_5b50b0b31fdfe1 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "e96934b5c8a956bde72cc06567110f50b82aedbc",
+  "prompts": {},
+  "sessions": {
+    "s_e2ab65ecf488dc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0d28a109-d065-49d4-add5-4dedbe42f9c1",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
