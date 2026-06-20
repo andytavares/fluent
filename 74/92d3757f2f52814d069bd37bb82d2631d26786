@@ -1,0 +1,21 @@
+.github/workflows/content-lint.yml
+  s_ff270eb9c8a0b8::t_d7cce4854dab30 44-50
+tools/content-manifest/package.json
+  s_ff270eb9c8a0b8::t_16d0f722ba50d6 10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "7492d3757f2f52814d069bd37bb82d2631d26786",
+  "prompts": {},
+  "sessions": {
+    "s_ff270eb9c8a0b8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ac40c11b-34be-4131-9f9d-10b4057d16e4",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
