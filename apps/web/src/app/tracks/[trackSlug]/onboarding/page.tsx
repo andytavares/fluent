@@ -66,17 +66,22 @@ export default function OnboardingPage() {
     }
   }
 
-  async function handleSkipPlacement() {
-    if (!enrollmentId) return;
-    if (currentConcept) {
-      // move to next concept without scoring (leave as available)
-      if (currentConceptIdx + 1 < placementConcepts.length) {
-        setCurrentConceptIdx((i) => i + 1);
-        setPlacementResult(null);
-        return;
-      }
+  async function handleSkipConcept() {
+    // Skip this concept (no score) and continue to the next placement task
+    if (currentConceptIdx + 1 < placementConcepts.length) {
+      setCurrentConceptIdx((i) => i + 1);
+      setPlacementResult(null);
+    } else {
+      await skipPlacement.mutateAsync({ enrollmentId: enrollmentId! });
+      router.push(`/tracks/${trackSlug}`);
     }
-    await skipPlacement.mutateAsync({ enrollmentId });
+  }
+
+  async function handleTakeLesson() {
+    // End the entire placement flow and go to the track — pick up from the first available concept
+    if (enrollmentId) {
+      await skipPlacement.mutateAsync({ enrollmentId });
+    }
     router.push(`/tracks/${trackSlug}`);
   }
 
@@ -143,7 +148,8 @@ export default function OnboardingPage() {
           stub={currentConcept.stub}
           taskPrompt={currentConcept.taskPrompt}
           onSubmit={handlePlacementSubmit}
-          onSkip={placementResult?.passed ? handleContinueAfterResult : handleSkipPlacement}
+          onSkip={placementResult?.passed ? handleContinueAfterResult : handleSkipConcept}
+          onTakeLesson={handleTakeLesson}
           onTryAgain={handleTryAgain}
           isSubmitting={isRunning}
           result={placementResult}

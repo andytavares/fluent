@@ -9,6 +9,9 @@ export default function DashboardPage() {
   const router = useRouter();
   const dashboardQuery = trpc.dashboard.getDashboard.useQuery();
   const tracksQuery = trpc.tracks.listTracks.useQuery();
+  const resetEnrollment = trpc.enrollments.resetEnrollment.useMutation({
+    onSuccess: () => void dashboardQuery.refetch(),
+  });
 
   if (dashboardQuery.isLoading || tracksQuery.isLoading) {
     return <div className="p-8 text-[var(--color-text-secondary)]">Loading…</div>;
@@ -64,12 +67,11 @@ export default function DashboardPage() {
                 const done = e.stats.conceptsDone;
                 const pct = total > 0 ? Math.round((done / total) * 100) : 0;
                 return (
-                  <Link
+                  <div
                     key={e.track.slug}
-                    href={`/tracks/${e.track.slug}`}
                     className="flex items-center gap-4 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)] px-4 py-3 hover:border-[var(--color-border-default)] transition-colors"
                   >
-                    <div className="flex-1 min-w-0">
+                    <Link href={`/tracks/${e.track.slug}`} className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-[var(--color-text-primary)]">{e.track.title}</p>
                       <div className="mt-1.5 flex items-center gap-2">
                         <div className="h-1.5 flex-1 rounded-full bg-[var(--color-bg-subtle)]">
@@ -82,9 +84,24 @@ export default function DashboardPage() {
                           {done}/{total}
                         </span>
                       </div>
+                    </Link>
+                    <div className="flex shrink-0 items-center gap-3">
+                      <button
+                        onClick={() => {
+                          if (confirm(`Reset all progress for ${e.track.title}?`)) {
+                            resetEnrollment.mutate({ trackId: e.track.id });
+                          }
+                        }}
+                        disabled={resetEnrollment.isPending}
+                        className="text-xs text-[var(--color-text-secondary)] hover:text-red-400 disabled:opacity-50"
+                      >
+                        Reset
+                      </button>
+                      <Link href={`/tracks/${e.track.slug}`} className="text-xs text-[var(--color-text-link)]">
+                        Continue →
+                      </Link>
                     </div>
-                    <span className="shrink-0 text-xs text-[var(--color-text-link)]">Continue →</span>
-                  </Link>
+                  </div>
                 );
               })}
             </div>

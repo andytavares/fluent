@@ -10,6 +10,7 @@ interface PlacementTaskProps {
   taskPrompt?: string;
   onSubmit: (code: string) => void;
   onSkip: () => void;
+  onTakeLesson: () => void;
   onTryAgain?: () => void;
   isSubmitting?: boolean;
   result?: { passed: boolean } | null;
@@ -21,6 +22,7 @@ export function PlacementTask({
   taskPrompt,
   onSubmit,
   onSkip,
+  onTakeLesson,
   onTryAgain,
   isSubmitting = false,
   result,
@@ -60,7 +62,7 @@ export function PlacementTask({
             <Button variant="primary" onClick={handleTryAgain}>
               Try again
             </Button>
-            <Button variant="ghost" onClick={onSkip}>
+            <Button variant="ghost" onClick={onTakeLesson}>
               Take the lesson
             </Button>
           </div>

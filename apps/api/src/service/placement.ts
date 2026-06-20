@@ -3,9 +3,6 @@ import { ConceptStateService } from "./concept-state.js";
 
 type DB = PrismaClient;
 
-const PLACEMENT_TASK_COUNT_MIN = 5;
-const PLACEMENT_TASK_COUNT_MAX = 8;
-
 export class PlacementService {
   private stateService: ConceptStateService;
 
@@ -19,13 +16,7 @@ export class PlacementService {
       include: { track: { include: { concepts: { where: { status: "published" }, orderBy: { position: "asc" } } } } },
     });
 
-    const allConcepts = enrollment.track.concepts;
-    const count = Math.min(
-      Math.max(PLACEMENT_TASK_COUNT_MIN, Math.floor(allConcepts.length * 0.5)),
-      PLACEMENT_TASK_COUNT_MAX,
-    );
-
-    return allConcepts.slice(0, count);
+    return enrollment.track.concepts;
   }
 
   async scoreTask(enrollmentId: string, conceptId: string, passed: boolean) {
