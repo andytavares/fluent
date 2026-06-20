@@ -1,0 +1,585 @@
+content/tracks/c/concepts/01-variables-and-types/stub.c
+  s_4398ecdcdc5634::t_e051c88f98536c 1-26
+content/tracks/typescript/concepts/09-template-literal-types/template_literal_types_test.ts
+  s_e2ab65ecf488dc::t_796df7a94a8c90 1-32
+content/tracks/cpp/concepts/09-concurrency/concurrency_test.cpp
+  s_e2ab65ecf488dc::t_af43fc20a02f11 1-71
+content/tracks/c/concepts/05-structs/config.json
+  s_4398ecdcdc5634::t_a0f270a592ccac 1
+.claude/agents/content-author.md
+  s_4398ecdcdc5634::t_732504d8d1663c 1-115
+content/tracks/java/concepts/06-inheritance-and-polymorphism/exemplar.java
+  s_4398ecdcdc5634::t_a9e35ec74d06d8 1-65
+content/tracks/typescript/concepts/10-declaration-merging-and-modules/declaration_merging_and_modules_test.ts
+  s_e2ab65ecf488dc::t_8b66a86ab4bf9b 1-41
+tools/content-manifest/src/build.ts
+  s_4398ecdcdc5634::t_c930b0dc200e85 20
+content/tracks/c/concepts/06-control-flow/exemplar.c
+  s_4398ecdcdc5634::t_2bc2bcb09ae76b 1-63
+content/tracks/cpp/concepts/07-move-semantics/config.json
+  s_4398ecdcdc5634::t_2ef823289ab039 1
+content/tracks/javascript/concepts/03-arrays-and-objects/arrays_and_objects_test.js
+  s_4398ecdcdc5634::t_d2be1f2054bf0b 1-32
+content/tracks/javascript/concepts/10-modules/instructions.md
+  s_e2ab65ecf488dc::t_60ffe5cf9429a2 1-71
+content/tracks/java/config.json
+  s_4398ecdcdc5634::t_b0e921453b378c 6
+  s_4398ecdcdc5634::t_21a9b6d9339918 1-5,7
+content/tracks/javascript/concepts/02-functions/exemplar.js
+  s_4398ecdcdc5634::t_a4b9c72cd030e0 1-13
+content/tracks/javascript/concepts/03-arrays-and-objects/stub.js
+  s_4398ecdcdc5634::t_71d56e0bf85bc5 1-19
+content/tracks/typescript/concepts/05-type-guards/stub.ts
+  s_4398ecdcdc5634::t_5dbf52dcc287d5 1-26
+content/tracks/typescript/concepts/01-types-and-interfaces/config.json
+  s_4398ecdcdc5634::t_4ee3abba4cf9e3 1
+content/tracks/cpp/concepts/03-stl-containers/instructions.md
+  s_4398ecdcdc5634::t_9a497635ff4723 1-61
+content/tracks/javascript/config.json
+  s_4398ecdcdc5634::t_1cc91b145ce1ec 1-5,7
+  s_4398ecdcdc5634::t_b0e921453b378c 6
+content/tracks/typescript/concepts/10-declaration-merging-and-modules/config.json
+  s_4398ecdcdc5634::t_8b77be23a80af9 1
+content/tracks/c/concepts/08-file-io/file_io_test.c
+  s_e2ab65ecf488dc::t_357409a71ece27 1-70
+content/tracks/cpp/concepts/10-raii-and-resource-management/stub.cpp
+  s_e2ab65ecf488dc::t_6cf0325298a138 1-50
+content/tracks/javascript/concepts/01-variables-and-types/exemplar.js
+  s_4398ecdcdc5634::t_27ac6b03a2aba3 1-13
+content/tracks/c/concepts/05-structs/structs_test.c
+  s_4398ecdcdc5634::t_7169f6583e1d4b 1-50
+content/tracks/cpp/concepts/10-raii-and-resource-management/exemplar.cpp
+  s_e2ab65ecf488dc::t_2790fbf828340f 1-53
+content/tracks/c/concepts/10-linked-lists/config.json
+  s_e2ab65ecf488dc::t_68f74a62e09259 1
+content/tracks/typescript/concepts/02-functions-and-generics/stub.ts
+  s_4398ecdcdc5634::t_d39542895ae074 1-17
+content/tracks/javascript/concepts/07-async-javascript/stub.js
+  s_4398ecdcdc5634::t_f8be3387e07ac4 1-40
+content/tracks/cpp/concepts/02-templates/templates_test.cpp
+  s_4398ecdcdc5634::t_734deb24a6dcdb 1-58
+content/tracks/typescript/concepts/09-template-literal-types/instructions.md
+  s_4398ecdcdc5634::t_2ee4072f6fb9ca 1-53
+content/tracks/javascript/concepts/08-classes/stub.js
+  s_e2ab65ecf488dc::t_91109073a8c4ac 1-85
+content/tracks/c/concepts/07-dynamic-memory/dynamic_memory_test.c
+  s_e2ab65ecf488dc::t_4f171b9a84aeeb 1-91
+content/tracks/cpp/concepts/05-lambda-expressions/lambda_expressions_test.cpp
+  s_4398ecdcdc5634::t_19217e85177c3d 1-60
+content/tracks/javascript/concepts/05-error-handling/config.json
+  s_4398ecdcdc5634::t_0f16350dfa0f26 1
+content/tracks/java/concepts/03-generics/instructions.md
+  s_4398ecdcdc5634::t_7304dbbacfffeb 1-57
+apps/api/src/router/tracks.ts
+  s_4398ecdcdc5634::t_cfe0d4e6d2dac8 1
+  s_4398ecdcdc5634::t_095dec5c18d2eb 8-31
+  s_4398ecdcdc5634::t_57285eba9b1781 79
+  s_4398ecdcdc5634::t_7337af9c5cf4f0 80,88,90
+content/tracks/javascript/concepts/07-async-javascript/async_javascript_test.js
+  s_4398ecdcdc5634::t_0d874262c9487e 1-118
+content/tracks/cpp/concepts/09-concurrency/config.json
+  s_e2ab65ecf488dc::t_c8e3d1430cac7c 1
+content/tracks/java/concepts/05-optional/config.json
+  s_4398ecdcdc5634::t_01c8d24b44359f 1
+content/tracks/typescript/concepts/08-mapped-types/config.json
+  s_4398ecdcdc5634::t_eb2bf93c69c65e 1
+content/tracks/c/concepts/02-functions/exemplar.c
+  s_4398ecdcdc5634::t_06b32b26580752 1-27
+content/tracks/c/concepts/01-variables-and-types/variables_and_types_test.c
+  s_4398ecdcdc5634::t_4be1c8ffba39d7 1-48
+content/tracks/c/concepts/03-pointers/instructions.md
+  s_4398ecdcdc5634::t_e89ae59957c37d 1-56
+apps/api/prisma/schema.prisma
+  s_4398ecdcdc5634::t_486170585ea231 88
+content/tracks/java/concepts/03-generics/exemplar.java
+  s_4398ecdcdc5634::t_0c86686d5823f7 1-41
+content/tracks/java/concepts/02-interfaces/config.json
+  s_4398ecdcdc5634::t_c6f0c1dd7dd558 1
+content/tracks/c/concepts/04-arrays-and-strings/config.json
+  s_4398ecdcdc5634::t_e7f09b4e19688f 1
+content/tracks/typescript/concepts/07-classes-with-types/instructions.md
+  s_4398ecdcdc5634::t_9c438c273998f9 1-77
+content/tracks/c/concepts/07-dynamic-memory/stub.c
+  s_e2ab65ecf488dc::t_e984e7811f4b0c 1-46
+content/tracks/typescript/concepts/05-type-guards/instructions.md
+  s_4398ecdcdc5634::t_3c0052bd50360f 1-67
+content/tracks/javascript/concepts/08-classes/classes_test.js
+  s_e2ab65ecf488dc::t_13546dc21f1c0d 1-81
+content/tracks/java/concepts/09-concurrency/instructions.md
+  s_e2ab65ecf488dc::t_046185466f7886 1-67
+content/tracks/java/concepts/08-exception-handling/config.json
+  s_e2ab65ecf488dc::t_6f8ede072a3f34 1
+content/tracks/java/concepts/04-streams-api/stub.java
+  s_4398ecdcdc5634::t_65386bd33fb17b 1-30
+content/tracks/c/concepts/04-arrays-and-strings/stub.c
+  s_4398ecdcdc5634::t_4fdfa2e80b5504 1-32
+content/tracks/cpp/concepts/07-move-semantics/exemplar.cpp
+  s_e2ab65ecf488dc::t_b6c5bb755be4e6 1-64
+content/tracks/typescript/concepts/01-types-and-interfaces/instructions.md
+  s_4398ecdcdc5634::t_f5b0432721a289 1-47
+content/tracks/cpp/concepts/01-classes-and-objects/stub.cpp
+  s_4398ecdcdc5634::t_59f0055183bf62 1-35
+content/tracks/javascript/concepts/02-functions/instructions.md
+  s_4398ecdcdc5634::t_e68aaf0f9e06d3 1-54
+content/tracks/java/concepts/03-generics/config.json
+  s_4398ecdcdc5634::t_a4e5879ca44d87 1
+content/tracks/javascript/concepts/10-modules/modules_test.js
+  s_e2ab65ecf488dc::t_69e89ccafbb146 1-37
+content/tracks/cpp/concepts/05-lambda-expressions/stub.cpp
+  s_4398ecdcdc5634::t_7e5de89b55adb3 1-42
+content/tracks/cpp/concepts/04-smart-pointers/smart_pointers_test.cpp
+  s_4398ecdcdc5634::t_82b94e03960f4f 1-44
+content/tracks/c/config.json
+  s_4398ecdcdc5634::t_8c1a9587257609 1-5,7
+  s_4398ecdcdc5634::t_b0e921453b378c 6
+content/tracks/java/concepts/02-interfaces/SolutionTest.java
+  s_4398ecdcdc5634::t_c3ad4aa0e42b36 1-34
+content/tracks/java/concepts/01-classes-and-objects/stub.java
+  s_4398ecdcdc5634::t_16b74ff2dff757 1-44
+content/tracks/java/concepts/02-interfaces/stub.java
+  s_4398ecdcdc5634::t_15de739fc4dd36 1-76
+content/tracks/java/concepts/09-concurrency/exemplar.java
+  s_e2ab65ecf488dc::t_df9a7fb1f77525 1-43
+content/tracks/typescript/concepts/07-classes-with-types/classes_with_types_test.ts
+  s_e2ab65ecf488dc::t_a3103f2194a5b0 1-64
+content/tracks/cpp/concepts/06-inheritance-and-polymorphism/instructions.md
+  s_4398ecdcdc5634::t_f1d3e80d4923ef 1-50
+content/tracks/typescript/concepts/04-utility-types/instructions.md
+  s_4398ecdcdc5634::t_991dcddd376566 1-64
+content/tracks/typescript/concepts/04-utility-types/exemplar.ts
+  s_4398ecdcdc5634::t_5adbbf79c3e3c3 1-28
+content/tracks/c/concepts/08-file-io/config.json
+  s_e2ab65ecf488dc::t_df3d50053a9303 1
+content/tracks/javascript/concepts/02-functions/config.json
+  s_4398ecdcdc5634::t_f1251bdd82c742 1
+content/tracks/javascript/concepts/10-modules/config.json
+  s_e2ab65ecf488dc::t_82ac693035ae7e 1
+content/tracks/java/concepts/09-concurrency/stub.java
+  s_e2ab65ecf488dc::t_5c70a931a7442b 1-47
+content/tracks/java/concepts/04-streams-api/config.json
+  s_4398ecdcdc5634::t_19268570f5de6f 1
+apps/web/src/app/layout.tsx
+  s_4398ecdcdc5634::t_e3959e446dde59 17
+content/tracks/cpp/concepts/03-stl-containers/exemplar.cpp
+  s_4398ecdcdc5634::t_dcc6273e1f7821 1-40
+content/tracks/c/concepts/10-linked-lists/stub.c
+  s_e2ab65ecf488dc::t_2f788b17ee3820 1-46
+content/tracks/javascript/concepts/06-control-flow/control_flow_test.js
+  s_4398ecdcdc5634::t_be2593d69dabb6 1-42
+content/tracks/typescript/concepts/04-utility-types/utility_types_test.ts
+  s_4398ecdcdc5634::t_9ab724f701f3df 1-35
+apps/web/src/app/tracks/[trackSlug]/concepts/[conceptSlug]/page.tsx
+  s_e2ab65ecf488dc::t_a61dcb7e95dac9 3,15-16,18-19,26-28,50-54,63,77,81,98,170-171,174,178-180
+  s_e2ab65ecf488dc::t_c099003f1794d3 17
+content/tracks/cpp/concepts/10-raii-and-resource-management/config.json
+  s_e2ab65ecf488dc::t_6dcec4b0adf9d1 1
+content/tracks/typescript/concepts/09-template-literal-types/stub.ts
+  s_e2ab65ecf488dc::t_b79b9f4e3d376f 1-36
+content/tracks/java/concepts/03-generics/stub.java
+  s_4398ecdcdc5634::t_63aa3b4e00826d 1-45
+content/tracks/javascript/concepts/06-control-flow/exemplar.js
+  s_4398ecdcdc5634::t_cf8056a4850375 1-31
+content/tracks/c/concepts/06-control-flow/stub.c
+  s_4398ecdcdc5634::t_8060d86f9d56c8 1-56
+content/tracks/javascript/concepts/03-arrays-and-objects/exemplar.js
+  s_4398ecdcdc5634::t_f8261e2880a1fc 1-18
+content/tracks/java/concepts/04-streams-api/exemplar.java
+  s_4398ecdcdc5634::t_2fd9b02ce9c7e2 1-31
+content/tracks/typescript/concepts/03-union-types/exemplar.ts
+  s_4398ecdcdc5634::t_5bdf22659e14b9 1-21
+content/tracks/typescript/concepts/06-enums/stub.ts
+  s_4398ecdcdc5634::t_faaa6306d2fb8e 1-43
+content/tracks/cpp/concepts/05-lambda-expressions/config.json
+  s_4398ecdcdc5634::t_543ab8e7f6f91c 1
+content/tracks/typescript/concepts/10-declaration-merging-and-modules/instructions.md
+  s_4398ecdcdc5634::t_b6073f6d681b4f 1-69
+content/tracks/cpp/concepts/04-smart-pointers/exemplar.cpp
+  s_4398ecdcdc5634::t_aa268d7f23289e 1-39
+content/tracks/c/concepts/05-structs/stub.c
+  s_4398ecdcdc5634::t_e4f1d239a80b76 1-36
+content/tracks/javascript/concepts/06-control-flow/config.json
+  s_4398ecdcdc5634::t_6cda4dbb91c825 1
+content/tracks/java/concepts/05-optional/SolutionTest.java
+  s_4398ecdcdc5634::t_5ff022eb23385f 1-43
+content/tracks/javascript/concepts/06-control-flow/instructions.md
+  s_4398ecdcdc5634::t_183c250e0df261 1-64
+content/tracks/java/concepts/01-classes-and-objects/config.json
+  s_4398ecdcdc5634::t_105d161b27a2f3 1
+content/tracks/java/concepts/01-classes-and-objects/exemplar.java
+  s_4398ecdcdc5634::t_002e6af8100c71 1-37
+content/tracks/java/concepts/08-exception-handling/instructions.md
+  s_e2ab65ecf488dc::t_6d64343c472662 1-61
+content/tracks/cpp/concepts/04-smart-pointers/config.json
+  s_4398ecdcdc5634::t_c678219b23a8fb 1
+content/tracks/typescript/concepts/01-types-and-interfaces/types_and_interfaces_test.ts
+  s_4398ecdcdc5634::t_b613f33d8bc692 1-42
+content/tracks/c/concepts/04-arrays-and-strings/exemplar.c
+  s_4398ecdcdc5634::t_b80d0c43e4829c 1-40
+content/tracks/cpp/concepts/01-classes-and-objects/exemplar.cpp
+  s_4398ecdcdc5634::t_8a6d9b2cc63fac 1-29
+content/tracks/java/concepts/05-optional/exemplar.java
+  s_4398ecdcdc5634::t_617121e8d2ec45 1-32
+content/tracks/cpp/concepts/06-inheritance-and-polymorphism/stub.cpp
+  s_4398ecdcdc5634::t_42b77ddb22299a 1-51
+content/tracks/cpp/concepts/09-concurrency/exemplar.cpp
+  s_e2ab65ecf488dc::t_1296dfb1b59231 1-52
+content/tracks/c/concepts/02-functions/functions_test.c
+  s_4398ecdcdc5634::t_086995f332c77f 1-40
+content/tracks/typescript/concepts/05-type-guards/exemplar.ts
+  s_4398ecdcdc5634::t_a9483015ad2e19 1-28
+content/tracks/c/concepts/10-linked-lists/exemplar.c
+  s_e2ab65ecf488dc::t_56709b43086bc6 1-68
+content/tracks/javascript/concepts/03-arrays-and-objects/instructions.md
+  s_4398ecdcdc5634::t_1fbe5c8ce35a50 1-51
+content/tracks/javascript/concepts/10-modules/exemplar.js
+  s_e2ab65ecf488dc::t_1374485bb40349 1-18
+content/tracks/java/concepts/09-concurrency/SolutionTest.java
+  s_e2ab65ecf488dc::t_eae2b296c87c1a 1-52
+content/tracks/typescript/concepts/03-union-types/config.json
+  s_4398ecdcdc5634::t_908f7b68cd2461 1
+content/tracks/cpp/concepts/03-stl-containers/stub.cpp
+  s_4398ecdcdc5634::t_0d67677c343529 1-38
+content/tracks/cpp/concepts/09-concurrency/instructions.md
+  s_e2ab65ecf488dc::t_87b57a93d09453 1-66
+content/tracks/javascript/concepts/02-functions/functions_test.js
+  s_4398ecdcdc5634::t_67c82f1f43def1 1-28
+content/tracks/typescript/concepts/05-type-guards/config.json
+  s_4398ecdcdc5634::t_97a02054402cf5 1
+content/tracks/javascript/concepts/07-async-javascript/config.json
+  s_4398ecdcdc5634::t_369c620c57a81f 1
+content/tracks/java/concepts/10-functional-interfaces/instructions.md
+  s_e2ab65ecf488dc::t_b7e3ffd2315944 1-61
+content/tracks/c/concepts/03-pointers/exemplar.c
+  s_4398ecdcdc5634::t_4123965cbade5c 1-35
+content/tracks/cpp/concepts/06-inheritance-and-polymorphism/inheritance_and_polymorphism_test.cpp
+  s_4398ecdcdc5634::t_1f55d981e0257e 1-85
+content/tracks/java/concepts/01-classes-and-objects/SolutionTest.java
+  s_4398ecdcdc5634::t_6877c44104d2ee 1-34
+content/tracks/cpp/concepts/02-templates/stub.cpp
+  s_4398ecdcdc5634::t_1f9123d73edce6 1-56
+content/tracks/typescript/concepts/02-functions-and-generics/functions_and_generics_test.ts
+  s_4398ecdcdc5634::t_f6933f4245b5c8 1-29
+content/tracks/c/concepts/09-preprocessor/preprocessor_test.c
+  s_e2ab65ecf488dc::t_0aedf592613159 1-55
+content/tracks/typescript/config.json
+  s_4398ecdcdc5634::t_a10e96b901dfdb 1-5,7
+  s_4398ecdcdc5634::t_b0e921453b378c 6
+content/tracks/cpp/concepts/10-raii-and-resource-management/raii_and_resource_management_test.cpp
+  s_e2ab65ecf488dc::t_9cf393a36ea4d1 1-89
+content/tracks/java/concepts/04-streams-api/SolutionTest.java
+  s_4398ecdcdc5634::t_bef918b9559d81 1-37
+content/tracks/c/concepts/02-functions/config.json
+  s_4398ecdcdc5634::t_9a8305fbdbd627 1
+content/tracks/cpp/concepts/08-exception-handling/exception_handling_test.cpp
+  s_e2ab65ecf488dc::t_25c197dc29aaca 25
+  s_e2ab65ecf488dc::t_3480e6e9664b8b 1-24,26-54
+content/tracks/cpp/concepts/01-classes-and-objects/instructions.md
+  s_4398ecdcdc5634::t_815c7d56c11a76 1-47
+content/tracks/c/concepts/10-linked-lists/linked_lists_test.c
+  s_e2ab65ecf488dc::t_30bc5a60e5face 1-82
+content/tracks/typescript/concepts/02-functions-and-generics/config.json
+  s_4398ecdcdc5634::t_be66d5c18cd806 1
+content/tracks/java/concepts/04-streams-api/instructions.md
+  s_4398ecdcdc5634::t_34fb81dcf1bd86 1-54
+content/tracks/cpp/concepts/01-classes-and-objects/config.json
+  s_4398ecdcdc5634::t_b164c8a126a601 1
+content/tracks/javascript/concepts/05-error-handling/stub.js
+  s_4398ecdcdc5634::t_482190bbff7470 1-20
+content/tracks/java/concepts/06-inheritance-and-polymorphism/instructions.md
+  s_4398ecdcdc5634::t_9a544cc67bc26b 1-67
+content/tracks/cpp/concepts/06-inheritance-and-polymorphism/exemplar.cpp
+  s_4398ecdcdc5634::t_4b153cf85ebb54 1-59
+content/tracks/c/concepts/09-preprocessor/instructions.md
+  s_e2ab65ecf488dc::t_f2dcb5b4cd5bb5 1-73
+content/tracks/cpp/config.json
+  s_4398ecdcdc5634::t_db6563c713a930 1-5,7
+  s_4398ecdcdc5634::t_b0e921453b378c 6
+content/tracks/javascript/concepts/05-error-handling/exemplar.js
+  s_4398ecdcdc5634::t_7feabafad5c34d 1-27
+content/tracks/cpp/concepts/08-exception-handling/instructions.md
+  s_e2ab65ecf488dc::t_e5ad509dbcee2b 1-60
+content/tracks/java/concepts/10-functional-interfaces/config.json
+  s_e2ab65ecf488dc::t_6908975f67ae5f 1
+content/tracks/c/concepts/02-functions/instructions.md
+  s_4398ecdcdc5634::t_b1a60aeda42bc4 1-41
+content/tracks/c/concepts/07-dynamic-memory/config.json
+  s_4398ecdcdc5634::t_94be12ba052f3e 1
+content/tracks/java/concepts/05-optional/stub.java
+  s_4398ecdcdc5634::t_ce27ecbd7017b0 1-29
+content/tracks/javascript/concepts/09-destructuring-and-spread/config.json
+  s_e2ab65ecf488dc::t_ee644e74df27e3 1
+content/tracks/java/concepts/07-collections-framework/stub.java
+  s_e2ab65ecf488dc::t_b2ed62b59e2b95 1-42
+content/tracks/typescript/concepts/04-utility-types/stub.ts
+  s_4398ecdcdc5634::t_22a59656616398 1-33
+content/tracks/typescript/concepts/06-enums/enums_test.ts
+  s_e2ab65ecf488dc::t_4f22e664784c9b 1-33
+content/tracks/java/concepts/06-inheritance-and-polymorphism/stub.java
+  s_4398ecdcdc5634::t_0f455355833559 1-65
+content/tracks/javascript/concepts/04-closures/stub.js
+  s_4398ecdcdc5634::t_8e832f1d1ec5e9 1-20
+content/tracks/cpp/concepts/05-lambda-expressions/instructions.md
+  s_4398ecdcdc5634::t_0585e10e02d983 1-54
+apps/web/public/content/manifest.json
+  s_e2ab65ecf488dc::t_48b9c91b409475 2-159,238-474
+content/tracks/typescript/concepts/01-types-and-interfaces/stub.ts
+  s_4398ecdcdc5634::t_d01b953b1d1eb4 1-22
+content/tracks/c/concepts/03-pointers/config.json
+  s_4398ecdcdc5634::t_f0ff977a6c4c63 1
+content/tracks/java/concepts/10-functional-interfaces/SolutionTest.java
+  s_e2ab65ecf488dc::t_fb492bed3fb092 1-50
+content/tracks/c/concepts/02-functions/stub.c
+  s_4398ecdcdc5634::t_e4817e8a2d3cfb 1-27
+content/tracks/java/concepts/03-generics/SolutionTest.java
+  s_4398ecdcdc5634::t_4d04505d5b9175 1-37
+content/tracks/typescript/concepts/06-enums/exemplar.ts
+  s_e2ab65ecf488dc::t_73b4d3599edf6f 1-47
+apps/api/prisma/seed.ts
+  s_4398ecdcdc5634::t_c52b6f5140155f 219,221-222,224-231
+  s_4398ecdcdc5634::t_92a0ec2077de81 123-133,135-144,146,149,158-170,172-181,183,186,195-207,209-218,220,223,232-244,246-255,257,260,269-281,283-292,294,297,306-307
+  s_4398ecdcdc5634::t_122b2d87738f58 145,147-148,150-157
+  s_4398ecdcdc5634::t_c700094fdd7c2c 256,258-259,261-268
+  s_4398ecdcdc5634::t_12d00cf369c8db 5-53
+  s_4398ecdcdc5634::t_0afe9eccd853f7 134,171,208,245,282
+  s_4398ecdcdc5634::t_6ef484e4f6c429 108,115,117
+  s_4398ecdcdc5634::t_a7a424f0dc3734 182,184-185,187-194
+  s_4398ecdcdc5634::t_b6b528bf753d9b 293,295-296,298-305
+content/tracks/typescript/concepts/07-classes-with-types/stub.ts
+  s_4398ecdcdc5634::t_0ba5213dae8c93 1-61
+content/tracks/typescript/concepts/09-template-literal-types/config.json
+  s_4398ecdcdc5634::t_4873c85aea7de8 1
+content/tracks/javascript/concepts/01-variables-and-types/stub.js
+  s_4398ecdcdc5634::t_824bfcbc54bcc2 1-19
+content/tracks/javascript/concepts/07-async-javascript/instructions.md
+  s_4398ecdcdc5634::t_dc5628b145603c 1-72
+content/tracks/cpp/concepts/08-exception-handling/config.json
+  s_e2ab65ecf488dc::t_53ea0c6790cda9 1
+content/tracks/c/concepts/10-linked-lists/instructions.md
+  s_e2ab65ecf488dc::t_f6e6efcb1d0d24 1-66
+content/tracks/javascript/concepts/01-variables-and-types/instructions.md
+  s_4398ecdcdc5634::t_6f66ce49156635 1-41
+content/tracks/java/concepts/05-optional/instructions.md
+  s_4398ecdcdc5634::t_6490ce8cc82ab0 1-53
+apps/web/src/components/navbar.tsx
+  s_4398ecdcdc5634::t_ca2ed5d7193c5e 56
+  s_4398ecdcdc5634::t_cc4b411691e0df 24
+content/tracks/c/concepts/06-control-flow/control_flow_test.c
+  s_4398ecdcdc5634::t_30443df9b82424 1-62
+content/tracks/c/concepts/01-variables-and-types/instructions.md
+  s_4398ecdcdc5634::t_3a3feb16d7e6e2 1-43
+content/tracks/javascript/concepts/05-error-handling/instructions.md
+  s_4398ecdcdc5634::t_71b641925591e8 1-62
+content/tracks/typescript/concepts/02-functions-and-generics/instructions.md
+  s_4398ecdcdc5634::t_0c59ef6aae092a 1-57
+content/tracks/javascript/concepts/08-classes/config.json
+  s_4398ecdcdc5634::t_40eb87395645b7 1
+content/tracks/java/concepts/08-exception-handling/exemplar.java
+  s_e2ab65ecf488dc::t_52fbd947693132 1-47
+content/tracks/cpp/concepts/01-classes-and-objects/classes_and_objects_test.cpp
+  s_4398ecdcdc5634::t_dee597dde412d8 1-46
+content/tracks/cpp/concepts/07-move-semantics/stub.cpp
+  s_e2ab65ecf488dc::t_5d1b7a67385420 1-58
+content/tracks/c/concepts/09-preprocessor/config.json
+  s_e2ab65ecf488dc::t_37fc60c7d118fb 1
+content/tracks/cpp/concepts/08-exception-handling/stub.cpp
+  s_e2ab65ecf488dc::t_0ac599ba91af1b 1-46
+content/tracks/cpp/concepts/07-move-semantics/move_semantics_test.cpp
+  s_e2ab65ecf488dc::t_d4f9a3f29ba4a4 1-135
+content/tracks/javascript/concepts/09-destructuring-and-spread/destructuring_and_spread_test.js
+  s_e2ab65ecf488dc::t_0a41abdf651238 1-60
+content/tracks/typescript/concepts/08-mapped-types/mapped_types_test.ts
+  s_e2ab65ecf488dc::t_19501c6ea6c503 1-62
+content/tracks/cpp/concepts/06-inheritance-and-polymorphism/config.json
+  s_4398ecdcdc5634::t_96c9973a4994f5 1
+content/tracks/typescript/concepts/10-declaration-merging-and-modules/stub.ts
+  s_e2ab65ecf488dc::t_43c8fbbc0938d9 1-42
+content/tracks/javascript/concepts/08-classes/instructions.md
+  s_4398ecdcdc5634::t_4eebe480799dd5 1-96
+content/tracks/c/concepts/01-variables-and-types/exemplar.c
+  s_4398ecdcdc5634::t_05232a9a6b894b 1-22
+content/tracks/c/concepts/08-file-io/instructions.md
+  s_e2ab65ecf488dc::t_2af8b021af63e2 1-65
+content/tracks/c/concepts/09-preprocessor/stub.c
+  s_e2ab65ecf488dc::t_b5bc812ade537d 1-3,6-7,10-11,14-35
+  s_e2ab65ecf488dc::t_398dfb6daa0c3b 4-5,8-9,12-13
+content/tracks/typescript/concepts/06-enums/instructions.md
+  s_4398ecdcdc5634::t_a53c87d39bb2f8 1-60
+content/tracks/java/concepts/09-concurrency/config.json
+  s_e2ab65ecf488dc::t_6efe98e2cd63ba 1
+content/tracks/cpp/concepts/04-smart-pointers/stub.cpp
+  s_4398ecdcdc5634::t_0054675fd73d74 1-34
+content/tracks/cpp/concepts/03-stl-containers/stl_containers_test.cpp
+  s_4398ecdcdc5634::t_380f683dc9927f 1-54
+content/tracks/c/concepts/07-dynamic-memory/instructions.md
+  s_e2ab65ecf488dc::t_28d3f6c16307e7 1-60
+content/tracks/cpp/concepts/09-concurrency/stub.cpp
+  s_e2ab65ecf488dc::t_405f55e0e7e71c 1-49
+content/tracks/java/concepts/08-exception-handling/SolutionTest.java
+  s_e2ab65ecf488dc::t_99015a717c17e9 1-40
+content/tracks/java/concepts/10-functional-interfaces/exemplar.java
+  s_e2ab65ecf488dc::t_d9349489884caf 1-40
+content/tracks/c/concepts/01-variables-and-types/config.json
+  s_4398ecdcdc5634::t_3c681e5976d29a 1
+content/tracks/javascript/concepts/07-async-javascript/exemplar.js
+  s_4398ecdcdc5634::t_2116702d968fb6 1-25
+content/tracks/javascript/concepts/09-destructuring-and-spread/instructions.md
+  s_e2ab65ecf488dc::t_4985646c3f0ca7 1-71
+content/tracks/cpp/concepts/03-stl-containers/config.json
+  s_4398ecdcdc5634::t_8daac2e12fbccf 1
+content/tracks/typescript/concepts/02-functions-and-generics/exemplar.ts
+  s_4398ecdcdc5634::t_58ac884993e8ca 1-12
+content/tracks/javascript/concepts/03-arrays-and-objects/config.json
+  s_4398ecdcdc5634::t_372d23dc7e2b88 1
+content/tracks/javascript/concepts/04-closures/instructions.md
+  s_4398ecdcdc5634::t_32036431d7107e 1-62
+content/tracks/c/concepts/04-arrays-and-strings/instructions.md
+  s_4398ecdcdc5634::t_c555be74a91da0 1-50
+apps/web/src/app/tracks/[trackSlug]/page.tsx
+  s_4398ecdcdc5634::t_7f71745a3c403e 63-96
+  s_4398ecdcdc5634::t_ce13362df9aa96 43
+content/tracks/javascript/concepts/02-functions/stub.js
+  s_4398ecdcdc5634::t_c75bd0f1f796ba 1-19
+apps/web/src/app/tracks/[trackSlug]/onboarding/page.tsx
+  s_4398ecdcdc5634::t_a75e64091b1395 65-66,70,76-80,83,86
+content/tracks/c/concepts/06-control-flow/instructions.md
+  s_4398ecdcdc5634::t_a4796f6fd74155 1-74
+content/tracks/c/concepts/07-dynamic-memory/exemplar.c
+  s_e2ab65ecf488dc::t_c701a7df4c634c 1-48
+content/tracks/cpp/concepts/04-smart-pointers/instructions.md
+  s_4398ecdcdc5634::t_06cb16db71bd23 1-58
+apps/api/prisma/migrations/20260620181313_add_coming_soon_track_status/migration.sql
+  s_4398ecdcdc5634::t_2e4903492bc535 1-2
+content/tracks/java/concepts/01-classes-and-objects/instructions.md
+  s_4398ecdcdc5634::t_c586b08dfb69ac 1-45
+content/tracks/c/concepts/05-structs/instructions.md
+  s_4398ecdcdc5634::t_27367502de5513 1-63
+content/tracks/typescript/concepts/05-type-guards/type_guards_test.ts
+  s_4398ecdcdc5634::t_c983e785e5cceb 1-35
+content/tracks/javascript/concepts/09-destructuring-and-spread/exemplar.js
+  s_e2ab65ecf488dc::t_671f7cb96b7d00 1-34
+packages/ui/src/components/TestOutModal.tsx
+  s_e2ab65ecf488dc::t_151d7910d99c7b 86-88
+  s_e2ab65ecf488dc::t_3df04e68002c7b 13,17-19,29-30,34,40,43,45-49,53,60,69-85,89-113,115-119,121-149
+content/tracks/java/concepts/02-interfaces/instructions.md
+  s_4398ecdcdc5634::t_6ca38d170cfc86 1-69
+content/tracks/javascript/concepts/10-modules/stub.js
+  s_e2ab65ecf488dc::t_8a4f637bbab41f 1-29
+content/tracks/java/concepts/06-inheritance-and-polymorphism/SolutionTest.java
+  s_e2ab65ecf488dc::t_2e65cf3592f704 1-43
+content/tracks/javascript/concepts/09-destructuring-and-spread/stub.js
+  s_e2ab65ecf488dc::t_a0fac970dd82ad 1-44
+content/tracks/typescript/concepts/04-utility-types/config.json
+  s_4398ecdcdc5634::t_d1f406da831faf 1
+content/tracks/javascript/concepts/05-error-handling/error_handling_test.js
+  s_4398ecdcdc5634::t_1b15fb40c1e08a 1-44
+content/tracks/javascript/concepts/08-classes/exemplar.js
+  s_e2ab65ecf488dc::t_f368f1fdbbc37e 1-68
+content/tracks/javascript/concepts/04-closures/exemplar.js
+  s_4398ecdcdc5634::t_f92d9e53ba156d 1-22
+content/tracks/typescript/concepts/09-template-literal-types/exemplar.ts
+  s_e2ab65ecf488dc::t_1fba90c3403db7 1-29
+content/tracks/cpp/concepts/10-raii-and-resource-management/instructions.md
+  s_e2ab65ecf488dc::t_7ba90e0c2c79a0 1-59
+content/tracks/typescript/concepts/03-union-types/union_types_test.ts
+  s_4398ecdcdc5634::t_f1d2f69476fe66 1-39
+content/tracks/javascript/concepts/06-control-flow/stub.js
+  s_4398ecdcdc5634::t_d0360a3b501a8f 1-33
+content/tracks/c/concepts/03-pointers/stub.c
+  s_4398ecdcdc5634::t_3d9d2919dc9454 1-31
+content/tracks/c/concepts/03-pointers/pointers_test.c
+  s_4398ecdcdc5634::t_b32fda779ce8bf 1-61
+content/tracks/c/concepts/08-file-io/exemplar.c
+  s_e2ab65ecf488dc::t_9f7cbf498f1b44 1-69
+content/tracks/typescript/concepts/07-classes-with-types/exemplar.ts
+  s_e2ab65ecf488dc::t_9729ad9d6ebfbc 1-52
+content/tracks/java/concepts/08-exception-handling/stub.java
+  s_e2ab65ecf488dc::t_8fd5d1f8c3686c 1-50
+content/tracks/typescript/concepts/08-mapped-types/exemplar.ts
+  s_e2ab65ecf488dc::t_09e774d379c83c 1-29
+content/tracks/c/concepts/08-file-io/stub.c
+  s_e2ab65ecf488dc::t_abb9e2a1b0aa79 1-49
+content/tracks/javascript/concepts/01-variables-and-types/variables_and_types_test.js
+  s_4398ecdcdc5634::t_cb5ac22b434833 1-27
+content/tracks/typescript/concepts/06-enums/config.json
+  s_4398ecdcdc5634::t_8034f9bb7ff30c 1
+content/tracks/typescript/concepts/01-types-and-interfaces/exemplar.ts
+  s_4398ecdcdc5634::t_16e503bb2ba2ba 1-16
+content/tracks/java/concepts/10-functional-interfaces/stub.java
+  s_e2ab65ecf488dc::t_1e4db169a13637 1-45
+content/tracks/typescript/concepts/10-declaration-merging-and-modules/exemplar.ts
+  s_e2ab65ecf488dc::t_b13ce97b0a7156 1-33
+content/tracks/cpp/concepts/02-templates/config.json
+  s_4398ecdcdc5634::t_928afd49525019 1
+content/tracks/java/concepts/07-collections-framework/SolutionTest.java
+  s_e2ab65ecf488dc::t_ed5491ac9f3450 1-51
+content/tracks/c/concepts/04-arrays-and-strings/arrays_and_strings_test.c
+  s_4398ecdcdc5634::t_e76b71a6fd4903 1-49
+content/tracks/cpp/concepts/07-move-semantics/instructions.md
+  s_e2ab65ecf488dc::t_b7b0e1dadf96c8 1-64
+content/tracks/cpp/concepts/02-templates/exemplar.cpp
+  s_4398ecdcdc5634::t_92249abf8b1c10 1-46
+content/tracks/javascript/concepts/04-closures/config.json
+  s_4398ecdcdc5634::t_2868b675cd655b 1
+content/tracks/typescript/concepts/08-mapped-types/instructions.md
+  s_4398ecdcdc5634::t_1065513ee23cf3 1-61
+content/tracks/java/concepts/07-collections-framework/config.json
+  s_e2ab65ecf488dc::t_127f0e0beabad3 1
+content/tracks/c/concepts/09-preprocessor/exemplar.c
+  s_e2ab65ecf488dc::t_4dd10b9f688c06 1-35
+content/tracks/cpp/concepts/05-lambda-expressions/exemplar.cpp
+  s_4398ecdcdc5634::t_1f3b7ef6924e62 1-40
+apps/web/tsconfig.tsbuildinfo
+  s_e2ab65ecf488dc::t_d171ccbbbaa70f 1
+content/tracks/java/concepts/02-interfaces/exemplar.java
+  s_4398ecdcdc5634::t_d18cd462886324 1-44
+content/tracks/javascript/concepts/01-variables-and-types/config.json
+  s_4398ecdcdc5634::t_cc1e567adb020d 1
+content/tracks/javascript/concepts/04-closures/closures_test.js
+  s_4398ecdcdc5634::t_51c16b0a8030b9 1-45
+content/tracks/c/concepts/06-control-flow/config.json
+  s_4398ecdcdc5634::t_e3b4a5c25771f8 1
+content/tracks/c/concepts/05-structs/exemplar.c
+  s_4398ecdcdc5634::t_176c9601550329 1-32
+apps/web/src/app/dashboard/page.tsx
+  s_4398ecdcdc5634::t_5442a0a7623ee6 102
+  s_4398ecdcdc5634::t_829c29bb535341 3,11,13,19-23,94-101,103-131
+  s_4398ecdcdc5634::t_64d302d770ec3f 56-91
+content/tracks/typescript/concepts/08-mapped-types/stub.ts
+  s_4398ecdcdc5634::t_b7907540e9b75a 1-38
+content/tracks/java/concepts/06-inheritance-and-polymorphism/config.json
+  s_4398ecdcdc5634::t_3ec79b59b3344a 1
+content/tracks/cpp/concepts/08-exception-handling/exemplar.cpp
+  s_e2ab65ecf488dc::t_91d89411983a4a 1-50
+content/tracks/typescript/concepts/07-classes-with-types/config.json
+  s_4398ecdcdc5634::t_e3bfd58249cc69 1
+content/tracks/cpp/concepts/02-templates/instructions.md
+  s_4398ecdcdc5634::t_f2e034ccea5f13 1-58
+content/tracks/java/concepts/07-collections-framework/exemplar.java
+  s_e2ab65ecf488dc::t_b80ff61827a76b 1-45
+content/tracks/java/concepts/07-collections-framework/instructions.md
+  s_e2ab65ecf488dc::t_92a006e471e5e3 1-66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "f11df95be71b62fa9846abe6a1cd7085fd081415",
+  "prompts": {},
+  "sessions": {
+    "s_4398ecdcdc5634": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f845843-cd51-41dd-a178-d3e667db7986",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_e2ab65ecf488dc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0d28a109-d065-49d4-add5-4dedbe42f9c1",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
