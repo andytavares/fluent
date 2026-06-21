@@ -1,0 +1,2197 @@
+content/tracks/dsa-javascript/concepts/07-queues-and-deques/exemplar.js
+  s_e2ab65ecf488dc::t_7d1a384aac4acc 1-4,7-12,14-16,20-27,31-37,39-47,94-101,104-106
+  s_e2ab65ecf488dc::t_795cffd4a32133 5-6,13,17-19,28-30,38,48-93,102-103
+content/tracks/dsa-java/concepts/12-heaps-and-priority-queues/instructions.md
+  s_e2ab65ecf488dc::t_7b1720ba4efb3d 1-2,4,6,8,10,12-14,16-49,79,88-89,92,99,101,103,108,110,112,114,119,130,140,142-144,148-149,152-153
+  s_e2ab65ecf488dc::t_bfc37fc4c6a48f 3,5,7,9,11,15,50-78,80-87,90-91,93-98,100,102,104-107,109,111,113,115-118,120-129,131-139,141,145-147,150-151,154-157
+content/tracks/dsa-python/concepts/18-union-find/exemplar.py
+  s_e2ab65ecf488dc::t_64683e3a45f9b8 1-4,8,14,27,31-33,36-38
+  s_e2ab65ecf488dc::t_548d8cf389f92d 5-7,9-13,15-26,28-30,34-35,39-51
+packages/ui/src/components/AlgorithmVisualizer.tsx
+  s_e2ab65ecf488dc::t_9701bebae36f0b 10,16,18-19,24-27,29,49,62-63,65,77,83,85-90,97,102,107,110,113,128,131-133,143,148,153,156,159,174,177,179-180,185,195,201-204,208-210,212-220,233,238,250-279,281-312,314-317,324-326,332-335,338-341,343-346,358,361,365-366,369,383,388,390-392,398-401,404-407,409-412,424,428,430-433,450,455-458,467-470,473-476,487,491,498-499,502,522,525-526,529-530,535-539,548-559,569,572,575-577,585,593,601-604,609-618,620-623,633,636,639-641,655,659-662,667-670,676-681,692,695,699,720,723,729-734,737-740,743,750-753,756-759,761,764-767,769,783,786,790-792,802,807-812,816-819,827-835,849,852,856,859,862-864,867,875,888-891,894-901,905-908,911-916,918-923,927-932,947,950,953,956-958,968,973-976,983-986,990-993,997-1000,1011,1015,1021,1027,1030,1042,1049-1052,1056-1064,1074,1076,1078,1082,1093,1100,1103-1106,1112-1121,1125-1133,1143,1150,1157,1168,1173-1175,1178-1185,1191-1198,1212,1217,1222-1223,1229-1300,1302,1311,1316-1320,1324-1329,1331-1335,1339-1342,1353,1366,1370-1371,1409,1418
+  s_e2ab65ecf488dc::t_6c61f567652448 67,72-73
+  s_e2ab65ecf488dc::t_cd02b3875337f5 9
+  s_e2ab65ecf488dc::t_1939d9f893b92b 1389-1390,1395-1402,1404
+  s_e2ab65ecf488dc::t_23885e15a6a912 1-8,11-15,17,20-23,28,30-48,50-61,66,68-71,74-76,78-82,84,91-96,98-101,103-106,108-109,111-112,114-127,129-130,134-142,144-147,149-152,154-155,157-158,160-173,175-176,178,181-184,186-194,196-200,205-207,211,221-232,234-237,239-249,280,313,318-323,327-331,336-337,342,347-357,359-360,362-364,367-368,370-382,384-387,389,393-397,402-403,408,413-423,425-427,429,434-449,451-454,459-466,471-472,477-486,488-490,492-497,500-501,503-521,523-524,527-528,531-534,540-547,560-568,570-571,573-574,578-584,586-592,594-600,605-608,619,624-632,634-635,637-638,642-652,1383-1388,1391-1394,1403,1405-1408,1410-1417,1419-1423
+  s_e2ab65ecf488dc::t_29dfe001682f12 64
+  s_e2ab65ecf488dc::t_feded4e1c97c21 653-654,656-658,663-666,671-675,682-691,693-694,696-698,700-719,721-722,724-728,735-736,741-742,744-749,754-755,760,762-763,768,770-782,784-785,787-789,793-801,803-806,813-815,820-826,836-848,850-851,853-855,857-858,860-861,865-866,868-874,876-887,892-893,902-904,909-910,917,924-926,933-946,948-949,951-952,954-955,959-967,969-972,977-982,987-989,994-996,1001-1010,1012-1014,1016-1020,1022-1026,1028-1029,1031-1041,1043-1048,1053-1055,1065-1073,1075,1077,1079-1081,1083-1092,1094-1099,1101-1102,1107-1111,1122-1124,1134-1142,1144-1149,1151-1156,1158-1167,1169-1172,1176-1177,1186-1190,1199-1211,1213-1216,1218-1221,1224-1228,1301,1303-1310,1312-1315,1321-1323,1330,1336-1338,1343-1352,1354-1365,1367-1369,1372-1382
+content/tracks/rust/concepts/08-error-handling/config.json
+  s_e2ab65ecf488dc::t_ff2bcf933f7b25 1-7
+content/tracks/dsa-java/concepts/19-dynamic-programming-2d/SolutionTest.java
+  s_e2ab65ecf488dc::t_650b6f7104288e 1-52
+content/tracks/kotlin/concepts/06-sealed-classes-and-when/exemplar.kt
+  s_e2ab65ecf488dc::t_f4f63ff8e6ddea 1-26
+content/tracks/rust/concepts/08-error-handling/error_handling_test.rs
+  s_e2ab65ecf488dc::t_d6005eb78b1b42 1-96
+content/tracks/shell/concepts/08-file-operations/stub.sh
+  s_e2ab65ecf488dc::t_247099a94b8d71 1-30
+content/tracks/shell/concepts/01-variables-and-strings/stub.sh
+  s_e2ab65ecf488dc::t_52b4048830927a 1-26
+content/tracks/dsa-typescript/concepts/06-stacks/instructions.md
+  s_e2ab65ecf488dc::t_57c49523038d5b 1-2,4,6,8,10,12,34,37,44,46-47,49-52,57,59,80,84-85,103,105,119-120,123,130-131,134-136
+  s_e2ab65ecf488dc::t_8196d90a0f1b7e 3,5,7,9,11,13-33,35-36,38-43,45,48,53-56,58,60-79,81-83,86-102,104,106-118,121-122,124-129,132-133,137-142
+content/tracks/kotlin/concepts/05-collections/collections_test.kt
+  s_e2ab65ecf488dc::t_05e153a7aed65b 1-74
+content/tracks/dsa-typescript/concepts/11-binary-search-trees/stub.ts
+  s_e2ab65ecf488dc::t_1f1506e6f01292 14,16,22,24-30,33,35-36
+  s_e2ab65ecf488dc::t_f32cdb05e5e952 1-13,15,17-21,23,31-32,34
+content/tracks/dsa-javascript/concepts/11-binary-search-trees/instructions.md
+  s_e2ab65ecf488dc::t_cd9acb1e978592 1-2,4,6,8,10,12,14-18,21-23,25,27-31,33-41,43,60,62-66,79,81,102-103,105-107,109-110,118-119,121,123-124,132-133,135,137-138,145
+  s_e2ab65ecf488dc::t_7e5b39a44ddf7c 3,5,7,9,11,13,19-20,24,26,32,42,44-59,61,67-78,80,82-101,104,108,111-117,120,122,125-131,134,136,139-144
+content/tracks/elixir/concepts/02-pattern-matching/stub.ex
+  s_e2ab65ecf488dc::t_e983c988cced52 1-30
+content/tracks/dsa-typescript/concepts/18-union-find/stub.ts
+  s_e2ab65ecf488dc::t_3fa5b5b44cd44c 8,13,15,19-23,33,35,37-44,47,50-51
+  s_e2ab65ecf488dc::t_b83fc14e2898f6 1-7,9-12,14,16-18,24-32,34,36,45-46,48-49
+content/tracks/dsa-python/concepts/11-binary-search-trees/config.json
+  s_e2ab65ecf488dc::t_d804214936a2ce 5
+  s_e2ab65ecf488dc::t_cd9f798c3b5f7d 1-4,6-7
+content/tracks/dsa-javascript/concepts/15-dynamic-programming-1d/stub.js
+  s_e2ab65ecf488dc::t_17a1677b421310 1-43
+content/tracks/kotlin/concepts/01-variables-and-types/variables-and-types_test.kt
+  s_e2ab65ecf488dc::t_bf717fa2b17b48 1-51
+content/tracks/rust/concepts/08-error-handling/stub.rs
+  s_e2ab65ecf488dc::t_8fb0f452c12661 1-34
+content/tracks/elixir/concepts/07-genserver/exemplar.ex
+  s_e2ab65ecf488dc::t_9d4e9ef14e79ac 1-51
+content/tracks/dsa-javascript/concepts/14-greedy-algorithms/config.json
+  s_e2ab65ecf488dc::t_3cb1fe831ab783 1-7
+content/tracks/dsa-java/concepts/08-linked-list-patterns/stub.java
+  s_e2ab65ecf488dc::t_8ef3bc57bad8ad 15,17
+  s_e2ab65ecf488dc::t_e6e6b6a2682de8 1-14,16,18-19
+content/tracks/dsa-python/concepts/17-tries/stub.py
+  s_e2ab65ecf488dc::t_b3b446404b6735 1-23,25-28,37-44
+  s_e2ab65ecf488dc::t_8be35c8be34bd8 24,29-36,45-47
+apps/api/src/router/submissions.ts
+  s_e2ab65ecf488dc::t_dc1130fcf9076a 7-30
+  s_e2ab65ecf488dc::t_2a37ff30641678 44
+  s_e2ab65ecf488dc::t_a54bb6267b5728 72
+content/tracks/dsa-java/concepts/13-graphs-bfs-dfs/config.json
+  s_e2ab65ecf488dc::t_03448bc66fc29f 1-7
+content/tracks/elixir/concepts/04-maps-and-structs/maps_and_structs_test.exs
+  s_e2ab65ecf488dc::t_b0266cf53792e7 1-76
+content/tracks/ruby/concepts/08-metaprogramming/instructions.md
+  s_e2ab65ecf488dc::t_de34b069b1045e 1-154
+packages/ui/src/themes/dark.css
+  s_e2ab65ecf488dc::t_9090d8f3da2f58 1,4-7,9-14,16-18,20-25,29,31-41
+content/tracks/dsa-javascript/concepts/11-binary-search-trees/binary-search-trees_test.js
+  s_e2ab65ecf488dc::t_f013e8c562c626 1,3-16,25,27,32-37,50,52-53,56,58-59,61-62,64-65,67-69,99-102
+  s_e2ab65ecf488dc::t_018893f5473634 2,17-24,26,28-31,38-49,51,54-55,57,60,63,66,70-98
+content/tracks/rust/concepts/05-pattern-matching/stub.rs
+  s_e2ab65ecf488dc::t_0c9fb90327d8b0 1-32
+content/tracks/helm/concepts/01-chart-structure/chart-structure_test.sh
+  s_e2ab65ecf488dc::t_f2b5cf63ff52d3 13,16
+  s_e2ab65ecf488dc::t_cf91216e019e41 1-12,14-15,17-39
+content/tracks/dsa-typescript/concepts/11-binary-search-trees/binary-search-trees_test.ts
+  s_e2ab65ecf488dc::t_918121cf8fae48 2-23,32-36,38-49,52-55,60,62-63,67-68,70-80,82-85,87-88,127-130
+  s_e2ab65ecf488dc::t_d65fce7c42f8ee 1,24-31,37,50-51,56-59,61,64-66,69,81,86,89-126
+content/tracks/dsa-python/concepts/19-dynamic-programming-2d/instructions.md
+  s_e2ab65ecf488dc::t_a739b7620f7c9b 3,5,7,9,11-14,16,18,20-22,25,28-29,32,34,36-40,44,47-48,50,53-62,64-69,76,78,81-82,85-87,91-113,115,117-121,123,125,127,129,150
+  s_e2ab65ecf488dc::t_4f99aad3688779 1-2,4,6,8,10,15,17,19,23-24,26-27,30-31,33,35,41-43,45-46,49,51-52,63,70-75,77,79-80,83-84,88-90,114,116,122,124,126,128,130-149,151-155
+content/tracks/terraform/concepts/01-providers-and-resources/providers-and-resources_test.sh
+  s_e2ab65ecf488dc::t_f04c44987c6e1d 1-14,16-17,19-50
+  s_e2ab65ecf488dc::t_f2f8e69578d5ed 15,18
+content/tracks/ruby/concepts/04-classes-and-modules/config.json
+  s_e2ab65ecf488dc::t_dbfccdc9c05530 1-7
+content/tracks/helm/concepts/09-chart-tests/chart-tests_test.sh
+  s_e2ab65ecf488dc::t_f2b5cf63ff52d3 13,16
+  s_e2ab65ecf488dc::t_0588205378bec1 1-12,14-15,17-40
+content/tracks/dsa-javascript/concepts/08-linked-list-patterns/stub.js
+  s_e2ab65ecf488dc::t_d540f544b8591d 19,32,37,42,47-49,52-53,57,60-62
+  s_e2ab65ecf488dc::t_cdeee59acd9d24 1-18,20-31,33-36,38-41,43-46,50-51,54-56,58-59,63-65
+content/tracks/dsa-javascript/concepts/01-two-pointers/exemplar.js
+  s_e2ab65ecf488dc::t_dffc26ee97fe89 1-4,6-9,11-12,15-23,27-44,85-88,90-92
+  s_e2ab65ecf488dc::t_3c216c70a366fa 5,10,13-14,24-26,45-84,89
+content/tracks/dsa-typescript/concepts/18-union-find/union-find_test.ts
+  s_e2ab65ecf488dc::t_38a3535bcc06c1 2-23,27-31,33-34,36-37,39-43,45-60,63-65,67-72,75,77-80,82-84,86-91,94-96,126-129
+  s_e2ab65ecf488dc::t_9ec13184e810b6 1,24-26,32,35,38,44,61-62,66,73-74,76,81,85,92-93,97-125
+content/tracks/dsa-typescript/concepts/04-binary-search/instructions.md
+  s_e2ab65ecf488dc::t_5baaa86667ff7c 3,5,7,9-10,14-33,35,37-42,47,51,53,55,57-75,77,80-94,96,98-112,114-115,130-135
+  s_e2ab65ecf488dc::t_9028f202ff3470 1-2,4,6,8,11-13,34,36,43-46,48-50,52,54,56,76,78-79,95,97,113,116-129,136
+content/tracks/python/concepts/06-decorators/decorators_test.py
+  s_e2ab65ecf488dc::t_41f4ba709801a9 1-137
+content/tracks/dsa-java/concepts/05-hash-maps-and-sets/config.json
+  s_e2ab65ecf488dc::t_3667bd4893f8c9 1-7
+content/tracks/dsa-java/concepts/18-union-find/config.json
+  s_e2ab65ecf488dc::t_8095e4202a8f44 1-7
+content/tracks/assembly/concepts/04-the-stack/config.json
+  s_e2ab65ecf488dc::t_c043987be39a16 1
+content/tracks/helm/concepts/07-hooks/hooks_test.sh
+  s_e2ab65ecf488dc::t_e6028ceef60791 1-12,14-15,17-41
+  s_e2ab65ecf488dc::t_f2b5cf63ff52d3 13,16
+content/tracks/dsa-python/concepts/09-tree-dfs/tree-dfs_test.py
+  s_e2ab65ecf488dc::t_3ae1a2efa42d3f 2,19-20,22-61
+  s_e2ab65ecf488dc::t_1b3a0c1a607870 1,3-18,21,62-65
+content/tracks/shell/concepts/06-text-processing/exemplar.sh
+  s_e2ab65ecf488dc::t_733d93b801200f 1-18
+infra/prometheus/config.yml
+  s_e2ab65ecf488dc::t_337b8dc2dec356 5-6,9,12,17
+content/tracks/dsa-python/concepts/09-tree-dfs/exemplar.py
+  s_e2ab65ecf488dc::t_342039d90bea37 1,3-17,19-33,47-51,54-55,57-65
+  s_e2ab65ecf488dc::t_5844f3c933ea47 2,18,34-46,52-53,56
+content/tracks/dsa-javascript/concepts/12-heaps-and-priority-queues/stub.js
+  s_e2ab65ecf488dc::t_f8a49695ebbf29 3-18,21,24,26,33,38,43,47,58,62-71,73-74,77,82-88
+  s_e2ab65ecf488dc::t_e665412081b55d 1-2,19-20,22-23,25,27-32,34-37,39-42,44-46,48-57,59-61,72,75-76,78-81,89-91
+content/tracks/elixir/concepts/02-pattern-matching/pattern_matching_test.exs
+  s_e2ab65ecf488dc::t_3b9eba0d76e477 1-51
+content/tracks/dsa-python/concepts/14-greedy-algorithms/instructions.md
+  s_e2ab65ecf488dc::t_0eb0ad56cd8173 1-2,4,6,8,12,14-19,21-23,26,28-33,35,37-42,44,46,59,61,63-65,95-99,102-103,111-114,116
+  s_e2ab65ecf488dc::t_6c3c8fb845a53c 3,5,7,9-11,13,20,24-25,27,34,36,43,45,47-58,60,62,66-94,100-101,104-110,115,117-120
+content/tracks/assembly/concepts/02-arithmetic-and-flags/config.json
+  s_e2ab65ecf488dc::t_ae0e50073c2777 1
+content/tracks/dsa-java/concepts/17-tries/instructions.md
+  s_e2ab65ecf488dc::t_408e60ffbf626d 1-2,4,6,8,10,14,20-52,77,79,100,102,116-118,120,122,127,129,138-139,141-144,148-149
+  s_e2ab65ecf488dc::t_2d482b035ad81c 3,5,7,9,11-13,15-19,53-76,78,80-99,101,103-115,119,121,123-126,128,130-137,140,145-147,150-157
+content/tracks/dsa-python/concepts/19-dynamic-programming-2d/dynamic-programming-2d_test.py
+  s_e2ab65ecf488dc::t_ad9ae43c6047fe 1-84
+content/tracks/dsa-javascript/concepts/13-graphs-bfs-dfs/graphs-bfs-dfs_test.js
+  s_e2ab65ecf488dc::t_e4b9f04c5f8f6b 2,17,35,37-41,50-51,60,66,69,71-93
+  s_e2ab65ecf488dc::t_96f22a9da94a5f 1,3-16,18-34,36,42-49,52-59,61-65,67-68,70,94-97
+content/tracks/rust/concepts/01-variables-and-types/config.json
+  s_e2ab65ecf488dc::t_21f4348e9a0df1 1-7
+content/tracks/shell/concepts/04-functions/stub.sh
+  s_e2ab65ecf488dc::t_a2d50a6ddc693a 1-30
+content/tracks/dsa-java/concepts/01-two-pointers/SolutionTest.java
+  s_e2ab65ecf488dc::t_2966f312a7c7bc 4-12,14-19,24-28,30-35,37,39,55-59
+  s_e2ab65ecf488dc::t_477fe9903fa839 1-3,13,20-23,29,36,38,40-54
+content/tracks/dsa-javascript/concepts/09-tree-dfs/tree-dfs_test.js
+  s_e2ab65ecf488dc::t_c54e0a18df191c 2,24-28,31-33,35-37,52-56,60-63,66,70-77,79-95
+  s_e2ab65ecf488dc::t_0c30533f14de47 1,3-23,29-30,34,38-51,57-59,64-65,67-69,78,96-99
+content/tracks/dsa-typescript/concepts/18-union-find/instructions.md
+  s_e2ab65ecf488dc::t_6fc9a86937adc7 1-2,4,6,8,10,12-24,28-31,33-34,36,38-43,45,47-54,73,75,95-96,114,119,137,140-144,147-149,153-154
+  s_e2ab65ecf488dc::t_7fd8b504ef9527 3,5,7,9,11,25-27,32,35,37,44,46,55-72,74,76-94,97-113,115-118,120-136,138-139,145-146,150-152,155-160
+content/tracks/dsa-python/concepts/19-dynamic-programming-2d/stub.py
+  s_e2ab65ecf488dc::t_3cea2c9be11ed9 1-29
+content/tracks/ruby/concepts/02-methods-and-blocks/stub.rb
+  s_e2ab65ecf488dc::t_7c7762f2e38790 1-24
+content/tracks/dsa-java/concepts/06-stacks/config.json
+  s_e2ab65ecf488dc::t_f94ebad1f508b0 1-7
+content/tracks/assembly/concepts/04-the-stack/instructions.md
+  s_e2ab65ecf488dc::t_f6d9bdc2dcac77 1-94
+content/tracks/terraform/concepts/06-count-and-for-each/stub.tf
+  s_e2ab65ecf488dc::t_6c4aaabd5ae2ba 8
+  s_e2ab65ecf488dc::t_e3c6f90e932a95 3
+  s_e2ab65ecf488dc::t_0261515dcdca0a 1-2,4-7,9-39
+content/tracks/elixir/concepts/10-macros/stub.ex
+  s_e2ab65ecf488dc::t_8ae8c2deaeb068 1-39
+content/tracks/assembly/concepts/05-procedures/instructions.md
+  s_e2ab65ecf488dc::t_f9cb4150ccfdac 1-97
+content/tracks/rust/concepts/02-ownership/instructions.md
+  s_e2ab65ecf488dc::t_81e74e96cb9eff 1-81
+content/tracks/dsa-javascript/concepts/10-tree-bfs/config.json
+  s_e2ab65ecf488dc::t_3a3376f8edfea5 1-7
+content/tracks/helm/concepts/07-hooks/config.json
+  s_e2ab65ecf488dc::t_097d5799cb93d9 1-7
+content/tracks/dsa-java/concepts/09-tree-dfs/exemplar.java
+  s_e2ab65ecf488dc::t_bbf290c891c415 1-16,23-24
+  s_e2ab65ecf488dc::t_ef28e0541b683a 17-22
+content/tracks/dsa-python/concepts/19-dynamic-programming-2d/exemplar.py
+  s_e2ab65ecf488dc::t_51d573cf590e41 1-41
+content/tracks/dsa-typescript/concepts/04-binary-search/config.json
+  s_e2ab65ecf488dc::t_b25ac8fa583139 1-7
+content/tracks/dsa-typescript/concepts/11-binary-search-trees/exemplar.ts
+  s_e2ab65ecf488dc::t_bd9058eefa6e19 1-17,22-33,35-39,55
+  s_e2ab65ecf488dc::t_87c776c0ea99d0 18-21,34,40-54
+content/tracks/dsa-javascript/concepts/16-backtracking/backtracking_test.js
+  s_e2ab65ecf488dc::t_febbf083a4c479 1-106
+content/tracks/dsa-typescript/concepts/19-dynamic-programming-2d/stub.ts
+  s_e2ab65ecf488dc::t_65cba31fc31e53 1-25
+content/tracks/terraform/concepts/04-expressions-and-functions/instructions.md
+  s_e2ab65ecf488dc::t_07828bf3687fce 1-113
+content/tracks/shell/concepts/05-arrays/exemplar.sh
+  s_e2ab65ecf488dc::t_6c1f17231b1f32 1-11,13-26
+  s_e2ab65ecf488dc::t_e1a0d8d6a750fa 12
+content/tracks/terraform/concepts/05-locals-and-depends-on/locals-and-depends-on_test.sh
+  s_e2ab65ecf488dc::t_c2459d8cd37830 1-14,16-17,19-53
+  s_e2ab65ecf488dc::t_f2f8e69578d5ed 15,18
+content/tracks/ruby/concepts/05-enumerables/enumerables_test.rb
+  s_e2ab65ecf488dc::t_027be1f46c6f14 1-36
+content/tracks/shell/concepts/08-file-operations/config.json
+  s_e2ab65ecf488dc::t_5975498a06f651 1-7
+content/tracks/dsa-typescript/concepts/01-two-pointers/exemplar.ts
+  s_e2ab65ecf488dc::t_b791f76eaece05 1-3,5-13,15-22,24-26,29-35,67
+  s_e2ab65ecf488dc::t_6529e7a413802d 4,14,23,27-28,36-66
+content/tracks/helm/concepts/09-chart-tests/stub.yaml
+  s_e2ab65ecf488dc::t_ab447088634132 1-47
+content/tracks/kotlin/concepts/09-higher-order-functions/exemplar.kt
+  s_e2ab65ecf488dc::t_5f5b87f9aa7f36 1-32
+content/tracks/dsa-java/concepts/04-binary-search/instructions.md
+  s_e2ab65ecf488dc::t_69b2f09b3ee9fa 3,5,7,9,14-16,19,22,24-27,29,32-33,35,38,40-41,43-56,59-70,72-75,77,79,81,83,85-88,90,92-98,105-107,110-114,117-121
+  s_e2ab65ecf488dc::t_7ad5cbd3ae4e59 1-2,4,6,8,10-13,17-18,20-21,23,28,30-31,34,36-37,39,42,57-58,71,76,78,80,82,84,89,91,99-104,108-109,115-116,122
+content/tracks/dsa-java/concepts/04-binary-search/SolutionTest.java
+  s_e2ab65ecf488dc::t_a078ccd5d97fe8 1-10,19-20,41-45
+  s_e2ab65ecf488dc::t_32f42a3d262721 11-18,21-40
+content/tracks/helm/concepts/06-functions-and-pipelines/stub.yaml
+  s_e2ab65ecf488dc::t_c96cb14c28a562 1-18
+content/tracks/dsa-typescript/concepts/10-tree-bfs/stub.ts
+  s_e2ab65ecf488dc::t_a5f4a97a04831f 14,16,20,22,26-36
+  s_e2ab65ecf488dc::t_7ae90d0018e69f 1-13,15,17-19,21,23-25
+content/tracks/ruby/concepts/09-modules-and-mixins/stub.rb
+  s_e2ab65ecf488dc::t_a3aa99eda82558 1-31
+content/tracks/dsa-typescript/concepts/02-sliding-window/config.json
+  s_e2ab65ecf488dc::t_c8c4391c597d11 1-7
+content/tracks/dsa-javascript/concepts/08-linked-list-patterns/exemplar.js
+  s_e2ab65ecf488dc::t_cff3f4e1bad34d 19,28-29,36,41,45-47,62-66,69-75,77-78,81,84-86
+  s_e2ab65ecf488dc::t_bdf93907c00384 1-18,20-27,30-35,37-40,42-44,48-61,67-68,76,79-80,82-83,87-89
+content/tracks/kotlin/concepts/09-higher-order-functions/higher-order-functions_test.kt
+  s_e2ab65ecf488dc::t_a5e9c4d30cd062 1-96
+content/tracks/elixir/concepts/06-error-handling/stub.ex
+  s_e2ab65ecf488dc::t_b85713d48261bd 1-34
+content/tracks/dsa-typescript/concepts/10-tree-bfs/config.json
+  s_e2ab65ecf488dc::t_4d22060334fc69 1-7
+content/tracks/dsa-java/concepts/04-binary-search/stub.java
+  s_e2ab65ecf488dc::t_c5c9e2d2db51a6 13,23
+  s_e2ab65ecf488dc::t_b19fb2f92f87b0 1-12,14-22,24-25
+content/tracks/dsa-java/concepts/08-linked-list-patterns/SolutionTest.java
+  s_e2ab65ecf488dc::t_c5ce81a0aff848 24-28,43-46,48,50,53,57-75
+  s_e2ab65ecf488dc::t_6dd73cfcbe60a4 1-23,29-42,47,49,51-52,54-56,76-80
+packages/ui/src/index.ts
+  s_e2ab65ecf488dc::t_565bf1cea8628a 22-23
+  s_e2ab65ecf488dc::t_8d7342c9898baa 24
+content/tracks/dsa-java/concepts/16-backtracking/SolutionTest.java
+  s_e2ab65ecf488dc::t_8a4288c2185977 1-58
+content/tracks/helm/concepts/01-chart-structure/stub.yaml
+  s_e2ab65ecf488dc::t_e5204c81545dd5 1-20
+content/tracks/helm/concepts/04-control-flow/instructions.md
+  s_e2ab65ecf488dc::t_ef72d9bf79fed1 1-83
+content/tracks/helm/concepts/06-functions-and-pipelines/instructions.md
+  s_e2ab65ecf488dc::t_5f9d1fb17b974f 1-92
+content/tracks/python/concepts/01-variables-and-types/variables_and_types_test.py
+  s_e2ab65ecf488dc::t_be2e3726c4662e 8-11,32-33,35-37
+  s_e2ab65ecf488dc::t_87cd3d191ba6a9 1-7,12-31,34,38-48
+content/tracks/ruby/concepts/04-classes-and-modules/stub.rb
+  s_e2ab65ecf488dc::t_3bcbfaef6ba471 1-26
+content/tracks/shell/concepts/03-loops/instructions.md
+  s_e2ab65ecf488dc::t_fa351b07a0ff3c 1-102
+content/tracks/helm/concepts/01-chart-structure/instructions.md
+  s_e2ab65ecf488dc::t_d0f351d5e96eb2 1-88
+content/tracks/terraform/concepts/03-data-sources/stub.tf
+  s_e2ab65ecf488dc::t_8aee2bf0352d58 4
+  s_e2ab65ecf488dc::t_062de48112c850 1-3,5-9,11-13,15-29
+  s_e2ab65ecf488dc::t_55db55334dae05 10
+  s_e2ab65ecf488dc::t_55d50159d2b793 14
+content/tracks/python/concepts/04-classes-and-objects/classes_and_objects_test.py
+  s_e2ab65ecf488dc::t_1d4b3f1d19c541 35-55,61,66-68,74-75,88
+  s_e2ab65ecf488dc::t_b1e643a14db44a 1-34,56-60,62-65,69-73,76-87,89-92
+content/tracks/python/concepts/03-lists-and-dicts/stub.py
+  s_e2ab65ecf488dc::t_370e33322ff8ca 1-27
+content/tracks/kotlin/concepts/02-functions/config.json
+  s_e2ab65ecf488dc::t_deb041ade74a1b 1-7
+content/tracks/kotlin/concepts/03-classes-and-data-classes/stub.kt
+  s_e2ab65ecf488dc::t_cc22adc989a5f7 1-17
+content/tracks/assembly/concepts/05-procedures/procedures_test.asm
+  s_e2ab65ecf488dc::t_32c44355d3e6cd 1-125
+content/tracks/helm/concepts/07-hooks/instructions.md
+  s_e2ab65ecf488dc::t_fe56022bf2c3f3 1-82
+content/tracks/assembly/concepts/06-memory-and-addressing/stub.asm
+  s_e2ab65ecf488dc::t_40644029f3401d 1-34
+content/tracks/helm/concepts/07-hooks/exemplar.yaml
+  s_e2ab65ecf488dc::t_36390180a65057 1-20
+content/tracks/dsa-python/concepts/04-binary-search/binary-search_test.py
+  s_e2ab65ecf488dc::t_5c97da131ad471 1,3-18,60-63
+  s_e2ab65ecf488dc::t_884f1dba1f3772 2,19-59
+content/tracks/elixir/concepts/08-enum-and-streams/stub.ex
+  s_e2ab65ecf488dc::t_edca95c4260f42 1-38
+content/tracks/dsa-typescript/concepts/12-heaps-and-priority-queues/instructions.md
+  s_e2ab65ecf488dc::t_1710a364aea1ba 3,5,7,9,11-15,17,19,36-37,43,66-79,81-83,85,88,90,92-113,116-132,134,136-150,152-153,156-157,167,170-174
+  s_e2ab65ecf488dc::t_7f2b230a3a0b64 1-2,4,6,8,10,16,18,20-35,38-42,44-65,80,84,86-87,89,91,114-115,133,135,151,154-155,158-166,168-169
+content/tracks/elixir/concepts/03-lists-and-recursion/stub.ex
+  s_e2ab65ecf488dc::t_9a00c3d55d5eeb 1-37
+content/tracks/dsa-typescript/concepts/16-backtracking/exemplar.ts
+  s_e2ab65ecf488dc::t_cce0c3c68aea1f 1-60
+content/tracks/dsa-java/concepts/07-queues-and-deques/config.json
+  s_e2ab65ecf488dc::t_c63160a787f66f 1-7
+content/tracks/dsa-typescript/concepts/15-dynamic-programming-1d/instructions.md
+  s_e2ab65ecf488dc::t_61f42de527fedb 1-2,4,6,8,10,16,18-20,24,27-33,35-36,38,40-41,57-58,60,63,79-80,82,88,90,101,103,117-118,121,124-125,128-131,136-137
+  s_e2ab65ecf488dc::t_a622bb73ecff7c 3,5,7,9,11-15,17,21-23,25-26,34,37,39,42-56,59,61-62,64-78,81,83-87,89,91-100,102,104-116,119-120,122-123,126-127,132-135
+content/tracks/dsa-javascript/concepts/17-tries/exemplar.js
+  s_e2ab65ecf488dc::t_2d2d7c7b64c30b 1-62,81,110-118,130-132
+  s_e2ab65ecf488dc::t_bf059bab045b03 63-80,82-109,119-129
+content/tracks/rust/concepts/10-concurrency/concurrency_test.rs
+  s_e2ab65ecf488dc::t_b28394201f1a56 1-88
+infra/assembly/Dockerfile
+  s_e2ab65ecf488dc::t_d6476150ace4c1 1-5
+content/tracks/helm/concepts/02-templates-and-values/templates-and-values_test.sh
+  s_e2ab65ecf488dc::t_f2b5cf63ff52d3 13,16
+  s_e2ab65ecf488dc::t_07d8f1f2f7eae8 1-12,14-15,17-35
+content/tracks/assembly/concepts/06-memory-and-addressing/exemplar.asm
+  s_e2ab65ecf488dc::t_9f153f8b3ad8dc 1-41
+content/tracks/dsa-python/concepts/06-stacks/config.json
+  s_e2ab65ecf488dc::t_c62ac8fc83d459 1-4,6-7
+  s_e2ab65ecf488dc::t_d6ab10ad2ad330 5
+content/tracks/dsa-java/concepts/10-tree-bfs/config.json
+  s_e2ab65ecf488dc::t_e72974672b2f98 1-7
+content/tracks/terraform/concepts/03-data-sources/data-sources_test.sh
+  s_e2ab65ecf488dc::t_f2f8e69578d5ed 15,18
+  s_e2ab65ecf488dc::t_f175ce115eb30c 1-14,16-17,19-48
+content/tracks/rust/concepts/07-generics-and-lifetimes/instructions.md
+  s_e2ab65ecf488dc::t_cf299a9da0aca5 1-108
+content/tracks/elixir/concepts/07-genserver/instructions.md
+  s_e2ab65ecf488dc::t_ff70c020e25d6e 1-77
+content/tracks/dsa-python/concepts/07-queues-and-deques/stub.py
+  s_e2ab65ecf488dc::t_ffe3140a288942 1-5,8-11,13-14,16-18,21-23,32-39
+  s_e2ab65ecf488dc::t_d378dfb22ce163 6-7,12,15,19-20,24-31,40-41
+content/tracks/assembly/concepts/03-control-flow/exemplar.asm
+  s_e2ab65ecf488dc::t_320b315b0802b7 1-31
+content/tracks/python/concepts/01-variables-and-types/stub.py
+  s_e2ab65ecf488dc::t_17212b19a8cc60 1-28
+content/tracks/rust/concepts/04-structs-and-enums/structs_and_enums_test.rs
+  s_e2ab65ecf488dc::t_4a05939e5d2c71 1-81
+content/tracks/terraform/concepts/01-providers-and-resources/stub.tf
+  s_e2ab65ecf488dc::t_95c63429849d54 1-6,8-12,14-16,18-24,27
+  s_e2ab65ecf488dc::t_e15b3a15c84396 7,13,17,25-26
+content/tracks/dsa-python/concepts/01-two-pointers/stub.py
+  s_e2ab65ecf488dc::t_0dfb8f67d47d2d 1-2,5-10,12-14,22-25
+  s_e2ab65ecf488dc::t_9622765197c791 3-4,11,15-21,26-28
+content/tracks/shell/concepts/05-arrays/config.json
+  s_e2ab65ecf488dc::t_fb365d1d5b4dc5 1-7
+content/tracks/dsa-typescript/concepts/10-tree-bfs/tree-bfs_test.ts
+  s_e2ab65ecf488dc::t_0b61bfd50f77c3 2-44,47,49-54,56-59,61-63,66-67,70,72-81,85-87,117-120
+  s_e2ab65ecf488dc::t_a5fcbfd5dc633a 1,45-46,48,55,60,64-65,68-69,71,82-84,88-112,115
+  s_e2ab65ecf488dc::t_c04c2f749d515e 113-114,116
+content/tracks/terraform/concepts/03-data-sources/instructions.md
+  s_e2ab65ecf488dc::t_624698b56c72bd 1-99
+content/tracks/kotlin/concepts/09-higher-order-functions/stub.kt
+  s_e2ab65ecf488dc::t_a52191e3b49b76 1-39
+content/tracks/dsa-typescript/concepts/15-dynamic-programming-1d/dynamic-programming-1d_test.ts
+  s_e2ab65ecf488dc::t_d23d10c0aab07f 1-96
+content/tracks/dsa-java/concepts/19-dynamic-programming-2d/stub.java
+  s_e2ab65ecf488dc::t_8412827cd855c3 1-23
+content/tracks/elixir/concepts/02-pattern-matching/config.json
+  s_e2ab65ecf488dc::t_e7ef30b3d8e11e 1-7
+content/tracks/dsa-python/concepts/01-two-pointers/exemplar.py
+  s_e2ab65ecf488dc::t_8af1420136e870 3,23,25-26,32-56
+  s_e2ab65ecf488dc::t_3067e9ab57f429 1-2,4-22,24,27-31
+content/tracks/dsa-python/concepts/10-tree-bfs/config.json
+  s_e2ab65ecf488dc::t_f789c13fe3d35d 1-4,6-7
+  s_e2ab65ecf488dc::t_cb940807acda36 5
+content/tracks/dsa-javascript/concepts/16-backtracking/instructions.md
+  s_e2ab65ecf488dc::t_c39418f5081a07 1-8,10-11,19-20,22-26,28-30,32-38,40-56,58-65,67,69-78,84,87-88,93-95,97-100,107-108,111-113,118-122,124-125,128-131,133-134,137-140,142-143,147
+  s_e2ab65ecf488dc::t_9200c5098e81e6 9,12-18,21,27,31,39,57,66,68,79-83,85-86,89-92,96,101-106,109-110,114-117,123,126-127,132,135-136,141,144-146
+content/tracks/ruby/concepts/02-methods-and-blocks/instructions.md
+  s_e2ab65ecf488dc::t_de6597ba77facc 1-131
+content/tracks/ruby/concepts/07-exception-handling/config.json
+  s_e2ab65ecf488dc::t_4d14bb7b163a3e 1-7
+content/tracks/dsa-java/concepts/11-binary-search-trees/stub.java
+  s_e2ab65ecf488dc::t_d65e8f728c3a4d 1-2,12,14,17,19
+  s_e2ab65ecf488dc::t_3cfceed6f3bb30 3-11,13,15-16,18,20-21
+content/tracks/dsa-typescript/concepts/13-graphs-bfs-dfs/stub.ts
+  s_e2ab65ecf488dc::t_da305918d85c52 3-4,6,10-11,13,17-28
+  s_e2ab65ecf488dc::t_5ddd7c832ecbe8 1-2,5,7-9,12,14-16
+content/tracks/dsa-java/concepts/14-greedy-algorithms/exemplar.java
+  s_e2ab65ecf488dc::t_0a0ead8cbe0693 16,29-41,49
+  s_e2ab65ecf488dc::t_2cff3d8c2fdd9e 1-15,17-28,42-48,50-51
+content/tracks/dsa-python/concepts/11-binary-search-trees/instructions.md
+  s_e2ab65ecf488dc::t_bf26c6c9beb702 3,5,7,9,11,13,27,37,43,46,48,50-62,64,66,71-82,84-102,110,114-116,121-122,125
+  s_e2ab65ecf488dc::t_8e637ee95c1cc6 1-2,4,6,8,10,12,14-26,28-36,38-42,44-45,47,49,63,65,67-70,83,103-109,111-113,117-120,123-124
+content/tracks/dsa-python/concepts/04-binary-search/config.json
+  s_e2ab65ecf488dc::t_d8efe022ceab11 1-4,6-7
+  s_e2ab65ecf488dc::t_3bb46130826941 5
+content/tracks/assembly/concepts/06-memory-and-addressing/config.json
+  s_e2ab65ecf488dc::t_830e0214992816 1
+content/tracks/kotlin/concepts/10-interfaces-and-delegation/stub.kt
+  s_e2ab65ecf488dc::t_18fa8328f1ae8d 1-18
+content/tracks/ruby/concepts/01-variables-and-types/instructions.md
+  s_e2ab65ecf488dc::t_7cccbd2435f556 1-142
+content/tracks/elixir/concepts/01-modules-and-functions/exemplar.ex
+  s_e2ab65ecf488dc::t_5c2b39a38d08ac 1-26
+content/tracks/terraform/concepts/01-providers-and-resources/instructions.md
+  s_e2ab65ecf488dc::t_e5c6d126d691a0 1-91
+content/tracks/assembly/concepts/09-string-operations/string_operations_test.asm
+  s_e2ab65ecf488dc::t_3caa2ebfe2349a 1-169
+content/tracks/dsa-typescript/concepts/01-two-pointers/config.json
+  s_e2ab65ecf488dc::t_4604702b6e3cf0 1-7
+content/tracks/assembly/config.json
+  s_e2ab65ecf488dc::t_b4c6e3207d4b7e 1-7
+content/tracks/dsa-java/concepts/05-hash-maps-and-sets/exemplar.java
+  s_e2ab65ecf488dc::t_0bc8966d853bff 1-3,5-31,47-49,51-52
+  s_e2ab65ecf488dc::t_ff168b3374c935 4,32-46,50
+content/tracks/shell/concepts/01-variables-and-strings/variables-and-strings_test.sh
+  s_e2ab65ecf488dc::t_52b3a9f5b8c14a 1-36
+content/tracks/rust/concepts/02-ownership/stub.rs
+  s_e2ab65ecf488dc::t_69fb31c39c1cd2 1-26
+content/tracks/helm/concepts/10-production-patterns/instructions.md
+  s_e2ab65ecf488dc::t_9aeadb0f4950d8 1-111
+content/tracks/shell/concepts/02-control-flow/control-flow_test.sh
+  s_e2ab65ecf488dc::t_ab27d9570176c8 1-28,31-49
+  s_e2ab65ecf488dc::t_b7d33c06bb76c6 29-30
+content/tracks/ruby/concepts/03-collections/stub.rb
+  s_e2ab65ecf488dc::t_9e28c92f8458ca 1-22
+content/tracks/ruby/concepts/01-variables-and-types/variables-and-types_test.rb
+  s_e2ab65ecf488dc::t_a56666af705734 1-51
+content/tracks/assembly/concepts/02-arithmetic-and-flags/exemplar.asm
+  s_e2ab65ecf488dc::t_296587d12e4995 1-38
+content/tracks/python/concepts/06-decorators/stub.py
+  s_e2ab65ecf488dc::t_7070a1b3751cd0 1-47
+content/tracks/helm/concepts/05-named-templates/stub.yaml
+  s_e2ab65ecf488dc::t_e4c365a3d4dca8 1-41
+content/tracks/rust/concepts/03-borrowing-and-references/stub.rs
+  s_e2ab65ecf488dc::t_0aad804beec0a9 1-26
+content/tracks/shell/concepts/08-file-operations/instructions.md
+  s_e2ab65ecf488dc::t_5217d2562417f4 1-83
+content/tracks/python/concepts/02-functions/config.json
+  s_e2ab65ecf488dc::t_5c6764bb120104 1-7
+content/tracks/helm/concepts/03-built-in-objects/config.json
+  s_e2ab65ecf488dc::t_49482dee05a38f 1-7
+content/tracks/helm/concepts/02-templates-and-values/exemplar.yaml
+  s_e2ab65ecf488dc::t_163112b549f920 1-27
+content/tracks/kotlin/concepts/06-sealed-classes-and-when/instructions.md
+  s_e2ab65ecf488dc::t_969aaaa64925fa 1-107
+content/tracks/helm/concepts/01-chart-structure/exemplar.yaml
+  s_e2ab65ecf488dc::t_a0c20603190ea0 1-24
+content/tracks/rust/concepts/05-pattern-matching/exemplar.rs
+  s_e2ab65ecf488dc::t_bffc42bbcae15a 1-40
+content/tracks/dsa-python/concepts/06-stacks/instructions.md
+  s_e2ab65ecf488dc::t_ac25fc9b3897af 1-2,4,6,8,10,12-26,28,31-33,35-37,39-42,44,46,48,63,67,69-73,101-109,116-121
+  s_e2ab65ecf488dc::t_4a39b19c9c5dbd 3,5,7,9,11,27,29-30,34,38,43,45,47,49-62,64-66,68,74-100,110-115,122-124
+content/tracks/dsa-javascript/concepts/07-queues-and-deques/instructions.md
+  s_e2ab65ecf488dc::t_3ce55ac5519d58 1-2,4,6,8,10,12,14-15,17,20,22-24,26,28-29,34-36,38,40,51,54-57,74,91-94,96-101,103,105-107,122
+  s_e2ab65ecf488dc::t_2f9cec9a28af67 3,5,7,9,11,13,16,18-19,21,25,27,30-33,37,39,41-50,52-53,58-73,75-90,95,102,104,108-121
+content/tracks/dsa-typescript/concepts/08-linked-list-patterns/linked-list-patterns_test.ts
+  s_e2ab65ecf488dc::t_d0091c138feabb 2-18,22-44,49-50,53-55,57-58,60-61,64-70,75-82,84-86,88-92,94,103-104,107-108,111-112,117-118,123-124,127-130
+  s_e2ab65ecf488dc::t_1c68620ac66fed 1,19-21,45-48,51-52,56,59,62-63,71-74,83,87,93,95-102,105-106,109-110,113-116,119-122,125-126
+content/tracks/ruby/concepts/06-blocks-procs-lambdas/config.json
+  s_e2ab65ecf488dc::t_1b8e5b37a5c5c4 1-7
+content/tracks/ruby/concepts/10-file-io-and-stdlib/instructions.md
+  s_e2ab65ecf488dc::t_5fdd3fd3bc5c43 1-154
+content/tracks/kotlin/concepts/09-higher-order-functions/instructions.md
+  s_e2ab65ecf488dc::t_f3177bd7fc6e6d 1-113
+content/tracks/dsa-typescript/concepts/03-prefix-sums/instructions.md
+  s_e2ab65ecf488dc::t_9da2fae905b058 3,5,7,9,11,22-25,27-39,42,44,46-64,67-76,78-81,83-100,106,108,111,116,119
+  s_e2ab65ecf488dc::t_0dac0b910f7193 1-2,4,6,8,10,12-21,26,40-41,43,45,65-66,77,82,101-105,107,109-110,112-115,117-118,120-121
+content/tracks/dsa-java/concepts/06-stacks/SolutionTest.java
+  s_e2ab65ecf488dc::t_585db294d6c278 1-12,18-19,25-26,50-54
+  s_e2ab65ecf488dc::t_f9357eb7c1d797 13-17,20-24,27-49
+content/tracks/helm/concepts/02-templates-and-values/config.json
+  s_e2ab65ecf488dc::t_256807f2bb1b4f 1-7
+content/tracks/ruby/concepts/08-metaprogramming/exemplar.rb
+  s_e2ab65ecf488dc::t_b89e82f2a92493 1-45
+content/tracks/dsa-typescript/concepts/02-sliding-window/stub.ts
+  s_e2ab65ecf488dc::t_553645a8132343 1-4,7-10,12,14-16
+  s_e2ab65ecf488dc::t_52552a65f5d1da 5-6,11,13,17-27
+content/tracks/rust/config.json
+  s_e2ab65ecf488dc::t_dc11f55f858690 1-7
+content/tracks/dsa-javascript/concepts/05-hash-maps-and-sets/exemplar.js
+  s_e2ab65ecf488dc::t_33b4fdc2cb4f74 5-6,12,22-23,37-56,59-61
+  s_e2ab65ecf488dc::t_069f75fc1d6470 1-4,7-11,13-21,24-36,57-58,62-64
+content/tracks/dsa-typescript/concepts/11-binary-search-trees/instructions.md
+  s_e2ab65ecf488dc::t_0ac7f350f22fe8 1-2,4,6,8,10,12,57-58,72-74,76-78,85,87,113,116-124,127-129,132-133
+  s_e2ab65ecf488dc::t_e3e22f6f627f78 3,5,7,9,11,13-56,59-71,75,79-84,86,88-112,114-115,125-126,130-131,134-137
+content/tracks/dsa-python/concepts/05-hash-maps-and-sets/instructions.md
+  s_e2ab65ecf488dc::t_b64755b6b54ff3 1-2,4,6,8,10,12-14,16-19,21-23,25,28-33,35-36,54,76,78,80,86,88,90,92,94-98,101-102,109-111
+  s_e2ab65ecf488dc::t_179421526296fe 3,5,7,9,11,15,20,24,26-27,34,37-53,55-75,77,79,81-85,87,89,91,93,99-100,103-108,112-118
+content/tracks/rust/concepts/04-structs-and-enums/exemplar.rs
+  s_e2ab65ecf488dc::t_40c2e9479ad375 1-45
+content/tracks/dsa-java/concepts/12-heaps-and-priority-queues/config.json
+  s_e2ab65ecf488dc::t_a9fe2da934eab5 1-7
+content/tracks/dsa-python/concepts/16-backtracking/exemplar.py
+  s_e2ab65ecf488dc::t_1644a7fb219475 1-50
+content/tracks/dsa-typescript/concepts/19-dynamic-programming-2d/config.json
+  s_e2ab65ecf488dc::t_23cf8e6261d623 1-7
+content/tracks/dsa-java/concepts/15-dynamic-programming-1d/instructions.md
+  s_e2ab65ecf488dc::t_3a45f4b698a0bd 3,5,7,9,11,26,28,42-43,45,50-51,61,63,65-69,71,73-76,78,80,82,84-98,104-105,108-110,113-115
+  s_e2ab65ecf488dc::t_9200a3161aba6e 1-2,4,6,8,10,12-25,27,29-41,44,46-49,52-60,62,64,70,72,77,79,81,83,99-103,106-107,111-112,116-117
+content/tracks/ruby/config.json
+  s_e2ab65ecf488dc::t_287ef202191f4a 1-7
+content/tracks/python/concepts/07-error-handling/config.json
+  s_e2ab65ecf488dc::t_40d38669fdf68c 1-7
+content/tracks/rust/concepts/09-closures-and-iterators/closures_and_iterators_test.rs
+  s_e2ab65ecf488dc::t_07f6916432c32c 1-81
+content/tracks/ruby/concepts/09-modules-and-mixins/exemplar.rb
+  s_e2ab65ecf488dc::t_c7ee37c699bc9c 1-44
+content/tracks/elixir/concepts/08-enum-and-streams/exemplar.ex
+  s_e2ab65ecf488dc::t_1fee6b2246d534 1-44
+content/tracks/dsa-typescript/concepts/05-hash-maps-and-sets/stub.ts
+  s_e2ab65ecf488dc::t_50e664fb937ed5 4,6,16-26
+  s_e2ab65ecf488dc::t_c10d162501a566 1-3,5,7-15
+content/tracks/dsa-python/concepts/06-stacks/exemplar.py
+  s_e2ab65ecf488dc::t_165c336fc664b0 1-16,18-25
+  s_e2ab65ecf488dc::t_18c9b729248a54 17,26-38
+content/tracks/dsa-python/concepts/09-tree-dfs/config.json
+  s_e2ab65ecf488dc::t_c5910fe88dc0c0 1-4,6-7
+  s_e2ab65ecf488dc::t_157ce9c2e6083d 5
+content/tracks/terraform/concepts/06-count-and-for-each/config.json
+  s_e2ab65ecf488dc::t_f3192df628d3a5 1-7
+content/tracks/dsa-java/concepts/10-tree-bfs/instructions.md
+  s_e2ab65ecf488dc::t_096c65ae609b18 3,5,7,9,11-12,22,35-36,38,44-61,63-66,69,73,76-77,81-82,88,90-94,96,98,100-103,107,109,111-114,116,118-125,137,140-141,144-145,148-151
+  s_e2ab65ecf488dc::t_454c004d7825ab 1-2,4,6,8,10,13-21,23-34,37,39-43,62,67-68,70-72,74-75,78-80,83-87,89,95,97,99,104-106,108,110,115,117,126-136,138-139,142-143,146-147
+content/tracks/dsa-python/concepts/10-tree-bfs/tree-bfs_test.py
+  s_e2ab65ecf488dc::t_83dc7db3e13d65 1,3-18,53-56
+  s_e2ab65ecf488dc::t_6e827ab26cefb3 2,19-52
+content/tracks/ruby/concepts/10-file-io-and-stdlib/file-io-and-stdlib_test.rb
+  s_e2ab65ecf488dc::t_6c144d2eb08fba 1-76
+content/tracks/dsa-typescript/concepts/12-heaps-and-priority-queues/config.json
+  s_e2ab65ecf488dc::t_09ce83119ce988 1-7
+content/tracks/dsa-python/concepts/16-backtracking/config.json
+  s_e2ab65ecf488dc::t_bf814884dba51b 5
+  s_e2ab65ecf488dc::t_987ea595aefbc9 1-4,6-7
+apps/web/src/app/visualizer/page.tsx
+  s_e2ab65ecf488dc::t_79f2bd9a0f5f62 6-7,9-13,15-22,24,33
+  s_e2ab65ecf488dc::t_9561c5b660402a 1-5,8,14,23,25-32,34-50
+content/tracks/dsa-java/concepts/16-backtracking/exemplar.java
+  s_e2ab65ecf488dc::t_57f4e8f240aecf 1-70
+content/tracks/terraform/concepts/03-data-sources/config.json
+  s_e2ab65ecf488dc::t_356794b0fbb263 1-7
+content/tracks/dsa-java/concepts/17-tries/SolutionTest.java
+  s_e2ab65ecf488dc::t_8b42ad691b4f53 3-11,13-14,19-20,24-26,36-37,41,67-71
+  s_e2ab65ecf488dc::t_474c2bcfbcab71 1-2,12,15-18,21-23,27-35,38-40,42-66
+content/tracks/kotlin/concepts/05-collections/config.json
+  s_e2ab65ecf488dc::t_65482ed9bdb602 1-7
+content/tracks/rust/concepts/10-concurrency/exemplar.rs
+  s_e2ab65ecf488dc::t_46727abaf2a10f 1-50
+apps/web/src/components/navbar.tsx
+  s_e2ab65ecf488dc::t_f09b1cad34f70f 51
+  s_e2ab65ecf488dc::t_37d251a4f2d8ca 25-37,39,42,47,49-50,52-56,59-62,65-68,72-77
+content/tracks/dsa-javascript/concepts/03-prefix-sums/config.json
+  s_e2ab65ecf488dc::t_290d5c06669613 1-4,6-7
+  s_e2ab65ecf488dc::t_41eb54299d51e1 5
+content/tracks/dsa-java/concepts/05-hash-maps-and-sets/instructions.md
+  s_e2ab65ecf488dc::t_db2f19be9897e6 1-2,4,6,8,10,12-13,19,21-23,25,27-28,55-56,58,61,63,69,71,76,78,80,82,84,89,91,100-101,103-104,108-109,113-114
+  s_e2ab65ecf488dc::t_4715523b22ae3f 3,5,7,9,11,14-18,20,24,26,29-54,57,59-60,62,64-68,70,72-75,77,79,81,83,85-88,90,92-99,102,105-107,110-112,115-120
+content/tracks/dsa-typescript/concepts/14-greedy-algorithms/exemplar.ts
+  s_e2ab65ecf488dc::t_1bd36bb3bb4370 1-6,8-16,18-21,23-28,48
+  s_e2ab65ecf488dc::t_9154ee323fc4dd 7,17,22,29-47
+content/tracks/dsa-javascript/concepts/15-dynamic-programming-1d/dynamic-programming-1d_test.js
+  s_e2ab65ecf488dc::t_082f9fa785e705 17-23,25-32,34-42
+  s_e2ab65ecf488dc::t_6ffe06a900b45f 1-16,24,33,43-45
+content/tracks/shell/concepts/06-text-processing/stub.sh
+  s_e2ab65ecf488dc::t_6735593c01035b 1-24
+content/tracks/dsa-python/concepts/12-heaps-and-priority-queues/exemplar.py
+  s_e2ab65ecf488dc::t_49a9a6f3d7e6d7 1,5-10,38-76
+  s_e2ab65ecf488dc::t_af4bb266945710 2-4,11-37
+content/tracks/dsa-typescript/concepts/14-greedy-algorithms/instructions.md
+  s_e2ab65ecf488dc::t_155ffc882a0fe6 3,5,7,11-12,23,26,30-31,34,43,48-59,62-65,67-82,84,87-101,103,105-119,121-122,131,136-142
+  s_e2ab65ecf488dc::t_268109c2d92546 1-2,4,6,8-10,13-22,24-25,27-29,32-33,35-42,44-47,60-61,66,83,85-86,102,104,120,123-130,132-135
+content/tracks/dsa-java/concepts/07-queues-and-deques/SolutionTest.java
+  s_e2ab65ecf488dc::t_614d391e37d1a0 13-27,37-52
+  s_e2ab65ecf488dc::t_32fabcc32bb4e6 1-12,28-36,53-57
+content/tracks/kotlin/concepts/02-functions/instructions.md
+  s_e2ab65ecf488dc::t_723d2978e81a1a 1-97
+content/tracks/elixir/concepts/10-macros/config.json
+  s_e2ab65ecf488dc::t_e549c64ee3e423 1-7
+content/tracks/dsa-javascript/concepts/07-queues-and-deques/queues-and-deques_test.js
+  s_e2ab65ecf488dc::t_dfd5ff503d4a74 1,3-16,18-29,31-37,41-42,45-50,52-53,55,57-58,60,66-69,92-95
+  s_e2ab65ecf488dc::t_3ae963fd0b07f7 2,17,30,38-40,43-44,51,54,56,59,61-65,70-91
+content/tracks/ruby/concepts/06-blocks-procs-lambdas/instructions.md
+  s_e2ab65ecf488dc::t_22bbf51dc5ed4f 1-137
+content/tracks/kotlin/concepts/04-null-safety/null-safety_test.kt
+  s_e2ab65ecf488dc::t_d0a7de3409a3c4 1-56
+content/tracks/dsa-javascript/concepts/19-dynamic-programming-2d/exemplar.js
+  s_e2ab65ecf488dc::t_c58d00e14c13c6 1-82
+content/tracks/ruby/concepts/02-methods-and-blocks/methods-and-blocks_test.rb
+  s_e2ab65ecf488dc::t_23c32a7b9e1444 1-48
+content/tracks/dsa-javascript/concepts/17-tries/tries_test.js
+  s_e2ab65ecf488dc::t_d5c1c05d6ccc54 2,17-18,34,59-60,92-94,112-171
+  s_e2ab65ecf488dc::t_353381b4e1c49c 1,3-16,19-33,35-58,61-91,95-111,172-175
+content/tracks/kotlin/concepts/07-generics/generics_test.kt
+  s_e2ab65ecf488dc::t_7ac1614df196e3 1-91
+content/tracks/assembly/concepts/01-registers-and-data-movement/stub.asm
+  s_e2ab65ecf488dc::t_623418c25c65b1 1-22
+content/tracks/dsa-typescript/concepts/04-binary-search/stub.ts
+  s_e2ab65ecf488dc::t_f9a52f15a56ee8 1-4,6-11,13-15,19-21
+  s_e2ab65ecf488dc::t_4c45fad36d1b80 5,12,16-18,22-25
+content/tracks/elixir/concepts/04-maps-and-structs/exemplar.ex
+  s_e2ab65ecf488dc::t_5e7f2096c9ce2b 1-36
+content/tracks/dsa-javascript/concepts/01-two-pointers/two-pointers_test.js
+  s_e2ab65ecf488dc::t_cde343ba5b33dc 2,17-25,41,49-51,54,72-103
+  s_e2ab65ecf488dc::t_956f85b9c70984 1,3-16,26-40,42-48,52-53,55-71,104-107
+content/tracks/helm/concepts/01-chart-structure/config.json
+  s_e2ab65ecf488dc::t_40a260f9a391e7 1-7
+content/tracks/dsa-python/concepts/08-linked-list-patterns/exemplar.py
+  s_e2ab65ecf488dc::t_b2b9fcbc958808 1-42,59-69
+  s_e2ab65ecf488dc::t_2c901d42a6f434 43-58
+packages/ui/src/components/TracePanel.tsx
+  s_e2ab65ecf488dc::t_2cca37c4601d09 1-40,43-115,118-135
+  s_e2ab65ecf488dc::t_e4b9d2ad0f21ad 41-42
+  s_e2ab65ecf488dc::t_c964555123d63e 116
+  s_e2ab65ecf488dc::t_abcbf4a63e14be 117
+apps/sandbox/src/streamer/sse-streamer.ts
+  s_e2ab65ecf488dc::t_f2ae8817afdfd6 41-42
+content/tracks/dsa-typescript/concepts/16-backtracking/instructions.md
+  s_e2ab65ecf488dc::t_291608bee6c158 1-2,4,6,8,10-11,13,15-16,26,42,46,48-49,51,53,73,100,105-106,132,134,141,144-145,149-151,153-155,157,159-160
+  s_e2ab65ecf488dc::t_2dc26b16d89636 3,5,7,9,12,14,17-25,27-41,43-45,47,50,52,54-72,74-99,101-104,107-131,133,135-140,142-143,146-148,152,156,158
+content/tracks/ruby/concepts/09-modules-and-mixins/modules-and-mixins_test.rb
+  s_e2ab65ecf488dc::t_b94ba8a39cf410 1,3-57
+  s_e2ab65ecf488dc::t_a84f33ac5395c3 2
+content/tracks/elixir/concepts/06-error-handling/exemplar.ex
+  s_e2ab65ecf488dc::t_e2b09a29926f51 1-35
+content/tracks/rust/concepts/06-traits/stub.rs
+  s_e2ab65ecf488dc::t_c8091f897a8471 1-43
+content/tracks/elixir/concepts/06-error-handling/error_handling_test.exs
+  s_e2ab65ecf488dc::t_62f204fba41a44 1-83
+content/tracks/python/concepts/10-modules-and-packages/instructions.md
+  s_e2ab65ecf488dc::t_fcfdc9b97040ef 1-117
+content/tracks/kotlin/concepts/08-coroutines/coroutines_test.kt
+  s_e2ab65ecf488dc::t_8459e9dd4fd6d0 1-95
+content/tracks/dsa-java/concepts/05-hash-maps-and-sets/SolutionTest.java
+  s_e2ab65ecf488dc::t_1b53fd61b8172f 1-13,15,17,19,21,24-27,39,53-57
+  s_e2ab65ecf488dc::t_f904e2ed64906b 14,16,18,20,22-23,28-38,40-52
+content/tracks/terraform/concepts/01-providers-and-resources/exemplar.tf
+  s_e2ab65ecf488dc::t_cd54971fb23c67 1-28
+content/tracks/ruby/concepts/09-modules-and-mixins/config.json
+  s_e2ab65ecf488dc::t_7c645947ce78eb 1-7
+content/tracks/ruby/concepts/05-enumerables/stub.rb
+  s_e2ab65ecf488dc::t_2feabe2396e801 1-17
+content/tracks/python/concepts/02-functions/functions_test.py
+  s_e2ab65ecf488dc::t_74941178dba4da 1-54
+content/tracks/ruby/concepts/07-exception-handling/stub.rb
+  s_e2ab65ecf488dc::t_389f4d3fbcb938 1-38
+content/tracks/dsa-typescript/concepts/02-sliding-window/exemplar.ts
+  s_e2ab65ecf488dc::t_4e6077298b6ce3 1-9,12-14,16-25,27-28,30,32-34,73
+  s_e2ab65ecf488dc::t_9273abd5b5391d 10-11,15,26,29,31,35-72
+content/tracks/shell/concepts/07-pipes-and-redirection/stub.sh
+  s_e2ab65ecf488dc::t_25f52f79994da7 1-31
+content/tracks/dsa-typescript/concepts/13-graphs-bfs-dfs/exemplar.ts
+  s_e2ab65ecf488dc::t_70b39d57f57306 31,33,37-38,51-90
+  s_e2ab65ecf488dc::t_e7cd2a4a25dd6d 1-30,32,34-36,39-50,91
+content/tracks/dsa-python/concepts/15-dynamic-programming-1d/stub.py
+  s_e2ab65ecf488dc::t_a6c7de2565e85c 1-27
+content/tracks/dsa-java/concepts/18-union-find/SolutionTest.java
+  s_e2ab65ecf488dc::t_b35b7bbf387dbc 1-13,15-17,19,21-24,26-27,30-43,59-63
+  s_e2ab65ecf488dc::t_d4a18420a344a6 14,18,20,25,28-29,44-58
+content/tracks/ruby/concepts/06-blocks-procs-lambdas/blocks-procs-lambdas_test.rb
+  s_e2ab65ecf488dc::t_92a10821d16ff6 1-27,29-56
+  s_e2ab65ecf488dc::t_82eab16df0b09a 28
+content/tracks/dsa-typescript/concepts/15-dynamic-programming-1d/stub.ts
+  s_e2ab65ecf488dc::t_da4f347802b199 1-24
+content/tracks/kotlin/concepts/05-collections/exemplar.kt
+  s_e2ab65ecf488dc::t_d156cc8a8ef109 1-26
+content/tracks/dsa-python/concepts/09-tree-dfs/instructions.md
+  s_e2ab65ecf488dc::t_ccb5b68422beb6 1-2,4,6,8-10,17-20,29,31-38,40-44,46-50,52,55,68-69,71,73-77,107,109-113,115-121,127-128,130-133
+  s_e2ab65ecf488dc::t_93d8c645b9a7c9 3,5,7,11-16,21-28,30,39,45,51,53-54,56-67,70,72,78-106,108,114,122-126,129,134-135
+content/tracks/dsa-typescript/concepts/11-binary-search-trees/config.json
+  s_e2ab65ecf488dc::t_2f95239edd0d13 1-7
+content/tracks/dsa-javascript/concepts/08-linked-list-patterns/linked-list-patterns_test.js
+  s_e2ab65ecf488dc::t_29341c866c33d3 2,17,24,30-31,35,39,45,49,52,57,61-93
+  s_e2ab65ecf488dc::t_a1a840d3341615 1,3-16,18-23,25-29,32-34,36-38,40-44,46-48,50-51,53-56,58-60,94-97
+content/tracks/dsa-java/concepts/12-heaps-and-priority-queues/SolutionTest.java
+  s_e2ab65ecf488dc::t_c206db87230553 11-28,30,33-35,37-40,43-46,49-50,55,57-59,61-62,66-88
+  s_e2ab65ecf488dc::t_b9f11a6d70e220 1-10,29,31-32,36,41-42,47-48,51-54,56,60,63-65,89-93
+content/tracks/dsa-java/concepts/16-backtracking/instructions.md
+  s_e2ab65ecf488dc::t_71294ce3266911 1-2,4,6,11,15,18-19,21,23-24,28,31-34,37,39-40,42-49,52-55,57,60,63-64,66,68-71,80,82,84,89,91,93,95,100,102,110-115,118-119,122-124,127-128
+  s_e2ab65ecf488dc::t_ca56a529855e12 3,5,7-10,12-14,16-17,20,22,25-27,29-30,35-36,38,41,50-51,56,58-59,61-62,65,67,72-79,81,83,85-88,90,92,94,96-99,101,103-109,116-117,120-121,125-126
+content/tracks/dsa-java/concepts/11-binary-search-trees/instructions.md
+  s_e2ab65ecf488dc::t_6d6ee6b54f9677 3,5,7,9,11-12,21-22,26,28,30,44-68,71-72,74-78,80,82,84-87,89,91,93,95-98,100-109,124-125,128-129,131-134
+  s_e2ab65ecf488dc::t_9a372eeae8cf80 1-2,4,6,8,10,13-20,23-25,27,29,31-43,69-70,73,79,81,83,88,90,92,94,99,110-123,126-127,130,135
+content/tracks/dsa-javascript/concepts/16-backtracking/exemplar.js
+  s_e2ab65ecf488dc::t_5db554b9548280 1-83
+content/tracks/dsa-javascript/concepts/14-greedy-algorithms/greedy-algorithms_test.js
+  s_e2ab65ecf488dc::t_9c91ae957cc243 1,3-16,19-26,28-32,35,37-39,42-46,48-49,51-61,76,86-89
+  s_e2ab65ecf488dc::t_2c47293b0ffe35 2,17-18,27,33-34,36,40-41,47,50,62-75,77-85
+content/tracks/dsa-typescript/concepts/07-queues-and-deques/exemplar.ts
+  s_e2ab65ecf488dc::t_2a9683bc6cf362 1-4,6-29,31-35,73
+  s_e2ab65ecf488dc::t_f3d03774d4059a 5,30,36-72
+content/tracks/rust/concepts/07-generics-and-lifetimes/stub.rs
+  s_e2ab65ecf488dc::t_cb7242cc1fdd4b 1-53
+content/tracks/dsa-javascript/concepts/16-backtracking/stub.js
+  s_e2ab65ecf488dc::t_a992b60b378aeb 1-49
+content/tracks/assembly/concepts/05-procedures/stub.asm
+  s_e2ab65ecf488dc::t_2d664d3f259db9 1-33
+content/tracks/rust/concepts/08-error-handling/instructions.md
+  s_e2ab65ecf488dc::t_ed32646ed8c2c1 1-116
+content/tracks/helm/concepts/09-chart-tests/instructions.md
+  s_e2ab65ecf488dc::t_6d0dfdbdf17eb7 1-77
+content/tracks/elixir/concepts/04-maps-and-structs/stub.ex
+  s_e2ab65ecf488dc::t_d1399e2523e1ee 1-41
+content/tracks/rust/concepts/09-closures-and-iterators/config.json
+  s_e2ab65ecf488dc::t_8c61f5356dd59f 1-7
+content/tracks/assembly/concepts/03-control-flow/stub.asm
+  s_e2ab65ecf488dc::t_ba3c8a81a4948a 1-27
+content/tracks/terraform/concepts/07-modules/config.json
+  s_e2ab65ecf488dc::t_2a2b97473d9217 1-7
+content/tracks/elixir/concepts/10-macros/instructions.md
+  s_e2ab65ecf488dc::t_12c46dfa4d2cfa 1-89
+packages/ui/src/components/CongratsModal.tsx
+  s_e2ab65ecf488dc::t_2c79206c202ec1 4,19,24-25,27,36,38-42,44,46-51,53-57,59
+content/tracks/dsa-javascript/concepts/10-tree-bfs/exemplar.js
+  s_e2ab65ecf488dc::t_fcada9a14548a6 1-11,15-22,24-36,40-43,67-69,71-72,74-75,77-79,82-85,87-92,96-98
+  s_e2ab65ecf488dc::t_be4e42aebd3bfb 12-14,23,37-39,44-66,70,73,76,80-81,86,93-95
+content/tracks/dsa-typescript/concepts/17-tries/instructions.md
+  s_e2ab65ecf488dc::t_6d2224df256e20 1-2,4,6,8,10,12-15,17-19,21-47,49-51,75,86,101,103-104,130,132,137,146,149-150,152-153,155-157
+  s_e2ab65ecf488dc::t_4cb18b1a31db01 3,5,7,9,11,16,20,48,52-74,76-85,87-100,102,105-129,131,133-136,138-145,147-148,151,154,158-167
+content/tracks/python/concepts/02-functions/exemplar.py
+  s_e2ab65ecf488dc::t_d8b35a73757895 1-14
+content/tracks/dsa-java/concepts/03-prefix-sums/instructions.md
+  s_e2ab65ecf488dc::t_9f65241831bf41 1-2,4,6,8,10,12-13,17-19,21,23-24,27,30,32-33,41,43,54,56,61,63,65,67,69,74,76,84-89,93-94,98-99,103-104
+  s_e2ab65ecf488dc::t_c4ad9ee34326e2 3,5,7,9,11,14-16,20,22,25-26,28-29,31,34-40,42,44-53,55,57-60,62,64,66,68,70-73,75,77-83,90-92,95-97,100-102
+content/tracks/kotlin/concepts/08-coroutines/instructions.md
+  s_e2ab65ecf488dc::t_2e438ca286a249 1-101
+content/tracks/assembly/concepts/04-the-stack/stub.asm
+  s_e2ab65ecf488dc::t_e30f9acf8a51ef 1-35
+content/tracks/python/concepts/10-modules-and-packages/config.json
+  s_e2ab65ecf488dc::t_36e4e6969cced0 1-7
+content/tracks/helm/concepts/06-functions-and-pipelines/exemplar.yaml
+  s_e2ab65ecf488dc::t_a4c8e536e1cf15 1-12
+content/tracks/assembly/concepts/09-string-operations/exemplar.asm
+  s_e2ab65ecf488dc::t_1841573fea7736 1-48
+content/tracks/dsa-typescript/concepts/03-prefix-sums/exemplar.ts
+  s_e2ab65ecf488dc::t_616a21ea7002e4 1-3,5-13,15-18,22-26,28-31
+  s_e2ab65ecf488dc::t_28d334f64c6aed 4,14,19-21,27
+content/tracks/dsa-python/concepts/18-union-find/union-find_test.py
+  s_e2ab65ecf488dc::t_a649bcda001b3e 2,19,23,27,29,34,42,44,46-51,55-63,81-99
+  s_e2ab65ecf488dc::t_4ab59ca97258bf 1,3-18,20-22,24-26,28,30-33,35-41,43,45,52-54,64-80,100-103
+content/tracks/dsa-python/concepts/19-dynamic-programming-2d/config.json
+  s_e2ab65ecf488dc::t_8e3162d3f76763 5
+  s_e2ab65ecf488dc::t_2e938ec6b5b155 1-4,6-7
+content/tracks/dsa-javascript/concepts/19-dynamic-programming-2d/stub.js
+  s_e2ab65ecf488dc::t_49d9456e2fb6ca 1-51
+content/tracks/kotlin/concepts/01-variables-and-types/config.json
+  s_e2ab65ecf488dc::t_f75879b256ed57 1-7
+content/tracks/dsa-javascript/concepts/12-heaps-and-priority-queues/instructions.md
+  s_e2ab65ecf488dc::t_7d501913c4231b 1-2,4,6,8,10-16,18-29,31-32,43-46,48,51-57,59-61,63,65,81,83-89,102,122-125,131-141,143-145,157
+  s_e2ab65ecf488dc::t_e512a35c4d92a6 3,5,7,9,17,30,33-42,47,49-50,58,62,64,66-80,82,90-101,103-121,126-130,142,146-156,158-159
+content/tracks/helm/concepts/04-control-flow/config.json
+  s_e2ab65ecf488dc::t_2e523ae2b361ad 1-7
+content/tracks/rust/concepts/07-generics-and-lifetimes/config.json
+  s_e2ab65ecf488dc::t_3dc5ed7ad5ffbe 1-7
+content/tracks/elixir/concepts/05-processes/instructions.md
+  s_e2ab65ecf488dc::t_6b9b9c26500893 1-84
+content/tracks/python/concepts/09-async-await/config.json
+  s_e2ab65ecf488dc::t_5c8cf390318356 1-7
+content/tracks/elixir/concepts/01-modules-and-functions/config.json
+  s_e2ab65ecf488dc::t_ae7b825641b501 1-7
+content/tracks/rust/concepts/03-borrowing-and-references/exemplar.rs
+  s_e2ab65ecf488dc::t_4ab87e5abf6694 1-23
+content/tracks/kotlin/concepts/06-sealed-classes-and-when/stub.kt
+  s_e2ab65ecf488dc::t_c018478eee1e82 1-19
+content/tracks/rust/concepts/03-borrowing-and-references/instructions.md
+  s_e2ab65ecf488dc::t_ef41d9bc0e2154 1-89
+apps/web/src/app/tracks/[trackSlug]/concepts/[conceptSlug]/page.tsx
+  s_e2ab65ecf488dc::t_0299705e6ae94f 153-156
+  s_e2ab65ecf488dc::t_7f399d70e042b2 50
+  s_e2ab65ecf488dc::t_278960eb3dfc23 151-152
+  s_e2ab65ecf488dc::t_dc0fc4ac9a9ca9 129
+  s_e2ab65ecf488dc::t_01bd2c5869dec3 47
+  s_e2ab65ecf488dc::t_81ec6c43c03ced 124-126
+  s_e2ab65ecf488dc::t_716dbd7b8f5026 6
+  s_e2ab65ecf488dc::t_89364ee5753aec 7
+content/tracks/dsa-python/concepts/02-sliding-window/sliding-window_test.py
+  s_e2ab65ecf488dc::t_5623d1a41d0035 2,19-59
+  s_e2ab65ecf488dc::t_2fab7e817d2a4c 1,3-18,60-63
+content/tracks/dsa-javascript/concepts/12-heaps-and-priority-queues/config.json
+  s_e2ab65ecf488dc::t_7ac8f175a60178 1-7
+content/tracks/dsa-python/concepts/03-prefix-sums/prefix-sums_test.py
+  s_e2ab65ecf488dc::t_df02a34841bc58 1-67
+content/tracks/dsa-java/concepts/09-tree-dfs/config.json
+  s_e2ab65ecf488dc::t_3eb99172ca9743 1-7
+content/tracks/dsa-python/concepts/11-binary-search-trees/exemplar.py
+  s_e2ab65ecf488dc::t_b17f7dfb2e6c05 1-17,19-43,57-75
+  s_e2ab65ecf488dc::t_5862512e7cfd35 18,44-56
+content/tracks/terraform/concepts/02-variables-and-outputs/variables-and-outputs_test.sh
+  s_e2ab65ecf488dc::t_033d0762a3dc21 46
+  s_e2ab65ecf488dc::t_67b70d3843cba3 1-14,16-17,19-45,47-50
+  s_e2ab65ecf488dc::t_f2f8e69578d5ed 15,18
+content/tracks/kotlin/concepts/04-null-safety/stub.kt
+  s_e2ab65ecf488dc::t_5393e4d44f7ef5 1-32
+content/tracks/ruby/concepts/10-file-io-and-stdlib/config.json
+  s_e2ab65ecf488dc::t_bd8315cac8d222 1-7
+content/tracks/dsa-java/concepts/12-heaps-and-priority-queues/stub.java
+  s_e2ab65ecf488dc::t_ae9d9f78016984 1-6,9-29,35-45
+  s_e2ab65ecf488dc::t_0826c08507196d 7-8,30-34
+content/tracks/rust/concepts/04-structs-and-enums/config.json
+  s_e2ab65ecf488dc::t_ee3a8ad0123a72 1-7
+content/tracks/kotlin/concepts/03-classes-and-data-classes/classes-and-data-classes_test.kt
+  s_e2ab65ecf488dc::t_99b364b1c9a3e3 1-68
+content/tracks/assembly/concepts/04-the-stack/the_stack_test.asm
+  s_e2ab65ecf488dc::t_6a1f6b1f56ea76 1-142
+content/tracks/python/concepts/07-error-handling/stub.py
+  s_e2ab65ecf488dc::t_e292d1972f85c1 1-44
+content/tracks/dsa-java/concepts/15-dynamic-programming-1d/config.json
+  s_e2ab65ecf488dc::t_ed1b98b90aab92 1-7
+content/tracks/dsa-python/concepts/05-hash-maps-and-sets/config.json
+  s_e2ab65ecf488dc::t_dd0104c298b0b1 1-4,6-7
+  s_e2ab65ecf488dc::t_c633d013b43ef8 5
+content/tracks/rust/concepts/05-pattern-matching/instructions.md
+  s_e2ab65ecf488dc::t_de440f1e6057ba 1-126
+content/tracks/dsa-java/concepts/07-queues-and-deques/exemplar.java
+  s_e2ab65ecf488dc::t_3cb4860e055d5f 1-22,25-28,42,62-72,75-76
+  s_e2ab65ecf488dc::t_b7938309cca420 23-24,29-41,43-61,73-74
+content/tracks/python/concepts/05-comprehensions-and-generators/config.json
+  s_e2ab65ecf488dc::t_feb371f8c240cd 1-7
+content/tracks/rust/concepts/01-variables-and-types/variables_and_types_test.rs
+  s_e2ab65ecf488dc::t_4fe4eb32bad647 1-60
+content/tracks/terraform/concepts/09-backends-and-remote-state/stub.tf
+  s_e2ab65ecf488dc::t_b5164bc675da55 1-4,10-13,15,19-30
+  s_e2ab65ecf488dc::t_8f551605934524 14,16-18
+  s_e2ab65ecf488dc::t_ded8f0c26c86d0 5-9
+content/tracks/assembly/concepts/01-registers-and-data-movement/config.json
+  s_e2ab65ecf488dc::t_3f5951ac868ce0 1
+content/tracks/helm/config.json
+  s_e2ab65ecf488dc::t_d429d0e0417bd2 1-7
+content/tracks/python/concepts/09-async-await/stub.py
+  s_e2ab65ecf488dc::t_9f27c961bc5937 1-29
+content/tracks/assembly/concepts/09-string-operations/instructions.md
+  s_e2ab65ecf488dc::t_0324665cd07c9a 1-116
+content/tracks/helm/concepts/04-control-flow/control-flow_test.sh
+  s_e2ab65ecf488dc::t_a05384d2414b15 1-12,14-15,17-36
+  s_e2ab65ecf488dc::t_f2b5cf63ff52d3 13,16
+content/tracks/shell/concepts/07-pipes-and-redirection/pipes-and-redirection_test.sh
+  s_e2ab65ecf488dc::t_c80f6f45936aa4 1-48
+content/tracks/dsa-javascript/concepts/11-binary-search-trees/config.json
+  s_e2ab65ecf488dc::t_cc2790e7c0af2e 1-7
+content/tracks/ruby/concepts/10-file-io-and-stdlib/exemplar.rb
+  s_e2ab65ecf488dc::t_a23e4da702d1aa 1-38
+content/tracks/terraform/concepts/08-state-management/stub.tf
+  s_e2ab65ecf488dc::t_5b8ec79377bea8 3,6,12,15,19
+  s_e2ab65ecf488dc::t_f25861e7cc31ca 1-2,4-5,7-11,13-14,16-18,20-27
+content/tracks/assembly/concepts/09-string-operations/stub.asm
+  s_e2ab65ecf488dc::t_50bb5b4f7ce61a 1-39
+content/tracks/dsa-javascript/concepts/15-dynamic-programming-1d/exemplar.js
+  s_e2ab65ecf488dc::t_d5c1c00e52e06e 1-65
+content/tracks/rust/concepts/09-closures-and-iterators/instructions.md
+  s_e2ab65ecf488dc::t_b6da75e57010fe 1-96
+content/tracks/dsa-python/concepts/03-prefix-sums/exemplar.py
+  s_e2ab65ecf488dc::t_a25e3e4344403f 1-27
+content/tracks/dsa-java/concepts/06-stacks/instructions.md
+  s_e2ab65ecf488dc::t_0bb672fc70435c 1-2,4,6,8,10,33,41,43,45-46,48,50,53,65,67,69-70,72,78,80,85,87,89,91,96,98,106-108,110-111,114-115,119-120
+  s_e2ab65ecf488dc::t_3564e137146be0 3,5,7,9,11-32,34-40,42,44,47,49,51-52,54-64,66,68,71,73-77,79,81-84,86,88,90,92-95,97,99-105,109,112-113,116-118,121-124
+content/tracks/dsa-javascript/concepts/13-graphs-bfs-dfs/stub.js
+  s_e2ab65ecf488dc::t_011b6405b2da78 9,14,16,20-21,25-39,42,45
+  s_e2ab65ecf488dc::t_e79d0dcaa11fea 1-8,10-13,15,17-19,22-24,40-41,43-44,46-48
+content/tracks/elixir/concepts/01-modules-and-functions/stub.ex
+  s_e2ab65ecf488dc::t_0b494fe52655ae 1-38
+content/tracks/dsa-javascript/concepts/18-union-find/stub.js
+  s_e2ab65ecf488dc::t_0c8c7a662f4b7b 1-60,73,76-84,88-90
+  s_e2ab65ecf488dc::t_c3e8ca11d945b2 61-72,74-75,85-87
+content/tracks/kotlin/concepts/04-null-safety/exemplar.kt
+  s_e2ab65ecf488dc::t_533a4417c636a7 1-22
+content/tracks/assembly/concepts/04-the-stack/exemplar.asm
+  s_e2ab65ecf488dc::t_6db23bed24ad01 1-42
+content/tracks/python/concepts/07-error-handling/instructions.md
+  s_e2ab65ecf488dc::t_62b5015860dafb 1-116
+apps/web/src/app/tracks/[trackSlug]/onboarding/page.tsx
+  s_e2ab65ecf488dc::t_993cb993b4c4dd 44
+  s_e2ab65ecf488dc::t_6edbaae9120d92 17
+  s_e2ab65ecf488dc::t_6b7439c8dddbff 10,31-32,55,60-66,70-71,78-79,84,89-95,116,127,140-146,155-156,160
+content/tracks/dsa-python/concepts/03-prefix-sums/instructions.md
+  s_e2ab65ecf488dc::t_1cee4fee390a76 3,5,7,9,11-14,16,18,24,28,31,33-34,40-42,45,50,52,59-85,91-92,95,98,104,108
+  s_e2ab65ecf488dc::t_3adaf30606ffb3 1-2,4,6,8,10,15,17,19-23,25-27,29-30,32,35-39,43-44,46-49,51,53-58,86-90,93-94,96-97,99-103,105-107
+content/tracks/dsa-typescript/concepts/06-stacks/stub.ts
+  s_e2ab65ecf488dc::t_cbcda1f1b389e2 5,11,15-26
+  s_e2ab65ecf488dc::t_c550f450ec54c8 1-4,6-10,12-14
+content/tracks/kotlin/concepts/10-interfaces-and-delegation/interfaces-and-delegation_test.kt
+  s_e2ab65ecf488dc::t_b69630c65dc3f6 1-110
+content/tracks/assembly/concepts/07-system-calls/instructions.md
+  s_e2ab65ecf488dc::t_fac5044d28a834 1-95
+content/tracks/dsa-python/concepts/11-binary-search-trees/stub.py
+  s_e2ab65ecf488dc::t_b11370847f8a7f 18-19,25,27-33,37,57-61
+  s_e2ab65ecf488dc::t_12f136fe27df96 1-17,20-24,26,34-36,38-56
+content/tracks/terraform/concepts/07-modules/exemplar.tf
+  s_e2ab65ecf488dc::t_02e32e8bedf1ec 1-33
+content/tracks/kotlin/concepts/01-variables-and-types/stub.kt
+  s_e2ab65ecf488dc::t_42d40503cbac39 1-31
+content/tracks/dsa-javascript/concepts/04-binary-search/config.json
+  s_e2ab65ecf488dc::t_3513ef38376d8e 1-4,6-7
+  s_e2ab65ecf488dc::t_d956470e857e72 5
+content/tracks/ruby/concepts/02-methods-and-blocks/exemplar.rb
+  s_e2ab65ecf488dc::t_634697a101cd14 1-25
+content/tracks/terraform/concepts/05-locals-and-depends-on/stub.tf
+  s_e2ab65ecf488dc::t_d93edeca69bea9 1-11,13,15,17-19,21-22,24-26,28-32,34,36
+  s_e2ab65ecf488dc::t_ccc20825501e14 12,14,16,20,23,27,33,35
+content/tracks/python/concepts/08-iterators-and-protocols/iterators_and_protocols_test.py
+  s_e2ab65ecf488dc::t_f8d3bdc4cff0cf 1-22,30-34,39-41,43-44,51-54
+  s_e2ab65ecf488dc::t_2da8e505809376 23-29,35-38,42,45-50
+content/tracks/shell/concepts/10-process-management/instructions.md
+  s_e2ab65ecf488dc::t_ecb71237647311 1-106
+content/tracks/dsa-java/concepts/17-tries/exemplar.java
+  s_e2ab65ecf488dc::t_0e408cdd181476 5-13,16-43,61,63-72,76-77
+  s_e2ab65ecf488dc::t_ecbbccd372bf45 1-4,14-15,44-60,62,73-75
+.claude/agents/content-author.md
+  s_e2ab65ecf488dc::t_12d058815b30f2 16,22-30,34,42-158,160-166,174,186,190-191,193-333,342,347-351,361,365
+content/tracks/dsa-typescript/concepts/05-hash-maps-and-sets/instructions.md
+  s_e2ab65ecf488dc::t_20b940bfe9a2db 3,5,7,9,11,22,25-45,48-49,51,53,55-76,79-93,95,97-111,113-114,118,126,129-134
+  s_e2ab65ecf488dc::t_01ab65e9883b62 1-2,4,6,8,10,12-21,23-24,46-47,50,52,54,77-78,94,96,112,115-117,119-125,127-128
+content/tracks/dsa-python/concepts/08-linked-list-patterns/linked-list-patterns_test.py
+  s_e2ab65ecf488dc::t_c684e9bf839dd4 2,19,30,41-46,48-49,51,58-76
+  s_e2ab65ecf488dc::t_fa81a9b696dce2 1,3-18,20-29,31-40,47,50,52-57,77-80
+content/tracks/rust/concepts/02-ownership/exemplar.rs
+  s_e2ab65ecf488dc::t_952d69e67be0af 1-25
+content/tracks/terraform/concepts/02-variables-and-outputs/stub.tf
+  s_e2ab65ecf488dc::t_c1083dfaef10dc 1-3,5-26
+  s_e2ab65ecf488dc::t_c90c1fecaf6a9e 4
+content/tracks/ruby/concepts/05-enumerables/exemplar.rb
+  s_e2ab65ecf488dc::t_60324edb677944 1,3-23
+  s_e2ab65ecf488dc::t_391baf34146c3b 2
+content/tracks/shell/concepts/04-functions/exemplar.sh
+  s_e2ab65ecf488dc::t_a6c2a471937633 1-34
+content/tracks/dsa-java/concepts/01-two-pointers/instructions.md
+  s_e2ab65ecf488dc::t_fe898778914e24 1-2,4,6,8,10,12-15,22-27,29-34,37-38,66,68-69,71,77,79,84,86,88,90,108-109,111-112,116-117,121-122
+  s_e2ab65ecf488dc::t_dc5db5147dbe73 3,5,7,9,11,16-21,28,35-36,39-65,67,70,72-76,78,80-83,85,87,89,91-107,110,113-115,118-120,123-127
+content/tracks/shell/concepts/05-arrays/instructions.md
+  s_e2ab65ecf488dc::t_264bc8d5be841a 1-89
+content/tracks/ruby/concepts/08-metaprogramming/config.json
+  s_e2ab65ecf488dc::t_52415a3d1b8ea6 1-7
+content/tracks/python/concepts/08-iterators-and-protocols/exemplar.py
+  s_e2ab65ecf488dc::t_297d5bd082fe47 1-17
+apps/web/src/hooks/use-submission.ts
+  s_e2ab65ecf488dc::t_3e7c9f88717c79 38
+  s_e2ab65ecf488dc::t_8303fb82a2f584 56
+  s_e2ab65ecf488dc::t_20637ad074b0a2 72-76
+  s_e2ab65ecf488dc::t_d352357714145a 28
+  s_e2ab65ecf488dc::t_59b34169a75d20 118
+  s_e2ab65ecf488dc::t_34191219039333 50
+  s_e2ab65ecf488dc::t_79608b802ccaf0 32
+  s_e2ab65ecf488dc::t_1dfbaed68d5ba2 16-24
+  s_e2ab65ecf488dc::t_936ba29491528f 121
+infra/grafana/provisioning/dashboards/dashboards.yml
+  s_e2ab65ecf488dc::t_b53ffe67ab70ae 1-8
+content/tracks/dsa-java/concepts/09-tree-dfs/SolutionTest.java
+  s_e2ab65ecf488dc::t_d3a3d9d0335539 13-15,27,29,41-44,48-76,78-87
+  s_e2ab65ecf488dc::t_87dd837c0f6d2c 1-12,16-26,28,30-40,45-47,77,88-92
+content/tracks/dsa-python/concepts/17-tries/config.json
+  s_e2ab65ecf488dc::t_1ea12f64a500d9 5
+  s_e2ab65ecf488dc::t_23bdb815897026 1-4,6-7
+content/tracks/kotlin/concepts/05-collections/stub.kt
+  s_e2ab65ecf488dc::t_3304430a0fb65a 1-34
+apps/sandbox/src/executor/polyglot-runner.ts
+  s_e2ab65ecf488dc::t_56899823a97453 1-5,45-49,52,54,58-60,62-69,98-101,114,120,122-124,126-154,176-196,198,200,203,205-206,208,210,213,215-216,218,220,223,225-226,228,230,238,240-241,243-244,246,251-252,256-258,262-263,268-269,273-275,277-278,282-284,287-289,291,293-298,323,399,407-408,416-417
+  s_e2ab65ecf488dc::t_9d3b512d5c0b50 9-44
+  s_e2ab65ecf488dc::t_5ec825533785a5 359-361,364,366-368,370,374-378
+  s_e2ab65ecf488dc::t_caccf70e714075 398,406
+  s_e2ab65ecf488dc::t_f3e90092f3d8a4 71,79,83-86,88-89
+  s_e2ab65ecf488dc::t_ff6f3d7e4c1917 390
+  s_e2ab65ecf488dc::t_2658fe0057dda1 6-8
+  s_e2ab65ecf488dc::t_6c5b2cb175b3fa 95
+  s_e2ab65ecf488dc::t_fe4b1083561ecf 162,164,167
+  s_e2ab65ecf488dc::t_e4db74f0a7ffbc 70,72-78,80-82,87
+  s_e2ab65ecf488dc::t_4cc15201071ffd 110-113
+  s_e2ab65ecf488dc::t_0c0ff56f79663b 90-93,96-97,117,155-161,163,165-166,168-175,197,207,217,227,229,231-237,239,242,245,247-250,253-255,259,270-272,276,279-281,285-286,290,292,299-322,324-358,362-363,365,371-373,380-386,388-389,391-393,395,397,401-405,409-415
+  s_e2ab65ecf488dc::t_f9d59904c36a71 102-109
+  s_e2ab65ecf488dc::t_8b6b60ffc5bd76 199,201-202,204,209,211-212,214,219,221-222,224
+  s_e2ab65ecf488dc::t_dfa636f923ca17 369,379
+  s_e2ab65ecf488dc::t_4b0dc726184cd6 400
+  s_e2ab65ecf488dc::t_b11a0c12b1e303 94
+  s_e2ab65ecf488dc::t_50bb17bdc76345 260-261,264-267
+  s_e2ab65ecf488dc::t_860173b66169ce 50-51,53,55-57,61
+  s_e2ab65ecf488dc::t_83431899592a3f 387,394,396
+  s_e2ab65ecf488dc::t_d8b591994a8f6a 115-116,118-119,121,125
+content/tracks/python/concepts/05-comprehensions-and-generators/comprehensions_and_generators_test.py
+  s_e2ab65ecf488dc::t_734299665749e9 1,3-29,31-33,48-49,56-59
+  s_e2ab65ecf488dc::t_9e84effef305e2 2,30,34-47,50-55
+content/tracks/helm/concepts/05-named-templates/instructions.md
+  s_e2ab65ecf488dc::t_1a07420a44b7a7 1-81
+content/tracks/dsa-java/config.json
+  s_e2ab65ecf488dc::t_04b84f37034140 1-7
+content/tracks/dsa-python/concepts/02-sliding-window/stub.py
+  s_e2ab65ecf488dc::t_09676147ca5f9a 9,13-20,22-27
+  s_e2ab65ecf488dc::t_58c880ba7322df 1-8,10-12,21
+content/tracks/helm/concepts/08-dependencies/dependencies_test.sh
+  s_e2ab65ecf488dc::t_65b24720a1094c 1-12,14-15,17-40
+  s_e2ab65ecf488dc::t_f2b5cf63ff52d3 13,16
+content/tracks/elixir/concepts/02-pattern-matching/exemplar.ex
+  s_e2ab65ecf488dc::t_1bc32bd57278f9 1-24
+content/tracks/dsa-javascript/concepts/06-stacks/config.json
+  s_e2ab65ecf488dc::t_2fcc3b08245f90 1-4,6-7
+  s_e2ab65ecf488dc::t_7c9965e114128e 5
+content/tracks/dsa-python/concepts/12-heaps-and-priority-queues/heaps-and-priority-queues_test.py
+  s_e2ab65ecf488dc::t_7154e74624da6b 2,19,21,30-32,36,39-61
+  s_e2ab65ecf488dc::t_84c60712bd1cb9 1,3-18,20,22-29,33-35,37-38,62-65
+content/tracks/dsa-java/concepts/13-graphs-bfs-dfs/stub.java
+  s_e2ab65ecf488dc::t_b3aa03224a0121 1-15,21-30,33-34
+  s_e2ab65ecf488dc::t_950c298be46cde 16-20,31-32
+content/tracks/elixir/config.json
+  s_e2ab65ecf488dc::t_c9c9bf4877d865 1-7
+content/tracks/python/concepts/06-decorators/instructions.md
+  s_e2ab65ecf488dc::t_1f4d6f7d1d1e2e 1-96
+content/tracks/shell/concepts/01-variables-and-strings/config.json
+  s_e2ab65ecf488dc::t_5820291030b6f8 1-7
+content/tracks/dsa-javascript/concepts/07-queues-and-deques/config.json
+  s_e2ab65ecf488dc::t_f32661ce635875 1-7
+content/tracks/dsa-java/concepts/15-dynamic-programming-1d/exemplar.java
+  s_e2ab65ecf488dc::t_b5020091a98399 1-45
+content/tracks/elixir/concepts/01-modules-and-functions/instructions.md
+  s_e2ab65ecf488dc::t_4184fa23bc64ca 1-86
+content/tracks/ruby/concepts/01-variables-and-types/config.json
+  s_e2ab65ecf488dc::t_68b0d03d79e9c0 1-7
+content/tracks/dsa-typescript/concepts/12-heaps-and-priority-queues/stub.ts
+  s_e2ab65ecf488dc::t_1be8752a3886f6 1-2,12,14-22,24-26,28-41,43-45,47-51,53,61-62,64
+  s_e2ab65ecf488dc::t_7c2efa614ab226 3-11,13,23,27,42,46,52,54-60,63,65-66
+content/tracks/elixir/concepts/03-lists-and-recursion/instructions.md
+  s_e2ab65ecf488dc::t_662f4c8ed1e294 1-81
+content/tracks/kotlin/concepts/06-sealed-classes-and-when/config.json
+  s_e2ab65ecf488dc::t_a4c5ef4a285263 1-7
+content/tracks/shell/concepts/10-process-management/process-management_test.sh
+  s_e2ab65ecf488dc::t_3322ef0f51aec2 1-45
+content/tracks/dsa-javascript/concepts/19-dynamic-programming-2d/config.json
+  s_e2ab65ecf488dc::t_529c024299ea06 1-7
+content/tracks/helm/concepts/10-production-patterns/stub.yaml
+  s_e2ab65ecf488dc::t_5e7fe68d784245 1-25
+content/tracks/assembly/concepts/08-arrays-and-loops/stub.asm
+  s_e2ab65ecf488dc::t_ec2772811555b0 1-41
+content/tracks/dsa-typescript/concepts/03-prefix-sums/stub.ts
+  s_e2ab65ecf488dc::t_5ae6a1a5b3ccc4 5,11,17,21-24
+  s_e2ab65ecf488dc::t_9bc24a9cc8de10 1-4,6-10,12-16,18-20
+content/tracks/dsa-python/concepts/14-greedy-algorithms/exemplar.py
+  s_e2ab65ecf488dc::t_61a6b549088632 1-3,15,19,26-33
+  s_e2ab65ecf488dc::t_ca1f23f376bc23 4-14,16-18,20-25
+content/tracks/assembly/concepts/01-registers-and-data-movement/instructions.md
+  s_e2ab65ecf488dc::t_fce97de92ac6c9 1-79
+content/tracks/python/concepts/04-classes-and-objects/stub.py
+  s_e2ab65ecf488dc::t_ef7ce7c2aa5b70 1-37
+content/tracks/rust/concepts/10-concurrency/stub.rs
+  s_e2ab65ecf488dc::t_bbe1e44b8d8ab3 1-21
+content/tracks/dsa-javascript/concepts/06-stacks/exemplar.js
+  s_e2ab65ecf488dc::t_5de9655aaf2523 5,16,24-26,32,43-70,75
+  s_e2ab65ecf488dc::t_6b24f468a50432 1-4,6-15,17-23,27-31,33-42,71-74,76-78
+content/tracks/dsa-java/concepts/17-tries/config.json
+  s_e2ab65ecf488dc::t_728893840d8429 1-7
+content/tracks/kotlin/concepts/03-classes-and-data-classes/instructions.md
+  s_e2ab65ecf488dc::t_854ddfefe39a50 1-103
+content/tracks/dsa-python/concepts/17-tries/exemplar.py
+  s_e2ab65ecf488dc::t_65bd02fc244167 36-63
+  s_e2ab65ecf488dc::t_9498524a6d9eb7 1-35
+content/tracks/dsa-typescript/concepts/05-hash-maps-and-sets/exemplar.ts
+  s_e2ab65ecf488dc::t_208f3f806933a3 1-3,5-10,12-20,23-30,51
+  s_e2ab65ecf488dc::t_7c78adaea2efa5 4,11,21-22,31-50
+content/tracks/rust/concepts/07-generics-and-lifetimes/generics_and_lifetimes_test.rs
+  s_e2ab65ecf488dc::t_29112023f57bd0 1-88
+content/tracks/dsa-javascript/concepts/03-prefix-sums/exemplar.js
+  s_e2ab65ecf488dc::t_b18c653b630b46 1-53
+content/tracks/helm/concepts/02-templates-and-values/stub.yaml
+  s_e2ab65ecf488dc::t_75117b01b5dcd2 1-34
+content/tracks/ruby/concepts/04-classes-and-modules/classes-and-modules_test.rb
+  s_e2ab65ecf488dc::t_b266cb9d1fbee2 1-47
+content/tracks/dsa-java/concepts/02-sliding-window/stub.java
+  s_e2ab65ecf488dc::t_6b9cade6d0f18b 1-14,20-23,25-26
+  s_e2ab65ecf488dc::t_ad52854417619d 15-19,24
+content/tracks/dsa-typescript/concepts/05-hash-maps-and-sets/config.json
+  s_e2ab65ecf488dc::t_2c17c6312d40a9 1-7
+content/tracks/shell/concepts/04-functions/instructions.md
+  s_e2ab65ecf488dc::t_c2f1b261e4a410 1-114
+content/tracks/dsa-python/concepts/01-two-pointers/instructions.md
+  s_e2ab65ecf488dc::t_409cc0787d688f 1-2,4,6,8,10,12,14,17-24,26,28-30,32,34,49,51,76,78-82,114-116,118-120,123-124,132-139,141-142
+  s_e2ab65ecf488dc::t_91c9fb3821717f 3,5,7,9,11,13,15-16,25,27,31,33,35-48,50,52-75,77,83-113,117,121-122,125-131,140,143-146
+content/tracks/dsa-javascript/concepts/02-sliding-window/exemplar.js
+  s_e2ab65ecf488dc::t_9abf4538bf6d77 1-4,7-15,17-25,28-43,90-93,95-97
+  s_e2ab65ecf488dc::t_85f430779408cb 5-6,16,26-27,44-89,94
+content/tracks/dsa-java/concepts/02-sliding-window/SolutionTest.java
+  s_e2ab65ecf488dc::t_0670a899a4dec0 1-10,18-23,25-27,29,46-50
+  s_e2ab65ecf488dc::t_c4ba0d37e8687b 11-17,24,28,30-45
+apps/web/tsconfig.tsbuildinfo
+  s_e2ab65ecf488dc::t_e3efe0c9a66a86 1
+infra/grafana/provisioning/datasources/datasources.yml
+  s_e2ab65ecf488dc::t_1f939da33767d0 1-17
+content/tracks/dsa-javascript/concepts/06-stacks/stub.js
+  s_e2ab65ecf488dc::t_77ae9f132a3699 1-8,10-13,15-18,20-22,35-38,40-42
+  s_e2ab65ecf488dc::t_858485a3e8e439 9,14,19,23-34,39
+content/tracks/dsa-python/concepts/17-tries/tries_test.py
+  s_e2ab65ecf488dc::t_038e6b6bb0f6f1 1,3-18,20-21,27,31-33,36-37,61-64
+  s_e2ab65ecf488dc::t_0937e5c5179380 2,19,22-26,28-30,34-35,38-60
+content/tracks/terraform/concepts/09-backends-and-remote-state/backends-and-remote-state_test.sh
+  s_e2ab65ecf488dc::t_1be23992e37053 1-14,16-17,19-49
+  s_e2ab65ecf488dc::t_f2f8e69578d5ed 15,18
+content/tracks/elixir/concepts/06-error-handling/config.json
+  s_e2ab65ecf488dc::t_ff2b3d615ed3f8 1-7
+content/tracks/kotlin/concepts/02-functions/functions_test.kt
+  s_e2ab65ecf488dc::t_8f3bc9f994c556 1-48
+apps/api/src/router/placement.ts
+  s_e2ab65ecf488dc::t_e3888eb4c2519f 17-25
+  s_e2ab65ecf488dc::t_4565d815065f19 74
+content/tracks/assembly/concepts/03-control-flow/control_flow_test.asm
+  s_e2ab65ecf488dc::t_e1681e7f6d4fd9 1-98
+content/tracks/rust/concepts/01-variables-and-types/exemplar.rs
+  s_e2ab65ecf488dc::t_63a9e56cf92e96 1-20
+content/tracks/terraform/concepts/02-variables-and-outputs/instructions.md
+  s_e2ab65ecf488dc::t_afd7a99bdf7622 1-86
+content/tracks/elixir/concepts/05-processes/exemplar.ex
+  s_e2ab65ecf488dc::t_8160fd849acd01 1-39
+content/tracks/helm/concepts/05-named-templates/named-templates_test.sh
+  s_e2ab65ecf488dc::t_f2b5cf63ff52d3 13,16
+  s_e2ab65ecf488dc::t_af303c0aff5d39 1-12,14-15,17-37
+content/tracks/shell/concepts/03-loops/exemplar.sh
+  s_e2ab65ecf488dc::t_cda9a991a6817a 1-40
+content/tracks/kotlin/concepts/07-generics/stub.kt
+  s_e2ab65ecf488dc::t_5d2e5259960dc0 1-50
+content/tracks/dsa-javascript/concepts/05-hash-maps-and-sets/stub.js
+  s_e2ab65ecf488dc::t_3b24c743c862fa 26-36,38-39,41-43
+  s_e2ab65ecf488dc::t_7d40d21024edd9 1-25,37,40,44-46
+content/tracks/dsa-python/concepts/08-linked-list-patterns/stub.py
+  s_e2ab65ecf488dc::t_9ae1346aafec1a 1-21,23-27,29-31,38-41,43-54
+  s_e2ab65ecf488dc::t_b7244a8a35601c 22,28,32-37,42,55-59
+content/tracks/dsa-java/concepts/08-linked-list-patterns/instructions.md
+  s_e2ab65ecf488dc::t_e312ca35e22394 1-2,4,6,8,10,13-16,19-21,23-24,27,29-35,37-41,43,45,48,56,59-60,69,71,76,78,80,82,84,89,91,99-101,103-110,112-113,116-117,119-120,124
+  s_e2ab65ecf488dc::t_cf898876ef5702 3,5,7,9,11-12,17-18,22,25-26,28,36,42,44,46-47,49-55,57-58,61-68,70,72-75,77,79,81,83,85-88,90,92-98,102,111,114-115,118,121-123
+content/tracks/terraform/concepts/10-workspaces-and-environments/exemplar.tf
+  s_e2ab65ecf488dc::t_036ef67ddc3e99 1-35
+apps/web/src/app/dashboard/page.tsx
+  s_e2ab65ecf488dc::t_83d3c7d11e3639 141-144,155,157-161,164
+  s_e2ab65ecf488dc::t_607b9208354dc5 8-15
+  s_e2ab65ecf488dc::t_77e4588376c358 139,145,147,149
+  s_e2ab65ecf488dc::t_0ba282f87beb3e 80,82-86,90,92,96,101,109,113
+content/tracks/helm/concepts/10-production-patterns/production-patterns_test.sh
+  s_e2ab65ecf488dc::t_f2b5cf63ff52d3 13,16
+  s_e2ab65ecf488dc::t_3558c02f69dc2c 30
+  s_e2ab65ecf488dc::t_826282528998b7 1-12,14-15,17-29,31-40
+content/tracks/python/concepts/10-modules-and-packages/exemplar.py
+  s_e2ab65ecf488dc::t_d1f43bba328d64 1-20
+content/tracks/dsa-java/concepts/05-hash-maps-and-sets/stub.java
+  s_e2ab65ecf488dc::t_d5ed36661df753 1-15,21-23,25-26
+  s_e2ab65ecf488dc::t_b3443bf28de139 16-20,24
+content/tracks/kotlin/concepts/02-functions/stub.kt
+  s_e2ab65ecf488dc::t_c7fb756d021de7 1-31
+content/tracks/dsa-python/concepts/11-binary-search-trees/binary-search-trees_test.py
+  s_e2ab65ecf488dc::t_63ffd52a0f2eb0 2,19-56
+  s_e2ab65ecf488dc::t_2551184858d94e 1,3-18,57-60
+content/tracks/kotlin/concepts/10-interfaces-and-delegation/instructions.md
+  s_e2ab65ecf488dc::t_249eaabb7b4cff 1-132
+content/tracks/dsa-typescript/concepts/17-tries/exemplar.ts
+  s_e2ab65ecf488dc::t_8c0ecb47806edf 28,39-77
+  s_e2ab65ecf488dc::t_a280d0f9b805c6 1-27,29-38,78
+content/tracks/assembly/concepts/10-floating-point/floating_point_test.asm
+  s_e2ab65ecf488dc::t_36f640b90e9675 1-185
+content/tracks/assembly/concepts/07-system-calls/config.json
+  s_e2ab65ecf488dc::t_f5f73eab154d30 1
+content/tracks/ruby/concepts/07-exception-handling/exemplar.rb
+  s_e2ab65ecf488dc::t_7f48d28379132e 1-53
+content/tracks/dsa-typescript/concepts/17-tries/stub.ts
+  s_e2ab65ecf488dc::t_7ed744b346f7d3 1-12,14-15,17-23,25-28
+  s_e2ab65ecf488dc::t_9c8847dbbdc1f9 13,16,24,29-44
+content/tracks/dsa-python/concepts/16-backtracking/backtracking_test.py
+  s_e2ab65ecf488dc::t_eea99d7dace2dd 1-77
+content/tracks/dsa-python/concepts/18-union-find/config.json
+  s_e2ab65ecf488dc::t_dca93dc873f582 1-4,6-7
+  s_e2ab65ecf488dc::t_17966e94298915 5
+content/tracks/dsa-javascript/concepts/18-union-find/union-find_test.js
+  s_e2ab65ecf488dc::t_550984ceb20969 2,17-18,25-26,57-58,67-68,72-74,78-79,86-87,103,109-154,157
+  s_e2ab65ecf488dc::t_73b2ffc07749b4 155-156
+  s_e2ab65ecf488dc::t_21640610d990a1 1,3-16,19-24,27-56,59-66,69-71,75-77,80-85,88-102,104-108,158-161
+content/tracks/python/concepts/04-classes-and-objects/config.json
+  s_e2ab65ecf488dc::t_32f363698b06a8 1-7
+content/tracks/dsa-typescript/concepts/19-dynamic-programming-2d/dynamic-programming-2d_test.ts
+  s_e2ab65ecf488dc::t_b762fb46d19449 1-117
+content/tracks/assembly/concepts/03-control-flow/instructions.md
+  s_e2ab65ecf488dc::t_6303c294cd6924 1-94
+content/tracks/kotlin/concepts/03-classes-and-data-classes/exemplar.kt
+  s_e2ab65ecf488dc::t_955fb092c443bb 1-23
+content/tracks/shell/concepts/02-control-flow/config.json
+  s_e2ab65ecf488dc::t_19a68bcf20d57f 1-7
+content/tracks/assembly/concepts/05-procedures/exemplar.asm
+  s_e2ab65ecf488dc::t_770a07a2786bcd 1-41
+content/tracks/rust/concepts/08-error-handling/exemplar.rs
+  s_e2ab65ecf488dc::t_09cf8b484117d7 1-45
+content/tracks/helm/concepts/08-dependencies/config.json
+  s_e2ab65ecf488dc::t_6a731651344eee 1-7
+content/tracks/terraform/concepts/02-variables-and-outputs/exemplar.tf
+  s_e2ab65ecf488dc::t_ef5a7ac4fda9b3 1-29
+content/tracks/kotlin/concepts/05-collections/instructions.md
+  s_e2ab65ecf488dc::t_b9924b40728ef9 1-85
+content/tracks/kotlin/concepts/07-generics/exemplar.kt
+  s_e2ab65ecf488dc::t_67932a99d0acd2 1-37
+apps/web/src/components/path/LearningPath.tsx
+  s_e2ab65ecf488dc::t_0c7f6728b50c17 3,20-27,30-72
+content/tracks/assembly/concepts/06-memory-and-addressing/instructions.md
+  s_e2ab65ecf488dc::t_5c0e846e1263bd 1-100
+content/tracks/dsa-java/concepts/03-prefix-sums/SolutionTest.java
+  s_e2ab65ecf488dc::t_f749245e4a1782 1-45
+content/tracks/dsa-python/concepts/05-hash-maps-and-sets/exemplar.py
+  s_e2ab65ecf488dc::t_4111c679c11e38 5,22-34
+  s_e2ab65ecf488dc::t_250a523b7222ca 1-4,6-21
+content/tracks/dsa-typescript/concepts/10-tree-bfs/instructions.md
+  s_e2ab65ecf488dc::t_012e5207ffbe3f 3,5,7-12,20,30-52,58,60-67,69-71,73-86,89-110,112,114-125,128-129,138-139,142-143,146-149
+  s_e2ab65ecf488dc::t_25bb99e19b27de 1-2,4,6,13-19,21-29,53-57,59,68,72,87-88,111,113,126-127,130-137,140-141,144-145
+content/tracks/helm/concepts/03-built-in-objects/built-in-objects_test.sh
+  s_e2ab65ecf488dc::t_d29f1a7b89c710 1-12,14-15,17-35
+  s_e2ab65ecf488dc::t_f2b5cf63ff52d3 13,16
+content/tracks/dsa-typescript/concepts/01-two-pointers/two-pointers_test.ts
+  s_e2ab65ecf488dc::t_3535db88191afe 2-17,34-35,38-49,51-53,55-57,59-61,63,68-69,73-89,130-133
+  s_e2ab65ecf488dc::t_fd151b08cc08ee 1,18-33,36-37,50,54,58,62,64-67,70-72,90-129
+content/tracks/dsa-java/concepts/10-tree-bfs/exemplar.java
+  s_e2ab65ecf488dc::t_108d7dda650938 48-71
+  s_e2ab65ecf488dc::t_8a20441b54a66a 1-47,72
+content/tracks/dsa-javascript/concepts/08-linked-list-patterns/config.json
+  s_e2ab65ecf488dc::t_a614bd6f2cf0a8 1-7
+content/tracks/dsa-typescript/concepts/14-greedy-algorithms/stub.ts
+  s_e2ab65ecf488dc::t_9703ea77aa1ff0 1-3,5-11,13-15
+  s_e2ab65ecf488dc::t_4405627f529b55 4,12,16-26
+content/tracks/dsa-python/concepts/13-graphs-bfs-dfs/graphs-bfs-dfs_test.py
+  s_e2ab65ecf488dc::t_97e800a8e61414 1,3-18,20-22,59-62
+  s_e2ab65ecf488dc::t_2894656f075ee3 2,19,23-58
+content/tracks/terraform/concepts/08-state-management/exemplar.tf
+  s_e2ab65ecf488dc::t_90231c369c40d6 1-30
+content/tracks/dsa-typescript/concepts/16-backtracking/stub.ts
+  s_e2ab65ecf488dc::t_49e9bd0adf13aa 1-25
+content/tracks/kotlin/concepts/10-interfaces-and-delegation/exemplar.kt
+  s_e2ab65ecf488dc::t_4a5a13969f55a7 1-43
+content/tracks/dsa-python/concepts/02-sliding-window/config.json
+  s_e2ab65ecf488dc::t_687766b0fd5bd0 1-4,6-7
+  s_e2ab65ecf488dc::t_2eaecf963159aa 5
+content/tracks/dsa-python/concepts/15-dynamic-programming-1d/config.json
+  s_e2ab65ecf488dc::t_e3a33ef570273b 1-4,6-7
+  s_e2ab65ecf488dc::t_4d7433eb333c6b 5
+content/tracks/kotlin/concepts/08-coroutines/stub.kt
+  s_e2ab65ecf488dc::t_23c5c3db7d0d6d 1-29
+content/tracks/terraform/concepts/07-modules/instructions.md
+  s_e2ab65ecf488dc::t_3d9bee9b31907a 1-113
+content/tracks/dsa-javascript/concepts/09-tree-dfs/instructions.md
+  s_e2ab65ecf488dc::t_8ce4d5f4f2d303 1-2,4,6,8,12,14-21,23,26-28,32-33,36,38-39,46-48,50-52,54,82,87-94,96-101,103-115,117-123,125,127-128,136
+  s_e2ab65ecf488dc::t_b874390709bc7f 3,5,7,9-11,13,22,24-25,29-31,34-35,37,40-45,49,53,55-81,83-86,95,102,116,124,126,129-135
+content/tracks/dsa-python/concepts/12-heaps-and-priority-queues/config.json
+  s_e2ab65ecf488dc::t_e1d795d6db0f1e 1-4,6-7
+  s_e2ab65ecf488dc::t_9590c96c4c04b2 5
+content/tracks/shell/concepts/05-arrays/arrays_test.sh
+  s_e2ab65ecf488dc::t_4325e7c659487b 1-53
+content/tracks/dsa-python/concepts/09-tree-dfs/stub.py
+  s_e2ab65ecf488dc::t_e21e1d15c8ff3a 1-16,19-23,25-27,35-40,44-45,47-59,61
+  s_e2ab65ecf488dc::t_743beac73435af 17-18,24,28-34,41-43,46,60,62
+content/tracks/dsa-java/concepts/14-greedy-algorithms/stub.java
+  s_e2ab65ecf488dc::t_2f7374a22e26f9 2-15,21-25,27-28
+  s_e2ab65ecf488dc::t_52eda02131047d 1,16-20,26
+content/tracks/dsa-python/concepts/16-backtracking/instructions.md
+  s_e2ab65ecf488dc::t_22a8e698775557 3,5,7,9-10,14,17-19,22,27,29,34,39,44,50-53,58,63-64,71,73,75,80,82,84-88,90,92-95,97,99-117,123-124,127-128,131-132,136
+  s_e2ab65ecf488dc::t_b9d29f847b5c38 1-2,4,6,8,11-13,15-16,20-21,23-26,28,30-33,35-38,40-43,45-49,54-57,59-62,65-70,72,74,76-79,81,83,89,91,96,98,118-122,125-126,129-130,133-135,137-140
+content/tracks/terraform/concepts/09-backends-and-remote-state/config.json
+  s_e2ab65ecf488dc::t_10dcf6d539f5a0 1-7
+content/tracks/elixir/concepts/03-lists-and-recursion/config.json
+  s_e2ab65ecf488dc::t_67f65ad2932f15 1-7
+content/tracks/helm/concepts/09-chart-tests/config.json
+  s_e2ab65ecf488dc::t_b81a706a591188 1-7
+content/tracks/assembly/concepts/02-arithmetic-and-flags/instructions.md
+  s_e2ab65ecf488dc::t_abd00ae421e3f2 1-83
+content/tracks/dsa-javascript/concepts/02-sliding-window/instructions.md
+  s_e2ab65ecf488dc::t_c5ddb1fb1ac640 1-2,4,6,8,10,12,14-15,17-21,23-26,28-29,31-34,36-41,43,45,66,68-71,83,103-106,108-109,112-117,127-128,133-134
+  s_e2ab65ecf488dc::t_037d809a333b31 3,5,7,9,11,13,16,22,27,30,35,42,44,46-65,67,72-82,84-102,107,110-111,118-126,129-132,135
+content/tracks/dsa-java/concepts/01-two-pointers/stub.java
+  s_e2ab65ecf488dc::t_48061440ae92b5 1-4,15-19,26
+  s_e2ab65ecf488dc::t_79918f18b14f54 5-14,20-25,27-28
+content/tracks/python/config.json
+  s_e2ab65ecf488dc::t_95dbf8ae8481d3 1-7
+content/tracks/shell/concepts/09-scripts-and-arguments/instructions.md
+  s_e2ab65ecf488dc::t_d4c440b9768165 1-110
+apps/api/prisma/seed.ts
+  s_e2ab65ecf488dc::t_841375e5d4ee04 50-58
+  s_e2ab65ecf488dc::t_7c2c59d76a0cbc 130-135
+  s_e2ab65ecf488dc::t_50c468642fda76 6-24
+content/tracks/terraform/concepts/08-state-management/config.json
+  s_e2ab65ecf488dc::t_376cea1e277935 1-7
+content/tracks/dsa-java/concepts/16-backtracking/config.json
+  s_e2ab65ecf488dc::t_e4d665b94801cb 1-7
+content/tracks/terraform/concepts/04-expressions-and-functions/stub.tf
+  s_e2ab65ecf488dc::t_7b27696a1c1a73 1-19,21-36
+  s_e2ab65ecf488dc::t_6f6aec36bdc61e 20
+content/tracks/dsa-python/concepts/16-backtracking/stub.py
+  s_e2ab65ecf488dc::t_95a79f4b308adf 1-26
+content/tracks/python/concepts/05-comprehensions-and-generators/instructions.md
+  s_e2ab65ecf488dc::t_469381bb279584 1-80
+content/tracks/kotlin/concepts/01-variables-and-types/exemplar.kt
+  s_e2ab65ecf488dc::t_7913f0718e13cf 1-21
+content/tracks/terraform/concepts/04-expressions-and-functions/expressions-and-functions_test.sh
+  s_e2ab65ecf488dc::t_7f82e58f506224 1-14,16-17,19-51
+  s_e2ab65ecf488dc::t_f2f8e69578d5ed 15,18
+content/tracks/kotlin/concepts/04-null-safety/instructions.md
+  s_e2ab65ecf488dc::t_2f8ee73f79bb82 1-106
+content/tracks/python/concepts/08-iterators-and-protocols/config.json
+  s_e2ab65ecf488dc::t_3565bb78ea679c 1-7
+content/tracks/dsa-typescript/concepts/08-linked-list-patterns/exemplar.ts
+  s_e2ab65ecf488dc::t_fc55847fdbca9e 17,22,30,37-42,44-52,54-56
+  s_e2ab65ecf488dc::t_f0f7ba707cf639 1-16,18-21,23-29,31-36,43,53,57
+content/tracks/dsa-javascript/concepts/19-dynamic-programming-2d/dynamic-programming-2d_test.js
+  s_e2ab65ecf488dc::t_6db96fb1bb1181 1-94
+content/tracks/dsa-python/concepts/03-prefix-sums/config.json
+  s_e2ab65ecf488dc::t_715be1f609b638 5
+  s_e2ab65ecf488dc::t_ef04fae72145ca 1-4,6-7
+content/tracks/dsa-java/concepts/04-binary-search/exemplar.java
+  s_e2ab65ecf488dc::t_01b0ddff9dbb97 7-9,18,24,28-29,31,39
+  s_e2ab65ecf488dc::t_874e298dd5ac5b 1-6,10-17,19-23,25-27,30,32-38,40-41
+content/tracks/kotlin/concepts/09-higher-order-functions/config.json
+  s_e2ab65ecf488dc::t_a821d1c6d55661 1-7
+content/tracks/dsa-javascript/concepts/10-tree-bfs/stub.js
+  s_e2ab65ecf488dc::t_b2239838189179 1-16,18-26,28-30,42-47,51-53
+  s_e2ab65ecf488dc::t_eb84225e8c917d 17,27,31-41,48-50
+content/tracks/dsa-javascript/concepts/10-tree-bfs/tree-bfs_test.js
+  s_e2ab65ecf488dc::t_464beb87a4df52 2,17,25-29,33,35-37,39-41,44,52-53,56-57,59-62,64-86,88-89
+  s_e2ab65ecf488dc::t_5695f3a664afcd 1,3-16,18-24,30-32,34,38,42-43,45-51,54-55,58,63,87,90-93
+content/tracks/dsa-javascript/concepts/19-dynamic-programming-2d/instructions.md
+  s_e2ab65ecf488dc::t_393241741b7faa 1-139
+content/tracks/assembly/concepts/02-arithmetic-and-flags/arithmetic_and_flags_test.asm
+  s_e2ab65ecf488dc::t_1bad76e3143d9c 1-130
+content/tracks/elixir/concepts/05-processes/processes_test.exs
+  s_e2ab65ecf488dc::t_c9d045b7e201f9 1-70
+content/tracks/dsa-python/concepts/08-linked-list-patterns/instructions.md
+  s_e2ab65ecf488dc::t_f1724ae64ed097 1-2,4,6,8,10-17,19-21,23-24,27-28,30,33,35-46,48,50,52,70,72-76,78,108-111,115-121,126-130,132
+  s_e2ab65ecf488dc::t_b7369ca7a1cea2 3,5,7,9,18,22,25-26,29,31-32,34,47,49,51,53-69,71,77,79-107,112-114,122-125,131,133-134
+content/tracks/dsa-python/concepts/03-prefix-sums/stub.py
+  s_e2ab65ecf488dc::t_c32b757dabba95 1-27
+content/tracks/elixir/concepts/02-pattern-matching/instructions.md
+  s_e2ab65ecf488dc::t_cd86066fb6ef4f 1-85
+apps/sandbox/src/executor/judge0-client.ts
+  s_e2ab65ecf488dc::t_f6fceb75213ca1 5-22,35
+content/tracks/assembly/concepts/07-system-calls/stub.asm
+  s_e2ab65ecf488dc::t_a587a541fd735c 1-36
+content/tracks/dsa-java/concepts/11-binary-search-trees/exemplar.java
+  s_e2ab65ecf488dc::t_96e1534749f221 1-13,15-28,45-46
+  s_e2ab65ecf488dc::t_f1213c03246528 14,29-44
+content/tracks/python/concepts/03-lists-and-dicts/lists_and_dicts_test.py
+  s_e2ab65ecf488dc::t_fa1882dcc4a916 1-83
+content/tracks/elixir/concepts/09-protocols/protocols_test.exs
+  s_e2ab65ecf488dc::t_d748f4594a21df 1-70
+content/tracks/dsa-typescript/concepts/03-prefix-sums/config.json
+  s_e2ab65ecf488dc::t_631912de09b7d5 1-7
+content/tracks/shell/config.json
+  s_e2ab65ecf488dc::t_a8bcb610e2a378 1-7
+content/tracks/kotlin/concepts/06-sealed-classes-and-when/sealed-classes-and-when_test.kt
+  s_e2ab65ecf488dc::t_aace437ee109fc 1-51
+content/tracks/dsa-javascript/concepts/03-prefix-sums/stub.js
+  s_e2ab65ecf488dc::t_cfc2790cf572e0 1-46
+content/tracks/dsa-typescript/concepts/07-queues-and-deques/config.json
+  s_e2ab65ecf488dc::t_26dc5008704ad3 1-7
+content/tracks/rust/concepts/04-structs-and-enums/stub.rs
+  s_e2ab65ecf488dc::t_b837d37126d0fb 1-47
+content/tracks/dsa-python/concepts/10-tree-bfs/stub.py
+  s_e2ab65ecf488dc::t_a25ff52e062571 1-18,20-24,26-28,35,37-56,58
+  s_e2ab65ecf488dc::t_f439fe2ab97239 19,25,29-34,36,57,59-60
+content/tracks/dsa-typescript/concepts/15-dynamic-programming-1d/config.json
+  s_e2ab65ecf488dc::t_8f829361642267 1-7
+content/tracks/assembly/concepts/01-registers-and-data-movement/exemplar.asm
+  s_e2ab65ecf488dc::t_25482de00b8411 1-25
+content/tracks/python/concepts/04-classes-and-objects/exemplar.py
+  s_e2ab65ecf488dc::t_830e76496a3bee 1-27
+content/tracks/dsa-typescript/concepts/16-backtracking/config.json
+  s_e2ab65ecf488dc::t_4f0765fb68596b 1-7
+content/tracks/dsa-typescript/concepts/17-tries/tries_test.ts
+  s_e2ab65ecf488dc::t_e4a80a073d8009 1,19-21,23-24,26,32,38,44,49,55,60,63,69,75,81,87,93,100-137
+  s_e2ab65ecf488dc::t_cee00a15a3194e 2-18,22,25,27-31,33-37,39-43,45-48,50-54,56-59,61-62,64-68,70-74,76-80,82-86,88-92,94-99,138-141
+content/tracks/helm/concepts/10-production-patterns/exemplar.yaml
+  s_e2ab65ecf488dc::t_87266c2ab14cf7 1-65
+content/tracks/dsa-java/concepts/03-prefix-sums/stub.java
+  s_e2ab65ecf488dc::t_d57ac6b1289ea1 1-25
+content/tracks/shell/concepts/02-control-flow/exemplar.sh
+  s_e2ab65ecf488dc::t_8761b2ae9ab323 1-47
+content/tracks/assembly/concepts/08-arrays-and-loops/exemplar.asm
+  s_e2ab65ecf488dc::t_dc33037d5a2772 1-58
+content/tracks/dsa-java/concepts/19-dynamic-programming-2d/exemplar.java
+  s_e2ab65ecf488dc::t_9bc0449cafa31e 1-53
+content/tracks/dsa-python/concepts/14-greedy-algorithms/stub.py
+  s_e2ab65ecf488dc::t_dfc095345175fe 4-5,7-11,14,22-27
+  s_e2ab65ecf488dc::t_a13a46cd0bf466 1-3,6,12-13,15-21,28-29
+content/tracks/helm/concepts/05-named-templates/config.json
+  s_e2ab65ecf488dc::t_ae6b710a4647da 1-7
+content/tracks/helm/concepts/05-named-templates/exemplar.yaml
+  s_e2ab65ecf488dc::t_04cc42f94a95e1 1-46
+content/tracks/dsa-javascript/concepts/18-union-find/exemplar.js
+  s_e2ab65ecf488dc::t_44fabe559da5fe 1-20,22-34,36-74,102,105-115,120-122
+  s_e2ab65ecf488dc::t_8e29f90f099f24 21,35,75-101,103-104,116-119
+content/tracks/python/concepts/05-comprehensions-and-generators/stub.py
+  s_e2ab65ecf488dc::t_fbe47d00a9aa5c 1-23
+content/tracks/helm/concepts/02-templates-and-values/instructions.md
+  s_e2ab65ecf488dc::t_738f352c14e72a 1-77
+content/tracks/terraform/concepts/09-backends-and-remote-state/instructions.md
+  s_e2ab65ecf488dc::t_a772401e57ad30 1-113
+content/tracks/elixir/concepts/07-genserver/genserver_test.exs
+  s_e2ab65ecf488dc::t_ee8fc1411cd6b5 1-95
+content/tracks/dsa-javascript/concepts/02-sliding-window/stub.js
+  s_e2ab65ecf488dc::t_c46181ea52375a 1-8,10-19,21-23,38-41,43-45
+  s_e2ab65ecf488dc::t_48c5c649d1e5d2 9,20,24-37,42
+content/tracks/elixir/concepts/09-protocols/config.json
+  s_e2ab65ecf488dc::t_beb7206f23feb1 1-7
+content/tracks/terraform/concepts/10-workspaces-and-environments/config.json
+  s_e2ab65ecf488dc::t_40d7907463eb58 1-7
+content/tracks/dsa-java/concepts/18-union-find/instructions.md
+  s_e2ab65ecf488dc::t_c248d28b960544 1-2,4,6,8,10-17,20-28,30,32-40,42,47-49,51,53,55-57,79-80,83,85-86,92,94,96,101-104,109,111,113,118,129-130,132-135,139-141,144-145
+  s_e2ab65ecf488dc::t_41123140bbcda5 3,5,7,9,18-19,29,31,41,43-46,50,52,54,58-78,81-82,84,87-91,93,95,97-100,105-108,110,112,114-117,119-128,131,136-138,142-143,146-151
+content/tracks/dsa-javascript/concepts/12-heaps-and-priority-queues/heaps-and-priority-queues_test.js
+  s_e2ab65ecf488dc::t_9293cb6f3e1cf2 1,3-16,19-28,30-31,34,36,38-60,63-65,67-69,71-73,76-79,100-103
+  s_e2ab65ecf488dc::t_cf2e18cc6382ed 2,17-18,29,32-33,35,37,61-62,66,70,74-75,80-99
+content/tracks/dsa-javascript/concepts/13-graphs-bfs-dfs/exemplar.js
+  s_e2ab65ecf488dc::t_7c54638c7889ee 4-6,16,24,31-34,41,47-48,52,60-93,96,99-102
+  s_e2ab65ecf488dc::t_6f5ecd4f58d5bd 1-3,7-15,17-23,25-30,35-40,42-46,49-51,53-59,94-95,97-98,103-105
+content/tracks/dsa-typescript/concepts/10-tree-bfs/exemplar.ts
+  s_e2ab65ecf488dc::t_5d1790b5b874a1 20,26,37-53,55,59,63-66,69-70
+  s_e2ab65ecf488dc::t_7942105f1bfad2 1-19,21-25,27-36,54,56-58,60-62,67-68,71-73
+content/tracks/terraform/concepts/10-workspaces-and-environments/instructions.md
+  s_e2ab65ecf488dc::t_ad7f782c3a0608 1-127
+content/tracks/dsa-javascript/concepts/15-dynamic-programming-1d/instructions.md
+  s_e2ab65ecf488dc::t_9611dc960af72b 2,4,6,8,10,12,16,19,30-31,33,40,49,56-57,59-60,67-68,70-71,99,103,107,109,114-118,120-121,124-128,130-131,135-138,140-141,143-144,146
+  s_e2ab65ecf488dc::t_f47777ef3fd13d 1,3,5,7,9,11,13-15,17-18,20-29,32,34-39,41-48,50-55,58,61-66,69,72-98,100-102,104-106,108,110-113,119,122-123,129,132-134,139,142,145
+content/tracks/dsa-java/concepts/02-sliding-window/exemplar.java
+  s_e2ab65ecf488dc::t_5aee48508b27d3 30-57,62
+  s_e2ab65ecf488dc::t_05e044b90941bd 1-29,58-61,63-64
+content/tracks/dsa-python/concepts/15-dynamic-programming-1d/dynamic-programming-1d_test.py
+  s_e2ab65ecf488dc::t_fb67d76756fffe 1-81
+content/tracks/python/concepts/01-variables-and-types/config.json
+  s_e2ab65ecf488dc::t_98efd725e50c90 1-7
+content/tracks/python/concepts/02-functions/stub.py
+  s_e2ab65ecf488dc::t_3442ef8682ec13 1-25
+content/tracks/python/concepts/05-comprehensions-and-generators/exemplar.py
+  s_e2ab65ecf488dc::t_cdc540cf73ae4b 1-19
+content/tracks/rust/concepts/06-traits/traits_test.rs
+  s_e2ab65ecf488dc::t_402b6b7ceb70f0 1-88
+content/tracks/dsa-typescript/concepts/05-hash-maps-and-sets/hash-maps-and-sets_test.ts
+  s_e2ab65ecf488dc::t_2023bdfb82a28b 1,24-25,34,46,48-51,54-56,61,86-120
+  s_e2ab65ecf488dc::t_bf1fafccd6428d 2-23,26-33,35-45,47,52-53,57-60,62-85,121-124
+content/tracks/python/concepts/07-error-handling/exemplar.py
+  s_e2ab65ecf488dc::t_c0e71da0b059c2 1-25
+content/tracks/rust/concepts/01-variables-and-types/instructions.md
+  s_e2ab65ecf488dc::t_36cc433250d466 1-87
+content/tracks/elixir/concepts/05-processes/config.json
+  s_e2ab65ecf488dc::t_645c4496836fdc 1-7
+infra/loki/config.yml
+  s_e2ab65ecf488dc::t_e97df6e57249f7 11-15,39-42
+  s_e2ab65ecf488dc::t_f8dcec1a7ba516 9-10
+content/tracks/shell/concepts/09-scripts-and-arguments/config.json
+  s_e2ab65ecf488dc::t_b31de564a6d7d0 1-7
+content/tracks/dsa-javascript/concepts/01-two-pointers/stub.js
+  s_e2ab65ecf488dc::t_b4d39142af328d 1-8,10-18,20-22,35-38,40-42
+  s_e2ab65ecf488dc::t_69fe95685e9d38 9,19,23-34,39
+content/tracks/dsa-python/concepts/05-hash-maps-and-sets/stub.py
+  s_e2ab65ecf488dc::t_999283283c79af 5,7,13,17-23,25-27,29-30
+  s_e2ab65ecf488dc::t_74d3726b99a2a3 1-4,6,8-12,14-16,24,28
+content/tracks/dsa-java/concepts/16-backtracking/stub.java
+  s_e2ab65ecf488dc::t_8c1085444944d7 1-26
+content/tracks/dsa-java/concepts/19-dynamic-programming-2d/instructions.md
+  s_e2ab65ecf488dc::t_9397f1b6460550 1-2,4,6,8,10,17-19,25-28,30,33-35,37-39,41,43-49,51,54-57,60-62,64,68-74,76,82,84,86,93-95,97,99,101,117-123,125-127,130-132,136-137
+  s_e2ab65ecf488dc::t_12285eb12b5ecb 3,5,7,9,11-16,20-24,29,31-32,36,40,42,50,52-53,58-59,63,65-67,75,77-81,83,85,87-92,96,98,100,102-116,124,128-129,133-135
+content/tracks/dsa-typescript/concepts/04-binary-search/binary-search_test.ts
+  s_e2ab65ecf488dc::t_1f1a13243ed715 1,24-25,34-37,52-55,58-59,74-95,98-99,102-103,106-107,110-111
+  s_e2ab65ecf488dc::t_4e85f1f801e67a 2-23,26-33,38-51,56-57,60-73,96-97,100-101,104-105,108-109,112-115
+content/tracks/dsa-java/concepts/13-graphs-bfs-dfs/exemplar.java
+  s_e2ab65ecf488dc::t_22fa86437102d2 2,4-23,26-32,34-50,84-93,96-97
+  s_e2ab65ecf488dc::t_0fe511d4f4022f 1,3,24-25,33,51-83,94-95
+content/tracks/rust/concepts/01-variables-and-types/stub.rs
+  s_e2ab65ecf488dc::t_146b97fed4f6bd 1-23
+content/tracks/dsa-python/concepts/07-queues-and-deques/instructions.md
+  s_e2ab65ecf488dc::t_54c0c26fec6870 1-2,4,6,8,10,12,14-18,20-21,23-24,26-33,35-47,49,51,54,85,87,89-93,106,122-130,132-133,141-145
+  s_e2ab65ecf488dc::t_6f5ef6da5aeadc 3,5,7,9,11,13,19,22,25,34,48,50,52-53,55-84,86,88,94-105,107-121,131,134-140,146-149
+content/tracks/shell/concepts/01-variables-and-strings/instructions.md
+  s_e2ab65ecf488dc::t_59393bfb3e4293 1-84
+content/tracks/kotlin/config.json
+  s_e2ab65ecf488dc::t_4af8f6f1df7c97 1-7
+content/tracks/ruby/concepts/04-classes-and-modules/instructions.md
+  s_e2ab65ecf488dc::t_7ba6e8e4e6c400 1-170
+content/tracks/dsa-python/concepts/04-binary-search/stub.py
+  s_e2ab65ecf488dc::t_012203e23be628 1-2,4-8,10-12,16-19
+  s_e2ab65ecf488dc::t_07912b31bdbe55 3,9,13-15,20-25
+content/tracks/shell/concepts/04-functions/functions_test.sh
+  s_e2ab65ecf488dc::t_fcea7eb45aa2e3 1-42
+content/tracks/python/concepts/09-async-await/instructions.md
+  s_e2ab65ecf488dc::t_5c09b7550c96a1 1-94
+content/tracks/helm/concepts/07-hooks/stub.yaml
+  s_e2ab65ecf488dc::t_7af8d7be5b8d28 1-28
+content/tracks/python/concepts/01-variables-and-types/instructions.md
+  s_e2ab65ecf488dc::t_e5ba51f5281bf6 1-75
+content/tracks/dsa-python/concepts/07-queues-and-deques/exemplar.py
+  s_e2ab65ecf488dc::t_d418b27f433b3d 1-5,7-19,21-25,27-30
+  s_e2ab65ecf488dc::t_d16cff8fe94452 6,20,26,31-62
+content/tracks/ruby/concepts/01-variables-and-types/exemplar.rb
+  s_e2ab65ecf488dc::t_3745572badd0a5 1-33
+content/tracks/ruby/concepts/01-variables-and-types/stub.rb
+  s_e2ab65ecf488dc::t_258736e87008e1 1-25
+content/tracks/rust/concepts/04-structs-and-enums/instructions.md
+  s_e2ab65ecf488dc::t_8be71d8a9e6d12 1-114
+content/tracks/dsa-java/concepts/07-queues-and-deques/stub.java
+  s_e2ab65ecf488dc::t_7d5f4f42f3d486 1-20,26-34,37-38
+  s_e2ab65ecf488dc::t_fbe5725373af03 21-25,35-36
+content/tracks/dsa-typescript/concepts/12-heaps-and-priority-queues/exemplar.ts
+  s_e2ab65ecf488dc::t_4e1c11f535333e 1-2,12-35,38-44,46-64,66-68,70-72,89,94,97
+  s_e2ab65ecf488dc::t_72cbb3f89bbaf3 3-11,36-37,45,65,69,73-88,90-93,95-96
+content/tracks/shell/concepts/07-pipes-and-redirection/config.json
+  s_e2ab65ecf488dc::t_c29ab702127d14 1-7
+content/tracks/ruby/concepts/02-methods-and-blocks/config.json
+  s_e2ab65ecf488dc::t_7493cc74c538c7 1-7
+content/tracks/shell/concepts/06-text-processing/text-processing_test.sh
+  s_e2ab65ecf488dc::t_3e7a7fae577cf2 1-63
+content/tracks/assembly/concepts/05-procedures/config.json
+  s_e2ab65ecf488dc::t_0cb61b42cc24a3 1
+content/tracks/dsa-javascript/concepts/17-tries/config.json
+  s_e2ab65ecf488dc::t_aa4cd83c3a308d 1-7
+content/tracks/helm/concepts/04-control-flow/stub.yaml
+  s_e2ab65ecf488dc::t_deeed8ce3cf58d 1-28
+content/tracks/elixir/concepts/08-enum-and-streams/enum_and_streams_test.exs
+  s_e2ab65ecf488dc::t_35c7c05e6cebd1 1-81
+content/tracks/dsa-typescript/concepts/17-tries/config.json
+  s_e2ab65ecf488dc::t_bf85ab20e11ac1 1-7
+content/tracks/elixir/concepts/09-protocols/exemplar.ex
+  s_e2ab65ecf488dc::t_e8b638df1a00eb 1-40
+content/tracks/dsa-python/concepts/18-union-find/instructions.md
+  s_e2ab65ecf488dc::t_31cc3474f79a43 1-2,4,6,8,10,13,15-19,42-43,45,48-51,65,69,81,83,88,90,97,99,117,119,121,126-129,137-138,145-149
+  s_e2ab65ecf488dc::t_888867083b7c39 3,5,7,9,11-12,14,20-41,44,46-47,52-64,66-68,70-80,82,84-87,89,91-96,98,100-116,118,120,122-125,130-136,139-144,150-151
+content/tracks/kotlin/concepts/02-functions/exemplar.kt
+  s_e2ab65ecf488dc::t_3dce2d1037a6a4 1-20
+content/tracks/dsa-python/concepts/10-tree-bfs/instructions.md
+  s_e2ab65ecf488dc::t_a7a7202577b949 1-2,4,6,8,10,12-21,23-34,36-46,48-55,57,79,81,83-85,87,124-133,140-144
+  s_e2ab65ecf488dc::t_ecc74a4329f387 3,5,7,9,11,22,35,47,56,58-78,80,82,86,88-123,134-139,145-147
+content/tracks/rust/concepts/07-generics-and-lifetimes/exemplar.rs
+  s_e2ab65ecf488dc::t_c538396ed869de 1-46
+content/tracks/dsa-javascript/concepts/13-graphs-bfs-dfs/instructions.md
+  s_e2ab65ecf488dc::t_36aa538acfab88 2,4,6,8,12,14,16-19,22-26,28,31,40-41,44,46,68,70-72,74,89,112-115,117-118,121-124,126-128,130,140
+  s_e2ab65ecf488dc::t_3339b9cbf9cbfb 1,3,5,7,9-11,13,15,20-21,27,29-30,32-39,42-43,45,47-67,69,73,75-88,90-111,116,119-120,125,129,131-139
+content/tracks/dsa-javascript/concepts/14-greedy-algorithms/exemplar.js
+  s_e2ab65ecf488dc::t_89c39430ef7c80 6,13,21-22,34,42-59,62-63,65-66
+  s_e2ab65ecf488dc::t_4a389701a86c12 1-5,7-12,14-20,23-33,35-41,60-61,64,67-69
+content/tracks/dsa-typescript/concepts/15-dynamic-programming-1d/exemplar.ts
+  s_e2ab65ecf488dc::t_8f31ac810b2601 1-43
+content/tracks/dsa-java/concepts/03-prefix-sums/config.json
+  s_e2ab65ecf488dc::t_aebe8841299801 1-7
+content/tracks/dsa-typescript/concepts/08-linked-list-patterns/instructions.md
+  s_e2ab65ecf488dc::t_7387f92a34c8be 1-2,4,6,8,10,12-18,23,25,37,40-43,47,49-51,82,84-85,104,106,120-121,124-131,133,135-136,138-139,144
+  s_e2ab65ecf488dc::t_bdae7c6c285894 3,5,7,9,11,19-22,24,26-36,38-39,44-46,48,52-81,83,86-103,105,107-119,122-123,132,134,137,140-143
+content/tracks/dsa-python/concepts/07-queues-and-deques/config.json
+  s_e2ab65ecf488dc::t_a4d92c9a24d4f8 5
+  s_e2ab65ecf488dc::t_3cb10f17460d37 1-4,6-7
+content/tracks/terraform/concepts/06-count-and-for-each/count-and-for-each_test.sh
+  s_e2ab65ecf488dc::t_f2f8e69578d5ed 15,18
+  s_e2ab65ecf488dc::t_b7325e78a2f6ed 1-14,16-17,19-38,40-54
+  s_e2ab65ecf488dc::t_c9b3472069a574 39
+content/tracks/dsa-javascript/concepts/03-prefix-sums/prefix-sums_test.js
+  s_e2ab65ecf488dc::t_25fb75628a8f7e 17,30-32,34,43,47,50-53,56,66,71-79,81-82
+  s_e2ab65ecf488dc::t_18deb52d40261b 1-16,18-29,33,35-42,44-46,48-49,54-55,57-65,67-70,80,83-86
+content/tracks/dsa-java/concepts/13-graphs-bfs-dfs/instructions.md
+  s_e2ab65ecf488dc::t_65afc9eae94bb3 3,5,7,9,11,18,26,32,34-35,42,50-51,58-96,100,102-106,108,110-113,115,117,119,121-124,126,128-134,138,141-142,145-147,150-155
+  s_e2ab65ecf488dc::t_942cb9b99236a9 1-2,4,6,8,10,12-17,19-25,27-31,33,36-41,43-49,52-57,97-99,101,107,109,114,116,118,120,125,127,135-137,139-140,143-144,148-149
+content/tracks/dsa-javascript/concepts/18-union-find/instructions.md
+  s_e2ab65ecf488dc::t_1271844408cea2 5,61,74-93,102,111,119,124-127,133,159-169
+  s_e2ab65ecf488dc::t_7df8e9d5159d83 1-4,6-60,62-73,94-101,103-110,112-118,120-123,128-132,134-158,170
+content/tracks/shell/concepts/10-process-management/config.json
+  s_e2ab65ecf488dc::t_2f12c4c0142f8b 1-7
+content/tracks/dsa-java/concepts/08-linked-list-patterns/config.json
+  s_e2ab65ecf488dc::t_007b474adc8a6f 1-7
+content/tracks/dsa-typescript/concepts/09-tree-dfs/exemplar.ts
+  s_e2ab65ecf488dc::t_012788c11e81a0 21,23-24,26,29-42,44-45
+  s_e2ab65ecf488dc::t_88f826e05c2c1b 1-20,22,25,27-28,43,46
+content/tracks/ruby/concepts/08-metaprogramming/metaprogramming_test.rb
+  s_e2ab65ecf488dc::t_1e2875f65ee2b4 16
+  s_e2ab65ecf488dc::t_203ec354c32d55 60
+  s_e2ab65ecf488dc::t_e9a76cc12c261f 1-15,17-59,61-66
+content/tracks/dsa-typescript/concepts/09-tree-dfs/stub.ts
+  s_e2ab65ecf488dc::t_7a57a27bd20ba5 16,22,26-34,37-40
+  s_e2ab65ecf488dc::t_c211a1bf67fb12 1-15,17-21,23-25,35-36
+content/tracks/dsa-javascript/concepts/04-binary-search/instructions.md
+  s_e2ab65ecf488dc::t_9efb0dc15e8143 1-2,4,6,8,10,12-15,17,19-20,22-23,25-26,34-35,37,40,51-52,54-58,91-95,97-98,102-105,107-114,116,118-119,124
+  s_e2ab65ecf488dc::t_6e7f95c7dc1a51 3,5,7,9,11,16,18,21,24,27-33,36,38-39,41-50,53,59-90,96,99-101,106,115,117,120-123
+content/tracks/dsa-javascript/concepts/02-sliding-window/sliding-window_test.js
+  s_e2ab65ecf488dc::t_8767c4728e2166 1,3-16,18-35,37-38,42,44-63,91-94
+  s_e2ab65ecf488dc::t_e4556a74446ad8 2,17,36,39-41,43,64-90
+content/tracks/elixir/concepts/06-error-handling/instructions.md
+  s_e2ab65ecf488dc::t_9f4e968ed817b0 1-85
+content/tracks/shell/concepts/09-scripts-and-arguments/scripts-and-arguments_test.sh
+  s_e2ab65ecf488dc::t_5f288a5998b1ce 1-22,25-76
+  s_e2ab65ecf488dc::t_1349c992d3a3d0 23-24
+content/tracks/elixir/concepts/04-maps-and-structs/instructions.md
+  s_e2ab65ecf488dc::t_456d0fef0ce45c 1-94
+content/tracks/helm/concepts/08-dependencies/exemplar.yaml
+  s_e2ab65ecf488dc::t_aadc0ada026c8b 1-34
+content/tracks/dsa-python/concepts/05-hash-maps-and-sets/hash-maps-and-sets_test.py
+  s_e2ab65ecf488dc::t_fb8b7174357723 1,3-18,20-22,64-67
+  s_e2ab65ecf488dc::t_b49fe747ee89d7 2,19,23-63
+content/tracks/python/concepts/09-async-await/exemplar.py
+  s_e2ab65ecf488dc::t_13fb1de085d827 1-18
+content/tracks/dsa-java/concepts/09-tree-dfs/instructions.md
+  s_e2ab65ecf488dc::t_f2fb95fd363552 1-2,4,6,8,10,13-18,21,23,26-34,36,38,48-49,52,54,60,62,64,69,71,73,75,80,91-104,107-108,111-112,116
+  s_e2ab65ecf488dc::t_f7854668ae5168 3,5,7,9,11-12,19-20,22,24-25,35,37,39-47,50-51,53,55-59,61,63,65-68,70,72,74,76-79,81-90,105-106,109-110,113-115
+content/tracks/dsa-typescript/concepts/03-prefix-sums/prefix-sums_test.ts
+  s_e2ab65ecf488dc::t_f1c896dde1af03 24-25,38,40-43,46-48,52,56,60-61,63-66,69-70,75,91,93-101
+  s_e2ab65ecf488dc::t_1865f7bfe5fce9 1-23,26-37,39,44-45,49-51,53-55,57-59,62,67-68,71-74,76-90,92,102-105
+content/tracks/rust/concepts/10-concurrency/config.json
+  s_e2ab65ecf488dc::t_e28b5d5a29219a 1-7
+content/tracks/assembly/concepts/08-arrays-and-loops/arrays_and_loops_test.asm
+  s_e2ab65ecf488dc::t_acaabbccca03e1 1-172
+content/tracks/dsa-java/concepts/10-tree-bfs/SolutionTest.java
+  s_e2ab65ecf488dc::t_7ed6e2b1f4b837 25,45,50,53,57,60,63-74
+  s_e2ab65ecf488dc::t_9c753fed36ad4a 1-24,26-44,46-49,51-52,54-56,58-59,61-62,75-79
+content/tracks/dsa-typescript/concepts/01-two-pointers/stub.ts
+  s_e2ab65ecf488dc::t_fed58d10bc0e76 6,10-11,13,17-27
+  s_e2ab65ecf488dc::t_4e94f89add6919 1-5,7-9,12,14-16
+content/tracks/dsa-javascript/concepts/09-tree-dfs/exemplar.js
+  s_e2ab65ecf488dc::t_1ac7103bb5f06d 1-12,15-24,27-32,34-38,47,51,58-59,61-66,80-82
+  s_e2ab65ecf488dc::t_200cffa20f082a 13-14,25-26,33,39-46,48-50,52-57,60,67-79
+content/tracks/dsa-java/concepts/15-dynamic-programming-1d/stub.java
+  s_e2ab65ecf488dc::t_aa9936fc94c8c3 1-26
+content/tracks/kotlin/concepts/08-coroutines/exemplar.kt
+  s_e2ab65ecf488dc::t_2c0677448ce055 1-30
+content/tracks/dsa-python/concepts/13-graphs-bfs-dfs/config.json
+  s_e2ab65ecf488dc::t_af430472465c8d 5
+  s_e2ab65ecf488dc::t_8c8b716a4865fe 1-4,6-7
+content/tracks/python/concepts/01-variables-and-types/exemplar.py
+  s_e2ab65ecf488dc::t_f948867bfb5a17 1-15
+content/tracks/helm/concepts/08-dependencies/stub.yaml
+  s_e2ab65ecf488dc::t_981e0219c76dd5 1-27
+content/tracks/shell/concepts/03-loops/stub.sh
+  s_e2ab65ecf488dc::t_083106e8470afd 1-26
+content/tracks/kotlin/concepts/01-variables-and-types/instructions.md
+  s_e2ab65ecf488dc::t_2574a3c1aada11 1-88
+content/tracks/rust/concepts/06-traits/config.json
+  s_e2ab65ecf488dc::t_1c1d93bc505184 1-7
+content/tracks/helm/concepts/04-control-flow/exemplar.yaml
+  s_e2ab65ecf488dc::t_5e065d9472ccee 1-40
+content/tracks/dsa-javascript/concepts/02-sliding-window/config.json
+  s_e2ab65ecf488dc::t_cacbefac53d47f 5
+  s_e2ab65ecf488dc::t_2c8e27df63f21b 1-4,6-7
+content/tracks/dsa-typescript/concepts/07-queues-and-deques/queues-and-deques_test.ts
+  s_e2ab65ecf488dc::t_a081cb4dde85aa 2-23,27-45,47,52,55-72,74-78,80-84,116-119
+  s_e2ab65ecf488dc::t_fedebadba493bc 1,24-26,46,48-51,53-54,73,79,85-115
+content/tracks/ruby/concepts/03-collections/exemplar.rb
+  s_e2ab65ecf488dc::t_6aa7d9aedf9ea6 1-22
+content/tracks/shell/concepts/07-pipes-and-redirection/instructions.md
+  s_e2ab65ecf488dc::t_6417c52cbf1ca6 1-106
+docker-compose.yml
+  s_e2ab65ecf488dc::t_3efe5d7b6a34f6 83-121,125-127
+content/tracks/dsa-javascript/concepts/05-hash-maps-and-sets/instructions.md
+  s_e2ab65ecf488dc::t_a312c295e03dda 1-2,4,6,8,10,12,14-26,28,31-34,36-41,44,46,62,64,66-70,72-73,85,108-111,113-114,118-121,123-125,140
+  s_e2ab65ecf488dc::t_e89a53e3527a09 3,5,7,9,11,13,27,29-30,35,42-43,45,47-61,63,65,71,74-84,86-107,112,115-117,122,126-139
+content/tracks/ruby/concepts/10-file-io-and-stdlib/stub.rb
+  s_e2ab65ecf488dc::t_7c6814b2c8e52f 1-35
+content/tracks/dsa-java/concepts/06-stacks/stub.java
+  s_e2ab65ecf488dc::t_178f107b1603c4 1-14,20-24,26-27
+  s_e2ab65ecf488dc::t_85073e1917acac 15-19,25
+content/tracks/dsa-python/concepts/07-queues-and-deques/queues-and-deques_test.py
+  s_e2ab65ecf488dc::t_61b678575d11cc 2,19-33,35-42,44-62
+  s_e2ab65ecf488dc::t_68793b54cb1ce8 1,3-18,34,43,63-66
+content/tracks/dsa-python/concepts/12-heaps-and-priority-queues/instructions.md
+  s_e2ab65ecf488dc::t_df45f364822c64 3,5,7,9,12-18,20,36,42,44-45,52-53,56,58,60-62,64-86,88,90,98-106,108-129,146-147,150-151,154-155
+  s_e2ab65ecf488dc::t_0b75b9ba460197 1-2,4,6,8,10-11,19,21-35,37-41,43,46-51,54-55,57,59,63,87,89,91-97,107,130-145,148-149,152-153
+content/tracks/elixir/concepts/07-genserver/config.json
+  s_e2ab65ecf488dc::t_609a6912777ce5 1-7
+content/tracks/dsa-typescript/concepts/07-queues-and-deques/stub.ts
+  s_e2ab65ecf488dc::t_fb85e62143195a 1-4,7-11,13-17,28
+  s_e2ab65ecf488dc::t_f4313d3f992e86 5-6,12,18-27,29-31
+content/tracks/dsa-javascript/concepts/05-hash-maps-and-sets/hash-maps-and-sets_test.js
+  s_e2ab65ecf488dc::t_e14ee8775704ca 1,3-22,25-44,46-61,63-64,87-90
+  s_e2ab65ecf488dc::t_02207ca704f90a 2,23-24,45,62,65-86
+content/tracks/dsa-java/concepts/12-heaps-and-priority-queues/exemplar.java
+  s_e2ab65ecf488dc::t_0f592e7cee910b 8-9,21,58-72,80
+  s_e2ab65ecf488dc::t_4127dffdca76ef 1-7,10-20,22-57,73-79,81-82
+content/tracks/python/concepts/08-iterators-and-protocols/stub.py
+  s_e2ab65ecf488dc::t_ec795eb285b66f 1-30
+content/tracks/elixir/concepts/08-enum-and-streams/config.json
+  s_e2ab65ecf488dc::t_bfffc8f1483b55 1-7
+apps/sandbox/src/worker/execution-worker.ts
+  s_e2ab65ecf488dc::t_983d99327259b8 4,42-44
+  s_e2ab65ecf488dc::t_51d052ef4c82b2 24,27,30-41,45-46,79,91
+  s_e2ab65ecf488dc::t_392f43a8f06a52 55-57
+content/tracks/shell/concepts/03-loops/config.json
+  s_e2ab65ecf488dc::t_3d97f2865ee10a 1-7
+content/tracks/assembly/concepts/01-registers-and-data-movement/registers_and_data_movement_test.asm
+  s_e2ab65ecf488dc::t_9011e938ed832a 1-140
+content/tracks/assembly/concepts/07-system-calls/exemplar.asm
+  s_e2ab65ecf488dc::t_873f8fe550553d 1-36
+content/tracks/shell/concepts/06-text-processing/config.json
+  s_e2ab65ecf488dc::t_3b568bccccab1a 1-7
+content/tracks/ruby/concepts/05-enumerables/config.json
+  s_e2ab65ecf488dc::t_2ae92f003bfef6 1-7
+content/tracks/terraform/concepts/08-state-management/instructions.md
+  s_e2ab65ecf488dc::t_04bb28b8c6da48 1-99
+content/tracks/rust/concepts/03-borrowing-and-references/borrowing_and_references_test.rs
+  s_e2ab65ecf488dc::t_aa113bcad2c4a4 1-62
+content/tracks/dsa-python/concepts/06-stacks/stub.py
+  s_e2ab65ecf488dc::t_81a5a79e9dd860 15-21,23-26,29-30
+  s_e2ab65ecf488dc::t_0ffe09b132239a 1-14,22,27-28
+content/tracks/dsa-python/concepts/13-graphs-bfs-dfs/stub.py
+  s_e2ab65ecf488dc::t_692726a3e0a38e 1-6,8-13,16-18,28
+  s_e2ab65ecf488dc::t_cc1d08327a3624 7,14-15,19-27,29-34
+content/tracks/dsa-javascript/concepts/10-tree-bfs/instructions.md
+  s_e2ab65ecf488dc::t_372a85c4e5ac59 1-2,4,6,8,10,12-18,20-32,34,36,38,40,46,48-50,52,73,77,85-90,92-104,106-107,113,127
+  s_e2ab65ecf488dc::t_4abd7a063a38ea 3,5,7,9,11,19,33,35,37,39,41-45,47,51,53-72,74-76,78-84,91,105,108-112,114-126
+content/tracks/ruby/concepts/03-collections/config.json
+  s_e2ab65ecf488dc::t_0a6207813f853c 1-7
+content/tracks/terraform/concepts/02-variables-and-outputs/config.json
+  s_e2ab65ecf488dc::t_309059a15cecec 1-7
+content/tracks/ruby/concepts/04-classes-and-modules/exemplar.rb
+  s_e2ab65ecf488dc::t_fb7736710752ff 1-47
+content/tracks/python/concepts/04-classes-and-objects/instructions.md
+  s_e2ab65ecf488dc::t_74532e5b77ded2 1-102
+content/tracks/helm/concepts/10-production-patterns/config.json
+  s_e2ab65ecf488dc::t_3476cf69c0571f 1-7
+apps/web/src/app/globals.css
+  s_e2ab65ecf488dc::t_df41cbd2616797 5-16
+content/tracks/dsa-javascript/concepts/06-stacks/stacks_test.js
+  s_e2ab65ecf488dc::t_858b68de6171d7 1,3-16,18-26,28-42,45-49,51-52,54-61,63,87,90-93
+  s_e2ab65ecf488dc::t_8dc5e5a3eb861f 2,17,27,43-44,50,53,62,64-86,88-89
+content/tracks/shell/concepts/01-variables-and-strings/exemplar.sh
+  s_e2ab65ecf488dc::t_9cbe3851a0ccb5 1-28
+content/tracks/terraform/concepts/04-expressions-and-functions/config.json
+  s_e2ab65ecf488dc::t_ba5cf6697cdd13 1-7
+content/tracks/elixir/concepts/01-modules-and-functions/modules_and_functions_test.exs
+  s_e2ab65ecf488dc::t_4de4247f1f82a9 1-51
+content/tracks/elixir/concepts/07-genserver/stub.ex
+  s_e2ab65ecf488dc::t_779be9b4c86301 1-62
+content/tracks/assembly/concepts/10-floating-point/stub.asm
+  s_e2ab65ecf488dc::t_ff834d8cdd20f1 1-35
+content/tracks/dsa-java/concepts/14-greedy-algorithms/config.json
+  s_e2ab65ecf488dc::t_d7e2360e2a5308 1-7
+content/tracks/dsa-typescript/concepts/13-graphs-bfs-dfs/instructions.md
+  s_e2ab65ecf488dc::t_53360cd01d2355 1-2,4,6,8,10,12-19,21,23-28,33-38,40,42-44,46-50,54-56,58-64,111-114,130,132,148-149,152,155,157-158,162-163,172
+  s_e2ab65ecf488dc::t_755482b8257170 3,5,7,9,11,20,22,29-32,39,41,45,51-53,57,65-110,115-129,131,133-147,150-151,153-154,156,159-161,164-171
+content/tracks/assembly/concepts/07-system-calls/system_calls_test.asm
+  s_e2ab65ecf488dc::t_db55957afe98a8 1-88
+content/tracks/terraform/concepts/05-locals-and-depends-on/instructions.md
+  s_e2ab65ecf488dc::t_76cca057a79236 1-99
+content/tracks/dsa-typescript/concepts/06-stacks/stacks_test.ts
+  s_e2ab65ecf488dc::t_726c267e614ce7 1,24-25,30,38,46,57-58,64,68,82-111
+  s_e2ab65ecf488dc::t_807b431e4be33b 2-23,26-29,31-37,39-45,47-56,59-63,65-67,69-81,112-115
+content/tracks/shell/concepts/08-file-operations/exemplar.sh
+  s_e2ab65ecf488dc::t_5e284a2186b402 1-31
+content/tracks/dsa-java/concepts/06-stacks/exemplar.java
+  s_e2ab65ecf488dc::t_0b020b66b04b1b 1-24,26-35,54-58,60-61
+  s_e2ab65ecf488dc::t_be1bc5e7bea789 25,36-53,59
+content/tracks/dsa-javascript/concepts/13-graphs-bfs-dfs/config.json
+  s_e2ab65ecf488dc::t_e3e7832cc376da 1-7
+content/tracks/dsa-typescript/concepts/12-heaps-and-priority-queues/heaps-and-priority-queues_test.ts
+  s_e2ab65ecf488dc::t_639b90d4615c35 1,24-43,46,50,52,57,70,77-78,81-89,91-92,109,117-141
+  s_e2ab65ecf488dc::t_d503bd587d02dc 2-23,44-45,47-49,51,53-56,58-69,71-76,79-80,90,93-108,110-116,142-145
+content/tracks/dsa-java/concepts/14-greedy-algorithms/SolutionTest.java
+  s_e2ab65ecf488dc::t_1f1a4761873e86 21-27,38,42,46,54-68
+  s_e2ab65ecf488dc::t_3dcaf68c13393e 1-20,28-37,39-41,43-45,47-53,69-73
+content/tracks/dsa-javascript/concepts/11-binary-search-trees/exemplar.js
+  s_e2ab65ecf488dc::t_1bccab557801ae 13-15,29-32,40,47-75,78,81-82,84-85,87-89
+  s_e2ab65ecf488dc::t_6dc87f7b9ac2d6 1-12,16-28,33-39,41-46,76-77,79-80,83,86,90-92
+content/tracks/dsa-python/concepts/18-union-find/stub.py
+  s_e2ab65ecf488dc::t_45c1363b60e6f4 5-19,22-26,29-32,35-42,49-52,54-56
+  s_e2ab65ecf488dc::t_df5d90a24ba9f4 1-4,20-21,27-28,33-34,43-48,53
+content/tracks/dsa-java/concepts/01-two-pointers/exemplar.java
+  s_e2ab65ecf488dc::t_d5d3a8ada279df 5-29,54-59,61-62
+  s_e2ab65ecf488dc::t_6a1670c2290545 1-4,30-53,60
+content/tracks/dsa-java/concepts/08-linked-list-patterns/exemplar.java
+  s_e2ab65ecf488dc::t_c3c3832159ccc1 26-32,34-35
+  s_e2ab65ecf488dc::t_d3175defef9a3c 1-25,33,36-37
+content/tracks/dsa-python/concepts/14-greedy-algorithms/greedy-algorithms_test.py
+  s_e2ab65ecf488dc::t_54f3e08def1ae5 2,19-56
+  s_e2ab65ecf488dc::t_7e5738386e50e4 1,3-18,57-60
+content/tracks/dsa-typescript/concepts/02-sliding-window/sliding-window_test.ts
+  s_e2ab65ecf488dc::t_1c9e03879ff30c 2-18,22,25,27-29,31-33,35-37,39-41,43-45,47-49,52-54,58-64,66-68,70-72,74-76,78,115-118
+  s_e2ab65ecf488dc::t_9af0bf5f60579b 1,19-21,23-24,26,30,34,38,42,46,50-51,55-57,65,69,73,77,79-106,110-114
+  s_e2ab65ecf488dc::t_8fc63d17eed002 107-109
+content/tracks/dsa-python/concepts/15-dynamic-programming-1d/exemplar.py
+  s_e2ab65ecf488dc::t_759dcaecfa1516 1-31
+content/tracks/elixir/concepts/03-lists-and-recursion/exemplar.ex
+  s_e2ab65ecf488dc::t_384a36affc1086 1-34
+content/tracks/ruby/concepts/06-blocks-procs-lambdas/stub.rb
+  s_e2ab65ecf488dc::t_d9ac5ce672af8b 1-33
+content/tracks/dsa-java/concepts/01-two-pointers/config.json
+  s_e2ab65ecf488dc::t_8d768d6f65c4fc 1-7
+content/tracks/dsa-javascript/concepts/05-hash-maps-and-sets/config.json
+  s_e2ab65ecf488dc::t_4b2174e94058f0 1-4,6-7
+  s_e2ab65ecf488dc::t_9f4ac7e473bdc7 5
+apps/sandbox/src/executor/docker-runner.ts
+  s_e2ab65ecf488dc::t_2df85608b44a7b 13-21,28
+content/tracks/dsa-typescript/concepts/09-tree-dfs/tree-dfs_test.ts
+  s_e2ab65ecf488dc::t_ef35f63bf572ba 1,24,46-49,61-62,65-66,68-69,71,77,92-96,99-114,117-122,125-129,132-134
+  s_e2ab65ecf488dc::t_3967607f25adef 2-23,25-45,50-60,63-64,67,70,72-76,78-91,97-98,115-116,123-124,130-131,135-138
+content/tracks/dsa-python/config.json
+  s_e2ab65ecf488dc::t_5175530de636c3 1-7
+content/tracks/dsa-typescript/concepts/19-dynamic-programming-2d/exemplar.ts
+  s_e2ab65ecf488dc::t_f2e6d6073cf849 1-58
+content/tracks/dsa-typescript/concepts/18-union-find/config.json
+  s_e2ab65ecf488dc::t_02d4e1da2e901e 1-7
+content/tracks/shell/concepts/02-control-flow/stub.sh
+  s_e2ab65ecf488dc::t_8d82c881e9c282 1-26
+content/tracks/terraform/concepts/08-state-management/state-management_test.sh
+  s_e2ab65ecf488dc::t_f2f8e69578d5ed 15,18
+  s_e2ab65ecf488dc::t_649acbcf10d89f 1-14,16-17,19-48
+packages/ui/src/components/PlacementTask.tsx
+  s_e2ab65ecf488dc::t_cc707b7a620e12 15,28
+  s_e2ab65ecf488dc::t_d9db1dd195356c 59
+content/tracks/ruby/concepts/09-modules-and-mixins/instructions.md
+  s_e2ab65ecf488dc::t_1e4ae587c6f508 1-185
+content/tracks/dsa-java/concepts/02-sliding-window/config.json
+  s_e2ab65ecf488dc::t_346b66b291e009 1-7
+content/tracks/kotlin/concepts/03-classes-and-data-classes/config.json
+  s_e2ab65ecf488dc::t_f70df6868f8e41 1-7
+content/tracks/elixir/concepts/04-maps-and-structs/config.json
+  s_e2ab65ecf488dc::t_7b6bdea46b3c6d 1-7
+apps/api/src/router/tracks.ts
+  s_e2ab65ecf488dc::t_e32bb362cd035b 16-24
+  s_e2ab65ecf488dc::t_537de2aa34524e 102
+infra/grafana/provisioning/dashboards/fluent-overview.json
+  s_e2ab65ecf488dc::t_029a01de4cd1ed 1-16,18-21,23-32,34-37,39-53,55-79,81-99,116-127
+  s_e2ab65ecf488dc::t_fcc4898049c932 17,22,33,38,54,80,100-115
+content/tracks/dsa-typescript/concepts/02-sliding-window/instructions.md
+  s_e2ab65ecf488dc::t_ec2d542bf61f8d 1-2,4,6,8,10,12-13,17-20,26-27,29-31,53-54,59,66,74,97-101,112,132-133,135-144,146-147
+  s_e2ab65ecf488dc::t_1ba4ff1abce7ac 3,5,7,9,11,14-16,21-25,28,32-52,55-58,60-65,67-73,75-96,102-111,113-131,134,145,148-153
+content/tracks/dsa-typescript/concepts/04-binary-search/exemplar.ts
+  s_e2ab65ecf488dc::t_ae296ee3f36aa5 10-11,23-24,26-27,31,37-39,42-43,47
+  s_e2ab65ecf488dc::t_f777d92b45915e 1-9,12-22,25,28-30,32-36,40-41,44-46,48
+content/tracks/dsa-typescript/concepts/09-tree-dfs/instructions.md
+  s_e2ab65ecf488dc::t_6e6e50a27fcd6b 1-2,4,6,8,10,33,35,37-38,44,46,61-62,65,67,69,91-92,110,129,134,143-144,147-155,159-160,163-164,170
+  s_e2ab65ecf488dc::t_b31a0ef22f734f 3,5,7,9,11-32,34,36,39-43,45,47-60,63-64,66,68,70-90,93-109,111-128,130-133,135-142,145-146,156-158,161-162,165-169
+content/tracks/assembly/concepts/09-string-operations/config.json
+  s_e2ab65ecf488dc::t_84e4b74cb54e05 1
+content/tracks/rust/concepts/10-concurrency/instructions.md
+  s_e2ab65ecf488dc::t_edaa8fbcd17e7d 1-97
+apps/web/src/app/page.tsx
+  s_e2ab65ecf488dc::t_d12cd7089f7f63 3-38,41-42,44-47,50,56,58,63-72,74-77,79,82,84,87-88,90,95-113,115-150
+content/tracks/helm/concepts/03-built-in-objects/stub.yaml
+  s_e2ab65ecf488dc::t_266f68f5d78463 1-22
+content/tracks/kotlin/concepts/08-coroutines/config.json
+  s_e2ab65ecf488dc::t_0cb4208a9bc60a 1-7
+content/tracks/dsa-typescript/concepts/13-graphs-bfs-dfs/graphs-bfs-dfs_test.ts
+  s_e2ab65ecf488dc::t_520a772a49ad40 2-27,30,38-40,42-43,46-47,49-51,53-55,59-60,63-66,68-74,76-86,88,119-122
+  s_e2ab65ecf488dc::t_a2ec5209acaf5f 1,28-29,31-37,41,44-45,48,52,56-58,61-62,67,75,87,89-118
+content/tracks/rust/concepts/06-traits/instructions.md
+  s_e2ab65ecf488dc::t_08f49c382b1683 1-104
+content/tracks/dsa-java/concepts/15-dynamic-programming-1d/SolutionTest.java
+  s_e2ab65ecf488dc::t_1df70a6f168218 1-45
+content/tracks/dsa-javascript/concepts/18-union-find/config.json
+  s_e2ab65ecf488dc::t_2e9a09caa60e6a 1-7
+content/tracks/dsa-typescript/concepts/13-graphs-bfs-dfs/config.json
+  s_e2ab65ecf488dc::t_7d87c382697a1a 1-7
+content/tracks/dsa-javascript/concepts/14-greedy-algorithms/stub.js
+  s_e2ab65ecf488dc::t_e4ed9d17b09f0c 5,9,19,23-35,38-40
+  s_e2ab65ecf488dc::t_088c34a93ef1f9 1-4,6-8,10-18,20-22,36-37,41-43
+content/tracks/dsa-java/concepts/17-tries/stub.java
+  s_e2ab65ecf488dc::t_9bb4a31ca54ce1 1-3,25-29,40-42
+  s_e2ab65ecf488dc::t_3ccdbd5e084bf6 4-24,30-39,43-44
+content/tracks/shell/concepts/04-functions/config.json
+  s_e2ab65ecf488dc::t_4ed524f820b098 1-7
+content/tracks/python/concepts/10-modules-and-packages/modules_and_packages_test.py
+  s_e2ab65ecf488dc::t_5804bdc4a2d013 1-30,33-35,37-41,43-47,49-52,54-58,60-65,72,83-86
+  s_e2ab65ecf488dc::t_4f494ccf7d653f 31-32,36,42,48,53,59,66-71,73-82
+content/tracks/shell/concepts/10-process-management/stub.sh
+  s_e2ab65ecf488dc::t_a16027b08dad06 1-26
+content/tracks/dsa-typescript/concepts/07-queues-and-deques/instructions.md
+  s_e2ab65ecf488dc::t_ed53cba1073242 1-2,4,6,8,10,12-15,17-18,20,22,24-28,30-34,53-55,74,94,98-99,113,115,133,136-138,140-141,145-148
+  s_e2ab65ecf488dc::t_cb6c5e841809d7 3,5,7,9,11,16,19,21,23,29,35-52,56-73,75-93,95-97,100-112,114,116-132,134-135,139,142-144,149-155
+content/tracks/ruby/concepts/07-exception-handling/instructions.md
+  s_e2ab65ecf488dc::t_383b566b728127 1-160
+content/tracks/dsa-python/concepts/15-dynamic-programming-1d/instructions.md
+  s_e2ab65ecf488dc::t_1154e3c8024943 3,5,7,9,11-12,14,16,18,24,30,32-33,45-48,50,55,60,63,65,67-71,73,75-78,80-99,105-106,109-110,113-114,118-120,123
+  s_e2ab65ecf488dc::t_c8b59d6b433b69 1-2,4,6,8,10,13,15,17,19-23,25-29,31,34-44,49,51-54,56-59,61-62,64,66,72,74,79,100-104,107-108,111-112,115-117,121-122
+content/tracks/dsa-typescript/concepts/18-union-find/exemplar.ts
+  s_e2ab65ecf488dc::t_98ed8e718c797b 1-13,16-19,21-22,24,26-33,35-46,61,63-64,66
+  s_e2ab65ecf488dc::t_bc29d01bc6974d 14-15,20,23,25,34,47-60,62,65
+content/tracks/dsa-typescript/concepts/19-dynamic-programming-2d/instructions.md
+  s_e2ab65ecf488dc::t_1a9cb53955e37a 3,5,7,9,11-14,16,18,22,24,27,33,35-36,40-41,43-60,63,65-68,70-95,97-120,122,124-127,129,131-135,154
+  s_e2ab65ecf488dc::t_39dbb431b27b24 1-2,4,6,8,10,15,17,19-21,23,25-26,28-32,34,37-39,42,61-62,64,69,96,121,123,128,130,136-153,155-159
+content/tracks/helm/concepts/06-functions-and-pipelines/config.json
+  s_e2ab65ecf488dc::t_b7d02da54761cc 1-7
+content/tracks/assembly/concepts/03-control-flow/config.json
+  s_e2ab65ecf488dc::t_6d0afd07532909 1
+content/tracks/rust/concepts/09-closures-and-iterators/exemplar.rs
+  s_e2ab65ecf488dc::t_af7c6fcfe8408a 1-34
+content/tracks/terraform/concepts/05-locals-and-depends-on/exemplar.tf
+  s_e2ab65ecf488dc::t_d83480a539a792 1-40
+content/tracks/kotlin/concepts/10-interfaces-and-delegation/config.json
+  s_e2ab65ecf488dc::t_82031e86842715 1-7
+content/tracks/terraform/concepts/03-data-sources/exemplar.tf
+  s_e2ab65ecf488dc::t_de267f50b360ec 1-29
+content/tracks/dsa-javascript/concepts/14-greedy-algorithms/instructions.md
+  s_e2ab65ecf488dc::t_c3954aac8082c5 1-2,4,6,8,10,12,14-15,23-24,27,29,31-32,40,42-44,46,60,62,64-68,81,104-107,109-111,114-117,119-122,134
+  s_e2ab65ecf488dc::t_afcf31658e521a 3,5,7,9,11,13,16-22,25-26,28,30,33-39,41,45,47-59,61,63,69-80,82-103,108,112-113,118,123-133
+content/tracks/elixir/concepts/03-lists-and-recursion/lists_and_recursion_test.exs
+  s_e2ab65ecf488dc::t_e33d136f956d75 1-50
+content/tracks/assembly/concepts/08-arrays-and-loops/config.json
+  s_e2ab65ecf488dc::t_8e55f23bde8bfb 1
+content/tracks/python/concepts/03-lists-and-dicts/instructions.md
+  s_e2ab65ecf488dc::t_c6066e8a30aeca 1-86
+content/tracks/dsa-java/concepts/07-queues-and-deques/instructions.md
+  s_e2ab65ecf488dc::t_f26ba1642445b8 3,5,7,9,11,14-21,25,27-28,40-57,59-78,80,82-86,88,90-93,95,97,99,101,103-117,121,124,126,129,132,135-139
+  s_e2ab65ecf488dc::t_abd59ab624af8b 1-2,4,6,8,10,12-13,22-24,26,29-39,58,79,81,87,89,94,96,98,100,102,118-120,122-123,125,127-128,130-131,133-134
+content/tracks/dsa-python/concepts/13-graphs-bfs-dfs/instructions.md
+  s_e2ab65ecf488dc::t_d07825c0ed03c1 3,5,7,9-12,14,16,23,26,28-30,34,36-37,40,42-43,45,49-59,61-66,69,71,73-81,83-94,96,100-111,113-129,134-135,139-145,149-153
+  s_e2ab65ecf488dc::t_fd2794ce79b7e8 1-2,4,6,8,13,15,17-22,24-25,27,31-33,35,38-39,41,44,46-48,60,67-68,70,72,82,95,97-99,112,130-133,136-138,146-148
+content/tracks/dsa-javascript/concepts/17-tries/instructions.md
+  s_e2ab65ecf488dc::t_6088cec6154f8c 1-4,6-70,102-108,110,113-118,120-126,128-131,136-139,142-160,182
+  s_e2ab65ecf488dc::t_420751e99759fd 5,71-101,109,111-112,119,127,132-135,140-141,161-181
+content/tracks/elixir/concepts/08-enum-and-streams/instructions.md
+  s_e2ab65ecf488dc::t_86814dcac17df8 1-71
+content/tracks/dsa-javascript/concepts/09-tree-dfs/config.json
+  s_e2ab65ecf488dc::t_1361750ea28522 1-7
+content/tracks/kotlin/concepts/07-generics/instructions.md
+  s_e2ab65ecf488dc::t_32e50412c85bbf 1-93
+content/tracks/assembly/concepts/10-floating-point/exemplar.asm
+  s_e2ab65ecf488dc::t_aab060ca3af3c1 1-30
+apps/web/package.json
+  s_e2ab65ecf488dc::t_13c0aae034344a 6
+  s_e2ab65ecf488dc::t_30fe913eb13379 30
+content/tracks/dsa-typescript/concepts/14-greedy-algorithms/greedy-algorithms_test.ts
+  s_e2ab65ecf488dc::t_d30149dfbc46fe 1,24-25,38,42,46,50,54-55,57-60,63,84-115
+  s_e2ab65ecf488dc::t_2018adc3d1eaba 2-23,26-37,39-41,43-45,47-49,51-53,56,61-62,64-83,116-119
+content/tracks/dsa-python/concepts/13-graphs-bfs-dfs/exemplar.py
+  s_e2ab65ecf488dc::t_9dd5dbc880c615 1-8,10-11,13,17-19,21,24-28,45,47-48,57
+  s_e2ab65ecf488dc::t_80c53e5931f9ea 9,12,14-16,20,22-23,29-44,46,49-56,58-67
+content/tracks/terraform/concepts/10-workspaces-and-environments/stub.tf
+  s_e2ab65ecf488dc::t_378d25cc5be007 2,4,6,8,13,16-17,22,25,30,34
+  s_e2ab65ecf488dc::t_fe48963ab29856 1,3,5,7,9-12,14-15,18-21,23-24,26-29,31-33,35
+content/tracks/dsa-javascript/config.json
+  s_e2ab65ecf488dc::t_a3c564ed19c8d8 1-7
+content/tracks/dsa-python/concepts/12-heaps-and-priority-queues/stub.py
+  s_e2ab65ecf488dc::t_05bbd5d4a4f522 2-4,11-37,39,67-70,72-76
+  s_e2ab65ecf488dc::t_7e5d443125b848 1,5-10,38,40-66,71,77-78
+content/tracks/shell/concepts/08-file-operations/file-operations_test.sh
+  s_e2ab65ecf488dc::t_2bb86761655731 1-54
+content/tracks/rust/concepts/02-ownership/config.json
+  s_e2ab65ecf488dc::t_6452182198a7ea 1-7
+content/tracks/rust/concepts/02-ownership/ownership_test.rs
+  s_e2ab65ecf488dc::t_4b4f777176578d 1-59
+content/tracks/terraform/concepts/06-count-and-for-each/instructions.md
+  s_e2ab65ecf488dc::t_8831badeb1eb6a 1-117
+content/tracks/python/concepts/09-async-await/async_await_test.py
+  s_e2ab65ecf488dc::t_2da3c086298c75 29,36,43,52-66
+  s_e2ab65ecf488dc::t_6048c9009b37d9 1-28,30-35,37-42,44-51,67-70
+content/tracks/dsa-javascript/concepts/04-binary-search/binary-search_test.js
+  s_e2ab65ecf488dc::t_0465f1046a0179 1,3-16,18-26,28-29,36-45,47-58,65,87-90
+  s_e2ab65ecf488dc::t_49affec4d29fe6 2,17,27,30-35,46,59-64,66-86
+content/tracks/dsa-java/concepts/04-binary-search/config.json
+  s_e2ab65ecf488dc::t_4ea72ee26f163d 1-7
+content/tracks/rust/concepts/09-closures-and-iterators/stub.rs
+  s_e2ab65ecf488dc::t_6c42e9d411f387 1-32
+content/tracks/ruby/concepts/07-exception-handling/exception-handling_test.rb
+  s_e2ab65ecf488dc::t_cfbc8534288285 1-15,17-41,47-62,64-75
+  s_e2ab65ecf488dc::t_4eee05d29e58ad 42-46,63
+  s_e2ab65ecf488dc::t_a79c2eda9025a0 16
+content/tracks/dsa-javascript/concepts/06-stacks/instructions.md
+  s_e2ab65ecf488dc::t_afd940313c1cf7 1-2,4,6,8,10,12,14,17,19-20,24-26,28-29,31,34-35,37-39,41-43,45-46,48,68,70,72-76,89,110-113,115-116,122-125,127-128,132
+  s_e2ab65ecf488dc::t_c8d28826530119 3,5,7,9,11,13,15-16,18,21-23,27,30,32-33,36,40,44,47,49-67,69,71,77-88,90-109,114,117-121,126,129-131,133-145
+content/tracks/shell/concepts/05-arrays/stub.sh
+  s_e2ab65ecf488dc::t_3b0a3d27127ea3 1-11,13-25
+  s_e2ab65ecf488dc::t_e79e1793d88314 12
+content/tracks/ruby/concepts/06-blocks-procs-lambdas/exemplar.rb
+  s_e2ab65ecf488dc::t_da7931508aaaca 1-34
+content/tracks/terraform/concepts/04-expressions-and-functions/exemplar.tf
+  s_e2ab65ecf488dc::t_e341d4efc65a97 1-35
+content/tracks/dsa-javascript/concepts/03-prefix-sums/instructions.md
+  s_e2ab65ecf488dc::t_d6f416a1243580 3,5,7,9,11,19,23-24,26,31-34,38,42,49,51,56,58-87,102,106,112,115-116,118
+  s_e2ab65ecf488dc::t_ccb5cfa7dfe77d 1-2,4,6,8,10,12-18,20-22,25,27-30,35-37,39-41,43-48,50,52-55,57,88-101,103-105,107-111,113-114,117,119
+content/tracks/dsa-java/concepts/02-sliding-window/instructions.md
+  s_e2ab65ecf488dc::t_c0ef3114404292 3,5,7,9,11,18,21,23-24,26,29,38-70,72,74-75,77-81,83,85-88,90,92,94,96,98-101,103-112,115,118-119,122-124,127-131
+  s_e2ab65ecf488dc::t_9a8346915843a3 1-2,4,6,8,10,12-17,19-20,22,25,27-28,30-37,71,73,76,82,84,89,91,93,95,97,102,113-114,116-117,120-121,125-126
+content/tracks/terraform/concepts/06-count-and-for-each/exemplar.tf
+  s_e2ab65ecf488dc::t_10466e3fa07d98 1-42
+content/tracks/dsa-python/concepts/04-binary-search/instructions.md
+  s_e2ab65ecf488dc::t_6a471d4cfe173b 1-2,4,6,8,10,12,17,19-23,25-33,35,38-39,41-45,47-48,51,53-54,56-58,61,64,67,69,72,75,77,82,84,101-108,114-121
+  s_e2ab65ecf488dc::t_f0918b3c3ee7cd 3,5,7,9,11,13-16,18,24,34,36-37,40,46,49-50,52,55,59-60,62-63,65-66,68,70-71,73-74,76,78-81,83,85-100,109-113,122-124
+content/tracks/dsa-javascript/concepts/16-backtracking/config.json
+  s_e2ab65ecf488dc::t_e0d94f8115fd19 1-7
+content/tracks/dsa-java/concepts/11-binary-search-trees/config.json
+  s_e2ab65ecf488dc::t_c3e24a3217da4f 1-7
+content/tracks/dsa-typescript/concepts/08-linked-list-patterns/stub.ts
+  s_e2ab65ecf488dc::t_be772364977c57 14,18,20,24-30,34,36-37
+  s_e2ab65ecf488dc::t_59a3f0cc4311f7 1-13,15-17,19,21-23,31-33,35
+content/tracks/rust/concepts/06-traits/exemplar.rs
+  s_e2ab65ecf488dc::t_2b737f4f7c6991 1-39
+content/tracks/dsa-javascript/concepts/09-tree-dfs/stub.js
+  s_e2ab65ecf488dc::t_be4f7b46375ff3 1-28,30-33,35,39,45-46,48-53,61-63
+  s_e2ab65ecf488dc::t_b6eee7c10ac6cd 29,34,36-38,40-44,47,54-60
+content/tracks/shell/concepts/09-scripts-and-arguments/stub.sh
+  s_e2ab65ecf488dc::t_5cf90c1a86bef7 3-5,9,11,14,18,21,23
+  s_e2ab65ecf488dc::t_52618f377357fc 1-2,6-8,10,12-13,15-17,19-20,22,24-29
+content/tracks/ruby/concepts/05-enumerables/instructions.md
+  s_e2ab65ecf488dc::t_eab368dc3d01e3 1-122
+content/tracks/shell/concepts/10-process-management/exemplar.sh
+  s_e2ab65ecf488dc::t_de571797d778bc 1-51
+content/tracks/dsa-javascript/concepts/07-queues-and-deques/stub.js
+  s_e2ab65ecf488dc::t_c313d7da926f4f 1-10,14-17,19-21,23-25,28-29,31-34,48-55,57-59
+  s_e2ab65ecf488dc::t_44e86ceeb6ac50 11-13,18,22,26-27,30,35-47,56
+content/tracks/kotlin/concepts/04-null-safety/config.json
+  s_e2ab65ecf488dc::t_477649de506ade 1-7
+content/tracks/elixir/concepts/09-protocols/instructions.md
+  s_e2ab65ecf488dc::t_9869e91a06b1a6 1-100
+content/tracks/assembly/concepts/10-floating-point/config.json
+  s_e2ab65ecf488dc::t_091db1304495e2 1
+content/tracks/dsa-python/concepts/01-two-pointers/config.json
+  s_e2ab65ecf488dc::t_a06e9f0609cc3c 1-4,6-7
+  s_e2ab65ecf488dc::t_f7b87a43a8c7f7 5
+content/tracks/dsa-typescript/concepts/06-stacks/config.json
+  s_e2ab65ecf488dc::t_efffc8ccadc4fb 1-7
+content/tracks/dsa-java/concepts/18-union-find/exemplar.java
+  s_e2ab65ecf488dc::t_f1663f7a5a4695 3-45,61-63,66-67
+  s_e2ab65ecf488dc::t_2fdafa61a18088 1-2
+  s_e2ab65ecf488dc::t_670dd8ebe7818f 46-60,64-65
+content/tracks/terraform/config.json
+  s_e2ab65ecf488dc::t_500d175c3c0898 1-7
+content/tracks/rust/concepts/05-pattern-matching/config.json
+  s_e2ab65ecf488dc::t_5bbcbc9b035715 1-7
+content/tracks/dsa-typescript/config.json
+  s_e2ab65ecf488dc::t_2184281a332770 1-7
+content/tracks/ruby/concepts/03-collections/instructions.md
+  s_e2ab65ecf488dc::t_9750339d9469c8 1-139
+content/tracks/dsa-javascript/concepts/01-two-pointers/config.json
+  s_e2ab65ecf488dc::t_b35140b8114de3 5
+  s_e2ab65ecf488dc::t_6d59944ece373e 1-4,6-7
+content/tracks/dsa-typescript/concepts/01-two-pointers/instructions.md
+  s_e2ab65ecf488dc::t_bea6f5d2514f47 3,5,7,9,11,14,20-23,25,28-29,31-48,50,52,54-84,90-103,105-119,122,125-126,129,132-133,135,138-142
+  s_e2ab65ecf488dc::t_16309cbb2c6b6d 1-2,4,6,8,10,12-13,15-19,24,26-27,30,49,51,53,85-89,104,120-121,123-124,127-128,130-131,134,136-137
+content/tracks/assembly/concepts/08-arrays-and-loops/instructions.md
+  s_e2ab65ecf488dc::t_e7bdc6d9a9dd29 1-90
+content/tracks/dsa-typescript/concepts/08-linked-list-patterns/config.json
+  s_e2ab65ecf488dc::t_c13b21b08e3e19 1-7
+content/tracks/dsa-java/concepts/13-graphs-bfs-dfs/SolutionTest.java
+  s_e2ab65ecf488dc::t_9cbdc940914518 3-12,14-18,20-25,27,30,33-34,36,38,40,42,44,46,61-65
+  s_e2ab65ecf488dc::t_eeaf3c00f4c5ed 1-2,13,19,26,28-29,31-32,35,37,39,41,43,45,47-60
+content/tracks/helm/concepts/08-dependencies/instructions.md
+  s_e2ab65ecf488dc::t_d374214eba94f1 1-83
+content/tracks/ruby/concepts/08-metaprogramming/stub.rb
+  s_e2ab65ecf488dc::t_f48c996e2d1a29 1-36
+content/tracks/rust/concepts/03-borrowing-and-references/config.json
+  s_e2ab65ecf488dc::t_9829d143d1c3b2 1-7
+content/tracks/python/concepts/08-iterators-and-protocols/instructions.md
+  s_e2ab65ecf488dc::t_7638865999950d 1-85
+content/tracks/dsa-java/concepts/09-tree-dfs/stub.java
+  s_e2ab65ecf488dc::t_8db6ab5c75285c 1-14,16,18-19
+  s_e2ab65ecf488dc::t_ec6f4dc379f250 15,17
+content/tracks/dsa-python/concepts/14-greedy-algorithms/config.json
+  s_e2ab65ecf488dc::t_ee6effa42ba23c 5
+  s_e2ab65ecf488dc::t_a3c5b6444b264c 1-4,6-7
+content/tracks/ruby/concepts/03-collections/collections_test.rb
+  s_e2ab65ecf488dc::t_4baf9bc2ac55dc 1-41
+content/tracks/assembly/concepts/02-arithmetic-and-flags/stub.asm
+  s_e2ab65ecf488dc::t_c6640a25818da9 1-30
+apps/web/src/app/layout.tsx
+  s_e2ab65ecf488dc::t_ba34b194e6ac57 2,7-19,21-22,27
+packages/ui/src/components/ConceptNode.tsx
+  s_e2ab65ecf488dc::t_b52184235fad1e 27-32,35-37,42-45,48-57,59-67,71,76-78,82-84
+content/tracks/dsa-javascript/concepts/08-linked-list-patterns/instructions.md
+  s_e2ab65ecf488dc::t_231f596204893f 1-2,4,6,8,10,12-15,17-22,25,27-32,34-37,39,42,53-55,57-61,63,96-97,99-101,103-115,117,119,121-122,125
+  s_e2ab65ecf488dc::t_47506825deef35 3,5,7,9,11,16,23-24,26,33,38,40-41,43-52,56,62,64-95,98,102,116,118,120,123-124
+content/tracks/dsa-python/concepts/02-sliding-window/exemplar.py
+  s_e2ab65ecf488dc::t_84b9c640cbd7be 4-6,8-26
+  s_e2ab65ecf488dc::t_81fb0e03a8739f 1-3,7,27-58
+content/tracks/dsa-typescript/concepts/16-backtracking/backtracking_test.ts
+  s_e2ab65ecf488dc::t_57560754cf3b57 1-113
+content/tracks/dsa-javascript/concepts/17-tries/stub.js
+  s_e2ab65ecf488dc::t_76a4c25cddf95f 1-41,58-59,61-69,76-78
+  s_e2ab65ecf488dc::t_58f26570471df6 42-57,60,70-75
+content/tracks/dsa-typescript/concepts/06-stacks/exemplar.ts
+  s_e2ab65ecf488dc::t_15753f6bafc911 22,32-50
+  s_e2ab65ecf488dc::t_a9bf6a9f935812 1-21,23-31,51
+content/tracks/dsa-python/concepts/17-tries/instructions.md
+  s_e2ab65ecf488dc::t_c29141ffd1d6aa 3,5,7,9,18,31,39,47,50,52,54-82,84,86,90-103,105-119,124,131-136,142-144,146-150
+  s_e2ab65ecf488dc::t_cbab3d9d566aae 1-2,4,6,8,10-17,19-30,32-38,40-46,48-49,51,53,83,85,87-89,104,120-123,125-130,137-141,145
+content/tracks/python/concepts/03-lists-and-dicts/config.json
+  s_e2ab65ecf488dc::t_4a748071f45a37 1-7
+content/tracks/shell/concepts/06-text-processing/instructions.md
+  s_e2ab65ecf488dc::t_ba9a7cba580c07 1-82
+content/tracks/python/concepts/06-decorators/exemplar.py
+  s_e2ab65ecf488dc::t_6e353718bb5e64 1-30
+content/tracks/shell/concepts/07-pipes-and-redirection/exemplar.sh
+  s_e2ab65ecf488dc::t_9e90df201c0eb0 1-37
+content/tracks/dsa-javascript/concepts/04-binary-search/stub.js
+  s_e2ab65ecf488dc::t_709ddd91b526c2 10,21,26,30-32,36,39-41
+  s_e2ab65ecf488dc::t_9e408e1bc0fa02 1-9,11-20,22-25,27-29,33-35,37-38,42-44
+content/tracks/dsa-java/concepts/11-binary-search-trees/SolutionTest.java
+  s_e2ab65ecf488dc::t_bdf7aa3c98e73d 1-28,41-42,55,57-60,81-85
+  s_e2ab65ecf488dc::t_b93c381173a29c 29-40,43-54,56,61-80
+content/tracks/dsa-java/concepts/19-dynamic-programming-2d/config.json
+  s_e2ab65ecf488dc::t_c82aba1874e381 1-7
+packages/ui/src/components/ConfidenceSelector.tsx
+  s_e2ab65ecf488dc::t_d897c9eeca4b6d 8-9,14,18-19,35-36,42,44-46,52
+content/tracks/elixir/concepts/10-macros/macros_test.exs
+  s_e2ab65ecf488dc::t_253dad0811dcca 1-82
+content/tracks/dsa-java/concepts/18-union-find/stub.java
+  s_e2ab65ecf488dc::t_466200fbcb66a6 3-27,33-37,40-41
+  s_e2ab65ecf488dc::t_38631190d61d8a 1-2,28-32,38-39
+content/tracks/terraform/concepts/05-locals-and-depends-on/config.json
+  s_e2ab65ecf488dc::t_76fa6bf23cbbdc 1-7
+content/tracks/python/concepts/10-modules-and-packages/stub.py
+  s_e2ab65ecf488dc::t_b8fbbdc079a1a7 1-30
+content/tracks/dsa-javascript/concepts/12-heaps-and-priority-queues/exemplar.js
+  s_e2ab65ecf488dc::t_db37103a23bae3 1-2,19,22-23,25,27-37,39-50,52-61,64-71,75-87,110,113-120,124-126
+  s_e2ab65ecf488dc::t_168b4254487d6a 3-18,20-21,24,26,38,51,62-63,72-74,88-109,111-112,121-123
+content/tracks/dsa-java/concepts/10-tree-bfs/stub.java
+  s_e2ab65ecf488dc::t_04f7d899a93d23 1-16,22
+  s_e2ab65ecf488dc::t_295bdeeeba4242 17-21
+content/tracks/dsa-typescript/concepts/14-greedy-algorithms/config.json
+  s_e2ab65ecf488dc::t_d90af321a74d8f 1-7
+content/tracks/terraform/concepts/01-providers-and-resources/config.json
+  s_e2ab65ecf488dc::t_57e9f40fd7de46 1-7
+content/tracks/shell/concepts/02-control-flow/instructions.md
+  s_e2ab65ecf488dc::t_0f48d45a6d5e61 1-105
+content/tracks/python/concepts/07-error-handling/error_handling_test.py
+  s_e2ab65ecf488dc::t_0d9b4a0f72dbcd 1-30,32-35,37-40,42-47,49-52,54-58,60-67,69,71-73,75-77,91,98-101
+  s_e2ab65ecf488dc::t_45cdff61786528 31,36,41,48,53,59,68,70,74,78-90,92-97
+content/tracks/kotlin/concepts/07-generics/config.json
+  s_e2ab65ecf488dc::t_7e637a1e6c9e22 1-7
+content/tracks/elixir/concepts/05-processes/stub.ex
+  s_e2ab65ecf488dc::t_30d866084874e1 1-24
+content/tracks/python/concepts/03-lists-and-dicts/exemplar.py
+  s_e2ab65ecf488dc::t_21f28ccd83fdd0 1-20
+content/tracks/dsa-javascript/concepts/04-binary-search/exemplar.js
+  s_e2ab65ecf488dc::t_cab719e61275b3 1-4,6-22,25-29,32-33,35-39,43-45,47-49,52,54-55,57-58,60-61,66-68
+  s_e2ab65ecf488dc::t_2448cc098cd224 5,23-24,30-31,34,40-42,46,50-51,53,56,59,62-65
+content/tracks/dsa-javascript/concepts/11-binary-search-trees/stub.js
+  s_e2ab65ecf488dc::t_375fead659e3f1 12,17-18,23,29,33-42,44,46-50
+  s_e2ab65ecf488dc::t_f1c6836f86006b 1-11,13-16,19-22,24-28,30-32,43,45,51-53
+content/tracks/terraform/concepts/07-modules/modules_test.sh
+  s_e2ab65ecf488dc::t_f2f8e69578d5ed 15,18
+  s_e2ab65ecf488dc::t_501f397a7f80e8 1-14,16-17,19-50
+content/tracks/dsa-python/concepts/01-two-pointers/two-pointers_test.py
+  s_e2ab65ecf488dc::t_8f2722505416ce 2,19-61
+  s_e2ab65ecf488dc::t_2bd559cf7cc4fa 1,3-18,62-65
+content/tracks/helm/concepts/03-built-in-objects/instructions.md
+  s_e2ab65ecf488dc::t_f5240b2df65e74 1-85
+content/tracks/shell/concepts/09-scripts-and-arguments/exemplar.sh
+  s_e2ab65ecf488dc::t_a77a202f901738 2
+  s_e2ab65ecf488dc::t_9b37f0997aa04a 1,3-8,10-38,46-51
+  s_e2ab65ecf488dc::t_a8d6aa3bc4c7e7 9
+  s_e2ab65ecf488dc::t_ca5f67aed909ae 39-45
+content/tracks/dsa-java/concepts/14-greedy-algorithms/instructions.md
+  s_e2ab65ecf488dc::t_9cbbd182ce4bab 1-2,4,6,8,10,13-16,18-23,25,27-29,31-41,61-63,65,67,73,75,80,82,84,86,91,93,102-103,105-107,110-111,114-115
+  s_e2ab65ecf488dc::t_8f900dbf82c7e0 3,5,7,9,11-12,17,24,26,30,42-60,64,66,68-72,74,76-79,81,83,85,87-90,92,94-101,104,108-109,112-113,116-119
+content/tracks/dsa-python/concepts/10-tree-bfs/exemplar.py
+  s_e2ab65ecf488dc::t_b01ee15d967a56 1-55,78-94
+  s_e2ab65ecf488dc::t_756f053ec5f6bb 56-77
+content/tracks/dsa-java/concepts/03-prefix-sums/exemplar.java
+  s_e2ab65ecf488dc::t_44c4b4672fec76 1-34
+content/tracks/dsa-python/concepts/06-stacks/stacks_test.py
+  s_e2ab65ecf488dc::t_941c27bb55ed8e 2,19-58
+  s_e2ab65ecf488dc::t_41410899beef54 1,3-18,59-62
+content/tracks/helm/concepts/09-chart-tests/exemplar.yaml
+  s_e2ab65ecf488dc::t_b1ad17782023d1 1-48
+content/tracks/terraform/concepts/09-backends-and-remote-state/exemplar.tf
+  s_e2ab65ecf488dc::t_b20953547edea7 1-30
+content/tracks/dsa-python/concepts/04-binary-search/exemplar.py
+  s_e2ab65ecf488dc::t_4ed16dd9303fbd 17,23,27-28,32-33,35-36
+  s_e2ab65ecf488dc::t_dc55e7a9a6abf5 1-16,18-22,24-26,29-31,34
+content/tracks/dsa-javascript/concepts/15-dynamic-programming-1d/config.json
+  s_e2ab65ecf488dc::t_30f7becad2e10c 1-7
+content/tracks/dsa-javascript/concepts/01-two-pointers/instructions.md
+  s_e2ab65ecf488dc::t_df88697c43154c 3,5,7,9,11,16-18,26,31-53,58,60-64,66,68-71,73,75-84,86-89,91-103,106,114,118,123-134,137
+  s_e2ab65ecf488dc::t_d7d79617146d6f 1-2,4,6,8,10,12-15,19-25,27-30,54-57,59,65,67,72,74,85,90,104-105,107-113,115-117,119-122,135-136
+content/tracks/elixir/concepts/09-protocols/stub.ex
+  s_e2ab65ecf488dc::t_91186ab556e39c 1-60
+content/tracks/python/concepts/02-functions/instructions.md
+  s_e2ab65ecf488dc::t_fd1815f8295166 1-90
+content/tracks/rust/concepts/05-pattern-matching/pattern_matching_test.rs
+  s_e2ab65ecf488dc::t_d77a299a2c2fc5 1-79
+content/tracks/python/concepts/06-decorators/config.json
+  s_e2ab65ecf488dc::t_9726c5b613e965 1-7
+packages/ui/src/components/OutputPane.tsx
+  s_e2ab65ecf488dc::t_9d3c1ecac28263 97-98
+  s_e2ab65ecf488dc::t_061fbe799d80b5 40-42
+  s_e2ab65ecf488dc::t_41f7331dd478ae 99
+  s_e2ab65ecf488dc::t_edb2dafaea6a34 34-35,37-38,47,49,52,54,57-65
+content/tracks/assembly/concepts/10-floating-point/instructions.md
+  s_e2ab65ecf488dc::t_a8637f69629eb9 1-93
+content/tracks/helm/concepts/03-built-in-objects/exemplar.yaml
+  s_e2ab65ecf488dc::t_fd97db40c92715 1-14
+content/tracks/dsa-python/concepts/08-linked-list-patterns/config.json
+  s_e2ab65ecf488dc::t_453af7345a2252 5
+  s_e2ab65ecf488dc::t_daabfa8ab603e2 1-4,6-7
+content/tracks/terraform/concepts/10-workspaces-and-environments/workspaces-and-environments_test.sh
+  s_e2ab65ecf488dc::t_f87c440c39bbd9 1-14,16-17,19-30,32-41,43-52
+  s_e2ab65ecf488dc::t_f2f8e69578d5ed 15,18
+  s_e2ab65ecf488dc::t_bde2ad71ecd5b0 42
+  s_e2ab65ecf488dc::t_b51d1a62c2bb4f 31
+content/tracks/elixir/concepts/10-macros/exemplar.ex
+  s_e2ab65ecf488dc::t_a404de1e5c1833 1-40
+content/tracks/shell/concepts/03-loops/loops_test.sh
+  s_e2ab65ecf488dc::t_9a31168ada6b07 1-50
+content/tracks/assembly/concepts/06-memory-and-addressing/memory_and_addressing_test.asm
+  s_e2ab65ecf488dc::t_ef9ed89c3a5b59 1-143
+content/tracks/terraform/concepts/07-modules/stub.tf
+  s_e2ab65ecf488dc::t_1b480eebb367d5 12,14
+  s_e2ab65ecf488dc::t_8b8fad3bc6b8bb 1-11,13,15-19,22-23,25-33
+  s_e2ab65ecf488dc::t_002735009eb12d 20-21,24
+content/tracks/dsa-typescript/concepts/09-tree-dfs/config.json
+  s_e2ab65ecf488dc::t_7f87b86ef34ded 1-7
+content/tracks/helm/concepts/06-functions-and-pipelines/functions-and-pipelines_test.sh
+  s_e2ab65ecf488dc::t_f2b5cf63ff52d3 13,16
+  s_e2ab65ecf488dc::t_9f02a96ecee83b 1-12,14-15,17-38
+content/tracks/dsa-python/concepts/02-sliding-window/instructions.md
+  s_e2ab65ecf488dc::t_97411495d20637 3,5,7,9,11,13,15,18-19,22,27,30,34,42,44,46-76,78-79,81,83,87-98,100-119,128-131,135,137-141
+  s_e2ab65ecf488dc::t_9e8b2475428c01 1-2,4,6,8,10,12,14,16-17,20-21,23-26,28-29,31-33,35-41,43,45,77,80,82,84-86,99,120-127,132-134,136
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "f38c50abd03080b90e607d4633cb7e0df7956000",
+  "prompts": {},
+  "sessions": {
+    "s_e2ab65ecf488dc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0d28a109-d065-49d4-add5-4dedbe42f9c1",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
