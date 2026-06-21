@@ -13,18 +13,29 @@ interface OutputLine {
   timed_out?: boolean;
 }
 
+export interface TraceFrame {
+  label?: string;
+  state?: Record<string, unknown>;
+  highlights?: {
+    arrays?: Record<string, number[]>;
+    nodes?: string[];
+  };
+}
+
 interface UseSubmissionOptions {
   conceptId: string;
   enrollmentId: string;
+  language?: string;
   onComplete?: (passed: boolean) => void;
 }
 
-export function useSubmission({ conceptId, enrollmentId, onComplete }: UseSubmissionOptions) {
+export function useSubmission({ conceptId, enrollmentId, language = "go", onComplete }: UseSubmissionOptions) {
   const [state, setState] = useState<SubmissionState>("idle");
   const [lines, setLines] = useState<OutputLine[]>([]);
   const [exitCode, setExitCode] = useState<number | undefined>();
   const [runtimeMs, setRuntimeMs] = useState<number | undefined>();
   const [lastIsSuite, setLastIsSuite] = useState(false);
+  const [traceFrames, setTraceFrames] = useState<TraceFrame[]>([]);
 
   const createSubmission = trpc.submissions.createSubmission.useMutation();
   const doCompleteSubmission = trpc.submissions.completeSubmission.useMutation();
@@ -36,11 +47,13 @@ export function useSubmission({ conceptId, enrollmentId, onComplete }: UseSubmis
       setExitCode(undefined);
       setRuntimeMs(undefined);
       setLastIsSuite(isSuite);
+      setTraceFrames([]);
 
       try {
         const { submissionId, streamToken } = await createSubmission.mutateAsync({
           conceptId,
           code,
+          language,
           isSuite,
         });
 
@@ -54,6 +67,11 @@ export function useSubmission({ conceptId, enrollmentId, onComplete }: UseSubmis
           const line: OutputLine = { type: "stdout", data: data.data };
           setLines((prev) => [...prev, line]);
           collectedLines.push(line);
+        });
+
+        es.addEventListener("trace", (e: MessageEvent<string>) => {
+          const data = JSON.parse(e.data) as { frames: TraceFrame[] };
+          setTraceFrames(data.frames ?? []);
         });
 
         es.addEventListener("stderr", (e: MessageEvent<string>) => {
@@ -97,8 +115,8 @@ export function useSubmission({ conceptId, enrollmentId, onComplete }: UseSubmis
         setState("error");
       }
     },
-    [conceptId, enrollmentId, createSubmission, doCompleteSubmission, onComplete],
+    [conceptId, enrollmentId, language, createSubmission, doCompleteSubmission, onComplete],
   );
 
-  return { state, lines, exitCode, runtimeMs, isSuite: lastIsSuite, submit };
+  return { state, lines, exitCode, runtimeMs, isSuite: lastIsSuite, traceFrames, submit };
 }

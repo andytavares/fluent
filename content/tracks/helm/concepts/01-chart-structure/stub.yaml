@@ -1,0 +1,20 @@
+# Chart.yaml — fill in every required field
+# TODO: set apiVersion to v2
+# TODO: set name to "webapp"
+# TODO: set description
+# TODO: set type to "application"
+# TODO: set version to "0.1.0"
+# TODO: set appVersion to "2.3.1"
+# TODO: add a dependencies block for redis 17.x.x from bitnami with condition redis.enabled
+apiVersion:
+name:
+description:
+type:
+version:
+appVersion:
+
+---
+# values.yaml — provide default values
+# TODO: set replicaCount to 2
+# TODO: add image block (repository, tag, pullPolicy)
+# TODO: add redis.enabled: true

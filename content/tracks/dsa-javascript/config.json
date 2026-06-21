@@ -1,0 +1,7 @@
+{
+  "slug": "dsa-javascript",
+  "title": "DSA Patterns: JavaScript",
+  "description": "Master the 16 core algorithmic patterns that appear in nearly every technical interview — implemented in JavaScript. Two pointers, sliding window, BFS/DFS, dynamic programming, backtracking, and more.",
+  "language": "javascript",
+  "status": "published"
+}

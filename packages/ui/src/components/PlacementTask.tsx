@@ -12,6 +12,7 @@ interface PlacementTaskProps {
   onSkip: () => void;
   onTakeLesson: () => void;
   onTryAgain?: () => void;
+  onNext?: () => void;
   isSubmitting?: boolean;
   result?: { passed: boolean } | null;
 }
@@ -24,6 +25,7 @@ export function PlacementTask({
   onSkip,
   onTakeLesson,
   onTryAgain,
+  onNext,
   isSubmitting = false,
   result,
 }: PlacementTaskProps) {
@@ -54,7 +56,7 @@ export function PlacementTask({
             : "Not quite. You can try again or take the lesson to learn this concept."}
         </div>
         {result.passed ? (
-          <Button variant="primary" onClick={onSkip}>
+          <Button variant="primary" onClick={onNext ?? onSkip}>
             Continue →
           </Button>
         ) : (

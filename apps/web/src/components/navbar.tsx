@@ -8,7 +8,6 @@ export function Navbar() {
   const pathname = usePathname();
   const profileQuery = trpc.profile.getProfile.useQuery();
 
-  // Extract trackSlug from path like /tracks/go/...
   const trackSlugMatch = pathname.match(/^\/tracks\/([^/]+)/);
   const trackSlug = trackSlugMatch?.[1];
 
@@ -23,65 +22,59 @@ export function Navbar() {
   const activeTrackSlug = trackSlug ?? enrollment?.track.slug;
   const activeTrackTitle = enrollment?.track.title ?? activeTrackSlug;
 
+  const navLink = (href: string, label: string, active: boolean) => (
+    <Link
+      href={href}
+      className={
+        active
+          ? "text-sm font-medium text-[var(--color-text-primary)]"
+          : "text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+      }
+    >
+      {label}
+    </Link>
+  );
+
   return (
-    <nav className="h-12 shrink-0 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-base)] flex items-center px-4 gap-6 z-50">
+    <nav className="h-12 shrink-0 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-base)] flex items-center px-5 gap-6 z-50">
       <Link
         href="/dashboard"
-        className="text-sm font-semibold text-[var(--color-text-primary)] hover:text-[var(--color-text-link)] transition-colors"
+        className="text-sm font-semibold text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] transition-colors tracking-tight"
       >
         Fluent
       </Link>
 
-      <div className="flex items-center gap-4 text-sm">
-        <Link
-          href="/dashboard"
-          className={
-            pathname === "/dashboard"
-              ? "text-[var(--color-text-primary)] font-medium"
-              : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-          }
-        >
-          Dashboard
-        </Link>
+      <div className="h-4 w-px bg-[var(--color-border-subtle)]" />
 
-        {activeTrackSlug && (
-          <Link
-            href={`/tracks/${activeTrackSlug}`}
-            className={
-              pathname.startsWith(`/tracks/${activeTrackSlug}`) && !pathname.includes("/concepts/")
-                ? "text-[var(--color-text-primary)] font-medium"
-                : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-            }
-          >
-            {activeTrackTitle}
-          </Link>
+      <div className="flex items-center gap-5">
+        {navLink("/dashboard", "Dashboard", pathname === "/dashboard")}
+        {navLink("/visualizer", "Visualizer", pathname.startsWith("/visualizer"))}
+
+        {activeTrackSlug && navLink(
+          `/tracks/${activeTrackSlug}`,
+          activeTrackTitle ?? activeTrackSlug,
+          pathname.startsWith(`/tracks/${activeTrackSlug}`) && !pathname.includes("/concepts/"),
         )}
 
-        {pathname.includes("/concepts/") && activeTrackSlug && (
-          <Link
-            href={`/tracks/${activeTrackSlug}`}
-            className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-          >
-            ← Learning Path
-          </Link>
+        {pathname.includes("/concepts/") && activeTrackSlug && navLink(
+          `/tracks/${activeTrackSlug}`,
+          "← Path",
+          false,
         )}
 
-        {activeTrackSlug && (
-          <Link
-            href={`/tracks/${activeTrackSlug}/capstone`}
-            className={
-              pathname.includes("/capstone")
-                ? "text-[var(--color-text-primary)] font-medium"
-                : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-            }
-          >
-            Capstone
-          </Link>
+        {activeTrackSlug && navLink(
+          `/tracks/${activeTrackSlug}/capstone`,
+          "Capstone",
+          pathname.includes("/capstone"),
         )}
       </div>
 
-      <div className="ml-auto text-xs text-[var(--color-text-secondary)]">
-        {profileQuery.data?.email}
+      <div className="ml-auto flex items-center gap-3">
+        {profileQuery.data?.email && (
+          <span className="text-xs font-mono text-[var(--color-text-disabled)] hidden sm:block">
+            {profileQuery.data.email}
+          </span>
+        )}
       </div>
     </nav>
   );

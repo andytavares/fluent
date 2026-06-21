@@ -1,0 +1,7 @@
+{
+  "slug": "helm",
+  "title": "Helm",
+  "description": "Learn Helm — the Kubernetes package manager. Write reusable, parameterized charts that deploy complex applications reliably across environments.",
+  "language": "helm",
+  "status": "published"
+}

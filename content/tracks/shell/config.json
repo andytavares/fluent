@@ -1,0 +1,7 @@
+{
+  "slug": "shell",
+  "title": "Shell Scripting",
+  "description": "Master Bash scripting — the glue of every Unix system. Write robust scripts for automation, text processing, and system administration.",
+  "language": "shell",
+  "status": "published"
+}

@@ -1,0 +1,25 @@
+{{/*
+templates/NOTES.txt
+TODO: print release name, namespace, and app version
+TODO: if service.type == "LoadBalancer", show kubectl get svc -w command
+TODO: otherwise show kubectl port-forward command using service.port
+*/}}
+
+Release: {{ .Release.Name }}
+Namespace:
+App version:
+
+{{- if eq .Values.service.type "LoadBalancer" }}
+# TODO: add kubectl get svc -w command for LoadBalancer
+{{- else }}
+# TODO: add kubectl port-forward command using .Values.service.port
+{{- end }}
+
+---
+# values.schema.json
+# TODO: write JSON Schema that validates:
+#   - replicaCount: integer, minimum 1
+#   - image: required object, repository is required string
+#   - image.pullPolicy: enum ["Always", "IfNotPresent", "Never"]
+#   - service.type: enum ["ClusterIP", "NodePort", "LoadBalancer"]
+#   - service.port: integer, 1-65535

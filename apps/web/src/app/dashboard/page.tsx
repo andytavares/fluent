@@ -5,6 +5,14 @@ import { useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc/client";
 import { DashboardStats, ContinueBuildingCard } from "@fluent/ui";
 
+const LANG_COLORS: Record<string, string> = {
+  go: "#00ACD7", javascript: "#F7DF1E", typescript: "#3178C6",
+  c: "#A8B9CC", cpp: "#659AD2", java: "#ED8B00",
+  elixir: "#9B59B6", ruby: "#CC342D", python: "#F7C948",
+  shell: "#4EAA25", assembly: "#6E4C13", terraform: "#844FBA",
+  helm: "#0F1689", kotlin: "#7F52FF", rust: "#CE422B",
+};
+
 export default function DashboardPage() {
   const router = useRouter();
   const dashboardQuery = trpc.dashboard.getDashboard.useQuery();
@@ -69,23 +77,28 @@ export default function DashboardPage() {
                 return (
                   <div
                     key={e.track.slug}
-                    className="flex items-center gap-4 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)] px-4 py-3 hover:border-[var(--color-border-default)] transition-colors"
+                    className="flex items-center gap-4 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)] px-4 py-3.5 hover:border-[var(--color-border-default)] transition-colors"
                   >
+                    {/* Language color dot */}
+                    <div
+                      className="h-2.5 w-2.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: LANG_COLORS[e.track.language] ?? "#a1a1aa" }}
+                    />
                     <Link href={`/tracks/${e.track.slug}`} className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-[var(--color-text-primary)]">{e.track.title}</p>
                       <div className="mt-1.5 flex items-center gap-2">
-                        <div className="h-1.5 flex-1 rounded-full bg-[var(--color-bg-subtle)]">
+                        <div className="h-1 flex-1 rounded-full bg-[var(--color-surface-overlay)]">
                           <div
-                            className="h-full rounded-full bg-[var(--color-interactive-primary)]"
+                            className="h-full rounded-full bg-[var(--color-interactive-primary)] transition-all"
                             style={{ width: `${pct}%` }}
                           />
                         </div>
-                        <span className="shrink-0 text-xs text-[var(--color-text-secondary)]">
+                        <span className="shrink-0 text-xs font-mono text-[var(--color-text-secondary)]">
                           {done}/{total}
                         </span>
                       </div>
                     </Link>
-                    <div className="flex shrink-0 items-center gap-3">
+                    <div className="flex shrink-0 items-center gap-4">
                       <button
                         onClick={() => {
                           if (confirm(`Reset all progress for ${e.track.title}?`)) {
@@ -93,11 +106,11 @@ export default function DashboardPage() {
                           }
                         }}
                         disabled={resetEnrollment.isPending}
-                        className="text-xs text-[var(--color-text-secondary)] hover:text-red-400 disabled:opacity-50"
+                        className="text-xs text-[var(--color-text-disabled)] hover:text-red-400 disabled:opacity-50 transition-colors"
                       >
                         Reset
                       </button>
-                      <Link href={`/tracks/${e.track.slug}`} className="text-xs text-[var(--color-text-link)]">
+                      <Link href={`/tracks/${e.track.slug}`} className="text-xs font-medium text-[var(--color-text-link)] hover:text-[var(--color-interactive-primary-hover)] transition-colors">
                         Continue →
                       </Link>
                     </div>
@@ -123,25 +136,32 @@ export default function DashboardPage() {
               <Link
                 key={track.slug}
                 href={`/tracks/${track.slug}`}
-                className="flex items-center justify-between rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)] px-4 py-3 hover:border-[var(--color-border-default)] transition-colors"
+                className="flex items-center gap-4 overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)] px-4 py-3.5 hover:border-[var(--color-interactive-primary)]/50 transition-colors group"
               >
-                <div>
+                <div
+                  className="h-2.5 w-2.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: LANG_COLORS[track.language] ?? "#a1a1aa" }}
+                />
+                <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-[var(--color-text-primary)]">{track.title}</p>
-                  <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">{track.description}</p>
+                  <p className="mt-0.5 line-clamp-2 text-xs text-[var(--color-text-secondary)]">{track.description}</p>
                 </div>
-                <span className="ml-4 shrink-0 text-xs text-[var(--color-text-link)]">Start →</span>
+                <span className="ml-4 shrink-0 text-xs font-medium text-[var(--color-text-link)] transition-colors group-hover:text-[var(--color-interactive-primary)]">Start →</span>
               </Link>
             ))}
             {comingSoonTracks.map((track) => (
               <div
                 key={track.slug}
-                className="flex items-center justify-between rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-base)] px-4 py-3 opacity-60 cursor-default"
+                className="flex items-center gap-4 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-base)] px-4 py-3.5 opacity-50 cursor-default"
               >
-                <div>
+                <div
+                  className="h-2.5 w-2.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: LANG_COLORS[track.language] ?? "#52525b" }}
+                />
+                <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-[var(--color-text-primary)]">{track.title}</p>
-                  <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">{track.description}</p>
                 </div>
-                <span className="ml-4 shrink-0 text-xs text-[var(--color-text-tertiary)]">coming soon</span>
+                <span className="ml-4 shrink-0 text-xs text-[var(--color-text-disabled)]">coming soon</span>
               </div>
             ))}
           </div>

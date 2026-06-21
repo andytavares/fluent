@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
-import { CodeEditor, OutputPane, TestOutModal, CongratsModal } from "@fluent/ui";
+import remarkGfm from "remark-gfm";
+import { CodeEditor, OutputPane, TestOutModal, CongratsModal, TracePanel, AlgorithmVisualizer } from "@fluent/ui";
 import { trpc } from "@/lib/trpc/client";
 import { useSubmission } from "@/hooks/use-submission";
 
@@ -43,9 +44,10 @@ export default function LessonPage() {
     }
   }, [conceptQuery.data, code]);
 
-  const { state, lines, exitCode, runtimeMs, isSuite, submit } = useSubmission({
+  const { state, lines, exitCode, runtimeMs, isSuite, traceFrames, submit } = useSubmission({
     conceptId: conceptQuery.data?.id ?? "",
     enrollmentId: enrollment?.id ?? "",
+    language: conceptQuery.data?.language,
     onComplete: (passed) => {
       if (isTestOutRef.current) {
         setTestOutResult({ passed });
@@ -119,9 +121,12 @@ export default function LessonPage() {
             [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:break-normal [&_pre_code]:whitespace-pre
             [&_ul]:my-2 [&_ul]:pl-4 [&_li]:mb-1
             [&_ol]:my-2 [&_ol]:pl-4
+            [&_table]:w-full [&_table]:border-collapse [&_table]:my-3 [&_table]:text-xs
+            [&_th]:border [&_th]:border-[var(--color-border-subtle)] [&_th]:px-2.5 [&_th]:py-1.5 [&_th]:text-left [&_th]:font-medium [&_th]:text-[var(--color-text-primary)] [&_th]:bg-[var(--color-bg-subtle)]
+            [&_td]:border [&_td]:border-[var(--color-border-subtle)] [&_td]:px-2.5 [&_td]:py-1.5
           ">
             {concept.instructions
-              ? <ReactMarkdown>{concept.instructions}</ReactMarkdown>
+              ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{concept.instructions}</ReactMarkdown>
               : <p>Complete the exercise in the editor.</p>
             }
           </div>
@@ -142,6 +147,12 @@ export default function LessonPage() {
             {...(exitCode !== null && exitCode !== undefined ? { exitCode } : {})}
             {...(runtimeMs !== null && runtimeMs !== undefined ? { runtimeMs } : {})}
           />
+
+          <AlgorithmVisualizer conceptSlug={conceptSlug} title={concept.title} />
+
+          {traceFrames.length > 0 && (
+            <TracePanel frames={traceFrames} />
+          )}
 
           <div className="flex gap-3">
             <button

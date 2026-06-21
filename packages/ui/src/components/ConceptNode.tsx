@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { clsx } from "clsx";
 import { Badge } from "./Badge";
 import type { LearnerState } from "./types";
@@ -25,66 +24,62 @@ const STATE_LABELS: Record<LearnerState, string> = {
   completed: "Completed",
 };
 
+const CHECK = (
+  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
+    <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 export function ConceptNode({ concept, state, achievedVia, href, onClick }: ConceptNodeProps) {
-  const [expanded, setExpanded] = useState(true);
-  const isNavigable = state === "available" || state === "in_progress";
   const isLocked = state === "locked";
-  const isMastered = state === "mastered";
-  const isCompleted = state === "completed";
+  const isAvailable = state === "available";
+  const isInProgress = state === "in_progress";
+  const isMastered = state === "mastered" || state === "completed";
 
   const content = (
     <div
       className={clsx(
-        "flex items-center gap-3 rounded-xl border p-4 transition-colors",
-        {
-          "border-[var(--color-border-subtle)] opacity-50 cursor-not-allowed": isLocked,
-          "border-[var(--color-border-default)] bg-[var(--color-surface-raised)] cursor-pointer hover:border-[var(--color-border-focus)]":
-            isNavigable,
-          "border-[var(--color-status-success-bg)]/40 bg-[var(--color-surface-raised)]":
-            isMastered || isCompleted,
-        },
+        "flex items-center gap-3 rounded-xl border p-3.5 transition-colors",
+        isLocked && "border-[var(--color-border-subtle)] opacity-40 cursor-not-allowed",
+        (isAvailable || isInProgress) && "border-[var(--color-border-default)] bg-[var(--color-surface-raised)] hover:border-[var(--color-interactive-primary)]/50",
+        isMastered && "border-[var(--color-status-success-bg)]/20 bg-[var(--color-surface-raised)]",
       )}
     >
-      <span className="text-xs font-mono text-[var(--color-text-disabled)] w-6">
-        {String(concept.position).padStart(2, "0")}
+      {/* Position number */}
+      <span
+        className={clsx(
+          "text-xs font-mono w-6 shrink-0 text-center",
+          isLocked && "text-[var(--color-text-disabled)]",
+          (isAvailable || isInProgress) && "text-[var(--color-interactive-primary)]",
+          isMastered && "text-[var(--color-status-success-text)]",
+        )}
+      >
+        {isMastered ? CHECK : String(concept.position).padStart(2, "0")}
       </span>
-      <div className="flex-1">
-        <span className="text-sm font-medium text-[var(--color-text-primary)]">
+
+      {/* Title */}
+      <div className="flex-1 min-w-0">
+        <span
+          className={clsx(
+            "text-sm font-medium",
+            isLocked ? "text-[var(--color-text-disabled)]" : "text-[var(--color-text-primary)]",
+          )}
+        >
           {concept.title}
         </span>
         {achievedVia && (
-          <span className="ml-2 text-xs text-[var(--color-text-secondary)]">
+          <span className="ml-2 text-xs text-[var(--color-text-tertiary)]">
             via {achievedVia.replace("_", " ")}
           </span>
         )}
       </div>
-      <Badge variant={state}>{STATE_LABELS[state]}</Badge>
-      {(isMastered || isCompleted) && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setExpanded((v) => !v);
-          }}
-          className="text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
-          aria-label={expanded ? "Collapse" : "Expand"}
-        >
-          {expanded ? "▲" : "▼"}
-        </button>
-      )}
+
+      {/* State badge */}
+      {!isLocked && <Badge variant={state}>{STATE_LABELS[state]}</Badge>}
     </div>
   );
 
-  if (isLocked) {
-    return <div aria-disabled="true">{content}</div>;
-  }
-
-  if (href) {
-    return <a href={href}>{content}</a>;
-  }
-
-  return (
-    <button onClick={onClick} className="w-full text-left">
-      {content}
-    </button>
-  );
+  if (isLocked) return <div aria-disabled="true">{content}</div>;
+  if (href) return <a href={href} className="block">{content}</a>;
+  return <button onClick={onClick} className="w-full text-left">{content}</button>;
 }

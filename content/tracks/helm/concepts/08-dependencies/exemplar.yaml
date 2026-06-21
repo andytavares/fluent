@@ -1,0 +1,34 @@
+# Chart.yaml
+apiVersion: v2
+name: platform
+description: A platform chart with database and cache dependencies
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+dependencies:
+  - name: postgresql
+    version: "12.x.x"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled
+  - name: redis
+    version: "17.x.x"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: redis.enabled
+    alias: cache
+
+---
+# values.yaml
+global:
+  imageRegistry: "gcr.io/myproject"
+
+postgresql:
+  enabled: true
+  auth:
+    database: myplatform
+    username: platform
+
+cache:
+  enabled: true
+  master:
+    persistence:
+      enabled: false

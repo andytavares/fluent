@@ -1,0 +1,7 @@
+{
+  "slug": "rust",
+  "title": "Rust Essentials",
+  "description": "Learn Rust — a systems language with memory safety without garbage collection. Master ownership, borrowing, lifetimes, and fearless concurrency.",
+  "language": "rust",
+  "status": "published"
+}

@@ -1,0 +1,7 @@
+{
+  "slug": "dsa-typescript",
+  "title": "DSA Patterns: TypeScript",
+  "description": "Master the 16 core algorithmic patterns that appear in nearly every technical interview — implemented in TypeScript with full type annotations. Two pointers, sliding window, BFS/DFS, dynamic programming, backtracking, and more.",
+  "language": "typescript",
+  "status": "published"
+}

@@ -3,6 +3,25 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
+// Test file patterns per language — must match submissions.ts TEST_FILE_PATTERNS
+const TEST_FILE_PATTERNS: Record<string, RegExp> = {
+  go: /_test\.go$/,
+  javascript: /_test\.js$/,
+  typescript: /_test\.ts$/,
+  c: /_test\.c$/,
+  cpp: /_test\.cpp$/,
+  java: /SolutionTest\.java$/i,
+  elixir: /_test\.exs?$/,
+  ruby: /_test\.rb$/,
+  python: /_test\.py$/,
+  shell: /_test\.sh$/,
+  assembly: /_test\.asm$/,
+  terraform: /_test\.sh$/,
+  helm: /_test\.sh$/,
+  kotlin: /_test\.kt$/,
+  rust: /_test\.rs$/,
+};
+
 const prisma = new PrismaClient();
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -26,6 +45,15 @@ interface ConceptConfig {
 
 function readJson<T>(path: string): T {
   return JSON.parse(readFileSync(path, "utf8")) as T;
+}
+
+function hasTestFile(conceptDir: string, language: string): boolean {
+  try {
+    const pattern = TEST_FILE_PATTERNS[language] ?? /_test\./;
+    return readdirSync(conceptDir).some((f) => pattern.test(f));
+  } catch {
+    return false;
+  }
 }
 
 async function seedTrack(trackDir: string) {
@@ -99,6 +127,12 @@ async function seedTrack(trackDir: string) {
         data: { contentPath: relPath },
       });
     }
+
+    // Warn loudly if the concept is missing a test file — submissions will silently pass without one
+    if (!hasTestFile(conceptDir, trackConfig.language)) {
+      console.warn(`  ⚠ MISSING TEST FILE: ${trackConfig.slug}/${cfg.slug} (language: ${trackConfig.language})`);
+    }
+
     seededCount++;
   }
 

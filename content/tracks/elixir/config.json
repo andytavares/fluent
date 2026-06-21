@@ -1,0 +1,7 @@
+{
+  "slug": "elixir",
+  "title": "Elixir Essentials",
+  "description": "Learn Elixir — a functional, concurrent language built on the Erlang VM. Master pattern matching, processes, OTP, and fault-tolerant system design.",
+  "language": "elixir",
+  "status": "published"
+}

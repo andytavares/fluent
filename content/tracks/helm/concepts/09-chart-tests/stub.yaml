@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  # TODO: name = .Release.Name + "-test-connection"
+  name:
+  annotations:
+    # TODO: helm.sh/hook = test
+    "helm.sh/hook":
+    # TODO: helm.sh/hook-delete-policy = before-hook-creation
+    "helm.sh/hook-delete-policy":
+spec:
+  # TODO: restartPolicy = Never
+  restartPolicy:
+  containers:
+    - name: curl
+      image: curlimages/curl:latest
+      # TODO: command to curl http://<webapp.fullname>:<service.port>/health
+      # use include "webapp.fullname" . for the hostname
+      command:
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  # TODO: name = .Release.Name + "-test-db"
+  name:
+  annotations:
+    # TODO: helm.sh/hook = test
+    "helm.sh/hook":
+    # TODO: helm.sh/hook-delete-policy = before-hook-creation
+    "helm.sh/hook-delete-policy":
+    # TODO: helm.sh/hook-weight = "1"
+    "helm.sh/hook-weight":
+spec:
+  restartPolicy: Never
+  containers:
+    - name: psql
+      image: postgres:15-alpine
+      # TODO: command: psql -h <.Release.Name>-postgresql -U <postgresql.auth.username> -c "SELECT 1"
+      command:
+      env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              # TODO: name = .Release.Name + "-postgresql"
+              name:
+              key: password

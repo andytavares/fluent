@@ -1,0 +1,7 @@
+{
+  "slug": "dsa-python",
+  "title": "DSA Patterns: Python",
+  "description": "Master the 16 core algorithmic patterns that appear in nearly every technical interview — implemented in Python. Two pointers, sliding window, BFS/DFS, dynamic programming, backtracking, and more.",
+  "language": "python",
+  "status": "published"
+}

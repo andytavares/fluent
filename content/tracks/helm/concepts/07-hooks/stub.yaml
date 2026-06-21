@@ -1,0 +1,28 @@
+{{- if .Values.migrations.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  # TODO: name = .Release.Name + "-db-migrate"
+  name:
+  annotations:
+    # TODO: helm.sh/hook = pre-install and pre-upgrade (comma-separated)
+    "helm.sh/hook":
+    # TODO: helm.sh/hook-weight = "-5"
+    "helm.sh/hook-weight":
+    # TODO: helm.sh/hook-delete-policy = before-hook-creation,hook-succeeded
+    "helm.sh/hook-delete-policy":
+spec:
+  # TODO: backoffLimit = 0
+  backoffLimit:
+  # TODO: activeDeadlineSeconds = 120
+  activeDeadlineSeconds:
+  template:
+    spec:
+      # TODO: restartPolicy = Never
+      restartPolicy:
+      containers:
+        - name: migrate
+          # TODO: image = .Values.migrations.image
+          image:
+          command: ["sh", "-c", "python manage.py migrate"]
+{{- end }}

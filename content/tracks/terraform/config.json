@@ -1,0 +1,7 @@
+{
+  "slug": "terraform",
+  "title": "Terraform",
+  "description": "Learn Terraform — the infrastructure-as-code standard. Define, plan, and provision cloud infrastructure with HCL across any provider.",
+  "language": "terraform",
+  "status": "published"
+}

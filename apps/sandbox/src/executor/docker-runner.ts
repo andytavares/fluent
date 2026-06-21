@@ -10,12 +10,22 @@ const execFileAsync = promisify(execFile);
 const DOCKER_IMAGE = process.env["GO_RUNNER_IMAGE"] ?? "golang:1.21-alpine";
 const TIMEOUT_MS = parseInt(process.env["EXECUTION_TIMEOUT_MS"] ?? "30000", 10);
 
+export interface TraceFrame {
+  label?: string;
+  state?: Record<string, unknown>;
+  highlights?: {
+    arrays?: Record<string, number[]>;
+    nodes?: string[];
+  };
+}
+
 export interface ExecutionResult {
   stdout: string | null;
   stderr: string | null;
   exitCode: number | null;
   runtimeMs: number | null;
   timedOut: boolean;
+  trace?: TraceFrame[];
 }
 
 export async function runGoCode(code: string, testFiles?: string[]): Promise<ExecutionResult> {

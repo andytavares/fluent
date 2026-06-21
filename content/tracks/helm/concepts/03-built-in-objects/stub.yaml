@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  # TODO: name = .Release.Name + "-config"
+  name:
+  # TODO: namespace = .Release.Namespace
+  namespace:
+  labels:
+    # TODO: app.kubernetes.io/name = .Chart.Name
+    app.kubernetes.io/name:
+    # TODO: app.kubernetes.io/version = .Chart.AppVersion (quoted)
+    app.kubernetes.io/version:
+    # TODO: helm.sh/chart = .Chart.Name + "-" + .Chart.Version
+    helm.sh/chart:
+  annotations:
+    # TODO: meta.helm.sh/template = .Template.Name
+    meta.helm.sh/template:
+data:
+  # TODO: install_mode = "install" if .Release.IsInstall, else "upgrade"
+  install_mode:
+  # TODO: kube_version = .Capabilities.KubeVersion.GitVersion
+  kube_version:

@@ -1,36 +1,42 @@
-/* Rosetta dark theme — default. CSS custom properties from semantic tokens. */
+/* Rosetta dark theme — zinc base, amber accent */
 :root,
 [data-theme="dark"] {
-  --color-surface-base: #020617;
-  --color-surface-raised: #0f172a;
-  --color-surface-overlay: #1e293b;
-  --color-surface-sunken: #020617;
+  --color-surface-base: #09090b;
+  --color-surface-raised: #18181b;
+  --color-surface-overlay: #27272a;
+  --color-surface-sunken: #09090b;
 
-  --color-text-primary: #f8fafc;
-  --color-text-secondary: #94a3b8;
-  --color-text-disabled: #475569;
-  --color-text-inverse: #020617;
-  --color-text-link: #818cf8;
+  --color-text-primary: #fafafa;
+  --color-text-secondary: #a1a1aa;
+  --color-text-tertiary: #71717a;
+  --color-text-disabled: #52525b;
+  --color-text-inverse: #09090b;
+  --color-text-link: #fbbf24;
 
-  --color-border-default: #334155;
-  --color-border-subtle: #1e293b;
-  --color-border-focus: #6366f1;
+  --color-border-default: #3f3f46;
+  --color-border-subtle: #27272a;
+  --color-border-focus: #f59e0b;
 
-  --color-status-success-bg: #16a34a;
-  --color-status-success-text: #4ade80;
-  --color-status-success-subtle: #052e16;
-  --color-status-warning-bg: #f59e0b;
-  --color-status-warning-text: #fbbf24;
-  --color-status-warning-subtle: #1c1400;
+  --color-status-success-bg: #059669;
+  --color-status-success-text: #34d399;
+  --color-status-success-subtle: #022c22;
+  --color-status-warning-bg: #ea580c;
+  --color-status-warning-text: #fb923c;
+  --color-status-warning-subtle: #1c0700;
   --color-status-error-bg: #dc2626;
   --color-status-error-text: #f87171;
   --color-status-error-subtle: #2d0a0a;
-  --color-bg-subtle: #0f172a;
+  --color-bg-subtle: #18181b;
 
-  --color-interactive-primary: #6366f1;
-  --color-interactive-primary-hover: #4f46e5;
-  --color-interactive-primary-text: #ffffff;
-  --color-interactive-secondary: #334155;
-  --color-interactive-secondary-hover: #475569;
-  --color-interactive-secondary-text: #f8fafc;
+  --color-interactive-primary: #f59e0b;
+  --color-interactive-primary-hover: #d97706;
+  --color-interactive-primary-text: #09090b;
+  --color-interactive-secondary: #27272a;
+  --color-interactive-secondary-hover: #3f3f46;
+  --color-interactive-secondary-text: #fafafa;
+
+  --color-amber: #f59e0b;
+  --color-amber-subtle: rgba(245, 158, 11, 0.12);
+  --color-emerald: #10b981;
+  --color-emerald-subtle: rgba(16, 185, 129, 0.12);
 }

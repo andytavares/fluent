@@ -7,13 +7,14 @@ import type { ConfidenceLevel } from "@fluent/ui";
 import { trpc } from "@/lib/trpc/client";
 import { useSubmission } from "@/hooks/use-submission";
 
-type Step = "confidence" | "placement" | "done";
+type Step = "confidence" | "placement";
 type PlacementConcept = {
   id: string;
   slug: string;
   title: string;
   stub: string;
   taskPrompt: string;
+  language?: string;
 };
 
 export default function OnboardingPage() {
@@ -27,6 +28,8 @@ export default function OnboardingPage() {
   const [placementResult, setPlacementResult] = useState<{ passed: boolean } | null>(null);
 
   const trackQuery = trpc.tracks.getTrack.useQuery({ slug: trackSlug });
+  // Pre-fetch concepts so we can jump to the first one for beginners
+  const conceptsQuery = trpc.tracks.listConcepts.useQuery({ trackSlug });
   const createEnrollment = trpc.enrollments.createEnrollment.useMutation();
   const startPlacement = trpc.placement.startPlacement.useMutation();
   const submitTask = trpc.placement.submitTask.useMutation();
@@ -38,18 +41,9 @@ export default function OnboardingPage() {
   const { submit: runCode, state: submissionState } = useSubmission({
     conceptId: currentConcept?.id ?? "",
     enrollmentId: enrollmentId ?? "",
+    language: currentConcept?.language,
     onComplete: (passed) => onCompleteRef.current?.(passed),
   });
-
-  async function advanceOrFinish(conceptId: string, passed: boolean) {
-    if (!enrollmentId) return;
-    await submitTask.mutateAsync({ enrollmentId, conceptId, passed });
-    if (passed) {
-      setPlacementResult({ passed: true });
-    } else {
-      setPlacementResult({ passed: false });
-    }
-  }
 
   async function handleConfidenceContinue() {
     if (!trackQuery.data || !confidence) return;
@@ -58,40 +52,45 @@ export default function OnboardingPage() {
     setEnrollmentId(enrollment.id);
 
     if (confidence === "experienced") {
+      // Test-out flow
       const concepts = await startPlacement.mutateAsync({ enrollmentId: enrollment.id });
       setPlacementConcepts(concepts as PlacementConcept[]);
       setStep("placement");
     } else {
-      router.push(`/tracks/${trackSlug}`);
+      // Beginner/some experience → go straight to the first lesson
+      const firstConcept = conceptsQuery.data?.[0];
+      if (firstConcept) {
+        router.push(`/tracks/${trackSlug}/concepts/${firstConcept.slug}`);
+      } else {
+        router.push(`/tracks/${trackSlug}`);
+      }
     }
   }
 
-  async function handleSkipConcept() {
-    // Skip this concept (no score) and continue to the next placement task
-    if (currentConceptIdx + 1 < placementConcepts.length) {
-      setCurrentConceptIdx((i) => i + 1);
-      setPlacementResult(null);
-    } else {
-      await skipPlacement.mutateAsync({ enrollmentId: enrollmentId! });
-      router.push(`/tracks/${trackSlug}`);
-    }
-  }
-
-  async function handleTakeLesson() {
-    // End the entire placement flow and go to the track — pick up from the first available concept
+  // "Skip this concept" in placement → end test-out, go to lesson list
+  async function handleSkipToLessons() {
     if (enrollmentId) {
       await skipPlacement.mutateAsync({ enrollmentId });
     }
     router.push(`/tracks/${trackSlug}`);
   }
 
-  function handleContinueAfterResult() {
+  // After passing a concept, move to the next one (or finish)
+  function handleNextConcept() {
     if (currentConceptIdx + 1 < placementConcepts.length) {
       setCurrentConceptIdx((i) => i + 1);
       setPlacementResult(null);
     } else {
+      // Finished all placement concepts
       router.push(`/tracks/${trackSlug}`);
     }
+  }
+
+  // Score current concept and show result
+  async function advanceOrFinish(conceptId: string, passed: boolean) {
+    if (!enrollmentId) return;
+    await submitTask.mutateAsync({ enrollmentId, conceptId, passed });
+    setPlacementResult({ passed });
   }
 
   function handlePlacementSubmit(code: string) {
@@ -114,7 +113,7 @@ export default function OnboardingPage() {
           Welcome to {trackTitle}
         </h1>
         <p className="mb-8 text-center text-[var(--color-text-secondary)]">
-          Tell us your experience level so we can personalize your path.
+          How much experience do you have with this language?
         </p>
         <ConfidenceSelector value={confidence} onChange={setConfidence} />
         {createEnrollment.error && (
@@ -125,7 +124,7 @@ export default function OnboardingPage() {
         <button
           onClick={handleConfidenceContinue}
           disabled={!confidence || !trackQuery.data || isBusy}
-          className="mt-6 w-full rounded-lg bg-[var(--color-interactive-primary)] px-4 py-2.5 text-sm font-medium text-[var(--color-interactive-primary-text)] disabled:opacity-50"
+          className="mt-6 w-full rounded-lg bg-[var(--color-interactive-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--color-interactive-primary-text)] disabled:opacity-50 transition-colors"
         >
           {isBusy ? "Setting up…" : "Continue"}
         </button>
@@ -138,8 +137,13 @@ export default function OnboardingPage() {
     return (
       <main className="mx-auto max-w-2xl px-6 py-16">
         <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-[var(--color-text-primary)]">Placement</h1>
-          <span className="text-sm text-[var(--color-text-secondary)]">
+          <div>
+            <h1 className="text-lg font-semibold text-[var(--color-text-primary)]">Test out</h1>
+            <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+              Pass each challenge to skip it. Skip any time to go straight to lessons.
+            </p>
+          </div>
+          <span className="text-sm font-mono text-[var(--color-text-secondary)]">
             {currentConceptIdx + 1} / {placementConcepts.length}
           </span>
         </div>
@@ -148,11 +152,12 @@ export default function OnboardingPage() {
           stub={currentConcept.stub}
           taskPrompt={currentConcept.taskPrompt}
           onSubmit={handlePlacementSubmit}
-          onSkip={placementResult?.passed ? handleContinueAfterResult : handleSkipConcept}
-          onTakeLesson={handleTakeLesson}
+          onSkip={handleSkipToLessons}
+          onTakeLesson={handleSkipToLessons}
           onTryAgain={handleTryAgain}
           isSubmitting={isRunning}
           result={placementResult}
+          onNext={handleNextConcept}
         />
       </main>
     );

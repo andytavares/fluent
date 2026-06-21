@@ -38,6 +38,8 @@ export async function streamExecutionResult(
           send("stdout", { data: obj["data"] });
         } else if (obj["type"] === "stderr") {
           send("stderr", { data: obj["data"] });
+        } else if (obj["type"] === "trace") {
+          send("trace", { frames: obj["data"] ? JSON.parse(obj["data"]) : [] });
         } else if (obj["type"] === "result") {
           send("result", {
             exit_code: parseInt(obj["exit_code"] ?? "-1", 10),

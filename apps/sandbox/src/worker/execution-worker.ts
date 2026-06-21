@@ -1,6 +1,7 @@
 import { Worker } from "bullmq";
 import { redis } from "../db/redis.js";
 import { runGoCode } from "../executor/docker-runner.js";
+import { runCode } from "../executor/polyglot-runner.js";
 import { logger } from "../middleware/logger.js";
 import { executionsTotal, executionDuration } from "../middleware/metrics.js";
 import { CODE_EXECUTION_QUEUE, WORKER_CONCURRENCY } from "./queues.js";
@@ -20,29 +21,41 @@ export function createExecutionWorker() {
   return new Worker<CodeExecutionJob>(
     CODE_EXECUTION_QUEUE,
     async (job) => {
-      const { jobId, userId, conceptId, code, testFiles } = job.data;
+      const { jobId, userId, conceptId, code, language, isSuite, testFiles } = job.data;
       const start = Date.now();
 
-      logger.info({
-        event: "execution_start",
-        jobId,
-        userId,
-        conceptId,
-      });
+      logger.info({ event: "execution_start", jobId, userId, conceptId, language });
 
       try {
-        const result = await runGoCode(code, testFiles);
+        let result: {
+          stdout: string | null;
+          stderr: string | null;
+          exitCode: number | null;
+          runtimeMs: number | null;
+          timedOut: boolean;
+        };
+
+        if (language === "go") {
+          // Docker runner handles go test multi-file natively
+          result = await runGoCode(code, isSuite ? testFiles : undefined);
+        } else {
+          // Native polyglot runner for all other languages
+          const testFile = isSuite && testFiles && testFiles.length > 0 ? testFiles[0] : undefined;
+          result = await runCode(code, language, testFile);
+        }
+
         const durationMs = Date.now() - start;
 
-        // Write stdout/stderr before result so SSE consumer gets them before stream closes
         if (result.stdout) {
           await redis.xadd(`result:${jobId}`, "*", "type", "stdout", "data", result.stdout);
         }
         if (result.stderr) {
           await redis.xadd(`result:${jobId}`, "*", "type", "stderr", "data", result.stderr);
         }
+        if (result.trace && result.trace.length > 0) {
+          await redis.xadd(`result:${jobId}`, "*", "type", "trace", "data", JSON.stringify(result.trace));
+        }
 
-        // Write result last — SSE streamer closes stream on this entry
         await redis.xadd(
           `result:${jobId}`,
           "*",
@@ -56,15 +69,14 @@ export function createExecutionWorker() {
           String(result.timedOut),
         );
 
-        // Set TTL so streams don't accumulate
         await redis.expire(`result:${jobId}`, 300);
 
-        // Structured log per FR-049
         logger.info({
           event: "execution_complete",
           jobId,
           userId,
           conceptId,
+          language,
           duration_ms: durationMs,
           exit_code: result.exitCode,
           timed_out: result.timedOut,
@@ -76,7 +88,7 @@ export function createExecutionWorker() {
         return { jobId, exitCode: result.exitCode, runtimeMs: result.runtimeMs };
       } catch (err) {
         const durationMs = Date.now() - start;
-        logger.error({ event: "execution_error", jobId, userId, conceptId, duration_ms: durationMs, err });
+        logger.error({ event: "execution_error", jobId, userId, conceptId, language, duration_ms: durationMs, err });
         executionsTotal.inc({ status: "error" });
         throw err;
       }

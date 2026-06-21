@@ -1,0 +1,7 @@
+{
+  "slug": "assembly",
+  "title": "x86-64 Assembly",
+  "description": "Learn x86-64 assembly — the language of the machine. Understand registers, the stack, calling conventions, and how high-level code maps to hardware.",
+  "language": "assembly",
+  "status": "published"
+}

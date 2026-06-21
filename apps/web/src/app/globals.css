@@ -2,3 +2,15 @@
 @source "../../../../packages/ui/src";
 @import "@fluent/ui/themes/dark.css";
 @import "@fluent/ui/themes/motion.css";
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code, pre, kbd, .font-mono {
+  font-family: var(--font-mono, ui-monospace, 'Cascadia Code', monospace);
+}

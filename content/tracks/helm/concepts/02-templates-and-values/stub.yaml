@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # TODO: set name to {{ .Release.Name }}-webapp
+  name:
+  labels:
+    # TODO: set app.kubernetes.io/name to .Chart.Name
+    # TODO: set app.kubernetes.io/instance to .Release.Name
+    app.kubernetes.io/name:
+    app.kubernetes.io/instance:
+spec:
+  # TODO: set replicas from .Values.replicaCount, default 1
+  replicas:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Chart.Name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Chart.Name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: webapp
+          # TODO: set image to .Values.image.repository:.Values.image.tag (default "latest")
+          image:
+          # TODO: set imagePullPolicy from .Values.image.pullPolicy, default "IfNotPresent"
+          imagePullPolicy:
+          ports:
+            - name: http
+              # TODO: set containerPort from .Values.service.port, default 80
+              containerPort:
+              protocol: TCP

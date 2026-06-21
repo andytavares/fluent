@@ -1,0 +1,27 @@
+# Chart.yaml
+apiVersion: v2
+name: platform
+description: A platform chart with database and cache dependencies
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+dependencies:
+  # TODO: add postgresql dependency
+  #   name: postgresql
+  #   version: "12.x.x"
+  #   repository: https://charts.bitnami.com/bitnami
+  #   condition: postgresql.enabled
+  # TODO: add redis dependency with alias "cache"
+  #   name: redis
+  #   version: "17.x.x"
+  #   repository: https://charts.bitnami.com/bitnami
+  #   condition: redis.enabled
+  #   alias: cache
+
+---
+# values.yaml
+# TODO: enable postgresql (postgresql.enabled: true)
+# TODO: configure postgresql.auth.database and postgresql.auth.username
+# TODO: enable the cache alias (cache.enabled: true)
+# TODO: set global.imageRegistry to "gcr.io/myproject"
+# TODO: disable cache master persistence (cache.master.persistence.enabled: false)

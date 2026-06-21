@@ -1,0 +1,24 @@
+# Chart.yaml
+apiVersion: v2
+name: webapp
+description: A production-ready web application chart
+type: application
+version: 0.1.0
+appVersion: "2.3.1"
+dependencies:
+  - name: redis
+    version: "17.x.x"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: redis.enabled
+
+---
+# values.yaml
+replicaCount: 2
+
+image:
+  repository: myregistry/webapp
+  tag: ""
+  pullPolicy: IfNotPresent
+
+redis:
+  enabled: true

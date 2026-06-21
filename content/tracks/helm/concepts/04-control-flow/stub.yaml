@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-webapp
+spec:
+  replicas: {{ .Values.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: webapp
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag | default "latest" }}
+          # TODO: set imagePullPolicy — use .Values.image.pullPolicy if set, else "IfNotPresent"
+          imagePullPolicy:
+          # TODO: render env vars with range over .Values.env, skip block if .Values.env is empty
+          # each item has .name and .value; use {{- range }} and {{- end }}
+          # TODO: add resources block only if .Values.resources is non-empty (use with)
+          # TODO: add livenessProbe block only if .Values.livenessProbe.enabled is true
+          #   livenessProbe:
+          #     httpGet:
+          #       path: {{ .Values.livenessProbe.path }}
+          #       port: {{ .Values.livenessProbe.port }}
+          #     initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { Button } from "./Button";
 
 interface CongratsModalProps {
   open: boolean;
@@ -15,19 +16,15 @@ export function CongratsModal({ open, passCount, runtimeMs, hasNext, onNext, onC
   const firedRef = useRef(false);
 
   useEffect(() => {
-    if (!open) {
-      firedRef.current = false;
-      return;
-    }
+    if (!open) { firedRef.current = false; return; }
     if (firedRef.current) return;
     firedRef.current = true;
-
     void import("canvas-confetti").then(({ default: confetti }) => {
       void confetti({
-        particleCount: 120,
-        spread: 80,
+        particleCount: 100,
+        spread: 70,
         origin: { y: 0.55 },
-        colors: ["#6366f1", "#4ade80", "#f8fafc", "#818cf8", "#fbbf24"],
+        colors: ["#f59e0b", "#34d399", "#fafafa", "#fbbf24", "#6ee7b7"],
       });
     });
   }, [open]);
@@ -36,45 +33,30 @@ export function CongratsModal({ open, passCount, runtimeMs, hasNext, onNext, onC
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* Panel */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-sm rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-surface-raised)] p-8 shadow-2xl text-center">
-        <div className="text-5xl mb-4">🎉</div>
+        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-status-success-bg)]/15">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-[var(--color-status-success-text)]">
+            <path d="M4 12l5 5L20 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
         <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-1">
-          All tests passed!
+          All tests passed
         </h2>
-        <p className="text-sm text-[var(--color-text-secondary)] mb-6">
-          {passCount} {passCount === 1 ? "test" : "tests"} passed
-          {runtimeMs ? ` in ${runtimeMs}ms` : ""}.
+        <p className="text-sm text-[var(--color-text-secondary)] mb-7">
+          <span className="font-mono text-[var(--color-status-success-text)]">{passCount}</span>{" "}
+          {passCount === 1 ? "test" : "tests"} passed
+          {runtimeMs ? (
+            <> in <span className="font-mono">{runtimeMs}ms</span></>
+          ) : null}.
         </p>
-
-        <div className="flex flex-col gap-3">
-          {hasNext ? (
-            <button
-              onClick={onNext}
-              className="w-full rounded-lg bg-[var(--color-interactive-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--color-interactive-primary-text)] hover:bg-[var(--color-interactive-primary-hover)] transition-colors"
-            >
-              Next lesson →
-            </button>
-          ) : (
-            <button
-              onClick={onNext}
-              className="w-full rounded-lg bg-[var(--color-interactive-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--color-interactive-primary-text)] hover:bg-[var(--color-interactive-primary-hover)] transition-colors"
-            >
-              View track →
-            </button>
-          )}
-          <button
-            onClick={onClose}
-            className="w-full rounded-lg border border-[var(--color-border-default)] px-4 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-          >
+        <div className="flex flex-col gap-2">
+          <Button variant="primary" className="w-full" onClick={onNext}>
+            {hasNext ? "Next lesson →" : "Back to track →"}
+          </Button>
+          <Button variant="ghost" className="w-full" onClick={onClose}>
             Stay here
-          </button>
+          </Button>
         </div>
       </div>
     </div>

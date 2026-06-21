@@ -4,6 +4,30 @@ import { dirname, join, resolve } from "node:path";
 import { z } from "zod";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
+
+const TEST_FILE_PATTERNS: Record<string, RegExp> = {
+  go: /_test\.go$/,
+  javascript: /_test\.js$/,
+  typescript: /_test\.ts$/,
+  c: /_test\.c$/,
+  cpp: /_test\.cpp$/,
+  java: /SolutionTest\.java$|_test\.java$/i,
+  elixir: /_test\.exs$/,
+  ruby: /_test\.rb$/,
+  python: /_test\.py$/,
+  shell: /_test\.sh$/,
+  assembly: /_test\.asm$/,
+  terraform: /_test\.sh$/,
+  helm: /_test\.sh$/,
+  kotlin: /_test\.kt$/,
+  rust: /_test\.rs$/,
+};
+
+function findTestFile(files: string[], language: string): string | undefined {
+  const pattern = TEST_FILE_PATTERNS[language] ?? /_test\./;
+  return files.find((f) => pattern.test(f));
+}
+
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "./trpc.js";
 import { ExecutionQueue } from "../queue/execution-queue.js";
@@ -17,7 +41,7 @@ export const submissionsRouter = router({
         conceptId: z.string().uuid(),
         exerciseId: z.string().uuid().optional(),
         code: z.string().min(1),
-        language: z.string().default("go"),
+        language: z.string().default("go"), // caller must pass the correct language
         isSuite: z.boolean().default(false),
       }),
     )
@@ -45,7 +69,7 @@ export const submissionsRouter = router({
           const dir = join(REPO_ROOT, exercise.contentPath);
           try {
             const files = readdirSync(dir);
-            const testFile = files.find((f) => f.endsWith("_test.go"));
+            const testFile = findTestFile(files, input.language);
             if (testFile) {
               testFiles = [readFileSync(join(dir, testFile), "utf8")];
             }

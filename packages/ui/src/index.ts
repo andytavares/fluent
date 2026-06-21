@@ -19,3 +19,6 @@ export { DatabaseStatusPanel } from "./components/DatabaseStatusPanel";
 export { DashboardStats } from "./components/DashboardStats";
 export { ContinueBuildingCard } from "./components/ContinueBuildingCard";
 export { MasteryTable } from "./components/MasteryTable";
+export { TracePanel } from "./components/TracePanel";
+export type { TraceFrame as TracePanelFrame } from "./components/TracePanel";
+export { AlgorithmVisualizer } from "./components/AlgorithmVisualizer";

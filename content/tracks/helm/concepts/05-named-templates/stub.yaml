@@ -1,0 +1,41 @@
+{{/*
+_helpers.tpl — define named templates for the webapp chart
+*/}}
+
+{{/*
+TODO: define "webapp.fullname" that returns .Release.Name + "-" + .Chart.Name
+      truncated to 63 chars: use trunc 63 | trimSuffix "-"
+*/}}
+
+{{/*
+TODO: define "webapp.labels" with these keys:
+  app.kubernetes.io/name: .Chart.Name
+  app.kubernetes.io/instance: .Release.Name
+  app.kubernetes.io/version: .Chart.AppVersion (quoted)
+  helm.sh/chart: .Chart.Name + "-" + .Chart.Version
+*/}}
+
+{{/*
+TODO: define "webapp.selectorLabels" with:
+  app.kubernetes.io/name: .Chart.Name
+  app.kubernetes.io/instance: .Release.Name
+*/}}
+
+---
+# templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  # TODO: set name using include "webapp.fullname"
+  name:
+  labels:
+    # TODO: include "webapp.labels" with nindent 4
+spec:
+  type: {{ .Values.service.type | default "ClusterIP" }}
+  ports:
+    - port: {{ .Values.service.port | default 80 }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    # TODO: include "webapp.selectorLabels" with nindent 4

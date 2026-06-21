@@ -1,0 +1,7 @@
+{
+  "slug": "dsa-java",
+  "title": "DSA Patterns: Java",
+  "description": "Master the 16 core algorithmic patterns that appear in nearly every technical interview — implemented in Java. Two pointers, sliding window, BFS/DFS, dynamic programming, backtracking, and more.",
+  "language": "java",
+  "status": "published"
+}

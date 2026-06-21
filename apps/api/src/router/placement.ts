@@ -14,6 +14,15 @@ const LANG_EXT: Record<string, string> = {
   c: "c",
   cpp: "cpp",
   java: "java",
+  elixir: "ex",
+  ruby: "rb",
+  python: "py",
+  shell: "sh",
+  assembly: "asm",
+  terraform: "tf",
+  helm: "yaml",
+  kotlin: "kt",
+  rust: "rs",
 };
 
 function readStub(dir: string, ext: string): string {
@@ -62,7 +71,7 @@ export const placementRouter = router({
               // missing instructions — leave empty
             }
           }
-          return { ...concept, stub, taskPrompt };
+          return { ...concept, stub, taskPrompt, language: enrollment.track.language };
         }),
       );
     }),

@@ -31,22 +31,37 @@ function parseTestResults(lines: OutputEvent[]): TestResult[] {
 
   for (const raw of allText.split("\n")) {
     const line = raw.trimEnd();
+
+    // Go testing format: === RUN / --- PASS / --- FAIL
     const runMatch = line.match(/^=== RUN\s+(\S+)/);
-    const passMatch = line.match(/^--- PASS:\s+(\S+)\s+\(([^)]+)\)/);
-    const failMatch = line.match(/^--- FAIL:\s+(\S+)\s+\(([^)]+)\)/);
+    const goPassMatch = line.match(/^--- PASS:\s+(\S+)\s+\(([^)]+)\)/);
+    const goFailMatch = line.match(/^--- FAIL:\s+(\S+)\s+\(([^)]+)\)/);
+
+    // Custom format used by all non-Go runners: "  PASS: name" / "PASS: name" / "  FAIL: name — reason"
+    const customPassMatch = line.match(/^\s*PASS:\s+(.+)$/);
+    const customFailMatch = line.match(/^\s*FAIL:\s+(.+?)(?:\s+[—–-]\s+(.+))?$/);
 
     if (runMatch) {
       if (current) results.push(current);
       current = { name: runMatch[1]!, passed: false, duration: "", details: [] };
-    } else if (passMatch && current) {
+    } else if (goPassMatch && current) {
       current.passed = true;
-      current.duration = passMatch[2]!;
+      current.duration = goPassMatch[2]!;
       results.push(current);
       current = null;
-    } else if (failMatch && current) {
+    } else if (goFailMatch && current) {
       current.passed = false;
-      current.duration = failMatch[2]!;
+      current.duration = goFailMatch[2]!;
       results.push(current);
+      current = null;
+    } else if (customPassMatch) {
+      if (current) results.push(current);
+      results.push({ name: customPassMatch[1]!.trim(), passed: true, duration: "", details: [] });
+      current = null;
+    } else if (customFailMatch) {
+      if (current) results.push(current);
+      const detail = customFailMatch[2] ? [customFailMatch[2].trim()] : [];
+      results.push({ name: customFailMatch[1]!.trim(), passed: false, duration: "", details: detail });
       current = null;
     } else if (current && line.trim() && !line.startsWith("FAIL") && !line.startsWith("ok ")) {
       current.details.push(line.replace(/^\s{4}/, ""));
@@ -79,6 +94,9 @@ function isFrameworkLine(t: string) {
     t === "FAIL" ||
     t.startsWith("ok ") ||
     t.startsWith("FAIL\t") ||
+    /^\s*PASS:/.test(t) ||
+    /^\s*FAIL:/.test(t) ||
+    /^\d+ passed,\s*\d+ failed/.test(t) ||
     /^\s{4}\S/.test(t)
   );
 }

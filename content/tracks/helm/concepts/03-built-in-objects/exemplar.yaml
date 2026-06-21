@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+  annotations:
+    meta.helm.sh/template: {{ .Template.Name }}
+data:
+  install_mode: {{ if .Release.IsInstall }}"install"{{ else }}"upgrade"{{ end }}
+  kube_version: {{ .Capabilities.KubeVersion.GitVersion }}

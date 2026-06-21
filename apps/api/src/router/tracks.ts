@@ -13,6 +13,15 @@ const LANG_EXT: Record<string, string> = {
   c: "c",
   cpp: "cpp",
   java: "java",
+  elixir: "ex",
+  ruby: "rb",
+  python: "py",
+  shell: "sh",
+  assembly: "asm",
+  terraform: "tf",
+  helm: "yaml",
+  kotlin: "kt",
+  rust: "rs",
 };
 
 function findStubFile(dir: string, ext: string): string {
@@ -90,6 +99,6 @@ export const tracksRouter = router({
         stub = findStubFile(dir, ext);
       }
 
-      return { ...concept, instructions, stub, nextConceptSlug: nextConcept?.slug ?? null };
+      return { ...concept, instructions, stub, nextConceptSlug: nextConcept?.slug ?? null, language: track.language };
     }),
 });

@@ -2,8 +2,24 @@ import { fetch } from "undici";
 
 const JUDGE0_URL = process.env["JUDGE0_URL"] ?? "http://localhost:2358";
 
-// Go language ID in Judge0 (id 60 = Go 1.13.5 in this instance)
-const GO_LANGUAGE_ID = 60;
+// Judge0 language IDs for this instance
+const LANGUAGE_IDS: Record<string, number> = {
+  go: 60,
+  javascript: 63,
+  typescript: 74,
+  c: 50,        // GCC 9.2.0
+  cpp: 54,      // GCC 9.2.0
+  java: 62,
+  elixir: 57,
+  ruby: 72,
+  python: 71,   // Python 3.8.1
+  shell: 46,    // Bash 5.0.0
+  assembly: 45, // NASM 2.14.02
+  terraform: 46,
+  helm: 46,
+  kotlin: 78,
+  rust: 73,
+};
 
 interface SubmissionResult {
   stdout: string | null;
@@ -16,7 +32,7 @@ interface SubmissionResult {
 
 export class Judge0Client {
   async submit(code: string, language: string, timeoutMs = 10000): Promise<string> {
-    const languageId = language === "go" ? GO_LANGUAGE_ID : GO_LANGUAGE_ID;
+    const languageId = LANGUAGE_IDS[language] ?? LANGUAGE_IDS["go"]!;
     const encoded = Buffer.from(code).toString("base64");
 
     const res = await fetch(`${JUDGE0_URL}/submissions?base64_encoded=true&wait=false`, {
@@ -80,7 +96,6 @@ export class Judge0Client {
   ): Promise<SubmissionResult> {
     const token = await this.submit(code, language, timeoutMs);
 
-    // Poll with exponential backoff, max 30 seconds
     const maxWait = 30000;
     const start = Date.now();
     let delay = 500;

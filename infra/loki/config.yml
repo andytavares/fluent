@@ -4,9 +4,15 @@ server:
   http_listen_port: 3100
 
 ingester:
-  chunk_retain_period: 30d
   chunk_idle_period: 5m
   max_transfer_retries: 0
+  wal:
+    dir: /loki/wal
+  lifecycler:
+    ring:
+      kvstore:
+        store: inmemory
+      replication_factor: 1
 
 schema_config:
   configs:
@@ -27,7 +33,10 @@ storage_config:
     directory: /loki/chunks
 
 limits_config:
-  retention_period: 30d
   enforce_metric_name: false
   reject_old_samples: true
   reject_old_samples_max_age: 168h
+
+compactor:
+  working_directory: /loki/compactor
+  shared_store: filesystem
