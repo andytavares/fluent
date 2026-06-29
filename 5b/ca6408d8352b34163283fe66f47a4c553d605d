@@ -1,0 +1,86 @@
+specs/001-fluent-platform/plan.md
+  s_117cb9fb429982::t_9378eefa62cde4 22
+  s_117cb9fb429982::t_105e39da4082e9 137
+  s_117cb9fb429982::t_9e27f9cb5bc807 141
+  s_117cb9fb429982::t_bcb9cc39619b1d 44
+  s_117cb9fb429982::t_d1cc42f441c3d4 69
+apps/api/src/router/enrollments.ts
+  s_117cb9fb429982::t_324312ada5de65 82-104
+  s_117cb9fb429982::t_d69781d6f075fc 2
+apps/api/src/router/submissions.ts
+  s_117cb9fb429982::t_3988119b7863ed 38-56
+apps/web/src/app/profile/page.tsx
+  s_117cb9fb429982::t_bd31d87b099065 8,10,13-14,17-18,23-29,32-67
+specs/001-fluent-platform/research.md
+  s_117cb9fb429982::t_08a4d5773b3cdc 186
+  s_117cb9fb429982::t_e94701d8ac75c9 150
+  s_117cb9fb429982::t_08e3d89d2a7c40 61
+  s_117cb9fb429982::t_b6d2938994c612 96,98,100,102,104
+apps/web/src/app/visualizer/page.tsx
+  s_117cb9fb429982::t_b5b9b0fbe77da9 30-42
+apps/sandbox/src/executor/polyglot-runner.ts
+  s_117cb9fb429982::t_a7f0c384bb71c0 117-125
+apps/web/tsconfig.tsbuildinfo
+  s_117cb9fb429982::t_3fa0a8bb26c5fa 1
+apps/web/src/app/visualizer/sandbox/page.tsx
+  s_117cb9fb429982::t_20a6bf5fd865ef 4,8-37,43,47,51,53,56,59,63,67-338,343,346-347,356-358,373,394,398-401,405-421,423,425,427,429-439,446,459
+  s_117cb9fb429982::t_190f181b8420aa 424,428,442-445,467-469,471-472
+  s_117cb9fb429982::t_cf6909fd83dc8f 1-3,5-7,38-42,44-46,48-50,52,54-55,57-58,60-62,64-66,339-342,344-345,348-355,359-372,374-393,395-397,402-404,422,440,447-458,460-464,466,473-476
+  s_117cb9fb429982::t_34e1fd4569cf1e 426,441,465,470
+specs/001-fluent-platform/contracts/content-schema.md
+  s_117cb9fb429982::t_1dddb5f16f937d 56,62-64,70-72
+  s_117cb9fb429982::t_b77165f970be09 18,20-24,28-31
+  s_117cb9fb429982::t_8b5e9d5e336a50 41-44,50-52
+apps/api/src/router/profile.ts
+  s_117cb9fb429982::t_88f458a5afce86 33-52
+apps/web/src/app/dashboard/page.tsx
+  s_117cb9fb429982::t_29393122ec1f2a 23-25
+  s_117cb9fb429982::t_d360dc6b377f0b 105-111
+apps/api/src/temporal/capstone-client.ts
+  s_117cb9fb429982::t_57ee18811cd87d 25-31
+specs/001-fluent-platform/contracts/api.md
+  s_117cb9fb429982::t_52b16bc6baff95 1,3,5,7,11,13,15,17,21,23-24,28,30-31,35,37-38,40,44,46,48,50,52,56,58,60,64,66-67,69,71,73,75-76,80,82,84,86,90,92,94,96,98,100,104,106,108,110,114,116,118,120,124,126,128-129,131-135,139,141,143,147,149-150,154,156-157,159-166,170-173,176,178,180-181,185,187-188,192,194,196-197,201,203,205,207,211,213,215-217,221,223,225,227,231,233,235-236,238,240,242,244,248,250,252,254,256
+packages/ui/src/components/CapstoneStepList.tsx
+  s_117cb9fb429982::t_76c215d0866c96 48-49,51,53
+  s_117cb9fb429982::t_14e521d0c14d39 14-15,18,41,43-47,52,54-56,59-72
+  s_117cb9fb429982::t_b76c177045adbd 42
+apps/web/src/app/api/stream/[token]/route.ts
+  s_117cb9fb429982::t_8f7a6345f42a39 1-25
+docs/adr/002-sandbox-execution.md
+  s_117cb9fb429982::t_ec9161a1322601 3,7,11,15-31,38
+  s_117cb9fb429982::t_3151565b837de2 32
+apps/api/src/queue/queues.ts
+  s_117cb9fb429982::t_9dfc46536cf501 11
+packages/ui/src/components/TestOutModal.tsx
+  s_117cb9fb429982::t_328867383dabb9 69,73-74,85-93,97-98
+  s_117cb9fb429982::t_b484811b1bcde5 112,150
+apps/web/src/app/tracks/[trackSlug]/capstone/page.tsx
+  s_117cb9fb429982::t_c193a3bfe21e33 10-119,123,137-139,141,143,149-154,164,184-189,193-229,235-308
+apps/web/src/components/navbar.tsx
+  s_117cb9fb429982::t_ee2c01b0d273bc 78-87
+specs/001-fluent-platform/contracts/sandbox-api.md
+  s_117cb9fb429982::t_f0056a19b469f3 1,3,5,9-11,13,15,17,19-26,30,32,34-39,41,45-47,49-53,57-63,66,68-70,72,76,78,80,82,84,88-99,101-128
+packages/ui/src/components/TracePanel.tsx
+  s_117cb9fb429982::t_e0e2b98ba59f59 20-24,26-38,45-46,48-58,71-75,80,82-84,86-88,90-107,113-114,118-134,139
+apps/capstone-runner/src/activities/provisioner.ts
+  s_117cb9fb429982::t_8adc11e9a8ad43 24,27-28,30,32-33
+  s_117cb9fb429982::t_c28fe90e8622b3 29,31
+  s_117cb9fb429982::t_0d95ce47e852eb 63
+  s_117cb9fb429982::t_536c8b77893350 34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "5bca6408d8352b34163283fe66f47a4c553d605d",
+  "prompts": {},
+  "sessions": {
+    "s_117cb9fb429982": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7dc068c4-5c4a-4a93-86e1-77228d1db426",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
