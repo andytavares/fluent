@@ -30,6 +30,26 @@ export const profileRouter = router({
       });
     }),
 
+  getMasteryAll: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.user.id!;
+    const enrollments = await ctx.db.enrollment.findMany({
+      where: { userId },
+      include: { track: { select: { slug: true, title: true } } },
+      orderBy: { startedAt: "asc" },
+    });
+    return Promise.all(
+      enrollments.map(async (enrollment) => ({
+        trackSlug: enrollment.track.slug,
+        trackTitle: enrollment.track.title,
+        concepts: await ctx.db.conceptState.findMany({
+          where: { enrollmentId: enrollment.id },
+          include: { concept: { select: { slug: true, title: true, position: true } } },
+          orderBy: { concept: { position: "asc" } },
+        }),
+      })),
+    );
+  }),
+
   generateCredential: protectedProcedure
     .input(z.object({ trackSlug: z.string() }))
     .mutation(async ({ ctx, input }) => {

@@ -17,48 +17,45 @@ interface TracePanelProps {
 
 function ArrayView({ name, values, highlighted }: { name: string; values: unknown[]; highlighted: Set<number> }) {
   return (
-    <div className="mb-3">
-      <span className="text-xs font-medium text-[var(--color-text-secondary)] mr-2">{name}</span>
-      <div className="inline-flex flex-wrap gap-1 mt-1">
+    <div className="mb-5">
+      <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-[var(--color-text-disabled)]">
+        {name}
+      </span>
+      <div className="flex flex-wrap gap-2">
         {values.map((v, i) => (
-          <span
-            key={i}
-            className={[
-              "inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded px-1.5 font-mono text-xs border",
-              highlighted.has(i)
-                ? "bg-[var(--color-accent-subtle,#1e3a5f)] border-[var(--color-accent,#3b82f6)] text-[var(--color-accent,#3b82f6)] font-semibold"
-                : "bg-[var(--color-bg-subtle)] border-[var(--color-border-subtle)] text-[var(--color-text-secondary)]",
-            ].join(" ")}
-          >
-            {String(v)}
-          </span>
+          <div key={i} className="flex flex-col items-center gap-1">
+            <span className="text-[10px] font-mono text-[var(--color-text-disabled)]">{i}</span>
+            <span
+              className={[
+                "inline-flex h-10 min-w-[2.5rem] items-center justify-center rounded-md px-2 font-mono text-sm font-medium border transition-colors",
+                highlighted.has(i)
+                  ? "bg-[var(--color-accent-subtle,#1e3a5f)] border-[var(--color-accent,#3b82f6)] text-[var(--color-accent,#3b82f6)]"
+                  : "bg-[var(--color-surface-raised)] border-[var(--color-border-subtle)] text-[var(--color-text-secondary)]",
+              ].join(" ")}
+            >
+              {String(v)}
+            </span>
+          </div>
         ))}
       </div>
     </div>
   );
 }
 
-function StateView({ state, highlights }: { state: Record<string, unknown>; highlights?: TraceFrame["highlights"] }) {
-  if (Object.keys(state).length === 0) return null;
-
-  const arrayHighlights = highlights?.arrays ?? {};
-
+function ScalarsView({ entries }: { entries: [string, unknown][] }) {
+  if (entries.length === 0) return null;
   return (
-    <div className="space-y-2">
-      {Object.entries(state).map(([key, val]) => {
-        if (Array.isArray(val)) {
-          const hl = new Set<number>(arrayHighlights[key] ?? []);
-          return <ArrayView key={key} name={key} values={val} highlighted={hl} />;
-        }
-        return (
-          <div key={key} className="flex items-baseline gap-2">
-            <span className="text-xs font-medium text-[var(--color-text-secondary)] w-24 shrink-0 truncate">{key}</span>
-            <span className="font-mono text-xs text-[var(--color-text-primary)] break-all">
-              {typeof val === "object" ? JSON.stringify(val) : String(val)}
-            </span>
-          </div>
-        );
-      })}
+    <div className="grid grid-cols-2 gap-x-8 gap-y-2 sm:grid-cols-3">
+      {entries.map(([key, val]) => (
+        <div key={key} className="flex flex-col gap-0.5">
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-disabled)]">
+            {key}
+          </span>
+          <span className="font-mono text-sm text-[var(--color-text-primary)]">
+            {typeof val === "object" ? JSON.stringify(val) : String(val)}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -71,56 +68,75 @@ export function TracePanel({ frames }: TracePanelProps) {
   const safeIndex = Math.min(index, frames.length - 1);
   const frame = frames[safeIndex]!;
 
+  const stateEntries = Object.entries(frame.state ?? {});
+  const arrayEntries = stateEntries.filter(([, v]) => Array.isArray(v)) as [string, unknown[]][];
+  const scalarEntries = stateEntries.filter(([, v]) => !Array.isArray(v));
+  const arrayHighlights = frame.highlights?.arrays ?? {};
+
   const prev = () => setIndex((i) => Math.max(0, i - 1));
   const next = () => setIndex((i) => Math.min(frames.length - 1, i + 1));
 
   return (
-    <div className="rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-base)] overflow-hidden">
+    <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-base)] overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[var(--color-border-subtle)] px-4 py-2">
-        <span className="text-xs font-semibold text-[var(--color-text-primary)] uppercase tracking-wide">
-          Visualizer
+      <div className="flex items-center justify-between border-b border-[var(--color-border-subtle)] px-5 py-3">
+        <span className="text-xs font-semibold uppercase tracking-widest text-[var(--color-text-secondary)]">
+          Trace
         </span>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-[var(--color-text-tertiary)]">
-            Step {safeIndex + 1} / {frames.length}
+        <div className="flex items-center gap-3">
+          <span className="text-xs tabular-nums text-[var(--color-text-disabled)]">
+            {safeIndex + 1} / {frames.length}
           </span>
-          <button
-            onClick={prev}
-            disabled={safeIndex === 0}
-            className="rounded p-1 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] disabled:opacity-30"
-            aria-label="Previous step"
-          >
-            ‹
-          </button>
-          <button
-            onClick={next}
-            disabled={safeIndex === frames.length - 1}
-            className="rounded p-1 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] disabled:opacity-30"
-            aria-label="Next step"
-          >
-            ›
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={prev}
+              disabled={safeIndex === 0}
+              className="flex h-6 w-6 items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-raised)] hover:text-[var(--color-text-primary)] disabled:opacity-25 transition-colors"
+              aria-label="Previous step"
+            >
+              ‹
+            </button>
+            <button
+              onClick={next}
+              disabled={safeIndex === frames.length - 1}
+              className="flex h-6 w-6 items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-raised)] hover:text-[var(--color-text-primary)] disabled:opacity-25 transition-colors"
+              aria-label="Next step"
+            >
+              ›
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Step label */}
       {frame.label && (
-        <div className="border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] px-4 py-2">
-          <span className="text-xs text-[var(--color-text-primary)]">{frame.label}</span>
+        <div className="border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)] px-5 py-2.5">
+          <span className="font-mono text-sm text-[var(--color-text-primary)]">{frame.label}</span>
         </div>
       )}
 
-      {/* State */}
-      <div className="px-4 py-3">
-        <StateView state={frame.state ?? {}} highlights={frame.highlights} />
-        {Object.keys(frame.state ?? {}).length === 0 && (
-          <span className="text-xs text-[var(--color-text-tertiary)]">No state captured for this step.</span>
+      {/* State: arrays first, then scalars */}
+      <div className="px-5 py-5">
+        {arrayEntries.length > 0 && (
+          <div className="mb-4">
+            {arrayEntries.map(([key, val]) => (
+              <ArrayView
+                key={key}
+                name={key}
+                values={val}
+                highlighted={new Set<number>(arrayHighlights[key] ?? [])}
+              />
+            ))}
+          </div>
+        )}
+        {scalarEntries.length > 0 && <ScalarsView entries={scalarEntries} />}
+        {stateEntries.length === 0 && (
+          <span className="text-xs text-[var(--color-text-disabled)]">No state captured.</span>
         )}
       </div>
 
       {/* Scrubber */}
-      <div className="border-t border-[var(--color-border-subtle)] px-4 py-2">
+      <div className="border-t border-[var(--color-border-subtle)] px-5 py-3">
         <input
           type="range"
           min={0}

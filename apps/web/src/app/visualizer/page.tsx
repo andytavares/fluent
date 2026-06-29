@@ -27,11 +27,19 @@ const VISUALIZERS: { slug: string; title: string; description: string }[] = [
 export default function VisualizerPage() {
   return (
     <main className="mx-auto max-w-5xl px-6 py-12">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">Algorithm Visualizer</h1>
-        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-          Step through all 19 core patterns. Use Play to animate or step through manually.
-        </p>
+      <div className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">Algorithm Visualizer</h1>
+          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+            Step through all 19 core patterns. Use Play to animate or step through manually.
+          </p>
+        </div>
+        <a
+          href="/visualizer/sandbox"
+          className="shrink-0 rounded-lg border border-[var(--color-border-default)] px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-interactive-primary)] transition-colors"
+        >
+          Write your own →
+        </a>
       </div>
 
       <div className="grid gap-8 sm:grid-cols-2">

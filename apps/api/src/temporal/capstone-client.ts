@@ -22,7 +22,11 @@ export async function startCapstoneWorkflow(sessionId: string): Promise<void> {
 }
 
 export async function signalLearnerActive(sessionId: string): Promise<void> {
-  const c = await getClient();
-  const handle = c.workflow.getHandle(`capstone-session-${sessionId}`);
-  await handle.signal("learner-active");
+  try {
+    const c = await getClient();
+    const handle = c.workflow.getHandle(`capstone-session-${sessionId}`);
+    await handle.signal("learner-active");
+  } catch {
+    // Workflow may not exist yet or may have completed — signal is best-effort
+  }
 }

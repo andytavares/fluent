@@ -75,6 +75,16 @@ export function Navbar() {
             {profileQuery.data.email}
           </span>
         )}
+        <Link
+          href="/profile"
+          className={
+            pathname === "/profile"
+              ? "text-sm font-medium text-[var(--color-text-primary)]"
+              : "text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+          }
+        >
+          Profile
+        </Link>
       </div>
     </nav>
   );

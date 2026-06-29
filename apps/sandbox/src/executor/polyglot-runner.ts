@@ -114,7 +114,15 @@ function stripKotlinMain(code: string): string {
 function mergeRustStubIntoTest(stub: string, testFile: string): string {
   const pubStub = stub
     .replace(/^fn /gm, "pub fn ")
-    .replace(/^pub pub fn /gm, "pub fn ");
+    .replace(/^pub pub fn /gm, "pub fn ")
+    .replace(/^const /gm, "pub const ")
+    .replace(/^pub pub const /gm, "pub const ")
+    .replace(/^struct /gm, "pub struct ")
+    .replace(/^pub pub struct /gm, "pub struct ")
+    .replace(/^enum /gm, "pub enum ")
+    .replace(/^pub pub enum /gm, "pub enum ")
+    .replace(/^type /gm, "pub type ")
+    .replace(/^pub pub type /gm, "pub type ");
   const stubNoMain = pubStub.replace(/\n\s*pub fn main\s*\(\s*\)[\s\S]*$/, "\n");
 
   const modBlock = /mod solution \{[\s\S]*?\n\}/;

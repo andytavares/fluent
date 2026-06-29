@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "./trpc.js";
 
 export const enrollmentsRouter = router({
@@ -78,4 +79,27 @@ export const enrollmentsRouter = router({
       orderBy: { startedAt: "desc" },
     });
   }),
+
+  devMasterAll: protectedProcedure
+    .input(z.object({ trackId: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      if (process.env["NODE_ENV"] === "production") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      const userId = ctx.user.id!;
+      const enrollment = await ctx.db.enrollment.findUnique({
+        where: { userId_trackId: { userId, trackId: input.trackId } },
+      });
+      if (!enrollment) throw new TRPCError({ code: "NOT_FOUND" });
+
+      await ctx.db.conceptState.updateMany({
+        where: {
+          enrollmentId: enrollment.id,
+          state: { notIn: ["mastered", "completed"] },
+        },
+        data: { state: "mastered", achievedVia: "placement", masteredAt: new Date() },
+      });
+
+      return { ok: true };
+    }),
 });

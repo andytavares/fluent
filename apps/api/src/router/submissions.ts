@@ -35,6 +35,25 @@ import { MasteryService } from "../service/mastery.js";
 import { StreakService } from "../service/streak.js";
 
 export const submissionsRouter = router({
+  runSandbox: protectedProcedure
+    .input(z.object({
+      code: z.string().min(1),
+      language: z.string().default("javascript"),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { randomUUID } = await import("node:crypto");
+      const jobId = randomUUID();
+      const queue = new ExecutionQueue();
+      const streamToken = await queue.enqueue({
+        jobId,
+        userId: ctx.user.id!,
+        code: input.code,
+        language: input.language,
+        isSuite: false,
+      });
+      return { streamToken };
+    }),
+
   createSubmission: protectedProcedure
     .input(
       z.object({

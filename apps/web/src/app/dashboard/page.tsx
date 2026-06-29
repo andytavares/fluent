@@ -20,6 +20,9 @@ export default function DashboardPage() {
   const resetEnrollment = trpc.enrollments.resetEnrollment.useMutation({
     onSuccess: () => void dashboardQuery.refetch(),
   });
+  const devMasterAll = trpc.enrollments.devMasterAll.useMutation({
+    onSuccess: () => void dashboardQuery.refetch(),
+  });
 
   if (dashboardQuery.isLoading || tracksQuery.isLoading) {
     return <div className="p-8 text-[var(--color-text-secondary)]">Loading…</div>;
@@ -99,6 +102,13 @@ export default function DashboardPage() {
                       </div>
                     </Link>
                     <div className="flex shrink-0 items-center gap-4">
+                      <button
+                        onClick={() => devMasterAll.mutate({ trackId: e.track.id })}
+                        disabled={devMasterAll.isPending}
+                        className="text-xs text-[var(--color-text-disabled)] hover:text-amber-400 disabled:opacity-50 transition-colors"
+                      >
+                        Master all
+                      </button>
                       <button
                         onClick={() => {
                           if (confirm(`Reset all progress for ${e.track.title}?`)) {

@@ -19,7 +19,7 @@ Fluent is an interactive coding-education platform for experienced engineers. v1
 **Primary Dependencies**:
 - Frontend: Next.js 14+ (App Router), React 18+, tRPC client (`@trpc/client`, `@trpc/next`), CodeMirror 6, Radix UI, Tailwind v4, Auth.js v5
 - API: Fastify 4, tRPC server (`@trpc/server` + Fastify adapter), Prisma 5, BullMQ 5 (producer), `@temporalio/client`, pino
-- Sandbox service: Fastify 4, tRPC server (internal), BullMQ 5 (worker), Judge0 REST client, pino
+- Sandbox service: Fastify 4, tRPC server (internal), BullMQ 5 (worker), homegrown Docker + native-host execution engine, pino
 - Capstone runner: `@temporalio/worker`, `@temporalio/activity`, `@kubernetes/client-node`, pino
 - Design system: Radix UI primitives, Tailwind v4, Storybook 8
 - Shared: Redis 7 (BullMQ backing + rate-limit store), PostgreSQL 16 (via Prisma)
@@ -41,7 +41,7 @@ Fluent is an interactive coding-education platform for experienced engineers. v1
 - Desktop/laptop browser only — no mobile viewport support in v1
 - Go track only in v1 — all other tracks `coming_soon`
 - Dark theme only as the fully implemented theme in v1
-- Sandbox resource limits: 10-second wall-clock ceiling, 256 MB memory cap per Judge0 execution
+- Sandbox resource limits: 30-second wall-clock ceiling (EXECUTION_TIMEOUT_MS), 256 MB memory cap enforced by Docker for Docker-based runners
 - Capstone DB sessions time out after 30 minutes of inactivity (enforced by Temporal workflow timer)
 
 **Scale/Scope**: ~100 concurrent learners (private beta), ~10 Go track concepts + 6-step CRUD capstone
@@ -66,7 +66,7 @@ Fluent is an interactive coding-education platform for experienced engineers. v1
 
 **ADRs** (`docs/adr/`):
 - ADR-001: Monorepo tooling (pnpm + Turborepo)
-- ADR-002: Sandbox execution engine (Judge0)
+- ADR-002: Sandbox execution engine (homegrown Docker + native runner — Judge0 replaced)
 - ADR-003: Capstone DB provisioning (K8s Job + ephemeral Postgres sidecar)
 - ADR-004: Code editor (CodeMirror 6)
 - ADR-005: Exercise content storage (Git-embedded, CI-compiled to JSON)
@@ -134,11 +134,11 @@ apps/
     src/
       router/                  # tRPC server for internal API (called by apps/api)
       worker/                  # BullMQ worker: dequeues and executes jobs
-      executor/                # Judge0 REST client (submit, poll, decode output)
+      executor/                # Execution engine: Docker runner (Go) + polyglot native/Docker runner (all other languages)
       limiter/                 # Per-learner token bucket (Redis-backed)
       streamer/                # SSE output streaming (pushes chunks to waiting API clients)
     tests/
-      integration/             # Vitest + real Judge0 instance
+      integration/             # Vitest integration tests for execution engine
       unit/
 
   capstone-runner/             # Temporal worker — capstone session workflows

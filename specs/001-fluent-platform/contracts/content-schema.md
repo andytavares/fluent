@@ -15,25 +15,20 @@ content/
       config.json          # Required: track-level metadata
       concepts/
         {NNN}-{concept-slug}/   # NNN = zero-padded 2-digit order index
-          .meta/
-            config.json    # Required: concept-level metadata
+          config.json      # Required: concept-level metadata (no .meta/ subdirectory)
           instructions.md  # Required: learner-facing prose explainer
-          stub.go          # Required: starter code (learner receives this)
-          exemplar.go      # Required: reference solution (hidden from learners)
-          {concept}_test.go  # Required: hidden lesson test suite
-          testout_stub.go  # Required if has_testout: true
-          testout_test.go  # Required if has_testout: true
+          stub.{ext}       # Required: starter code (learner receives this)
+          exemplar.{ext}   # Required: reference solution (hidden from learners)
+          {concept}_test.{ext}  # Required: hidden lesson test suite
+          testout_stub.{ext}    # Required if has_testout: true
+          testout_test.{ext}    # Required if has_testout: true
   capstone/
     {track-slug}-{capstone-name}/
       config.json          # Required: capstone metadata + step definitions
-      steps/
-        {NN}-{step-slug}/  # NN = zero-padded 2-digit step number
-          instructions.md  # Required
-          stub/            # Required: starting code scaffold for this step
-            main.go
-            go.mod
-          verify.sh        # Required: HTTP verification script (runs against learner's server)
-          fixtures.sql     # Required: DB seed for this step
+      step-{N}/            # N = step number (no zero-padding, e.g. step-1, step-2)
+        config.json        # Required: step metadata
+        verify.sh          # Required: HTTP verification script
+        fixtures.sql       # Required: DB seed for this step
 ```
 
 ---
@@ -43,54 +38,38 @@ content/
 ```json
 {
   "slug": "go",
-  "title": "Go",
-  "description": "Build a production CRUD API in Go from scratch.",
-  "version": "1.0.0",
-  "status": "active",
-  "concepts": [
-    "01-variables-and-types",
-    "02-functions-and-errors",
-    "03-structs-and-methods",
-    "04-interfaces",
-    "05-goroutines-and-channels",
-    "06-context",
-    "07-testing",
-    "08-http-and-routing",
-    "09-database-and-sql",
-    "10-error-handling-patterns"
-  ]
+  "title": "Go Fundamentals",
+  "description": "Learn Go from first principles — syntax, types, concurrency, and the standard library.",
+  "language": "go",
+  "status": "published"
 }
 ```
 
 **Rules**:
 - `slug` must match the directory name
-- `version` must be a valid semver string
-- `status` must be `active` or `coming_soon`
-- `concepts` must be an ordered array of directory names that exist under `concepts/`
-- Adding a new concept requires adding it to this array at the correct position
+- `language` is the execution language string passed to the sandbox (e.g. `"go"`, `"python"`, `"rust"`)
+- `status` must be `"published"` or `"coming_soon"` — `listTracks` returns all; `listConcepts` and placement only use `published` tracks
+- Concept order is determined by the `position` field on each concept's `config.json`, not by an array in this file
 
 ---
 
-## `concepts/{NNN}-{slug}/.meta/config.json`
+## `concepts/{NNN}-{slug}/config.json`
 
 ```json
 {
   "slug": "variables-and-types",
   "title": "Variables & Types",
-  "description": "Declare and use variables, constants, and Go's basic type system",
-  "blurb": "vs your language: Go is statically typed with inference — no `var` ceremony required",
-  "status": "active",
-  "has_testout": true,
-  "difficulty": "introductory"
+  "position": 1,
+  "has_testout": false,
+  "status": "published"
 }
 ```
 
 **Rules**:
 - `slug` must match the parent directory name (without the `NNN-` prefix)
-- `status` must be `active` or `wip`
-- `wip` exercises are hidden from learners but may be merged (FR-038)
-- `has_testout` must be `true` or `false`; if `true`, `testout_stub.go` and `testout_test.go` must exist
-- `difficulty` must be one of: `introductory`, `easy`, `medium`, `hard`
+- `status` must be `"published"` or `"wip"` — **must always be `"published"` for concepts to appear anywhere in the app** (dashboard, placement, track page all filter `where: { status: "published" }`)
+- `position` is a 1-based integer used for ordering; must be unique within a track
+- `has_testout`: if `true`, `testout_stub.{ext}` and `testout_test.{ext}` must exist in the directory
 
 ---
 

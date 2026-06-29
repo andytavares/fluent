@@ -8,7 +8,7 @@ export const QUEUES = {
 export const codeExecutionJobSchema = z.object({
   jobId: z.string().uuid(),
   userId: z.string().uuid(),
-  conceptId: z.string().uuid(),
+  conceptId: z.string().uuid().optional(),
   exerciseId: z.string().uuid().optional(),
   code: z.string(),
   language: z.string().default("go"),

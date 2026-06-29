@@ -10,10 +10,6 @@ const nextConfig = {
         source: "/api/trpc/:path*",
         destination: `${process.env.API_URL ?? "http://localhost:3001"}/trpc/:path*`,
       },
-      {
-        source: "/api/stream/:token*",
-        destination: `${process.env.SANDBOX_URL ?? "http://localhost:3002"}/stream/:token*`,
-      },
     ];
   },
 };

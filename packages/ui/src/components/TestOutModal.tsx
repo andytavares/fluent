@@ -66,11 +66,12 @@ export function TestOutModal({
     <Dialog.Root open={open} onOpenChange={(v) => !v && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 w-full max-w-3xl -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-surface-raised)] p-6 shadow-xl">
+        <Dialog.Content className="fixed left-1/2 top-1/2 flex w-full max-w-3xl max-h-[90vh] -translate-x-1/2 -translate-y-1/2 flex-col rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-surface-raised)] shadow-xl">
 
           {view === "task" ? (
             <>
-              <div className="mb-4 flex items-center justify-between">
+              {/* Fixed header */}
+              <div className="flex shrink-0 items-center justify-between border-b border-[var(--color-border-subtle)] px-6 py-4">
                 <Dialog.Title className="text-lg font-semibold text-[var(--color-text-primary)]">
                   Test out: {concept.title}
                 </Dialog.Title>
@@ -81,19 +82,20 @@ export function TestOutModal({
                 </span>
               </div>
 
-              {concept.taskPrompt && (
-                <div className="mb-4 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] px-4 py-3">
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--color-text-secondary)]">
-                    {concept.taskPrompt}
-                  </p>
-                </div>
-              )}
-
-              <div className="mb-4">
+              {/* Scrollable body */}
+              <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-4">
+                {concept.taskPrompt && (
+                  <div className="rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] px-4 py-3">
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--color-text-secondary)]">
+                      {concept.taskPrompt}
+                    </p>
+                  </div>
+                )}
                 <CodeEditor value={code} onChange={setCode} />
               </div>
 
-              <div className="flex items-center justify-between">
+              {/* Fixed footer */}
+              <div className="flex shrink-0 items-center justify-between border-t border-[var(--color-border-subtle)] px-6 py-4">
                 <Button variant="ghost" onClick={onEscape} disabled={isSubmitting}>
                   I&apos;d rather do the lesson
                 </Button>
@@ -107,7 +109,7 @@ export function TestOutModal({
               </div>
             </>
           ) : (
-            <>
+            <div className="p-6">
               <Dialog.Title className="mb-4 text-lg font-semibold text-[var(--color-text-primary)]">
                 {result?.passed ? "You passed!" : "Not quite"}
               </Dialog.Title>
@@ -145,7 +147,7 @@ export function TestOutModal({
                   </>
                 )}
               </div>
-            </>
+            </div>
           )}
         </Dialog.Content>
       </Dialog.Portal>

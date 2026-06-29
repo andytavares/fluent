@@ -58,7 +58,7 @@ Internal calls (`apps/api` → `apps/sandbox`) also use tRPC, giving the same ty
 These are complementary tools, not alternatives.
 
 **BullMQ** (Redis-backed job queue) handles:
-- Code execution jobs: learner hits Run → API enqueues `code-execution` job → sandbox BullMQ worker processes via Judge0 → result streamed back via SSE
+- Code execution jobs: learner hits Run → API enqueues `code-execution` job → sandbox BullMQ worker executes via Docker/native runner → result written to Redis Stream → SSE endpoint tails stream back to browser
 - Test suite runs (same queue, different job type)
 - Credential generation
 
@@ -93,18 +93,15 @@ BullMQ is the right fit here because these jobs are short-lived (seconds), state
 
 ## Decision 6 — Sandbox Execution Engine
 
-**Decision**: Judge0 CE (self-hosted)
+**Decision**: ~~Judge0 CE (self-hosted)~~ → **Superseded**: Homegrown Docker + native-host execution engine (see ADR-002)
 
-**Rationale**: Judge0 wraps Linux `isolate` (cgroups + namespaces + seccomp) and exposes a REST API. Self-hosting gives full control over resource limits, Go version, and data residency. Execution limits (10-second wall clock, 256 MB memory) are configurable per submission to satisfy FR-012. CE edition is MIT-licensed with an active multi-maintainer community and production deployments at LeetCode, HackerEarth.
+**Original rationale (superseded)**: Judge0 wraps Linux `isolate` and exposes a REST API. Self-hosting gives control over resource limits and data residency.
 
-The sandbox service (`apps/sandbox`) is a BullMQ worker that dequeues execution jobs, calls Judge0, and streams output back via SSE.
+**Why Judge0 was replaced**: Language coverage required forking Judge0's image for Terraform/Helm/Assembly; the trace protocol (`__TRACE__:` stdout prefix) added indirection through base64-encoded Judge0 responses; Judge0 was an extra service to operate. The replacement uses `docker run` directly for Go (and languages unavailable on the host), and host-native compilers for everything else. This eliminates the Judge0 service from the deployment graph entirely.
 
-**Alternatives considered**:
-- Firecracker microVMs: Stronger isolation but requires KVM-capable hardware; disproportionate for 100-learner beta.
-- Custom isolate wrapper: Re-implements queue management and language runtime management that Judge0 provides.
-- Piston: Single primary maintainer — ruled out per Principle II.
+The sandbox service (`apps/sandbox`) is a BullMQ worker that dequeues execution jobs, runs them via the homegrown engine, and streams output to Redis Streams. The SSE endpoint tails those streams back to the browser.
 
-**Official sources**: https://github.com/judge0/judge0
+**Official sources**: https://docs.docker.com/engine/reference/run/
 
 ---
 
@@ -150,7 +147,7 @@ The sandbox service (`apps/sandbox`) is a BullMQ worker that dequeues execution 
 
 **Decision**: Server-Sent Events (SSE) for code execution output
 
-**Rationale**: SSE is unidirectional (server → client), which exactly matches code execution output. Works over HTTP/2 with no upgrade ceremony. Natively supported by the browser's `EventSource` API. The BullMQ job processor in `apps/sandbox` polls Judge0 and emits SSE chunks; `apps/api` holds open the SSE connection to the browser.
+**Rationale**: SSE is unidirectional (server → client), which exactly matches code execution output. Works over HTTP/2 with no upgrade ceremony. Natively supported by the browser's `EventSource` API. The BullMQ job processor in `apps/sandbox` executes code via Docker/native runners and writes output to Redis Streams. The sandbox's SSE HTTP endpoint tails the stream and pushes events to the browser. The API does not hold the SSE connection — the browser connects directly to `/api/stream/{token}` (proxied by Next.js to the sandbox).
 
 **Official sources**: https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events
 
@@ -186,7 +183,7 @@ The sandbox service (`apps/sandbox`) is a BullMQ worker that dequeues execution 
 | Short-lived async jobs | BullMQ 5 (Redis-backed) |
 | Long-running workflows | Temporal (capstone session lifecycle) |
 | ORM | Prisma 5 |
-| Sandbox execution | Judge0 CE (self-hosted) |
+| Sandbox execution | Homegrown Docker runner (Go) + native-host compilers (all other languages) — Judge0 replaced |
 | Capstone DB provisioning | K8s Job + Postgres sidecar (Temporal-managed) |
 | Code editor | CodeMirror 6 |
 | Content storage | Git-embedded, CI-compiled to JSON |

@@ -1,106 +1,128 @@
-# Sandbox Service API Contract
+# Sandbox Service Contract
 
-**Service**: `apps/sandbox` (Go, internal) | **Date**: 2026-06-19 | **Plan**: [plan.md](../plan.md)
+**Service**: `apps/sandbox` (TypeScript/Fastify) | **Revised**: 2026-06-21 | **Plan**: [plan.md](../plan.md)
 
-The sandbox service is an internal Go service. It is not exposed to the internet — only `apps/api` calls it. It wraps Judge0's REST API, enforces per-learner rate limiting (FR-016a), and proxies SSE output streams back to the API for forwarding to the browser.
-
-Base URL: `http://sandbox-svc:3001` (internal Kubernetes service DNS)
+The sandbox is a TypeScript/Fastify process. It is not called directly by the API over HTTP — the API enqueues a BullMQ job (Redis-backed) and the sandbox worker picks it up. The sandbox also exposes HTTP endpoints for SSE streaming, health checks, and Prometheus metrics.
 
 ---
 
-## Endpoints
+## Job Queue Interface (BullMQ)
 
-### `POST /execute`
+**Queue name**: `code-execution`
 
-Submit code for execution (run-only or test suite). Called by `apps/api` after creating a `submissions` row.
+The API enqueues jobs via `ExecutionQueue.enqueue()`. The sandbox worker (`execution-worker.ts`) processes them concurrently.
 
-**Request**:
-```json
+### Job payload
+
+```ts
 {
-  "submission_id": "<uuid>",
-  "user_id": "<uuid>",
-  "language": "go",
-  "code": "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tfmt.Println(\"hello\")\n}\n",
-  "submission_type": "run",
-  "test_code": null,
-  "limits": {
-    "wall_time_seconds": 10,
-    "memory_bytes": 268435456
-  }
+  jobId: string;        // UUID — same as the DB submission ID
+  userId: string;
+  conceptId: string;
+  exerciseId?: string;
+  code: string;
+  language: string;     // see execution engine table below
+  isSuite: boolean;
+  testFiles?: string[]; // test file content (not paths) — populated by API when isSuite=true
 }
 ```
 
-For `submission_type: test_suite` or `test_out`, `test_code` contains the hidden test file content.
+### Result protocol (Redis Streams)
 
-**Response 202**:
-```json
-{
-  "judge0_token": "<judge0_submission_token>",
-  "stream_url": "http://sandbox-svc:3001/stream/<judge0_token>"
-}
-```
+Results are written to a Redis Stream at key `result:{jobId}`. The SSE endpoint tails this stream and forwards events to the browser.
 
-**Response 429** (rate limited):
-```json
-{
-  "error": "rate_limited",
-  "retry_after_seconds": 15
-}
-```
+| `type` field | Additional fields | Description |
+|---|---|---|
+| `stdout` | `data: string` | Captured stdout |
+| `stderr` | `data: string` | Captured stderr |
+| `trace` | `data: JSON string` | Serialized `TraceFrame[]` (JS/TS/Python only) |
+| `result` | `exit_code`, `runtime_ms`, `timed_out` | Terminal event — stream ends after this |
 
-Rate limit policy: 10 executions per user per 60-second sliding window (token bucket). Configurable via environment variable `SANDBOX_RATE_LIMIT_RPM`.
+Stream TTL: 5 minutes. The stream token → jobId mapping lives at `stream:{token}` (TTL 10 min).
 
 ---
 
-### `GET /stream/:judge0Token`
+## HTTP Endpoints
 
-SSE stream of execution output. Polls Judge0 at 200ms intervals and emits output chunks as they arrive.
+Base URL: `http://localhost:3002` (configurable via `SANDBOX_PORT` / `HOST` env vars).
 
-**Events** (same contract as the public API forwards to the browser):
+### `GET /stream/:token`
+
+SSE stream of execution output. Resolves the token to a jobId via Redis, then polls the Redis Stream at 200 ms intervals and forwards events.
+
+**Events**:
+
 ```
 event: stdout
-data: {"chunk": "hello\n"}
+data: {"data":"hello\n"}
+
+event: stderr
+data: {"data":"undefined: x\n"}
+
+event: trace
+data: {"frames":[{"label":"step 1","state":{"x":1}}]}
 
 event: result
-data: {
-  "exit_code": 0,
-  "runtime_ms": 142,
-  "memory_bytes": 4096000,
-  "timed_out": false,
-  "status": "accepted"
-}
+data: {"exit_code":0,"runtime_ms":142,"timed_out":false}
+
+event: error
+data: {"message":"Stream timeout"}
 ```
 
-Judge0 status values mapped to `result.status`:
-- `Accepted` → `accepted`
-- `Time Limit Exceeded` → `timeout`
-- `Runtime Error` → `runtime_error`
-- `Compilation Error` → `compile_error`
-- `Internal Error` → `internal_error`
-
----
+Connection closes after `result` or `error`. Max wait: 60 seconds. Returns `404` if token not found.
 
 ### `GET /healthz`
 
-Returns `200 OK` with `{"status":"ok","judge0_reachable":true}`. Used by K8s liveness probe.
+Returns `{"status":"ok"}`.
+
+### `GET /readyz`
+
+Pings Redis. Returns `{"status":"ok"}` if reachable.
+
+### `GET /metrics`
+
+Prometheus metrics (prom-client). Scraped by the Prometheus container in docker-compose.
 
 ---
 
-## Rate Limit Behavior (FR-016a)
+## tRPC Router (`/trpc`)
 
-Per-user token bucket:
-- Capacity: 10 tokens
-- Refill: 1 token per 6 seconds (10/minute steady state)
-- On `429`: response includes `retry_after_seconds` — the number of seconds until the next token is available
-- Bucket state is stored in-process (not Redis) for v1; acceptable because sandbox instances are not horizontally scaled beyond 1 replica at 100-learner beta scale
+The sandbox exposes a tRPC router for internal procedure calls.
 
-The `apps/api` handler reads the `429` from sandbox and forwards `{"error":"rate_limited","retry_after_seconds":N}` to the browser, which displays the "please wait" message (FR-016a UX).
+### `execution.execute` (mutation)
+
+**Input**: `{ jobId, code, language, isSuite }`
+**Output**: `{ jobId, streamUrl: "/stream/{jobId}" }`
+
+Validates the job and enforces per-user rate limiting (token bucket, Redis-backed). In normal flow the job is already enqueued by the API via BullMQ; this procedure is used for direct internal calls.
 
 ---
 
-## Judge0 Integration Notes
+## Execution Engine
 
-- Judge0 CE REST API: `POST /submissions`, `GET /submissions/:token`
-- The sandbox service uses `wait=true` on Judge0 POSTs for executions under 2 seconds expected runtime; for longer runs it polls at 200ms intervals
-- Language ID for Go 1.22: Judge0 language ID `95` (Go 1.18.5 on Judge0 CE — verify against deployed instance)
-- Stdout/stderr from Judge0 are base64-encoded; the sandbox service decodes before emitting SSE chunks
+| Language | Runner | Mechanism |
+|---|---|---|
+| `go` | `docker-runner.ts` | `docker run --rm --network=none --memory=256m golang:1.21-alpine go run`/`go test` |
+| `javascript` | `polyglot-runner.ts` | host `node` process |
+| `typescript` | `polyglot-runner.ts` | host `tsx` binary |
+| `python` | `polyglot-runner.ts` | host `python3` |
+| `ruby` | `polyglot-runner.ts` | host `ruby` |
+| `c` | `polyglot-runner.ts` | host `gcc` (compile + run) |
+| `cpp` | `polyglot-runner.ts` | host `g++` (compile + run, `-std=c++17`) |
+| `rust` | `polyglot-runner.ts` | host `rustc` (compile + run) |
+| `shell` | `polyglot-runner.ts` | host `bash` |
+| `terraform` | `polyglot-runner.ts` | text/grep validation (no terraform CLI) |
+| `helm` | `polyglot-runner.ts` | text/grep validation (no helm CLI) |
+| `elixir` | `polyglot-runner.ts` | `docker run elixir:1.16-alpine` |
+| `java` | `polyglot-runner.ts` | `docker run eclipse-temurin:21-alpine` (javac + java) |
+| `kotlin` | `polyglot-runner.ts` | host `kotlinc` + `java` if available, else `docker run zenika/kotlin:latest` |
+| `assembly` | `polyglot-runner.ts` | `docker run --platform linux/amd64 fluent-assembly:latest` (NASM + ld) |
+
+**Timeout**: `EXECUTION_TIMEOUT_MS` (default 30 000 ms).
+**Memory cap**: 256 MB enforced by Docker for Docker-based paths; uncapped for host-native paths.
+
+Each execution writes code to a tmpdir, runs, and cleans up unconditionally.
+
+### Trace protocol
+
+For JavaScript, TypeScript, and Python, a `trace.step({...})` shim is prepended to user code. Output lines prefixed `__TRACE__:` are stripped from stdout and emitted as `trace` SSE events containing serialized `TraceFrame[]`. Used by the step visualizer in the UI.
