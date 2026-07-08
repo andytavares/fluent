@@ -30,7 +30,8 @@
     "pino-http": "^10.2.0",
     "prom-client": "^15.1.0",
     "superjson": "^2.2.0",
-    "zod": "^3.23.0"
+    "zod": "^3.23.0",
+    "@fluent/capstone-contract": "workspace:*"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -1,5 +1,12 @@
 import { Connection, Client } from "@temporalio/client";
-import type { capstoneSessionWorkflow } from "@fluent/capstone-runner/src/workflows/capstone-session";
+import {
+  CAPSTONE_TASK_QUEUE,
+  CAPSTONE_WORKFLOW_TYPE,
+  LEARNER_ACTIVE_SIGNAL,
+  VERIFY_STEP_SIGNAL,
+  capstoneWorkflowId,
+} from "@fluent/capstone-contract";
+import type { CapstoneSessionWorkflow } from "@fluent/capstone-contract";
 
 let client: Client | null = null;
 
@@ -14,9 +21,9 @@ async function getClient(): Promise<Client> {
 
 export async function startCapstoneWorkflow(sessionId: string): Promise<void> {
   const c = await getClient();
-  await c.workflow.start("capstoneSessionWorkflow" as unknown as typeof capstoneSessionWorkflow, {
-    taskQueue: "capstone-sessions",
-    workflowId: `capstone-session-${sessionId}`,
+  await c.workflow.start<CapstoneSessionWorkflow>(CAPSTONE_WORKFLOW_TYPE, {
+    taskQueue: CAPSTONE_TASK_QUEUE,
+    workflowId: capstoneWorkflowId(sessionId),
     args: [{ sessionId }],
   });
 }
@@ -24,8 +31,8 @@ export async function startCapstoneWorkflow(sessionId: string): Promise<void> {
 export async function signalLearnerActive(sessionId: string): Promise<void> {
   try {
     const c = await getClient();
-    const handle = c.workflow.getHandle(`capstone-session-${sessionId}`);
-    await handle.signal("learner-active");
+    const handle = c.workflow.getHandle(capstoneWorkflowId(sessionId));
+    await handle.signal(LEARNER_ACTIVE_SIGNAL);
   } catch {
     // Workflow may not exist yet or may have completed — signal is best-effort
   }
@@ -34,8 +41,8 @@ export async function signalLearnerActive(sessionId: string): Promise<void> {
 export async function signalVerifyStep(sessionId: string, stepNumber: number): Promise<void> {
   try {
     const c = await getClient();
-    const handle = c.workflow.getHandle(`capstone-session-${sessionId}`);
-    await handle.signal("verify-step", stepNumber);
+    const handle = c.workflow.getHandle(capstoneWorkflowId(sessionId));
+    await handle.signal(VERIFY_STEP_SIGNAL, stepNumber);
   } catch {
     // Workflow may not exist yet or may have completed — signal is best-effort
   }

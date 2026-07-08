@@ -38,6 +38,9 @@ importers:
       '@fastify/cors':
         specifier: ^9.0.0
         version: 9.0.1
+      '@fluent/capstone-contract':
+        specifier: workspace:*
+        version: link:../../packages/capstone-contract
       '@fluent/content-config':
         specifier: workspace:*
         version: link:../../packages/content-config
@@ -96,6 +99,9 @@ importers:
 
   apps/capstone-runner:
     dependencies:
+      '@fluent/capstone-contract':
+        specifier: workspace:*
+        version: link:../../packages/capstone-contract
       '@kubernetes/client-node':
         specifier: ^0.21.0
         version: 0.21.0
@@ -252,6 +258,8 @@ importers:
       vitest:
         specifier: ^1.6.0
         version: 1.6.1(@types/node@20.19.43)(lightningcss@1.32.0)(terser@5.48.0)
+
+  packages/capstone-contract: {}
 
   packages/content-config:
     dependencies:

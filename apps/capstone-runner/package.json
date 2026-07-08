@@ -20,7 +20,8 @@
     "@temporalio/worker": "^1.10.0",
     "@temporalio/workflow": "^1.10.0",
     "pino": "^9.3.0",
-    "zod": "^3.23.0"
+    "zod": "^3.23.0",
+    "@fluent/capstone-contract": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

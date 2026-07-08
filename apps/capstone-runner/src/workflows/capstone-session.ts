@@ -4,6 +4,8 @@ import {
   defineSignal,
   condition,
 } from "@temporalio/workflow";
+import { LEARNER_ACTIVE_SIGNAL, VERIFY_STEP_SIGNAL } from "@fluent/capstone-contract";
+import type { CapstoneSessionInput } from "@fluent/capstone-contract";
 import type { createActivities } from "../activities/index.js";
 
 const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
@@ -15,10 +17,10 @@ const activities = proxyActivities<Activities>({
   retry: { maximumAttempts: 3 },
 });
 
-export const learnerActiveSignal = defineSignal("learner-active");
-export const verifyStepSignal = defineSignal<[number]>("verify-step");
+export const learnerActiveSignal = defineSignal(LEARNER_ACTIVE_SIGNAL);
+export const verifyStepSignal = defineSignal<[number]>(VERIFY_STEP_SIGNAL);
 
-export async function capstoneSessionWorkflow({ sessionId }: { sessionId: string }) {
+export async function capstoneSessionWorkflow({ sessionId }: CapstoneSessionInput) {
   let lastActiveAt = Date.now();
   let learnerActive = false;
   const verifyQueue: number[] = [];
@@ -67,6 +69,3 @@ export async function capstoneSessionWorkflow({ sessionId }: { sessionId: string
   // Teardown the K8s Job
   await activities.teardown({ sessionId });
 }
-
-export { CapstonSessionWorkflow };
-type CapstonSessionWorkflow = typeof capstoneSessionWorkflow;
