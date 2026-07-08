@@ -253,7 +253,15 @@ importers:
         specifier: ^1.6.0
         version: 1.6.1(@types/node@20.19.43)(lightningcss@1.32.0)(terser@5.48.0)
 
-  packages/content-config: {}
+  packages/content-config:
+    dependencies:
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
+    devDependencies:
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.1(@types/node@20.19.43)(lightningcss@1.32.0)(terser@5.48.0)
 
   packages/ui:
     dependencies:
@@ -357,6 +365,9 @@ importers:
 
   tools/content-linter:
     dependencies:
+      '@fluent/content-config':
+        specifier: workspace:*
+        version: link:../../packages/content-config
       zod:
         specifier: ^3.23.0
         version: 3.25.76
@@ -379,6 +390,9 @@ importers:
 
   tools/content-manifest:
     dependencies:
+      '@fluent/content-config':
+        specifier: workspace:*
+        version: link:../../packages/content-config
       zod:
         specifier: ^3.23.0
         version: 3.25.76

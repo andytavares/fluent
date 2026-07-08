@@ -1,7 +1,21 @@
 #!/usr/bin/env node
+import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { trackConfigSchema } from "@fluent/content-config";
 import { validateExerciseFolder } from "./validator.js";
 import { runExerciseChecks } from "./runner.js";
+
+// Concept folders live at content/tracks/<track>/concepts/<concept>;
+// the track's config.json declares the language the folder is linted as.
+async function detectLanguage(folderPath: string): Promise<string> {
+  try {
+    const raw = await readFile(resolve(folderPath, "../../config.json"), "utf-8");
+    const parsed = trackConfigSchema.safeParse(JSON.parse(raw));
+    return parsed.success ? parsed.data.language : "go";
+  } catch {
+    return "go";
+  }
+}
 
 async function main() {
   const folderArg = process.argv[2];
@@ -11,10 +25,11 @@ async function main() {
   }
 
   const folderPath = resolve(folderArg);
-  console.log(`Linting: ${folderPath}\n`);
+  const language = await detectLanguage(folderPath);
+  console.log(`Linting: ${folderPath} (language: ${language})\n`);
 
   // Step 1: Static validation
-  const errors = await validateExerciseFolder(folderPath);
+  const errors = await validateExerciseFolder(folderPath, language);
 
   const criticalErrors = errors.filter((e) => !e.code.startsWith("W"));
   const warnings = errors.filter((e) => e.code.startsWith("W"));

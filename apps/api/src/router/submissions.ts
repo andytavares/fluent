@@ -1,19 +1,11 @@
-import { readFileSync, readdirSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, join, resolve } from "node:path";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "./trpc.js";
 import { ExecutionQueue } from "../queue/execution-queue.js";
 import { MasteryService } from "../service/mastery.js";
-import { TEST_FILE_PATTERNS } from "@fluent/content-config";
+import { createContentStore } from "@fluent/content-config";
 
-const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
-
-function findTestFile(files: string[], language: string): string | undefined {
-  const pattern = TEST_FILE_PATTERNS[language] ?? /_test\./;
-  return files.find((f) => pattern.test(f));
-}
+const content = createContentStore();
 
 export const submissionsRouter = router({
   runSandbox: protectedProcedure
@@ -59,23 +51,14 @@ export const submissionsRouter = router({
         },
       });
 
-      // When running tests, read the test file from the content directory
+      // When running tests, read the test files from the content directory
       let testFiles: string[] = [];
       if (input.isSuite) {
         const exercise = await ctx.db.exercise.findFirst({
           where: { conceptId: input.conceptId, type: "lesson" },
         });
         if (exercise?.contentPath) {
-          const dir = join(REPO_ROOT, exercise.contentPath);
-          try {
-            const files = readdirSync(dir);
-            const testFile = findTestFile(files, input.language);
-            if (testFile) {
-              testFiles = [readFileSync(join(dir, testFile), "utf8")];
-            }
-          } catch {
-            // content directory missing — run without tests
-          }
+          testFiles = content.getLessonTestFiles(exercise.contentPath, input.language);
         }
       }
 

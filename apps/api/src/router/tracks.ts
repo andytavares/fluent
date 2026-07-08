@@ -1,25 +1,8 @@
-import { readFileSync, readdirSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, join, resolve } from "node:path";
 import { z } from "zod";
 import { router, publicProcedure, protectedProcedure } from "./trpc.js";
-import { LANG_EXT } from "@fluent/content-config";
+import { createContentStore } from "@fluent/content-config";
 
-const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
-
-function findStubFile(dir: string, ext: string): string {
-  try {
-    const files = readdirSync(dir);
-    const stub = files.find((f) => f.startsWith("stub.") && f.endsWith(`.${ext}`));
-    if (stub) return readFileSync(join(dir, stub), "utf8");
-    // fallback: any stub.* file
-    const anyStub = files.find((f) => f.startsWith("stub."));
-    if (anyStub) return readFileSync(join(dir, anyStub), "utf8");
-  } catch {
-    // missing dir or files
-  }
-  return "";
-}
+const content = createContentStore();
 
 export const tracksRouter = router({
   listTracks: publicProcedure.query(async ({ ctx }) => {
@@ -67,17 +50,11 @@ export const tracksRouter = router({
       });
 
       const exercise = concept.exercises.find((e: { type: string }) => e.type === "lesson");
-      const ext = LANG_EXT[track.language] ?? "go";
       let instructions = "";
       let stub = "";
       if (exercise?.contentPath) {
-        const dir = join(REPO_ROOT, exercise.contentPath);
-        try {
-          instructions = readFileSync(join(dir, "instructions.md"), "utf8");
-        } catch {
-          // missing instructions — leave empty
-        }
-        stub = findStubFile(dir, ext);
+        instructions = content.getInstructions(exercise.contentPath);
+        stub = content.getLessonStub(exercise.contentPath, track.language);
       }
 
       return { ...concept, instructions, stub, nextConceptSlug: nextConcept?.slug ?? null, language: track.language };

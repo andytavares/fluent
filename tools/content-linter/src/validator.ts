@@ -1,6 +1,6 @@
-import { readdir, stat } from "node:fs/promises";
+import { readdir, readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
-import { z } from "zod";
+import { conceptConfigSchema, LANG_EXT, TEST_FILE_PATTERNS } from "@fluent/content-config";
 
 export type LintError = {
   code: string;
@@ -8,23 +8,12 @@ export type LintError = {
   file?: string;
 };
 
-const REQUIRED_FILES = [
-  "config.json",
-  "instructions.md",
-  "stub.go",
-  "exemplar.go",
-] as const;
-
-const configSchema = z.object({
-  slug: z.string().min(1),
-  title: z.string().min(1),
-  position: z.number().int().positive(),
-  has_testout: z.boolean().default(false),
-  status: z.enum(["wip", "published"]).default("wip"),
-});
-
-export async function validateExerciseFolder(folderPath: string): Promise<LintError[]> {
+export async function validateExerciseFolder(
+  folderPath: string,
+  language = "go",
+): Promise<LintError[]> {
   const errors: LintError[] = [];
+  const ext = LANG_EXT[language] ?? language;
 
   // E001: folder must exist
   try {
@@ -41,7 +30,8 @@ export async function validateExerciseFolder(folderPath: string): Promise<LintEr
   const files = await readdir(folderPath);
 
   // E002: required files present
-  for (const required of REQUIRED_FILES) {
+  const requiredFiles = ["config.json", "instructions.md", `stub.${ext}`, `exemplar.${ext}`];
+  for (const required of requiredFiles) {
     if (!files.includes(required)) {
       errors.push({ code: "E002", message: `Missing required file: ${required}`, file: required });
     }
@@ -50,70 +40,56 @@ export async function validateExerciseFolder(folderPath: string): Promise<LintEr
   // E003: config.json must be valid JSON
   if (files.includes("config.json")) {
     try {
-      const { readFile } = await import("node:fs/promises");
       const raw = await readFile(join(folderPath, "config.json"), "utf-8");
       const parsed = JSON.parse(raw) as unknown;
 
       // E004: config must match schema
-      const result = configSchema.safeParse(parsed);
+      const result = conceptConfigSchema.safeParse(parsed);
       if (!result.success) {
         errors.push({
           code: "E004",
           message: `config.json schema invalid: ${result.error.message}`,
           file: "config.json",
         });
+      } else if (result.data.has_testout) {
+        // E008: if has_testout, must have testout stub and test files
+        if (!files.includes(`testout_stub.${ext}`)) {
+          errors.push({ code: "E008", message: `has_testout=true but testout_stub.${ext} missing`, file: `testout_stub.${ext}` });
+        }
+        if (!files.includes(`testout_test.${ext}`)) {
+          errors.push({ code: "E008", message: `has_testout=true but testout_test.${ext} missing`, file: `testout_test.${ext}` });
+        }
       }
     } catch {
       errors.push({ code: "E003", message: "config.json is not valid JSON", file: "config.json" });
     }
   }
 
-  // E005: stub.go must be non-empty
-  if (files.includes("stub.go")) {
-    const { readFile } = await import("node:fs/promises");
-    const content = await readFile(join(folderPath, "stub.go"), "utf-8");
-    if (content.trim().length === 0) {
-      errors.push({ code: "E005", message: "stub.go is empty", file: "stub.go" });
+  // E005: stub must be non-empty
+  if (files.includes(`stub.${ext}`)) {
+    const stubContent = await readFile(join(folderPath, `stub.${ext}`), "utf-8");
+    if (stubContent.trim().length === 0) {
+      errors.push({ code: "E005", message: `stub.${ext} is empty`, file: `stub.${ext}` });
     }
   }
 
-  // E006: exemplar.go must be non-empty
-  if (files.includes("exemplar.go")) {
-    const { readFile } = await import("node:fs/promises");
-    const content = await readFile(join(folderPath, "exemplar.go"), "utf-8");
-    if (content.trim().length === 0) {
-      errors.push({ code: "E006", message: "exemplar.go is empty", file: "exemplar.go" });
+  // E006: exemplar must be non-empty
+  if (files.includes(`exemplar.${ext}`)) {
+    const exemplarContent = await readFile(join(folderPath, `exemplar.${ext}`), "utf-8");
+    if (exemplarContent.trim().length === 0) {
+      errors.push({ code: "E006", message: `exemplar.${ext} is empty`, file: `exemplar.${ext}` });
     }
   }
 
-  // E007: test file required (slug_test.go or *_test.go)
-  const hasTestFile = files.some((f) => f.endsWith("_test.go") && !f.startsWith("testout"));
+  // E007: lesson test file required (testout tests don't count)
+  const testPattern = TEST_FILE_PATTERNS[language] ?? /_test\./;
+  const hasTestFile = files.some((f) => testPattern.test(f) && !f.startsWith("testout"));
   if (!hasTestFile) {
-    errors.push({ code: "E007", message: "Missing test file (*_test.go)" });
-  }
-
-  // E008: if has_testout, must have testout_stub.go and testout_test.go
-  if (files.includes("config.json")) {
-    try {
-      const { readFile } = await import("node:fs/promises");
-      const raw = await readFile(join(folderPath, "config.json"), "utf-8");
-      const config = JSON.parse(raw) as { has_testout?: boolean };
-      if (config.has_testout) {
-        if (!files.includes("testout_stub.go")) {
-          errors.push({ code: "E008", message: "has_testout=true but testout_stub.go missing", file: "testout_stub.go" });
-        }
-        if (!files.includes("testout_test.go")) {
-          errors.push({ code: "E008", message: "has_testout=true but testout_test.go missing", file: "testout_test.go" });
-        }
-      }
-    } catch {
-      // already caught above
-    }
+    errors.push({ code: "E007", message: `Missing test file (*_test.${ext})` });
   }
 
   // W001: instructions.md should have minimum length
   if (files.includes("instructions.md")) {
-    const { readFile } = await import("node:fs/promises");
     const content = await readFile(join(folderPath, "instructions.md"), "utf-8");
     if (content.trim().length < 50) {
       errors.push({ code: "W001", message: "instructions.md is very short (< 50 chars)" });

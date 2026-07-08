@@ -80,4 +80,28 @@ describe("Content linter validator", () => {
     const errors = await validateExerciseFolder(dir);
     expect(errors.some((e) => e.code === "E008")).toBe(true);
   });
+
+  it("E007: testout tests do not satisfy the lesson test file requirement", async () => {
+    const dir = await createValidFolder(tmpBase);
+    const { unlink } = await import("node:fs/promises");
+    await unlink(join(dir, "stub_test.go"));
+    await writeFile(join(dir, "testout_test.go"), "package main");
+    const errors = await validateExerciseFolder(dir);
+    expect(errors.some((e) => e.code === "E007")).toBe(true);
+  });
+
+  it("validates a non-Go folder using the language's file conventions", async () => {
+    const dir = await mkdtemp(join(tmpBase, "exercise-py-"));
+    await writeFile(
+      join(dir, "config.json"),
+      JSON.stringify({ slug: "py", title: "Py", position: 1, has_testout: false, status: "published" }),
+    );
+    await writeFile(join(dir, "instructions.md"), "# Py\n\nThis is a python exercise with enough content to pass the linter length validation.");
+    await writeFile(join(dir, "stub.py"), "def solve():\n    pass\n");
+    await writeFile(join(dir, "exemplar.py"), "def solve():\n    return 1\n");
+    await writeFile(join(dir, "solution_test.py"), "import stub\n");
+    const errors = await validateExerciseFolder(dir, "python");
+    const critical = errors.filter((e) => !e.code.startsWith("W"));
+    expect(critical).toHaveLength(0);
+  });
 });

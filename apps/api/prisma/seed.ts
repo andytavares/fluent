@@ -1,48 +1,11 @@
 import { PrismaClient } from "@prisma/client";
-import { readFileSync, readdirSync, existsSync } from "node:fs";
-import { join, resolve, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
-import { TEST_FILE_PATTERNS } from "@fluent/content-config";
+import { createContentStore } from "@fluent/content-config";
+import type { TrackEntry } from "@fluent/content-config";
 
 const prisma = new PrismaClient();
+const content = createContentStore();
 
-const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
-const CONTENT_ROOT = join(REPO_ROOT, "content/tracks");
-
-interface TrackConfig {
-  slug: string;
-  title: string;
-  description: string;
-  language: string;
-  status: string;
-}
-
-interface ConceptConfig {
-  slug: string;
-  title: string;
-  position: number;
-  has_testout: boolean;
-  status: string;
-}
-
-function readJson<T>(path: string): T {
-  return JSON.parse(readFileSync(path, "utf8")) as T;
-}
-
-function hasTestFile(conceptDir: string, language: string): boolean {
-  try {
-    const pattern = TEST_FILE_PATTERNS[language] ?? /_test\./;
-    return readdirSync(conceptDir).some((f) => pattern.test(f));
-  } catch {
-    return false;
-  }
-}
-
-async function seedTrack(trackDir: string) {
-  const trackConfigPath = join(trackDir, "config.json");
-  if (!existsSync(trackConfigPath)) return;
-
-  const trackConfig = readJson<TrackConfig>(trackConfigPath);
+async function seedTrack({ dir, config: trackConfig }: TrackEntry) {
   const track = await prisma.track.upsert({
     where: { slug: trackConfig.slug },
     update: {
@@ -59,25 +22,13 @@ async function seedTrack(trackDir: string) {
     },
   });
 
-  const conceptsDir = join(trackDir, "concepts");
-  if (!existsSync(conceptsDir)) {
-    console.log(`  No concepts dir for ${trackConfig.slug}`);
+  const concepts = content.listConcepts(dir);
+  if (concepts.length === 0) {
+    console.log(`  No concepts for ${trackConfig.slug}`);
     return;
   }
 
-  const conceptDirs = readdirSync(conceptsDir)
-    .filter((d) => /^\d+-.+/.test(d))
-    .sort()
-    .map((d) => join(conceptsDir, d));
-
-  let seededCount = 0;
-  for (const conceptDir of conceptDirs) {
-    const configPath = join(conceptDir, "config.json");
-    if (!existsSync(configPath)) continue;
-
-    const cfg = readJson<ConceptConfig>(configPath);
-    const relPath = conceptDir.replace(REPO_ROOT + "/", "");
-
+  for (const { contentPath, config: cfg } of concepts) {
     const concept = await prisma.concept.upsert({
       where: { trackId_slug: { trackId: track.id, slug: cfg.slug } },
       update: {
@@ -101,24 +52,22 @@ async function seedTrack(trackDir: string) {
     });
     if (!existing) {
       await prisma.exercise.create({
-        data: { conceptId: concept.id, type: "lesson", contentPath: relPath },
+        data: { conceptId: concept.id, type: "lesson", contentPath },
       });
     } else {
       await prisma.exercise.update({
         where: { id: existing.id },
-        data: { contentPath: relPath },
+        data: { contentPath },
       });
     }
 
     // Warn loudly if the concept is missing a test file — submissions will silently pass without one
-    if (!hasTestFile(conceptDir, trackConfig.language)) {
+    if (content.getLessonTestFiles(contentPath, trackConfig.language).length === 0) {
       console.warn(`  ⚠ MISSING TEST FILE: ${trackConfig.slug}/${cfg.slug} (language: ${trackConfig.language})`);
     }
-
-    seededCount++;
   }
 
-  console.log(`✓ Track "${track.slug}" — ${seededCount} concepts`);
+  console.log(`✓ Track "${track.slug}" — ${concepts.length} concepts`);
 }
 
 async function main() {
@@ -134,13 +83,8 @@ async function main() {
   });
   console.log("✓ Dev user: dev@fluent.local");
 
-  // Auto-discover all track directories
-  const trackDirs = readdirSync(CONTENT_ROOT)
-    .map((d) => join(CONTENT_ROOT, d))
-    .filter((d) => existsSync(join(d, "config.json")));
-
-  for (const trackDir of trackDirs) {
-    await seedTrack(trackDir);
+  for (const track of content.listTracks()) {
+    await seedTrack(track);
   }
 
   console.log("\nSeed complete.");

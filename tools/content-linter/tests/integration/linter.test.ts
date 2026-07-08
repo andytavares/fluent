@@ -39,17 +39,10 @@ describe("Content linter integration", () => {
 
   it("exits 1 (returns E002) for a broken exercise missing exemplar", async () => {
     const dir = await createValidExercise(tmpDir + "-broken");
-    const { mkdir, unlink } = await import("node:fs/promises");
-    // Only create if not exists
-    try {
-      await mkdir(dir, { recursive: true });
-    } catch {}
-    await writeFile(
-      join(dir, "config.json"),
-      JSON.stringify({ slug: "hello", title: "Hello", position: 1 }),
-    );
-    // Don't create exemplar.go — should trigger E002
+    const { unlink } = await import("node:fs/promises");
+    // Remove exemplar.go — should trigger E002
+    await unlink(join(dir, "exemplar.go"));
     const errors = await validateExerciseFolder(dir);
-    expect(errors.some((e) => e.code === "E002")).toBe(true);
+    expect(errors.some((e) => e.code === "E002" && e.file === "exemplar.go")).toBe(true);
   });
 });
