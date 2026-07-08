@@ -1,0 +1,85 @@
+apps/api/src/router/submissions.ts
+  s_1fb3ffa508cd1f::t_c582690410ab9e 5-9
+  s_1fb3ffa508cd1f::t_6056120416083b 124-125,134,139
+apps/capstone-runner/package.json
+  s_1fb3ffa508cd1f::t_47a35f0b1919d1 17
+apps/api/src/router/placement.ts
+  s_1fb3ffa508cd1f::t_c53ee840677081 7
+apps/sandbox/src/executor/docker-runner.ts
+  s_1fb3ffa508cd1f::t_205ead452ec839 44
+apps/capstone-runner/src/workflows/capstone-session.ts
+  s_1fb3ffa508cd1f::t_7d0c599584bfb7 19,21,24,31-36,46,55-64,72
+apps/capstone-runner/src/activities/provisioner.ts
+  s_1fb3ffa508cd1f::t_0f586d9f5d59b0 5-8,15
+apps/web/src/app/tracks/[trackSlug]/capstone/page.tsx
+  s_1fb3ffa508cd1f::t_efe73906ac1eb0 213
+  s_1fb3ffa508cd1f::t_356f86f0ac76e6 9-10
+packages/content-config/package.json
+  s_1fb3ffa508cd1f::t_89c8350cc41dd4 1-10
+apps/api/tests/unit/testout.test.ts
+  s_1fb3ffa508cd1f::t_01133b52822fc8 1-2,4-12,15-47,50-62,64-70,72-73,76-81
+apps/sandbox/src/limiter/token-bucket.ts
+  s_1fb3ffa508cd1f::t_79d37415b4c09f 12-33,41,43-52,54-55,57,67
+apps/api/src/temporal/capstone-client.ts
+  s_1fb3ffa508cd1f::t_0f3fdd4043046a 33-42
+  s_1fb3ffa508cd1f::t_f5e45003b8304c 2,17
+apps/capstone-runner/src/workflows/index.ts
+  s_1fb3ffa508cd1f::t_3306f870587faf 1
+apps/api/tests/unit/mastery.test.ts
+  s_1fb3ffa508cd1f::t_7a2e6b48548e76 1-2,4-10,13-19,22-41,44-60,63-75,78-95
+apps/api/src/router/tracks.ts
+  s_1fb3ffa508cd1f::t_e24ab5af164d02 5-6
+apps/api/src/service/testout.ts
+  s_1fb3ffa508cd1f::t_6aa7a29eb9b97c 45-51
+apps/api/src/service/mastery.ts
+  s_1fb3ffa508cd1f::t_bc6793582119ba 36-40
+apps/capstone-runner/src/activities/verifier.ts
+  s_1fb3ffa508cd1f::t_701412d3f3d192 46-47
+apps/api/tests/unit/streak.test.ts
+  s_1fb3ffa508cd1f::t_a33c122e8bd925 1-9,12-15,18-21,24-28,31-35
+packages/content-config/src/index.ts
+  s_1fb3ffa508cd1f::t_6b970ca7ac3deb 1-37
+apps/api/tests/unit/credential.test.ts
+  s_1fb3ffa508cd1f::t_82c9cc0f91eaeb 1-2,4-27,30-38,40-47,50-59
+apps/api/src/router/capstone.ts
+  s_1fb3ffa508cd1f::t_cc77207f374103 3
+  s_1fb3ffa508cd1f::t_28beec5c7efa43 51,65-67,69
+apps/api/tests/unit/placement.test.ts
+  s_1fb3ffa508cd1f::t_35d156819a9295 1-2,4-8,11-13,15-17,20-24,26-29,32-36,38,40-45
+apps/api/prisma/seed.ts
+  s_1fb3ffa508cd1f::t_425cf3ad80fc0a 5
+apps/capstone-runner/src/activities/session.ts
+  s_1fb3ffa508cd1f::t_30337709fee4e2 43,46-47
+  s_1fb3ffa508cd1f::t_43ce9997046a46 1
+  s_1fb3ffa508cd1f::t_5cc6331dd69529 5,44-45,48
+  s_1fb3ffa508cd1f::t_7d794c7be54801 49
+apps/web/src/types/api-shims.d.ts
+  s_1fb3ffa508cd1f::t_cb00030a192cbf 5-6
+apps/api/package.json
+  s_1fb3ffa508cd1f::t_bb2e8638a710ea 21
+apps/api/tests/unit/dashboard.test.ts
+  s_1fb3ffa508cd1f::t_f39efbc02b4328 3-8,10,18,36,44,53,57,63,67-68
+apps/web/tsconfig.tsbuildinfo
+  s_1fb3ffa508cd1f::t_b43c5536e6f586 1
+apps/capstone-runner/tests/unit/verifier.test.ts
+  s_1fb3ffa508cd1f::t_ff18e7b0ce58b6 53,55
+  s_1fb3ffa508cd1f::t_feabd5ae003c67 20
+pnpm-lock.yaml
+  s_1fb3ffa508cd1f::t_20a7ba3690e5a7 41-43,102-104,256-257
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "5500ecaf6b2fba1df5146b8c18ec28c3b4907b6c",
+  "prompts": {},
+  "sessions": {
+    "s_1fb3ffa508cd1f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c6e96004-61c8-4864-8052-c24f0d7a2c3c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
