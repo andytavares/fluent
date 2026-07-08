@@ -1,0 +1,62 @@
+apps/api/src/queue/rate-limiter.ts
+  s_beb7708abc1117::t_6cfa1f1ba43a9b 1-77
+apps/sandbox/package.json
+  s_beb7708abc1117::t_44f0a26f25b8e2 22
+apps/api/package.json
+  s_beb7708abc1117::t_44f0a26f25b8e2 34-35
+apps/sandbox/tests/unit/polyglot-runner-timeout.test.ts
+  s_beb7708abc1117::t_b554293b2fc648 1-14
+apps/api/src/queue/queues.ts
+  s_beb7708abc1117::t_a84f3a3a78ba47 3-7
+packages/execution-contract/package.json
+  s_beb7708abc1117::t_45cb651eb70243 1-13
+apps/api/src/service/submission-pipeline.ts
+  s_beb7708abc1117::t_cfec1ac5020bf9 3
+  s_beb7708abc1117::t_5bf8a51ca3e49f 175
+apps/sandbox/src/router/internal.ts
+  s_beb7708abc1117::t_5d89c64c8aa40e 1,22
+apps/api/src/router/submissions.ts
+  s_beb7708abc1117::t_091cdbd7c435e6 47-55
+  s_beb7708abc1117::t_4421cf2bf25412 72-83
+  s_beb7708abc1117::t_313105032cdc52 27-37
+  s_beb7708abc1117::t_8c5532ba3c4913 5
+apps/sandbox/src/worker/execution-worker.ts
+  s_beb7708abc1117::t_51d1fdf4171f77 6
+  s_beb7708abc1117::t_b70d2b83b5bdbc 2-3
+  s_beb7708abc1117::t_5d89c64c8aa40e 36,39,42,46,58
+  s_beb7708abc1117::t_6eef159ac123c9 22
+apps/sandbox/src/worker/queues.ts
+  s_beb7708abc1117::t_5d89c64c8aa40e 1
+apps/sandbox/tests/unit/polyglot-runner.test.ts
+  s_beb7708abc1117::t_89ab51c4da2f21 1-101
+apps/sandbox/src/executor/polyglot-runner.ts
+  s_beb7708abc1117::t_bb5e4245c6a329 43
+apps/api/src/queue/execution-queue.ts
+  s_beb7708abc1117::t_3b6b3419509491 2,4,6,9-10,13,16,20,23,25-29,33
+apps/api/tests/integration/rate-limit.test.ts
+  s_beb7708abc1117::t_6a0ce8e7bcdd33 1-4,6-8,10-65
+apps/sandbox/src/streamer/sse-streamer.ts
+  s_beb7708abc1117::t_5d89c64c8aa40e 2,12
+apps/sandbox/tests/integration/execution.test.ts
+  s_beb7708abc1117::t_5bfb402bd9b846 1-6,8-10,12-40,42-78
+packages/execution-contract/src/index.ts
+  s_beb7708abc1117::t_308dc6614ea694 1-30
+pnpm-lock.yaml
+  s_beb7708abc1117::t_aff5b1a7b4ff85 47-49,148-150,274-279
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "09e5631b648d026a40d0cf00160e1c9d4e0f6de0",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
