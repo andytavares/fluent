@@ -3,7 +3,9 @@ import { MasteryService } from "../../src/service/mastery.js";
 
 function makeMockDb(overrides: Record<string, unknown> = {}) {
   return {
-    concept: { findUniqueOrThrow: vi.fn() },
+    // findFirst: unlockNext looks for the next concept after a terminal
+    // transition; resolving undefined means "no next concept".
+    concept: { findUniqueOrThrow: vi.fn(), findFirst: vi.fn() },
     conceptState: { findUnique: vi.fn(), findUniqueOrThrow: vi.fn(), update: vi.fn() },
     masteryEvent: { create: vi.fn() },
     ...overrides,

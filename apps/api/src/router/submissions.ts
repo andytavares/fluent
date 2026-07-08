@@ -2,10 +2,26 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "./trpc.js";
 import { ExecutionQueue } from "../queue/execution-queue.js";
-import { MasteryService } from "../service/mastery.js";
+import { redis } from "../db/redis.js";
+import {
+  SubmissionPipeline,
+  SubmissionAccessError,
+  ResultNotReadyError,
+} from "../service/submission-pipeline.js";
 import { createContentStore } from "@fluent/content-config";
+import type { PrismaClient } from "@prisma/client";
 
 const content = createContentStore();
+const queue = new ExecutionQueue();
+
+function pipeline(db: PrismaClient): SubmissionPipeline {
+  return new SubmissionPipeline({
+    db,
+    redis,
+    enqueue: (job) => queue.enqueue(job),
+    content,
+  });
+}
 
 export const submissionsRouter = router({
   runSandbox: protectedProcedure
@@ -16,7 +32,6 @@ export const submissionsRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { randomUUID } = await import("node:crypto");
       const jobId = randomUUID();
-      const queue = new ExecutionQueue();
       const streamToken = await queue.enqueue({
         jobId,
         userId: ctx.user.id!,
@@ -31,50 +46,25 @@ export const submissionsRouter = router({
     .input(
       z.object({
         conceptId: z.string().uuid(),
+        enrollmentId: z.string().uuid().optional(),
         exerciseId: z.string().uuid().optional(),
         code: z.string().min(1),
         language: z.string().default("go"), // caller must pass the correct language
         isSuite: z.boolean().default(false),
+        kind: z.enum(["lesson", "test_out", "placement"]).default("lesson"),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const userId = ctx.user.id!;
-
-      const submission = await ctx.db.submission.create({
-        data: {
-          userId,
-          conceptId: input.conceptId,
-          exerciseId: input.exerciseId ?? null,
-          code: input.code,
-          language: input.language,
-          isSuite: input.isSuite,
-        },
-      });
-
-      // When running tests, read the test files from the content directory
-      let testFiles: string[] = [];
-      if (input.isSuite) {
-        const exercise = await ctx.db.exercise.findFirst({
-          where: { conceptId: input.conceptId, type: "lesson" },
-        });
-        if (exercise?.contentPath) {
-          testFiles = content.getLessonTestFiles(exercise.contentPath, input.language);
-        }
-      }
-
-      const queue = new ExecutionQueue();
-      const streamToken = await queue.enqueue({
-        jobId: submission.id,
-        userId,
+      return pipeline(ctx.db).begin({
+        userId: ctx.user.id!,
         conceptId: input.conceptId,
-        exerciseId: input.exerciseId,
+        ...(input.enrollmentId ? { enrollmentId: input.enrollmentId } : {}),
+        ...(input.exerciseId ? { exerciseId: input.exerciseId } : {}),
         code: input.code,
         language: input.language,
         isSuite: input.isSuite,
-        testFiles,
+        kind: input.kind,
       });
-
-      return { submissionId: submission.id, streamToken };
     }),
 
   getSubmission: protectedProcedure
@@ -90,45 +80,21 @@ export const submissionsRouter = router({
     }),
 
   completeSubmission: protectedProcedure
-    .input(
-      z.object({
-        submissionId: z.string().uuid(),
-        enrollmentId: z.string().uuid(),
-        stdout: z.string().optional(),
-        stderr: z.string().optional(),
-        exitCode: z.number().int(),
-        runtimeMs: z.number().int(),
-        timedOut: z.boolean(),
-      }),
-    )
+    .input(z.object({ submissionId: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      const userId = ctx.user.id!;
-
-      const passed = input.exitCode === 0 && !input.timedOut;
-
-      const submission = await ctx.db.submission.update({
-        where: { id: input.submissionId },
-        data: {
-          stdout: input.stdout ?? null,
-          stderr: input.stderr ?? null,
-          exitCode: input.exitCode,
-          runtimeMs: input.runtimeMs,
-          timedOut: input.timedOut,
-          passed,
-        },
-      });
-
-      // If suite passed → advance concept state
-      if (submission.isSuite && passed) {
-        const masteryService = new MasteryService(ctx.db);
-        await masteryService.createMasteryEvent({
-          enrollmentId: input.enrollmentId,
-          conceptId: submission.conceptId,
-          userId,
-          achievedVia: "lesson",
+      try {
+        return await pipeline(ctx.db).finalize({
+          submissionId: input.submissionId,
+          userId: ctx.user.id!,
         });
+      } catch (err) {
+        if (err instanceof SubmissionAccessError) {
+          throw new TRPCError({ code: "FORBIDDEN", message: err.message });
+        }
+        if (err instanceof ResultNotReadyError) {
+          throw new TRPCError({ code: "PRECONDITION_FAILED", message: err.message });
+        }
+        throw err;
       }
-
-      return submission;
     }),
 });

@@ -1,39 +1,31 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { PlacementService } from "../../src/service/placement.js";
+
+// Placement task scoring lives in SubmissionPipeline (kind "placement") and
+// is covered by submission-pipeline.test.ts.
 
 function makeMockDb() {
   return {
     enrollment: { findUniqueOrThrow: vi.fn() },
-    conceptState: { findUniqueOrThrow: vi.fn(), update: vi.fn() },
   };
 }
 
-describe("PlacementService.scoreTask", () => {
-  let db: ReturnType<typeof makeMockDb>;
-  let service: PlacementService;
+describe("PlacementService.startPlacement", () => {
+  it("returns the track's published concepts in position order", async () => {
+    const db = makeMockDb();
+    const concepts = [
+      { id: "c1", position: 1 },
+      { id: "c2", position: 2 },
+    ];
+    db.enrollment.findUniqueOrThrow.mockResolvedValue({ track: { concepts } });
+    const service = new PlacementService(db as never);
 
-  beforeEach(() => {
-    db = makeMockDb();
-    service = new PlacementService(db as never);
-  });
+    const result = await service.startPlacement("enr1");
 
-  it("pass → transitions to mastered and returns mastered", async () => {
-    db.conceptState.findUniqueOrThrow.mockResolvedValue({ id: "cs1", state: "available" });
-    db.conceptState.update.mockResolvedValue({ id: "cs1", state: "mastered" });
-
-    const result = await service.scoreTask("enr1", "con1", true);
-
-    expect(result).toEqual({ conceptId: "con1", result: "mastered" });
-    expect(db.conceptState.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ state: "mastered" }) }),
+    expect(result).toEqual(concepts);
+    expect(db.enrollment.findUniqueOrThrow).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: "enr1" } }),
     );
-  });
-
-  it("fail → returns available without transitioning", async () => {
-    const result = await service.scoreTask("enr1", "con1", false);
-
-    expect(result).toEqual({ conceptId: "con1", result: "available" });
-    expect(db.conceptState.update).not.toHaveBeenCalled();
   });
 });
 

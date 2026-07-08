@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { trpc } from "@/lib/trpc/client";
 
 type SubmissionState = "idle" | "submitting" | "streaming" | "complete" | "error";
+type SubmissionKind = "lesson" | "test_out" | "placement";
 
 interface OutputLine {
   type: "stdout" | "stderr" | "result";
@@ -26,6 +27,7 @@ interface UseSubmissionOptions {
   conceptId: string;
   enrollmentId: string;
   language?: string;
+  /** Called with the server's verdict once the submission is finalized. */
   onComplete?: (passed: boolean) => void;
 }
 
@@ -41,7 +43,7 @@ export function useSubmission({ conceptId, enrollmentId, language = "go", onComp
   const doCompleteSubmission = trpc.submissions.completeSubmission.useMutation();
 
   const submit = useCallback(
-    async (code: string, isSuite = false) => {
+    async (code: string, isSuite = false, kind: SubmissionKind = "lesson") => {
       setState("submitting");
       setLines([]);
       setExitCode(undefined);
@@ -52,21 +54,20 @@ export function useSubmission({ conceptId, enrollmentId, language = "go", onComp
       try {
         const { submissionId, streamToken } = await createSubmission.mutateAsync({
           conceptId,
+          ...(enrollmentId ? { enrollmentId } : {}),
           code,
           language,
           isSuite,
+          kind,
         });
 
         setState("streaming");
 
-        const collectedLines: OutputLine[] = [];
         const es = new EventSource(`/api/stream/${streamToken}`);
 
         es.addEventListener("stdout", (e: MessageEvent<string>) => {
           const data = JSON.parse(e.data) as { data: string };
-          const line: OutputLine = { type: "stdout", data: data.data };
-          setLines((prev) => [...prev, line]);
-          collectedLines.push(line);
+          setLines((prev) => [...prev, { type: "stdout", data: data.data }]);
         });
 
         es.addEventListener("trace", (e: MessageEvent<string>) => {
@@ -76,9 +77,7 @@ export function useSubmission({ conceptId, enrollmentId, language = "go", onComp
 
         es.addEventListener("stderr", (e: MessageEvent<string>) => {
           const data = JSON.parse(e.data) as { data: string };
-          const line: OutputLine = { type: "stderr", data: data.data };
-          setLines((prev) => [...prev, line]);
-          collectedLines.push(line);
+          setLines((prev) => [...prev, { type: "stderr", data: data.data }]);
         });
 
         es.addEventListener("result", (e: MessageEvent<string>) => {
@@ -88,22 +87,12 @@ export function useSubmission({ conceptId, enrollmentId, language = "go", onComp
           setState("complete");
           es.close();
 
-          const passed = result.exit_code === 0 && !result.timed_out;
-          onComplete?.(passed);
-
-          if (enrollmentId) {
-            const stdout = collectedLines.filter((l) => l.type === "stdout").map((l) => l.data ?? "").join("\n");
-            const stderr = collectedLines.filter((l) => l.type === "stderr").map((l) => l.data ?? "").join("\n");
-            void doCompleteSubmission.mutateAsync({
-              submissionId,
-              enrollmentId,
-              stdout,
-              stderr,
-              exitCode: result.exit_code,
-              runtimeMs: result.runtime_ms,
-              timedOut: result.timed_out,
-            });
-          }
+          // The server owns the verdict: finalize reads the worker's result
+          // from Redis, scores it, and advances concept state.
+          void doCompleteSubmission
+            .mutateAsync({ submissionId })
+            .then(({ passed }) => onComplete?.(passed))
+            .catch(() => setState("error"));
         });
 
         es.onerror = () => {

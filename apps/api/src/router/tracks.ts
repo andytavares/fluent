@@ -52,11 +52,15 @@ export const tracksRouter = router({
       const exercise = concept.exercises.find((e: { type: string }) => e.type === "lesson");
       let instructions = "";
       let stub = "";
+      let testoutStub = "";
       if (exercise?.contentPath) {
         instructions = content.getInstructions(exercise.contentPath);
         stub = content.getLessonStub(exercise.contentPath, track.language);
+        if (concept.hasTestout) {
+          testoutStub = content.getTestoutStub(exercise.contentPath, track.language);
+        }
       }
 
-      return { ...concept, instructions, stub, nextConceptSlug: nextConcept?.slug ?? null, language: track.language };
+      return { ...concept, instructions, stub, testoutStub, nextConceptSlug: nextConcept?.slug ?? null, language: track.language };
     }),
 });

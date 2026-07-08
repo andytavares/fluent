@@ -33,18 +33,9 @@ export const placementRouter = router({
       );
     }),
 
-  submitTask: protectedProcedure
-    .input(
-      z.object({
-        enrollmentId: z.string().uuid(),
-        conceptId: z.string().uuid(),
-        passed: z.boolean(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const service = new PlacementService(ctx.db);
-      return service.scoreTask(input.enrollmentId, input.conceptId, input.passed);
-    }),
+  // Placement tasks are scored server-side by the submission pipeline
+  // (submissions.createSubmission with kind "placement") — there is no
+  // client-supplied verdict endpoint.
 
   skipPlacement: protectedProcedure
     .input(z.object({ enrollmentId: z.string().uuid() }))

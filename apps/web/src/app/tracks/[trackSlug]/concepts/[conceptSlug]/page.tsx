@@ -27,13 +27,12 @@ export default function LessonPage() {
   // null = no testout result yet; object = result after testout submission completes
   const [testOutResult, setTestOutResult] = useState<{ passed: boolean } | null>(null);
   const isTestOutRef = useRef(false);
+  const lastSuiteRef = useRef(false);
 
   const conceptQuery = trpc.tracks.getConceptLesson.useQuery({ trackSlug, conceptSlug });
 
   const enrollmentsQuery = trpc.enrollments.listEnrollments.useQuery();
   const enrollment = enrollmentsQuery.data?.find((e) => e.track.slug === trackSlug);
-
-  const completeSubmission = trpc.submissions.completeSubmission.useMutation();
 
   useEffect(() => {
     if (conceptQuery.data && !code) {
@@ -48,24 +47,23 @@ export default function LessonPage() {
     conceptId: conceptQuery.data?.id ?? "",
     enrollmentId: enrollment?.id ?? "",
     language: conceptQuery.data?.language,
+    // Fires with the server's verdict after the submission is finalized.
     onComplete: (passed) => {
       if (isTestOutRef.current) {
         setTestOutResult({ passed });
         isTestOutRef.current = false;
         return;
       }
-      if (passed && isSuite) {
+      if (passed && lastSuiteRef.current) {
         setCongratsOpen(true);
       }
     },
   });
 
-  // Also catch isSuite=true runs that complete with exitCode 0 (onComplete fires before isSuite state propagates)
-  useEffect(() => {
-    if (state === "complete" && exitCode === 0 && isSuite && !isTestOutRef.current) {
-      setCongratsOpen(true);
-    }
-  }, [state, exitCode, isSuite]);
+  function runLesson(lessonCode: string, suite: boolean) {
+    lastSuiteRef.current = suite;
+    void submit(lessonCode, suite);
+  }
 
   if (conceptQuery.isLoading) {
     return <div className="p-8 text-[var(--color-text-secondary)]">Loading…</div>;
@@ -137,7 +135,7 @@ export default function LessonPage() {
           <CodeEditor
             value={code}
             onChange={setCode}
-            onRun={() => void submit(code, false)}
+            onRun={() => runLesson(code, false)}
           />
 
           <OutputPane
@@ -156,14 +154,14 @@ export default function LessonPage() {
 
           <div className="flex gap-3">
             <button
-              onClick={() => void submit(code, false)}
+              onClick={() => runLesson(code, false)}
               disabled={state === "streaming" || state === "submitting" || !code || !conceptQuery.data}
               className="rounded-lg bg-[var(--color-interactive-secondary)] px-4 py-2 text-sm font-medium text-[var(--color-interactive-secondary-text)] border border-[var(--color-border-default)] disabled:opacity-50"
             >
               Run (Ctrl+Enter)
             </button>
             <button
-              onClick={() => void submit(code, true)}
+              onClick={() => runLesson(code, true)}
               disabled={state === "streaming" || state === "submitting" || !code || !conceptQuery.data}
               className="rounded-lg bg-[var(--color-interactive-primary)] px-4 py-2 text-sm font-medium text-[var(--color-interactive-primary-text)] disabled:opacity-50"
             >
@@ -178,12 +176,12 @@ export default function LessonPage() {
         onClose={() => setTestOutOpen(false)}
         concept={{
           title: concept.title,
-          stub: concept.stub ?? `// ${concept.title}\n`,
+          stub: concept.testoutStub || concept.stub || `// ${concept.title}\n`,
           taskPrompt,
         }}
         onSubmit={(testCode) => {
           isTestOutRef.current = true;
-          void submit(testCode, true);
+          void submit(testCode, true, "test_out");
         }}
         onEscape={() => setTestOutOpen(false)}
         isSubmitting={state === "streaming" || state === "submitting"}
