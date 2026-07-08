@@ -1,0 +1,55 @@
+apps/api/src/router/submissions.ts
+  s_beb7708abc1117::t_7a46123f4125ee 5-10,12,15-24,49,54,58-59,61-62,66,83,85-88,90-97
+apps/api/src/router/tracks.ts
+  s_beb7708abc1117::t_a9d71e1d6c4d1d 55,59-61,64
+apps/api/src/service/submission-pipeline.ts
+  s_beb7708abc1117::t_357fbbe1bf34a2 19-24
+  s_beb7708abc1117::t_effb07e4c2763d 147
+  s_beb7708abc1117::t_80f50e96157e28 199
+  s_beb7708abc1117::t_8586431c4d1e2a 137
+  s_beb7708abc1117::t_72764d0b3ae9c5 1-18,25-136,138-146,148-198,200-242
+apps/api/tests/unit/mastery.test.ts
+  s_beb7708abc1117::t_05be7bd6b07600 6-8
+apps/api/tests/unit/placement.test.ts
+  s_beb7708abc1117::t_6d813d88e16d5a 1,4-6,13-21,23,25-27
+apps/web/src/hooks/use-submission.ts
+  s_beb7708abc1117::t_4182e28ec973eb 7,30,46,57,61,70,80,90-95
+apps/api/tests/unit/submission-pipeline.test.ts
+  s_beb7708abc1117::t_30dd0ef658cc00 1-289
+apps/api/src/service/testout.ts
+  s_beb7708abc1117::t_e84ea0bb213f99 8-9
+apps/api/tests/unit/testout.test.ts
+  s_beb7708abc1117::t_6a11b0faf61153 1,4-6,16-17,21,23-24,30,34
+apps/api/src/router/placement.ts
+  s_beb7708abc1117::t_45b9361d0b2a4b 36-38
+apps/api/src/router/testout.ts
+  s_beb7708abc1117::t_bcb6ed8725b749 18-19
+apps/web/src/app/tracks/[trackSlug]/onboarding/page.tsx
+  s_beb7708abc1117::t_0e91d6a71b0b6d 44-45
+  s_beb7708abc1117::t_8d503b25259838 92-93
+apps/api/src/service/placement.ts
+  s_beb7708abc1117::t_6303ab77776cde 5-6,8
+apps/web/src/app/tracks/[trackSlug]/concepts/[conceptSlug]/page.tsx
+  s_beb7708abc1117::t_9c155ae6df0243 179,184
+  s_beb7708abc1117::t_c1ccaf6c6ea107 50,57,63-66
+  s_beb7708abc1117::t_1c9f66968ece62 30
+  s_beb7708abc1117::t_c724f4460d9ed2 164
+  s_beb7708abc1117::t_5acbd7f078de84 138
+  s_beb7708abc1117::t_d33e780d8ab390 157
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "536305286872fd686056de14b50a10d298ffb1bd",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
