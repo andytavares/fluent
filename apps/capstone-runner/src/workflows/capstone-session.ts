@@ -21,19 +21,16 @@ export const learnerActiveSignal = defineSignal(LEARNER_ACTIVE_SIGNAL);
 export const verifyStepSignal = defineSignal<[number]>(VERIFY_STEP_SIGNAL);
 
 export async function capstoneSessionWorkflow({ sessionId }: CapstoneSessionInput) {
-  let lastActiveAt = Date.now();
   let learnerActive = false;
   const verifyQueue: number[] = [];
 
   setHandler(learnerActiveSignal, () => {
     learnerActive = true;
-    lastActiveAt = Date.now();
   });
 
   setHandler(verifyStepSignal, (stepNumber: number) => {
     verifyQueue.push(stepNumber);
     learnerActive = true;
-    lastActiveAt = Date.now();
   });
 
   // Provision the K8s Job + Postgres sidecar
@@ -43,17 +40,16 @@ export async function capstoneSessionWorkflow({ sessionId }: CapstoneSessionInpu
   while (true) {
     learnerActive = false;
 
-    // Wait for either learner activity or timeout
-    const timedOut = await condition(
+    // condition() resolves true when learner activity arrives, false when the
+    // inactivity timeout elapses (it never rejects).
+    const active = await condition(
       () => learnerActive || verifyQueue.length > 0,
       INACTIVITY_TIMEOUT_MS,
-    ).then(() => false).catch(() => true);
+    );
 
-    if (timedOut) {
+    if (!active) {
       break;
     }
-
-    lastActiveAt = Date.now();
 
     // Process any pending verification requests
     while (verifyQueue.length > 0) {
