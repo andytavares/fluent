@@ -1,0 +1,62 @@
+vitest.workspace.ts
+  s_beb7708abc1117::t_c87061ad62aafe 8
+tools/content-linter/src/cli.ts
+  s_beb7708abc1117::t_d5685c61c28089 2,4,8-19,28-29,32
+packages/content-config/tests/store.test.ts
+  s_beb7708abc1117::t_7b4e8d4db44fa8 1-144
+packages/content-config/package.json
+  s_beb7708abc1117::t_b62ec8467ca251 9-18
+packages/content-config/src/lang.ts
+  s_beb7708abc1117::t_13974df5fbdc97 1-37
+apps/web/public/content/manifest.json
+  s_beb7708abc1117::t_955aa94ca3e1dc 2-80,86,165,239-244,247-248,250,254-255,257,261-262,264,268-269,271,275-276,278,282-283,285,289-290,296-297,299,303-304,310-311,313-376,381-386,389-390,392,396-397,399,403-404,406,410-411,413,417-418,420,424-425,427,431-432,434,438-439,441,445-446,448,452-453,455-518,523-528,531-532,534,538-539,541,545-546,548,552-553,555,559-560,562,566-567,569,573-574,576,580-581,583,587-588,590-1643,1649-1669,1681
+tools/content-linter/tests/integration/linter.test.ts
+  s_beb7708abc1117::t_212324c6924d57 42-44,46
+packages/content-config/src/store.ts
+  s_beb7708abc1117::t_8149d112ef612f 1-128
+packages/content-config/src/index.ts
+  s_beb7708abc1117::t_5716e738c61341 1-5
+apps/api/src/router/submissions.ts
+  s_beb7708abc1117::t_a7c9354679bc87 6,8
+  s_beb7708abc1117::t_83503cdda17f65 54,61
+apps/api/src/router/tracks.ts
+  s_beb7708abc1117::t_979edf882d6f69 3,5
+  s_beb7708abc1117::t_8055959aabfb5d 56-57
+packages/content-config/src/schema.ts
+  s_beb7708abc1117::t_e8ba52fdbfdd28 1-24
+tools/content-manifest/package.json
+  s_beb7708abc1117::t_05d16fc653d40c 16-17
+packages/content-config/vitest.config.ts
+  s_beb7708abc1117::t_720d9df5a8242d 1-13
+tools/content-manifest/src/build.ts
+  s_beb7708abc1117::t_36e73c55a42fe1 2-4,7-8,12-16,18-19,23
+apps/api/prisma/seed.ts
+  s_beb7708abc1117::t_fdb505b54926d2 2-3,6,8,25-27,31,55,60,65,70,86-87
+tools/content-linter/package.json
+  s_beb7708abc1117::t_05d16fc653d40c 18-19
+tools/content-linter/src/validator.test.ts
+  s_beb7708abc1117::t_67a0b8fb178476 83-106
+apps/api/src/router/placement.ts
+  s_beb7708abc1117::t_f2e6cfcda46b72 28-29
+  s_beb7708abc1117::t_c0bc6e1174a11a 4,6
+tools/content-linter/src/validator.ts
+  s_beb7708abc1117::t_97a238bbf28ebd 1,3,11-14,16,33-34,47,54-61,68-72,76-80,84-86,88
+pnpm-lock.yaml
+  s_beb7708abc1117::t_7185ec111ddba2 256-264,368-370,393-395
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "5f597c250aa2cdbc9cb9eb4e8abdd72161323c04",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
