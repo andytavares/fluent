@@ -1,0 +1,54 @@
+apps/api/tests/integration/testout-fail.test.ts
+  s_beb7708abc1117::t_9ca8c3425546b0 1-3,6-35
+apps/api/tests/integration/testout-pass.test.ts
+  s_beb7708abc1117::t_0b477e245daaa8 1-3,6-48
+apps/api/tests/integration/capstone.test.ts
+  s_beb7708abc1117::t_518d588a53be40 1-3,5-11,14-73
+apps/api/tests/integration/credential.test.ts
+  s_beb7708abc1117::t_653296b8da6132 1-3,6-41
+apps/capstone-runner/tests/unit/session-workflow.test.ts
+  s_beb7708abc1117::t_f64c341ee9d628 1-12,14-16,18-19,21-25,27-37,40-48,51-58,60,62-112
+apps/api/tests/integration/placement.test.ts
+  s_beb7708abc1117::t_4a1d7b1d1934ca 1-3,5-6,8-10,12-58
+apps/api/tests/integration/helpers.ts
+  s_beb7708abc1117::t_40c8f8ae61a994 1-103
+apps/capstone-runner/package.json
+  s_beb7708abc1117::t_b3fe812f1c7527 30
+  s_beb7708abc1117::t_0f5e188182e215 31
+apps/api/tests/integration/capstone-resume.test.ts
+  s_beb7708abc1117::t_57aeadc2197d65 1-3,5-9,12-49
+apps/api/tests/integration/placement-skip.test.ts
+  s_beb7708abc1117::t_46148b70e3854f 1-3,6-25
+apps/capstone-runner/tests/unit/verifier.test.ts
+  s_beb7708abc1117::t_22cf5ff881c336 1-5,7-16,19-35,41-48,53-57,62-66,70-91
+apps/capstone-runner/src/workflows/capstone-session.ts
+  s_beb7708abc1117::t_67f9d34c7afa4b 43-45,48,50
+apps/api/tests/integration/learning-path.test.ts
+  s_beb7708abc1117::t_d7f4ec0fe48a8a 1-3,6-37
+apps/api/tests/integration/dashboard.test.ts
+  s_beb7708abc1117::t_6e0f0ed4f34fe4 1-3,6-41
+apps/api/tests/integration/capstone-restart.test.ts
+  s_beb7708abc1117::t_19bd128ba11323 1-3,5-9,12-43
+apps/api/tests/integration/submission.test.ts
+  s_beb7708abc1117::t_d0097632c2e8b0 1-3,6-92
+apps/api/tests/integration/profile-mastery.test.ts
+  s_beb7708abc1117::t_05fb190c7e7239 1-3,6-48
+pnpm-lock.yaml
+  s_beb7708abc1117::t_e92b1ce859581b 133-135,2185-2188,6547-6571
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "fdf7c7a87eb8756ad953915ca37f17190226716e",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
