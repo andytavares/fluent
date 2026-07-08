@@ -1,8 +1,13 @@
 import { describe, it, expect } from "vitest";
 
-// Pure dashboard aggregation logic
+// The dashboard aggregation logic lives inline in dashboardRouter.getDashboard.
+// These tests verify the same logic to catch regressions in the computation,
+// mirroring what the router does when mapping enrollments to stats.
+
+type AchievedVia = "placement" | "test_out" | "lesson";
+
 interface MasteryEvent {
-  achievedVia: "placement" | "test_out" | "lesson";
+  achievedVia: AchievedVia;
   lessonAvgTimeMs: number | null;
 }
 
@@ -10,7 +15,7 @@ interface ConceptState {
   state: "locked" | "available" | "in_progress" | "mastered" | "completed";
 }
 
-function aggregateDashboardStats(
+function computeStats(
   conceptStates: ConceptState[],
   masteryEvents: MasteryEvent[],
   capstoneStepsCompleted: number,
@@ -28,7 +33,7 @@ function aggregateDashboardStats(
   return { conceptsDone, testedOut, timeSavedMs, capstoneProgress: capstoneStepsCompleted };
 }
 
-describe("Dashboard aggregation", () => {
+describe("Dashboard stats computation (mirrors dashboardRouter logic)", () => {
   it("counts mastered + completed concepts as done", () => {
     const states: ConceptState[] = [
       { state: "mastered" },
@@ -36,7 +41,7 @@ describe("Dashboard aggregation", () => {
       { state: "in_progress" },
       { state: "locked" },
     ];
-    const result = aggregateDashboardStats(states, [], 0);
+    const result = computeStats(states, [], 0);
     expect(result.conceptsDone).toBe(2);
   });
 
@@ -45,22 +50,22 @@ describe("Dashboard aggregation", () => {
       { achievedVia: "test_out", lessonAvgTimeMs: 300_000 },
       { achievedVia: "lesson", lessonAvgTimeMs: null },
     ];
-    const result = aggregateDashboardStats([], events, 0);
+    const result = computeStats([], events, 0);
     expect(result.testedOut).toBe(1);
   });
 
-  it("sums time saved from test_out + placement events", () => {
+  it("sums time saved from test_out + placement events, excludes lesson", () => {
     const events: MasteryEvent[] = [
       { achievedVia: "test_out", lessonAvgTimeMs: 300_000 },
       { achievedVia: "placement", lessonAvgTimeMs: 600_000 },
       { achievedVia: "lesson", lessonAvgTimeMs: 400_000 },
     ];
-    const result = aggregateDashboardStats([], events, 0);
+    const result = computeStats([], events, 0);
     expect(result.timeSavedMs).toBe(900_000);
   });
 
-  it("tracks capstone progress", () => {
-    const result = aggregateDashboardStats([], [], 3);
+  it("tracks capstone steps completed", () => {
+    const result = computeStats([], [], 3);
     expect(result.capstoneProgress).toBe(3);
   });
 });

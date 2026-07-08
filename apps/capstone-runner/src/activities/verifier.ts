@@ -43,7 +43,8 @@ export async function verify({
       }
     });
 
-    const passed = httpTests.every((t) => t.passed);
+    // No test output means no tests ran — treat as failure (fail-safe)
+    const passed = httpTests.length > 0 && httpTests.every((t) => t.passed);
 
     logger.info({ event: "verify_complete", sessionId, stepNumber, passed, testCount: httpTests.length });
 

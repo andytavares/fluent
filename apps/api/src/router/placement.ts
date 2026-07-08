@@ -4,26 +4,9 @@ import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
 import { router, protectedProcedure } from "./trpc.js";
 import { PlacementService } from "../service/placement.js";
+import { LANG_EXT } from "@fluent/content-config";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
-
-const LANG_EXT: Record<string, string> = {
-  go: "go",
-  javascript: "js",
-  typescript: "ts",
-  c: "c",
-  cpp: "cpp",
-  java: "java",
-  elixir: "ex",
-  ruby: "rb",
-  python: "py",
-  shell: "sh",
-  assembly: "asm",
-  terraform: "tf",
-  helm: "yaml",
-  kotlin: "kt",
-  rust: "rs",
-};
 
 function readStub(dir: string, ext: string): string {
   try {

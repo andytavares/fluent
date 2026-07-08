@@ -38,6 +38,9 @@ importers:
       '@fastify/cors':
         specifier: ^9.0.0
         version: 9.0.1
+      '@fluent/content-config':
+        specifier: workspace:*
+        version: link:../../packages/content-config
       '@prisma/client':
         specifier: ^5.15.0
         version: 5.22.0(prisma@5.22.0)
@@ -96,6 +99,9 @@ importers:
       '@kubernetes/client-node':
         specifier: ^0.21.0
         version: 0.21.0
+      '@prisma/client':
+        specifier: ^5.15.0
+        version: 5.22.0(prisma@5.22.0)
       '@temporalio/activity':
         specifier: ^1.10.0
         version: 1.18.1
@@ -246,6 +252,8 @@ importers:
       vitest:
         specifier: ^1.6.0
         version: 1.6.1(@types/node@20.19.43)(lightningcss@1.32.0)(terser@5.48.0)
+
+  packages/content-config: {}
 
   packages/ui:
     dependencies:

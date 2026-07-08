@@ -2,37 +2,18 @@ import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
+import { router, protectedProcedure } from "./trpc.js";
+import { ExecutionQueue } from "../queue/execution-queue.js";
+import { MasteryService } from "../service/mastery.js";
+import { TEST_FILE_PATTERNS } from "@fluent/content-config";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
-
-const TEST_FILE_PATTERNS: Record<string, RegExp> = {
-  go: /_test\.go$/,
-  javascript: /_test\.js$/,
-  typescript: /_test\.ts$/,
-  c: /_test\.c$/,
-  cpp: /_test\.cpp$/,
-  java: /SolutionTest\.java$|_test\.java$/i,
-  elixir: /_test\.exs$/,
-  ruby: /_test\.rb$/,
-  python: /_test\.py$/,
-  shell: /_test\.sh$/,
-  assembly: /_test\.asm$/,
-  terraform: /_test\.sh$/,
-  helm: /_test\.sh$/,
-  kotlin: /_test\.kt$/,
-  rust: /_test\.rs$/,
-};
 
 function findTestFile(files: string[], language: string): string | undefined {
   const pattern = TEST_FILE_PATTERNS[language] ?? /_test\./;
   return files.find((f) => pattern.test(f));
 }
-
-import { TRPCError } from "@trpc/server";
-import { router, protectedProcedure } from "./trpc.js";
-import { ExecutionQueue } from "../queue/execution-queue.js";
-import { MasteryService } from "../service/mastery.js";
-import { StreakService } from "../service/streak.js";
 
 export const submissionsRouter = router({
   runSandbox: protectedProcedure
@@ -135,11 +116,12 @@ export const submissionsRouter = router({
         exitCode: z.number().int(),
         runtimeMs: z.number().int(),
         timedOut: z.boolean(),
-        passed: z.boolean().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id!;
+
+      const passed = input.exitCode === 0 && !input.timedOut;
 
       const submission = await ctx.db.submission.update({
         where: { id: input.submissionId },
@@ -149,16 +131,12 @@ export const submissionsRouter = router({
           exitCode: input.exitCode,
           runtimeMs: input.runtimeMs,
           timedOut: input.timedOut,
-          passed: input.passed ?? null,
+          passed,
         },
       });
 
-      // Update streak on any submission
-      const streakService = new StreakService(ctx.db);
-      await streakService.updateStreak(userId);
-
       // If suite passed → advance concept state
-      if (submission.isSuite && input.passed) {
+      if (submission.isSuite && passed) {
         const masteryService = new MasteryService(ctx.db);
         await masteryService.createMasteryEvent({
           enrollmentId: input.enrollmentId,

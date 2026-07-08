@@ -1,6 +1,8 @@
+import { PrismaClient, Prisma } from "@prisma/client";
 import pino from "pino";
 
 const logger = pino({ base: { service: "capstone-runner" } });
+const prisma = new PrismaClient();
 
 // Teardown activity — deletes the K8s Job when session ends or times out
 export async function teardown({ sessionId }: { sessionId: string }) {
@@ -37,6 +39,13 @@ export async function recordStepCompletion({
   verificationResult: { passed: boolean; http_tests: unknown[] };
 }) {
   const start = Date.now();
+
+  const resultJson = verificationResult as unknown as Prisma.InputJsonValue;
+  await prisma.capstoneStepCompletion.upsert({
+    where: { sessionId_stepNumber: { sessionId, stepNumber } },
+    update: { verificationResult: resultJson, completedAt: new Date() },
+    create: { sessionId, stepNumber, verificationResult: resultJson },
+  });
 
   logger.info({
     event: "step_completion",

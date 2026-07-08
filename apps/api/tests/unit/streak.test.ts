@@ -1,49 +1,37 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { StreakService } from "../../src/service/streak.js";
 
-// Pure streak logic (no DB required)
-function computeStreak(submissionDates: string[]): number {
-  if (submissionDates.length === 0) return 0;
-
-  const days = new Set(submissionDates.map((d) => d.split("T")[0]!));
-  const sortedDays = [...days].sort().reverse();
-
-  const today = new Date().toISOString().split("T")[0]!;
-  let streak = 0;
-  let expected = today;
-
-  for (const day of sortedDays) {
-    if (day === expected) {
-      streak++;
-      const d = new Date(expected);
-      d.setUTCDate(d.getUTCDate() - 1);
-      expected = d.toISOString().split("T")[0]!;
-    } else {
-      break;
-    }
-  }
-
-  return streak;
+function makeMockDb(submissions: Array<{ createdAt: Date }> = []) {
+  return {
+    submission: {
+      findMany: vi.fn().mockResolvedValue(submissions),
+    },
+  };
 }
 
-describe("Streak service", () => {
-  it("returns 0 with no submissions", () => {
-    expect(computeStreak([])).toBe(0);
+describe("StreakService.getCurrentStreak", () => {
+  it("returns 0 with no submissions", async () => {
+    const service = new StreakService(makeMockDb() as never);
+    expect(await service.getCurrentStreak("usr1")).toBe(0);
   });
 
-  it("counts today as 1-day streak", () => {
-    const today = new Date().toISOString();
-    expect(computeStreak([today])).toBe(1);
+  it("counts today as 1-day streak", async () => {
+    const db = makeMockDb([{ createdAt: new Date() }]);
+    const service = new StreakService(db as never);
+    expect(await service.getCurrentStreak("usr1")).toBe(1);
   });
 
-  it("same day multiple submissions = still 1", () => {
-    const today = new Date().toISOString();
-    const today2 = new Date(Date.now() - 1000).toISOString();
-    expect(computeStreak([today, today2])).toBe(1);
+  it("same day multiple submissions = still 1", async () => {
+    const now = new Date();
+    const db = makeMockDb([{ createdAt: now }, { createdAt: new Date(now.getTime() - 1000) }]);
+    const service = new StreakService(db as never);
+    expect(await service.getCurrentStreak("usr1")).toBe(1);
   });
 
-  it("misses a day resets streak to 0 for old submissions", () => {
-    // submission was 3 days ago, not today — streak = 0 (today has none)
-    const threeDaysAgo = new Date(Date.now() - 3 * 86400 * 1000).toISOString();
-    expect(computeStreak([threeDaysAgo])).toBe(0);
+  it("submission 3 days ago with no today submission = 0 streak", async () => {
+    const threeDaysAgo = new Date(Date.now() - 3 * 86400 * 1000);
+    const db = makeMockDb([{ createdAt: threeDaysAgo }]);
+    const service = new StreakService(db as never);
+    expect(await service.getCurrentStreak("usr1")).toBe(0);
   });
 });

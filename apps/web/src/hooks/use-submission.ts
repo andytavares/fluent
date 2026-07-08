@@ -102,7 +102,6 @@ export function useSubmission({ conceptId, enrollmentId, language = "go", onComp
               exitCode: result.exit_code,
               runtimeMs: result.runtime_ms,
               timedOut: result.timed_out,
-              passed: isSuite ? passed : undefined,
             });
           }
         });

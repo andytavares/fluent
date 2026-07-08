@@ -9,6 +9,28 @@ export interface RateLimitResult {
   retryAfterSeconds: number;
 }
 
+// Atomically: remove expired entries, count current, conditionally add new entry.
+// Returns [count_before_add, was_added] where was_added is 1 if allowed, 0 if rejected.
+const CONSUME_SCRIPT = `
+local key = KEYS[1]
+local now = tonumber(ARGV[1])
+local window_start = tonumber(ARGV[2])
+local max_tokens = tonumber(ARGV[3])
+local request_id = ARGV[4]
+local ttl = tonumber(ARGV[5])
+
+redis.call('zremrangebyscore', key, 0, window_start)
+local count = redis.call('zcard', key)
+
+if count >= max_tokens then
+  return {count, 0}
+end
+
+redis.call('zadd', key, now, request_id)
+redis.call('expire', key, ttl)
+return {count, 1}
+`;
+
 export class TokenBucketLimiter {
   constructor(private redis: Redis) {}
 
@@ -16,19 +38,23 @@ export class TokenBucketLimiter {
     const key = `rate:execution:${userId}`;
     const now = Math.floor(Date.now() / 1000);
     const windowStart = now - RATE_LIMIT_WINDOW_SECONDS;
+    const requestId = `${now}-${Math.random()}`;
 
-    // Use a sorted set: score = timestamp, member = unique request id
-    const pipe = this.redis.pipeline();
-    // Remove expired entries
-    pipe.zremrangebyscore(key, 0, windowStart);
-    // Count current tokens used
-    pipe.zcard(key);
-    const results = await pipe.exec();
+    const result = await this.redis.eval(
+      CONSUME_SCRIPT,
+      1,
+      key,
+      String(now),
+      String(windowStart),
+      String(RATE_LIMIT_MAX_TOKENS),
+      requestId,
+      String(RATE_LIMIT_WINDOW_SECONDS + 1),
+    ) as [number, number];
 
-    const count = (results?.[1]?.[1] as number) ?? 0;
-    const remaining = RATE_LIMIT_MAX_TOKENS - count;
+    const count = result[0];
+    const allowed = result[1] === 1;
 
-    if (remaining <= 0) {
+    if (!allowed) {
       return {
         allowed: false,
         remaining: 0,
@@ -36,14 +62,9 @@ export class TokenBucketLimiter {
       };
     }
 
-    // Add this request
-    const requestId = `${now}-${Math.random()}`;
-    await this.redis.zadd(key, now, requestId);
-    await this.redis.expire(key, RATE_LIMIT_WINDOW_SECONDS + 1);
-
     return {
       allowed: true,
-      remaining: remaining - 1,
+      remaining: RATE_LIMIT_MAX_TOKENS - count - 1,
       retryAfterSeconds: 0,
     };
   }

@@ -2,7 +2,6 @@ import {
   proxyActivities,
   setHandler,
   defineSignal,
-  sleep,
   condition,
 } from "@temporalio/workflow";
 import type { createActivities } from "../activities/index.js";
@@ -17,12 +16,20 @@ const activities = proxyActivities<Activities>({
 });
 
 export const learnerActiveSignal = defineSignal("learner-active");
+export const verifyStepSignal = defineSignal<[number]>("verify-step");
 
-export async function capstonSessionWorkflow({ sessionId }: { sessionId: string }) {
+export async function capstoneSessionWorkflow({ sessionId }: { sessionId: string }) {
   let lastActiveAt = Date.now();
   let learnerActive = false;
+  const verifyQueue: number[] = [];
 
   setHandler(learnerActiveSignal, () => {
+    learnerActive = true;
+    lastActiveAt = Date.now();
+  });
+
+  setHandler(verifyStepSignal, (stepNumber: number) => {
+    verifyQueue.push(stepNumber);
     learnerActive = true;
     lastActiveAt = Date.now();
   });
@@ -36,7 +43,7 @@ export async function capstonSessionWorkflow({ sessionId }: { sessionId: string 
 
     // Wait for either learner activity or timeout
     const timedOut = await condition(
-      () => learnerActive,
+      () => learnerActive || verifyQueue.length > 0,
       INACTIVITY_TIMEOUT_MS,
     ).then(() => false).catch(() => true);
 
@@ -44,8 +51,17 @@ export async function capstonSessionWorkflow({ sessionId }: { sessionId: string 
       break;
     }
 
-    // Reset timer on learner activity
     lastActiveAt = Date.now();
+
+    // Process any pending verification requests
+    while (verifyQueue.length > 0) {
+      const stepNumber = verifyQueue.shift()!;
+      const verifyScriptPath = `/verify/step${stepNumber}.sh`;
+      const result = await activities.verify({ sessionId, stepNumber, verifyScriptPath });
+      if (result.passed) {
+        await activities.recordStepCompletion({ sessionId, stepNumber, verificationResult: result });
+      }
+    }
   }
 
   // Teardown the K8s Job
@@ -53,4 +69,4 @@ export async function capstonSessionWorkflow({ sessionId }: { sessionId: string 
 }
 
 export { CapstonSessionWorkflow };
-type CapstonSessionWorkflow = typeof capstonSessionWorkflow;
+type CapstonSessionWorkflow = typeof capstoneSessionWorkflow;

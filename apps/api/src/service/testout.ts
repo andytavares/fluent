@@ -42,8 +42,13 @@ export class TestoutService {
 
   async submitChallenge(input: SubmitInput) {
     if (input.timerExpired) {
-      // Timer expired → in_progress (no penalty)
-      await this.stateService.transition(input.enrollmentId, input.conceptId, "in_progress");
+      // Timer expired → in_progress (no penalty); guard against re-transition if already in_progress
+      const state = await this.db.conceptState.findUniqueOrThrow({
+        where: { enrollmentId_conceptId: { enrollmentId: input.enrollmentId, conceptId: input.conceptId } },
+      });
+      if (state.state === "available") {
+        await this.stateService.transition(input.enrollmentId, input.conceptId, "in_progress");
+      }
       return { result: "timer_expired" as const, conceptState: "in_progress" };
     }
 

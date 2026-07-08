@@ -2,13 +2,17 @@ import * as k8s from "@kubernetes/client-node";
 import { createCipheriv, randomBytes } from "node:crypto";
 import pino from "pino";
 
+if (!process.env["CAPSTONE_ENCRYPTION_KEY"]) {
+  throw new Error("CAPSTONE_ENCRYPTION_KEY is required");
+}
+
 const logger = pino({ base: { service: "capstone-runner" } });
 
 const NAMESPACE = process.env["K8S_NAMESPACE"] ?? "capstone-sessions";
 const DB_IMAGE = process.env["POSTGRES_SIDECAR_IMAGE"] ?? "postgres:16-alpine";
 
 function encryptConnString(plaintext: string): string {
-  const keyHex = process.env["CAPSTONE_ENCRYPTION_KEY"] ?? "0".repeat(64);
+  const keyHex = process.env["CAPSTONE_ENCRYPTION_KEY"]!;
   const key = Buffer.from(keyHex, "hex");
   const iv = randomBytes(12);
   const cipher = createCipheriv("aes-256-gcm", key, iv);

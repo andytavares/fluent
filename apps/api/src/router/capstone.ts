@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "./trpc.js";
-import { startCapstoneWorkflow, signalLearnerActive } from "../temporal/capstone-client.js";
+import { startCapstoneWorkflow, signalLearnerActive, signalVerifyStep } from "../temporal/capstone-client.js";
 import { CapstonePrereqService } from "../service/capstone-prereq.js";
 
 export const capstoneRouter = router({
@@ -48,12 +48,10 @@ export const capstoneRouter = router({
   getSessionStatus: protectedProcedure
     .input(z.object({ sessionId: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
-      const session = await ctx.db.capstoneSessions.findUniqueOrThrow({
+      return ctx.db.capstoneSessions.findUniqueOrThrow({
         where: { id: input.sessionId },
         include: { stepCompletions: { orderBy: { stepNumber: "asc" } } },
       });
-      await signalLearnerActive(session.id);
-      return session;
     }),
 
   verifyStep: protectedProcedure
@@ -64,9 +62,11 @@ export const capstoneRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Temporal verifier activity handles the actual verification
-      // This endpoint triggers and returns the result
+      // Signal learner activity and trigger step verification in Temporal workflow.
+      // The workflow runs the verify activity and, on pass, records the step completion.
+      // Poll getSessionStatus to see when stepCompletions updates.
       await signalLearnerActive(input.sessionId);
+      await signalVerifyStep(input.sessionId, input.stepNumber);
       return { sessionId: input.sessionId, stepNumber: input.stepNumber, status: "pending" };
     }),
 });

@@ -6,6 +6,8 @@ import { useCapstoneSession } from "@/hooks/use-capstone-session";
 import { CapstoneStepList, DatabaseStatusPanel, CodeEditor, OutputPane } from "@fluent/ui";
 import { useState } from "react";
 import { useSubmission } from "@/hooks/use-submission";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface StepDef {
   stepNumber: number;
@@ -208,7 +210,7 @@ export default function CapstonePage() {
                 </button>
               </div>
               <div className="prose prose-sm prose-invert max-w-none text-[var(--color-text-secondary)] [&_code]:rounded [&_code]:bg-[var(--color-surface-overlay)] [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-xs [&_pre]:rounded-lg [&_pre]:bg-[var(--color-surface-overlay)] [&_pre]:p-3 [&_pre_code]:bg-transparent [&_pre_code]:p-0">
-                <MarkdownContent content={selectedDef.instructions} />
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedDef.instructions}</ReactMarkdown>
               </div>
             </div>
           )}
@@ -233,76 +235,3 @@ export default function CapstonePage() {
   );
 }
 
-/** Minimal markdown renderer — handles headings, code blocks, inline code, bold, lists. */
-function MarkdownContent({ content }: { content: string }) {
-  const lines = content.split("\n");
-  const elements: React.ReactNode[] = [];
-  let i = 0;
-
-  while (i < lines.length) {
-    const line = lines[i]!;
-
-    if (line.startsWith("```")) {
-      const lang = line.slice(3).trim();
-      const codeLines: string[] = [];
-      i++;
-      while (i < lines.length && !lines[i]!.startsWith("```")) {
-        codeLines.push(lines[i]!);
-        i++;
-      }
-      elements.push(
-        <pre key={i} className="my-2 overflow-x-auto rounded-lg bg-[var(--color-surface-overlay)] p-3">
-          <code className="font-mono text-xs text-[var(--color-text-primary)]" data-lang={lang}>
-            {codeLines.join("\n")}
-          </code>
-        </pre>
-      );
-    } else if (line.startsWith("## ")) {
-      elements.push(
-        <h2 key={i} className="mb-1 mt-3 text-sm font-semibold text-[var(--color-text-primary)]">
-          {renderInline(line.slice(3))}
-        </h2>
-      );
-    } else if (line.startsWith("**") && line.endsWith("**")) {
-      elements.push(
-        <p key={i} className="mb-1 text-xs font-semibold text-[var(--color-text-secondary)]">
-          {renderInline(line)}
-        </p>
-      );
-    } else if (line.startsWith("- ")) {
-      elements.push(
-        <li key={i} className="ml-4 list-disc text-xs text-[var(--color-text-secondary)]">
-          {renderInline(line.slice(2))}
-        </li>
-      );
-    } else if (line.trim() === "") {
-      elements.push(<div key={i} className="h-1" />);
-    } else {
-      elements.push(
-        <p key={i} className="text-xs leading-relaxed text-[var(--color-text-secondary)]">
-          {renderInline(line)}
-        </p>
-      );
-    }
-    i++;
-  }
-
-  return <>{elements}</>;
-}
-
-function renderInline(text: string): React.ReactNode {
-  const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*)/g);
-  return parts.map((part, idx) => {
-    if (part.startsWith("`") && part.endsWith("`")) {
-      return (
-        <code key={idx} className="rounded bg-[var(--color-surface-overlay)] px-1 py-0.5 font-mono text-xs text-[var(--color-text-primary)]">
-          {part.slice(1, -1)}
-        </code>
-      );
-    }
-    if (part.startsWith("**") && part.endsWith("**")) {
-      return <strong key={idx} className="font-semibold text-[var(--color-text-primary)]">{part.slice(2, -2)}</strong>;
-    }
-    return part;
-  });
-}

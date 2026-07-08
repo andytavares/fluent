@@ -1,38 +1,47 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { PlacementService } from "../../src/service/placement.js";
 
-// Placement scoring rules (pure logic — no DB required)
-function scorePlacementTask(passed: boolean): "mastered" | "available" {
-  return passed ? "mastered" : "available";
+function makeMockDb() {
+  return {
+    enrollment: { findUniqueOrThrow: vi.fn() },
+    conceptState: { findUniqueOrThrow: vi.fn(), update: vi.fn() },
+  };
 }
 
-function placementTaskCount(totalConcepts: number): number {
-  const MIN = 5;
-  const MAX = 8;
-  return Math.min(Math.max(MIN, Math.floor(totalConcepts * 0.5)), MAX);
-}
+describe("PlacementService.scoreTask", () => {
+  let db: ReturnType<typeof makeMockDb>;
+  let service: PlacementService;
 
-describe("Placement scoring service", () => {
-  it("pass → mastered", () => {
-    expect(scorePlacementTask(true)).toBe("mastered");
+  beforeEach(() => {
+    db = makeMockDb();
+    service = new PlacementService(db as never);
   });
 
-  it("fail → available (no penalty)", () => {
-    expect(scorePlacementTask(false)).toBe("available");
+  it("pass → transitions to mastered and returns mastered", async () => {
+    db.conceptState.findUniqueOrThrow.mockResolvedValue({ id: "cs1", state: "available" });
+    db.conceptState.update.mockResolvedValue({ id: "cs1", state: "mastered" });
+
+    const result = await service.scoreTask("enr1", "con1", true);
+
+    expect(result).toEqual({ conceptId: "con1", result: "mastered" });
+    expect(db.conceptState.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ state: "mastered" }) }),
+    );
   });
 
-  it("placement task count is between 5 and 8 for a 10-concept track", () => {
-    const count = placementTaskCount(10);
-    expect(count).toBeGreaterThanOrEqual(5);
-    expect(count).toBeLessThanOrEqual(8);
-  });
+  it("fail → returns available without transitioning", async () => {
+    const result = await service.scoreTask("enr1", "con1", false);
 
-  it("placement task count is exactly 5 for a 4-concept track (min floor)", () => {
-    const count = placementTaskCount(4);
-    expect(count).toBe(5);
+    expect(result).toEqual({ conceptId: "con1", result: "available" });
+    expect(db.conceptState.update).not.toHaveBeenCalled();
   });
+});
 
-  it("placement task count is exactly 8 for a 20-concept track (max cap)", () => {
-    const count = placementTaskCount(20);
-    expect(count).toBe(8);
+describe("PlacementService.skipPlacement", () => {
+  it("returns skipped: true with the enrollmentId", async () => {
+    const db = makeMockDb();
+    const service = new PlacementService(db as never);
+    const result = await service.skipPlacement("enr1");
+    expect(result).toEqual({ enrollmentId: "enr1", skipped: true });
   });
 });

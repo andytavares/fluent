@@ -1,43 +1,97 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { MasteryService } from "../../src/service/mastery.js";
 
-// Pure mastery logic — no DB
-function computeTimeSavedMs(events: Array<{ achievedVia: string; lessonAvgTimeMs: number | null }>): number {
-  return events
-    .filter((e) => e.achievedVia !== "lesson" && e.lessonAvgTimeMs !== null)
-    .reduce((sum, e) => sum + (e.lessonAvgTimeMs ?? 0), 0);
+function makeMockDb(overrides: Record<string, unknown> = {}) {
+  return {
+    concept: { findUniqueOrThrow: vi.fn() },
+    conceptState: { findUnique: vi.fn(), findUniqueOrThrow: vi.fn(), update: vi.fn() },
+    masteryEvent: { create: vi.fn() },
+    ...overrides,
+  };
 }
 
-describe("Mastery service", () => {
-  it("computes time saved from placement mastery events", () => {
-    const events = [
-      { achievedVia: "placement", lessonAvgTimeMs: 600_000 },
-      { achievedVia: "placement", lessonAvgTimeMs: 300_000 },
-    ];
-    expect(computeTimeSavedMs(events)).toBe(900_000);
+describe("MasteryService.createMasteryEvent", () => {
+  let db: ReturnType<typeof makeMockDb>;
+  let service: MasteryService;
+
+  beforeEach(() => {
+    db = makeMockDb();
+    service = new MasteryService(db as never);
   });
 
-  it("computes time saved from test_out mastery events", () => {
-    const events = [
-      { achievedVia: "test_out", lessonAvgTimeMs: 480_000 },
-    ];
-    expect(computeTimeSavedMs(events)).toBe(480_000);
+  it("transitions to completed and creates mastery event for lesson achievedVia", async () => {
+    db.concept.findUniqueOrThrow.mockResolvedValue({ lessonAvgTimeMs: 600_000 });
+    db.conceptState.findUnique.mockResolvedValue({ state: "in_progress" });
+    db.conceptState.findUniqueOrThrow.mockResolvedValue({ id: "cs1", state: "in_progress" });
+    db.conceptState.update.mockResolvedValue({ id: "cs1", state: "completed" });
+    db.masteryEvent.create.mockResolvedValue({ id: "me1" });
+
+    await service.createMasteryEvent({
+      enrollmentId: "enr1",
+      conceptId: "con1",
+      userId: "usr1",
+      achievedVia: "lesson",
+    });
+
+    expect(db.conceptState.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ state: "completed" }) }),
+    );
+    expect(db.masteryEvent.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ achievedVia: "lesson", lessonAvgTimeMs: null }) }),
+    );
   });
 
-  it("excludes lesson events from time saved", () => {
-    const events = [
-      { achievedVia: "lesson", lessonAvgTimeMs: 600_000 },
-      { achievedVia: "test_out", lessonAvgTimeMs: 300_000 },
-    ];
-    expect(computeTimeSavedMs(events)).toBe(300_000);
+  it("transitions to mastered for test_out and captures lessonAvgTimeMs", async () => {
+    db.concept.findUniqueOrThrow.mockResolvedValue({ lessonAvgTimeMs: 480_000 });
+    db.conceptState.findUnique.mockResolvedValue({ state: "in_progress" });
+    db.conceptState.findUniqueOrThrow.mockResolvedValue({ id: "cs1", state: "in_progress" });
+    db.conceptState.update.mockResolvedValue({ id: "cs1", state: "mastered" });
+    db.masteryEvent.create.mockResolvedValue({ id: "me1" });
+
+    await service.createMasteryEvent({
+      enrollmentId: "enr1",
+      conceptId: "con1",
+      userId: "usr1",
+      achievedVia: "test_out",
+    });
+
+    expect(db.masteryEvent.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ lessonAvgTimeMs: 480_000 }) }),
+    );
   });
 
-  it("returns 0 when no skipped events", () => {
-    const events = [{ achievedVia: "lesson", lessonAvgTimeMs: 600_000 }];
-    expect(computeTimeSavedMs(events)).toBe(0);
+  it("skips transition if already in terminal state (mastered)", async () => {
+    db.concept.findUniqueOrThrow.mockResolvedValue({ lessonAvgTimeMs: null });
+    db.conceptState.findUnique.mockResolvedValue({ state: "mastered" });
+    db.masteryEvent.create.mockResolvedValue({ id: "me1" });
+
+    await service.createMasteryEvent({
+      enrollmentId: "enr1",
+      conceptId: "con1",
+      userId: "usr1",
+      achievedVia: "lesson",
+    });
+
+    expect(db.conceptState.update).not.toHaveBeenCalled();
   });
 
-  it("handles null lessonAvgTimeMs gracefully", () => {
-    const events = [{ achievedVia: "test_out", lessonAvgTimeMs: null }];
-    expect(computeTimeSavedMs(events)).toBe(0);
+  it("auto-advances available → in_progress → completed for lesson when concept not yet opened", async () => {
+    db.concept.findUniqueOrThrow.mockResolvedValue({ lessonAvgTimeMs: null });
+    db.conceptState.findUnique.mockResolvedValue({ state: "available" });
+    // First call: findUniqueOrThrow for available → in_progress; second: for in_progress → completed
+    db.conceptState.findUniqueOrThrow
+      .mockResolvedValueOnce({ id: "cs1", state: "available" })
+      .mockResolvedValueOnce({ id: "cs1", state: "in_progress" });
+    db.conceptState.update.mockResolvedValue({ id: "cs1", state: "in_progress" });
+    db.masteryEvent.create.mockResolvedValue({ id: "me1" });
+
+    await service.createMasteryEvent({
+      enrollmentId: "enr1",
+      conceptId: "con1",
+      userId: "usr1",
+      achievedVia: "lesson",
+    });
+
+    expect(db.conceptState.update).toHaveBeenCalledTimes(2);
   });
 });

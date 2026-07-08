@@ -41,7 +41,7 @@ export async function runGoCode(code: string, testFiles?: string[]): Promise<Exe
     let cmd: string[];
     if (testFiles && testFiles.length > 0) {
       for (let i = 0; i < testFiles.length; i++) {
-        await writeFile(join(dir, `solution_test.go`), testFiles[i]!, "utf8");
+        await writeFile(join(dir, `solution_test_${i}.go`), testFiles[i]!, "utf8");
       }
       cmd = ["go", "test", "-v", "./..."];
     } else {

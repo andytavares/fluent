@@ -17,7 +17,7 @@ function parseVerifyOutput(stdout: string): { passed: boolean; http_tests: HttpT
       return { method: "UNKNOWN", path: "/", status: 0, passed: false };
     }
   });
-  const passed = httpTests.every((t) => t.passed);
+  const passed = httpTests.length > 0 && httpTests.every((t) => t.passed);
   return { passed, http_tests: httpTests };
 }
 
@@ -50,9 +50,9 @@ describe("Verifier activity", () => {
     expect(result.http_tests[0]?.method).toBe("UNKNOWN");
   });
 
-  it("handles empty output as failed", () => {
+  it("treats empty output as failed (fail-safe: no tests ran means nothing verified)", () => {
     const result = parseVerifyOutput("");
-    expect(result.passed).toBe(true); // vacuously true — no tests, all pass
+    expect(result.passed).toBe(false);
     expect(result.http_tests).toHaveLength(0);
   });
 });

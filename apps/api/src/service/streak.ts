@@ -5,14 +5,6 @@ type DB = PrismaClient;
 export class StreakService {
   constructor(private db: DB) {}
 
-  async updateStreak(userId: string): Promise<void> {
-    // Streak = consecutive calendar days (UTC) with ≥1 submission
-    // This method is called after every submission; the streak computation
-    // is derived at read time from submission history, no separate streak table needed in v1.
-    // Placeholder: streak is computed in getDashboard from submission dates.
-    void userId;
-  }
-
   async getCurrentStreak(userId: string): Promise<number> {
     const submissions = await this.db.submission.findMany({
       where: { userId },

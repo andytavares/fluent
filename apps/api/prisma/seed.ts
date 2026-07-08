@@ -2,25 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-
-// Test file patterns per language — must match submissions.ts TEST_FILE_PATTERNS
-const TEST_FILE_PATTERNS: Record<string, RegExp> = {
-  go: /_test\.go$/,
-  javascript: /_test\.js$/,
-  typescript: /_test\.ts$/,
-  c: /_test\.c$/,
-  cpp: /_test\.cpp$/,
-  java: /SolutionTest\.java$/i,
-  elixir: /_test\.exs?$/,
-  ruby: /_test\.rb$/,
-  python: /_test\.py$/,
-  shell: /_test\.sh$/,
-  assembly: /_test\.asm$/,
-  terraform: /_test\.sh$/,
-  helm: /_test\.sh$/,
-  kotlin: /_test\.kt$/,
-  rust: /_test\.rs$/,
-};
+import { TEST_FILE_PATTERNS } from "@fluent/content-config";
 
 const prisma = new PrismaClient();
 

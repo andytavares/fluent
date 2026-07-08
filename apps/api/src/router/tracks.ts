@@ -2,27 +2,10 @@ import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
 import { z } from "zod";
+import { router, publicProcedure, protectedProcedure } from "./trpc.js";
+import { LANG_EXT } from "@fluent/content-config";
 
-// tracks.ts lives at apps/api/src/router/ — go 4 levels up to reach repo root
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
-
-const LANG_EXT: Record<string, string> = {
-  go: "go",
-  javascript: "js",
-  typescript: "ts",
-  c: "c",
-  cpp: "cpp",
-  java: "java",
-  elixir: "ex",
-  ruby: "rb",
-  python: "py",
-  shell: "sh",
-  assembly: "asm",
-  terraform: "tf",
-  helm: "yaml",
-  kotlin: "kt",
-  rust: "rs",
-};
 
 function findStubFile(dir: string, ext: string): string {
   try {
@@ -37,8 +20,6 @@ function findStubFile(dir: string, ext: string): string {
   }
   return "";
 }
-
-import { router, publicProcedure, protectedProcedure } from "./trpc.js";
 
 export const tracksRouter = router({
   listTracks: publicProcedure.query(async ({ ctx }) => {
