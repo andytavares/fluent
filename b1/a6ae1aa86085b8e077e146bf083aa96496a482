@@ -1,0 +1,35 @@
+apps/capstone-runner/src/worker.ts
+  s_beb7708abc1117::t_758061df26a545 2,15
+packages/capstone-contract/src/index.ts
+  s_beb7708abc1117::t_d8ebb2ff6dccf6 1-22
+apps/api/src/temporal/capstone-client.ts
+  s_beb7708abc1117::t_758061df26a545 2-9,24-26,34-35,44-45
+apps/web/tsconfig.tsbuildinfo
+  s_beb7708abc1117::t_758061df26a545 1
+apps/capstone-runner/package.json
+  s_beb7708abc1117::t_758061df26a545 23-24
+packages/capstone-contract/package.json
+  s_beb7708abc1117::t_c54b9ec46f270e 1-10
+apps/capstone-runner/src/workflows/capstone-session.ts
+  s_beb7708abc1117::t_758061df26a545 7-8,20-21,23
+apps/api/package.json
+  s_beb7708abc1117::t_758061df26a545 33-34
+pnpm-lock.yaml
+  s_beb7708abc1117::t_fdb27198e52b3d 41-43,102-104,262-263
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "b1a6ae1aa86085b8e077e146bf083aa96496a482",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
