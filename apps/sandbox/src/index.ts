@@ -1,7 +1,4 @@
 import Fastify from "fastify";
-import { fastifyTRPCPlugin } from "@trpc/server/adapters/fastify";
-import { sandboxRouter } from "./router/index.js";
-import { createSandboxContext } from "./router/context.js";
 import { loggerMiddleware } from "./middleware/logger.js";
 import { metricsMiddleware } from "./middleware/metrics.js";
 import { registerInternalRoutes } from "./router/internal.js";
@@ -19,14 +16,6 @@ async function start() {
   app.addHook("onRequest", metricsMiddleware);
 
   registerInternalRoutes(app);
-
-  await app.register(fastifyTRPCPlugin, {
-    prefix: "/trpc",
-    trpcOptions: {
-      router: sandboxRouter,
-      createContext: createSandboxContext,
-    },
-  });
 
   await app.listen({ port: PORT, host: HOST });
   console.log(`Sandbox server listening on ${HOST}:${PORT}`);

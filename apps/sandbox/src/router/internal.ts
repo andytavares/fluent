@@ -1,3 +1,4 @@
+import { streamTokenKey } from "@fluent/execution-contract";
 import { redis } from "../db/redis.js";
 import { registry } from "../middleware/metrics.js";
 import { streamExecutionResult } from "../streamer/sse-streamer.js";
@@ -18,7 +19,7 @@ export function registerInternalRoutes(app: FastifyInstance) {
 
   app.get("/stream/:token", async (req, reply) => {
     const { token } = req.params as { token: string };
-    const jobId = await redis.get(`stream:${token}`);
+    const jobId = await redis.get(streamTokenKey(token));
     if (!jobId) {
       void reply.status(404).send({ error: "Stream not found" });
       return;

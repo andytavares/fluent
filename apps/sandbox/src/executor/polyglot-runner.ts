@@ -40,7 +40,7 @@ function extractTrace(raw: string | null): { stdout: string | null; trace: Trace
 
 function withTrace(result: ExecutionResult): ExecutionResult {
   const { stdout, trace } = extractTrace(result.stdout);
-  return { ...result, stdout, trace: trace.length ? trace : undefined };
+  return { ...result, stdout, ...(trace.length ? { trace } : {}) };
 }
 
 const execFileAsync = promisify(execFile);

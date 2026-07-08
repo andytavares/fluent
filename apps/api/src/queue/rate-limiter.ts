@@ -9,6 +9,12 @@ export interface RateLimitResult {
   retryAfterSeconds: number;
 }
 
+export class RateLimitExceededError extends Error {
+  constructor(public retryAfterSeconds: number) {
+    super(`Rate limit exceeded. Retry after ${retryAfterSeconds}s`);
+  }
+}
+
 // Atomically: remove expired entries, count current, conditionally add new entry.
 // Returns [count_before_add, was_added] where was_added is 1 if allowed, 0 if rejected.
 const CONSUME_SCRIPT = `

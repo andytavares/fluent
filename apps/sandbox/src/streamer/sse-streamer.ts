@@ -1,4 +1,5 @@
 import type { FastifyReply } from "fastify";
+import { resultStreamKey } from "@fluent/execution-contract";
 import { redis } from "../db/redis.js";
 
 const STREAM_POLL_INTERVAL_MS = 200;
@@ -8,7 +9,7 @@ export async function streamExecutionResult(
   jobId: string,
   reply: FastifyReply,
 ): Promise<void> {
-  const streamKey = `result:${jobId}`;
+  const streamKey = resultStreamKey(jobId);
 
   reply.raw.setHeader("Content-Type", "text/event-stream");
   reply.raw.setHeader("Cache-Control", "no-cache");

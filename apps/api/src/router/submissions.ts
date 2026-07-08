@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "./trpc.js";
 import { ExecutionQueue } from "../queue/execution-queue.js";
+import { RateLimitExceededError } from "../queue/rate-limiter.js";
 import { redis } from "../db/redis.js";
 import {
   SubmissionPipeline,
@@ -23,6 +24,17 @@ function pipeline(db: PrismaClient): SubmissionPipeline {
   });
 }
 
+async function withRateLimitMapped<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (err) {
+    if (err instanceof RateLimitExceededError) {
+      throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: err.message });
+    }
+    throw err;
+  }
+}
+
 export const submissionsRouter = router({
   runSandbox: protectedProcedure
     .input(z.object({
@@ -32,13 +44,15 @@ export const submissionsRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { randomUUID } = await import("node:crypto");
       const jobId = randomUUID();
-      const streamToken = await queue.enqueue({
-        jobId,
-        userId: ctx.user.id!,
-        code: input.code,
-        language: input.language,
-        isSuite: false,
-      });
+      const streamToken = await withRateLimitMapped(() =>
+        queue.enqueue({
+          jobId,
+          userId: ctx.user.id!,
+          code: input.code,
+          language: input.language,
+          isSuite: false,
+        }),
+      );
       return { streamToken };
     }),
 
@@ -55,16 +69,18 @@ export const submissionsRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return pipeline(ctx.db).begin({
-        userId: ctx.user.id!,
-        conceptId: input.conceptId,
-        ...(input.enrollmentId ? { enrollmentId: input.enrollmentId } : {}),
-        ...(input.exerciseId ? { exerciseId: input.exerciseId } : {}),
-        code: input.code,
-        language: input.language,
-        isSuite: input.isSuite,
-        kind: input.kind,
-      });
+      return withRateLimitMapped(() =>
+        pipeline(ctx.db).begin({
+          userId: ctx.user.id!,
+          conceptId: input.conceptId,
+          ...(input.enrollmentId ? { enrollmentId: input.enrollmentId } : {}),
+          ...(input.exerciseId ? { exerciseId: input.exerciseId } : {}),
+          code: input.code,
+          language: input.language,
+          isSuite: input.isSuite,
+          kind: input.kind,
+        }),
+      );
     }),
 
   getSubmission: protectedProcedure

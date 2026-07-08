@@ -1,5 +1,6 @@
 import type { PrismaClient } from "@prisma/client";
 import type { ContentStore } from "@fluent/content-config";
+import { resultStreamKey } from "@fluent/execution-contract";
 import type { CodeExecutionJob } from "../queue/queues.js";
 import { MasteryService } from "./mastery.js";
 import { ConceptStateService } from "./concept-state.js";
@@ -171,7 +172,7 @@ export class SubmissionPipeline {
   }
 
   private async readResultStream(submissionId: string): Promise<StreamResult> {
-    const entries = await this.redis.xrange(`result:${submissionId}`, "-", "+");
+    const entries = await this.redis.xrange(resultStreamKey(submissionId), "-", "+");
 
     const stdout: string[] = [];
     const stderr: string[] = [];
