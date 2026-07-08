@@ -1,5 +1,5 @@
 import type { FastifyReply } from "fastify";
-import { resultStreamKey } from "@fluent/execution-contract";
+import { resultStreamKey, flattenStreamFields } from "@fluent/execution-contract";
 import { redis } from "../db/redis.js";
 
 const STREAM_POLL_INTERVAL_MS = 200;
@@ -30,10 +30,7 @@ export async function streamExecutionResult(
       const [, messages] = entries[0]!;
       for (const [id, fields] of messages) {
         lastId = id;
-        const obj: Record<string, string> = {};
-        for (let i = 0; i < fields.length; i += 2) {
-          obj[fields[i]!] = fields[i + 1]!;
-        }
+        const obj = flattenStreamFields(fields);
 
         if (obj["type"] === "stdout") {
           send("stdout", { data: obj["data"] });

@@ -189,21 +189,29 @@ enum AchievedVia {
   lesson
 }
 
+enum SubmissionKind {
+  lesson
+  test_out
+  placement
+}
+
 model Submission {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId      String   @db.Uuid
-  conceptId   String   @db.Uuid
-  exerciseId  String?  @db.Uuid
-  code        String
-  language    String   @default("go")
-  stdout      String?
-  stderr      String?
-  exitCode    Int?
-  runtimeMs   Int?
-  timedOut    Boolean  @default(false)
-  isSuite     Boolean  @default(false)
-  passed      Boolean?
-  createdAt   DateTime @default(now())
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String   @db.Uuid
+  conceptId    String   @db.Uuid
+  exerciseId   String?  @db.Uuid
+  enrollmentId String?  @db.Uuid
+  kind         SubmissionKind @default(lesson)
+  code         String
+  language     String   @default("go")
+  stdout       String?
+  stderr       String?
+  exitCode     Int?
+  runtimeMs    Int?
+  timedOut     Boolean  @default(false)
+  isSuite      Boolean  @default(false)
+  passed       Boolean?
+  createdAt    DateTime @default(now())
 
   user        User     @relation(fields: [userId], references: [id])
   concept     Concept  @relation(fields: [conceptId], references: [id])

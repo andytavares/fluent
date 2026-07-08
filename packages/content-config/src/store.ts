@@ -3,7 +3,10 @@ import { fileURLToPath } from "node:url";
 import { dirname, join, resolve, relative } from "node:path";
 import { LANG_EXT, TEST_FILE_PATTERNS } from "./lang.js";
 import { conceptConfigSchema, trackConfigSchema } from "./schema.js";
+import { extractTaskPrompt } from "./task-prompt.js";
 import type { ConceptConfig, TrackConfig } from "./schema.js";
+
+export { extractTaskPrompt };
 
 // This file lives at packages/content-config/src — three levels up is the repo root.
 const DEFAULT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -32,11 +35,6 @@ export interface ContentStore {
   getTestoutTestFiles(contentPath: string, language: string): string[];
   listTracks(): TrackEntry[];
   listConcepts(trackDir: string): ConceptEntry[];
-}
-
-export function extractTaskPrompt(instructions: string): string {
-  const match = instructions.match(/## The task\n([\s\S]*?)(?=\n## |$)/);
-  return match?.[1]?.trim() ?? "";
 }
 
 function listFiles(dir: string): string[] {

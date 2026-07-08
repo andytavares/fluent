@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { SubmissionPipeline, interpretResult } from "../../src/service/submission-pipeline.js";
+import {
+  SubmissionPipeline,
+  interpretResult,
+  InvalidSubmissionKindError,
+} from "../../src/service/submission-pipeline.js";
 
 function makeMockDb() {
   return {
@@ -11,9 +15,13 @@ function makeMockDb() {
       update: vi.fn().mockImplementation(({ data }: { data: Record<string, unknown> }) =>
         Promise.resolve({ id: "sub1", userId: "usr1", conceptId: "con1", isSuite: true, ...data }),
       ),
+      delete: vi.fn().mockResolvedValue({ id: "sub1" }),
     },
     exercise: {
       findFirst: vi.fn().mockResolvedValue({ id: "ex1", contentPath: "content/tracks/go/concepts/01-x" }),
+    },
+    concept: {
+      findUniqueOrThrow: vi.fn().mockResolvedValue({ hasTestout: true }),
     },
     conceptState: {
       findUniqueOrThrow: vi.fn().mockResolvedValue({ id: "cs1", state: "in_progress" }),
@@ -22,16 +30,9 @@ function makeMockDb() {
 }
 
 function makeFakeRedis() {
-  const kv = new Map<string, string>();
   const streams = new Map<string, Array<[string, string[]]>>();
   return {
-    kv,
     streams,
-    setex: vi.fn(async (key: string, _ttl: number, value: string) => {
-      kv.set(key, value);
-      return "OK";
-    }),
-    get: vi.fn(async (key: string) => kv.get(key) ?? null),
     xrange: vi.fn(async (key: string) => streams.get(key) ?? []),
   };
 }
@@ -92,17 +93,19 @@ describe("interpretResult — the single pass rule", () => {
 });
 
 describe("SubmissionPipeline.begin", () => {
-  it("creates the submission, enqueues lesson tests, and binds the kind", async () => {
-    const { pipeline, redis, enqueue, content } = makePipeline();
+  it("creates the submission with the kind bound on the row and enqueues lesson tests", async () => {
+    const { pipeline, db, enqueue, content } = makePipeline();
 
     const result = await pipeline.begin(BEGIN_INPUT);
 
     expect(result).toEqual({ submissionId: "sub1", streamToken: "stream-token-1" });
+    expect(db.submission.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ kind: "lesson", enrollmentId: "enr1" }) }),
+    );
     expect(content.getLessonTestFiles).toHaveBeenCalledWith("content/tracks/go/concepts/01-x", "go");
     expect(enqueue).toHaveBeenCalledWith(
       expect.objectContaining({ jobId: "sub1", isSuite: true, testFiles: ["lesson test content"] }),
     );
-    expect(JSON.parse(redis.kv.get("submission:meta:sub1")!)).toEqual({ kind: "lesson", enrollmentId: "enr1" });
   });
 
   it("loads testout tests for kind test_out", async () => {
@@ -115,6 +118,37 @@ describe("SubmissionPipeline.begin", () => {
     expect(enqueue).toHaveBeenCalledWith(
       expect.objectContaining({ testFiles: ["testout test content"] }),
     );
+  });
+
+  it("falls back to the lesson suite when a test_out concept has no testout tests", async () => {
+    const { pipeline, enqueue, content } = makePipeline();
+    content.getTestoutTestFiles.mockReturnValue([]);
+
+    await pipeline.begin({ ...BEGIN_INPUT, kind: "test_out" });
+
+    // An empty suite would trivially pass and award unearned mastery
+    expect(content.getLessonTestFiles).toHaveBeenCalled();
+    expect(enqueue).toHaveBeenCalledWith(
+      expect.objectContaining({ testFiles: ["lesson test content"] }),
+    );
+  });
+
+  it("rejects kind test_out on a concept without a test-out challenge", async () => {
+    const { pipeline, db } = makePipeline();
+    db.concept.findUniqueOrThrow.mockResolvedValue({ hasTestout: false });
+
+    await expect(pipeline.begin({ ...BEGIN_INPUT, kind: "test_out" })).rejects.toThrow(
+      InvalidSubmissionKindError,
+    );
+    expect(db.submission.create).not.toHaveBeenCalled();
+  });
+
+  it("deletes the submission row when enqueue refuses (e.g. rate limit)", async () => {
+    const { pipeline, db, enqueue } = makePipeline();
+    enqueue.mockRejectedValue(new Error("rate limited"));
+
+    await expect(pipeline.begin(BEGIN_INPUT)).rejects.toThrow("rate limited");
+    expect(db.submission.delete).toHaveBeenCalledWith({ where: { id: "sub1" } });
   });
 
   it("does not load tests for a plain run", async () => {
@@ -138,11 +172,9 @@ function primeFinalize(
     conceptId: "con1",
     isSuite: opts.isSuite ?? true,
     passed: null,
+    kind: opts.kind,
+    enrollmentId: opts.enrollmentId === undefined ? "enr1" : opts.enrollmentId,
   });
-  redis.kv.set(
-    "submission:meta:sub1",
-    JSON.stringify({ kind: opts.kind, enrollmentId: opts.enrollmentId === undefined ? "enr1" : opts.enrollmentId }),
-  );
   redis.streams.set("result:sub1", resultStream(opts.exitCode, opts.timedOut ?? false));
 }
 
@@ -225,7 +257,6 @@ describe("SubmissionPipeline.finalize", () => {
 
   it("placement pass → transition to mastered via placement (no lesson mastery event)", async () => {
     primeFinalize(parts, { kind: "placement", exitCode: 0 });
-    parts.db.conceptState.findUniqueOrThrow.mockResolvedValue({ id: "cs1", state: "available" });
 
     await parts.pipeline.finalize({ submissionId: "sub1", userId: "usr1" });
 
@@ -249,6 +280,8 @@ describe("SubmissionPipeline.finalize", () => {
       conceptId: "con1",
       isSuite: true,
       passed: true,
+      kind: "lesson",
+      enrollmentId: "enr1",
     });
 
     const result = await parts.pipeline.finalize({ submissionId: "sub1", userId: "usr1" });
@@ -269,13 +302,6 @@ describe("SubmissionPipeline.finalize", () => {
     parts.redis.streams.set("result:sub1", [["1-1", ["type", "stdout", "data", "partial"]]]);
 
     await expect(parts.pipeline.finalize({ submissionId: "sub1", userId: "usr1" })).rejects.toThrow(/not available/i);
-  });
-
-  it("throws when the submission meta has expired", async () => {
-    primeFinalize(parts, { kind: "lesson", exitCode: 0 });
-    parts.redis.kv.delete("submission:meta:sub1");
-
-    await expect(parts.pipeline.finalize({ submissionId: "sub1", userId: "usr1" })).rejects.toThrow(/meta/i);
   });
 
   it("records the result without advancing state when there is no enrollment", async () => {

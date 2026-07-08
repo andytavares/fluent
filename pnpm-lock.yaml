@@ -188,6 +188,9 @@ importers:
       '@auth/prisma-adapter':
         specifier: ^2.0.0
         version: 2.11.2(@prisma/client@5.22.0(prisma@5.22.0))
+      '@fluent/content-config':
+        specifier: workspace:*
+        version: link:../../packages/content-config
       '@fluent/ui':
         specifier: workspace:*
         version: link:../../packages/ui

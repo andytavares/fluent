@@ -28,7 +28,8 @@
     "react-dom": "^18.3.0",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
-    "superjson": "^2.2.0"
+    "superjson": "^2.2.0",
+    "@fluent/content-config": "workspace:*"
   },
   "prisma": {
     "schema": "../api/prisma/schema.prisma"

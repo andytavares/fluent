@@ -1,21 +1,17 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { CodeEditor, OutputPane, TestOutModal, CongratsModal, TracePanel, AlgorithmVisualizer } from "@fluent/ui";
+import { extractTaskPrompt } from "@fluent/content-config/task-prompt";
 import { trpc } from "@/lib/trpc/client";
 import { useSubmission } from "@/hooks/use-submission";
 
 function countPassedTests(lines: { type: string; data?: string }[]): number {
   const text = lines.map((l) => l.data ?? "").join("\n");
   return (text.match(/^--- PASS:/gm) ?? []).length;
-}
-
-function extractTaskPrompt(instructions: string): string {
-  const match = instructions.match(/## The task\n([\s\S]*?)(?=\n## |$)/);
-  return match?.[1]?.trim() ?? "";
 }
 
 export default function LessonPage() {
@@ -26,8 +22,6 @@ export default function LessonPage() {
   const [code, setCode] = useState("");
   // null = no testout result yet; object = result after testout submission completes
   const [testOutResult, setTestOutResult] = useState<{ passed: boolean } | null>(null);
-  const isTestOutRef = useRef(false);
-  const lastSuiteRef = useRef(false);
 
   const conceptQuery = trpc.tracks.getConceptLesson.useQuery({ trackSlug, conceptSlug });
 
@@ -47,23 +41,18 @@ export default function LessonPage() {
     conceptId: conceptQuery.data?.id ?? "",
     enrollmentId: enrollment?.id ?? "",
     language: conceptQuery.data?.language,
-    // Fires with the server's verdict after the submission is finalized.
-    onComplete: (passed) => {
-      if (isTestOutRef.current) {
+    // Fires with the server's verdict; the meta is bound to the submission
+    // that completed, so a test-out run can't misroute into the congrats flow.
+    onComplete: (passed, meta) => {
+      if (meta.kind === "test_out") {
         setTestOutResult({ passed });
-        isTestOutRef.current = false;
         return;
       }
-      if (passed && lastSuiteRef.current) {
+      if (passed && meta.isSuite) {
         setCongratsOpen(true);
       }
     },
   });
-
-  function runLesson(lessonCode: string, suite: boolean) {
-    lastSuiteRef.current = suite;
-    void submit(lessonCode, suite);
-  }
 
   if (conceptQuery.isLoading) {
     return <div className="p-8 text-[var(--color-text-secondary)]">Loading…</div>;
@@ -135,7 +124,7 @@ export default function LessonPage() {
           <CodeEditor
             value={code}
             onChange={setCode}
-            onRun={() => runLesson(code, false)}
+            onRun={() => void submit(code, false)}
           />
 
           <OutputPane
@@ -154,14 +143,14 @@ export default function LessonPage() {
 
           <div className="flex gap-3">
             <button
-              onClick={() => runLesson(code, false)}
+              onClick={() => void submit(code, false)}
               disabled={state === "streaming" || state === "submitting" || !code || !conceptQuery.data}
               className="rounded-lg bg-[var(--color-interactive-secondary)] px-4 py-2 text-sm font-medium text-[var(--color-interactive-secondary-text)] border border-[var(--color-border-default)] disabled:opacity-50"
             >
               Run (Ctrl+Enter)
             </button>
             <button
-              onClick={() => runLesson(code, true)}
+              onClick={() => void submit(code, true)}
               disabled={state === "streaming" || state === "submitting" || !code || !conceptQuery.data}
               className="rounded-lg bg-[var(--color-interactive-primary)] px-4 py-2 text-sm font-medium text-[var(--color-interactive-primary-text)] disabled:opacity-50"
             >
@@ -180,7 +169,6 @@ export default function LessonPage() {
           taskPrompt,
         }}
         onSubmit={(testCode) => {
-          isTestOutRef.current = true;
           void submit(testCode, true, "test_out");
         }}
         onEscape={() => setTestOutOpen(false)}

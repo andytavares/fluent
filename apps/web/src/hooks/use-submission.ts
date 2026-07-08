@@ -23,12 +23,21 @@ export interface TraceFrame {
   };
 }
 
+export interface CompletionMeta {
+  isSuite: boolean;
+  kind: SubmissionKind;
+}
+
 interface UseSubmissionOptions {
   conceptId: string;
   enrollmentId: string;
   language?: string;
-  /** Called with the server's verdict once the submission is finalized. */
-  onComplete?: (passed: boolean) => void;
+  /**
+   * Called with the server's verdict once the submission is finalized. The
+   * meta is bound to the submission that completed — not to component state —
+   * so overlapping runs can't misroute their verdicts.
+   */
+  onComplete?: (passed: boolean, meta: CompletionMeta) => void;
 }
 
 export function useSubmission({ conceptId, enrollmentId, language = "go", onComplete }: UseSubmissionOptions) {
@@ -91,7 +100,7 @@ export function useSubmission({ conceptId, enrollmentId, language = "go", onComp
           // from Redis, scores it, and advances concept state.
           void doCompleteSubmission
             .mutateAsync({ submissionId })
-            .then(({ passed }) => onComplete?.(passed))
+            .then(({ passed }) => onComplete?.(passed, { isSuite, kind }))
             .catch(() => setState("error"));
         });
 
