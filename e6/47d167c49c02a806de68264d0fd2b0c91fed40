@@ -1,0 +1,68 @@
+apps/api/src/service/credential.ts
+  s_beb7708abc1117::t_2f21c03fe8afb4 3,18,21-27
+apps/capstone-runner/tests/unit/session-workflow.test.ts
+  s_beb7708abc1117::t_4782fa60d6ce54 104-114
+apps/web/src/app/visualizer/sandbox/page.tsx
+  s_beb7708abc1117::t_596e62e5164e2e 3
+  s_beb7708abc1117::t_cfd6fc151b539e 6,401,405-406,409,414
+  s_beb7708abc1117::t_1e585133ed5abc 346-347,352
+apps/web/tsconfig.tsbuildinfo
+  s_beb7708abc1117::t_999ddc760dd8f2 1
+apps/sandbox/src/executor/polyglot-runner.ts
+  s_beb7708abc1117::t_c828c26d728918 9-11
+  s_beb7708abc1117::t_999ddc760dd8f2 49
+apps/web/src/hooks/use-submission.ts
+  s_beb7708abc1117::t_4fe094ddc40929 46-48,52
+  s_beb7708abc1117::t_c9d28eeb6ed169 72
+  s_beb7708abc1117::t_0674c2656783ff 3
+packages/execution-contract/src/index.ts
+  s_beb7708abc1117::t_8c0d1dd29a70d2 23-26
+  s_beb7708abc1117::t_5dbc65a6127906 18-22
+apps/sandbox/src/executor/docker-runner.ts
+  s_beb7708abc1117::t_999ddc760dd8f2 13
+  s_beb7708abc1117::t_c828c26d728918 7
+apps/web/vitest.config.ts
+  s_beb7708abc1117::t_d6932078908070 1-17
+apps/web/tests/unit/execution-stream.test.ts
+  s_beb7708abc1117::t_c15e25dcbd1460 1-98
+packages/capstone-contract/src/index.ts
+  s_beb7708abc1117::t_18d96555721ee5 26-30
+apps/sandbox/src/streamer/sse-streamer.ts
+  s_beb7708abc1117::t_c828c26d728918 6
+  s_beb7708abc1117::t_999ddc760dd8f2 13
+apps/capstone-runner/src/activities/provisioner.ts
+  s_beb7708abc1117::t_c828c26d728918 2,40
+apps/web/src/hooks/use-sandbox-run.ts
+  s_beb7708abc1117::t_608df7dfee10c2 1-72
+apps/web/src/hooks/use-capstone-session.ts
+  s_beb7708abc1117::t_7157471b13c1cd 37-40
+apps/web/src/app/tracks/[trackSlug]/capstone/page.tsx
+  s_beb7708abc1117::t_912987496617c7 135
+  s_beb7708abc1117::t_6aa2f9ecaabce2 232,235
+  s_beb7708abc1117::t_5b3b05877eb506 7-8
+apps/capstone-runner/src/activities/session.ts
+  s_beb7708abc1117::t_c828c26d728918 2,116
+  s_beb7708abc1117::t_2b5f718757cb71 8
+  s_beb7708abc1117::t_6544da66c735d2 49-62
+apps/capstone-runner/src/workflows/capstone-session.ts
+  s_beb7708abc1117::t_58f8315aff53d0 43-47,49-51,53-62,64-71,74-76
+apps/capstone-runner/tests/unit/session-activities.test.ts
+  s_beb7708abc1117::t_5fa438eef0d9cd 18
+  s_beb7708abc1117::t_6778d594ea0c1e 47,56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "e647d167c49c02a806de68264d0fd2b0c91fed40",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
