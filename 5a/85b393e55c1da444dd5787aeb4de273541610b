@@ -1,0 +1,38 @@
+apps/api/src/router/capstone.ts
+  s_beb7708abc1117::t_a4f8431b60b3e1 72,76-79,90-91,99-138
+  s_beb7708abc1117::t_9cd4fb5de80f33 59
+  s_beb7708abc1117::t_bbd1ce7bbd7455 57-58,60-65
+  s_beb7708abc1117::t_e28ce0d1fcab81 2,6-17
+apps/capstone-runner/tests/unit/server.test.ts
+  s_beb7708abc1117::t_4645d93e4739d7 1-173
+apps/capstone-runner/src/server.ts
+  s_beb7708abc1117::t_e3d47ff03641a1 1-107
+apps/capstone-runner/src/index.ts
+  s_beb7708abc1117::t_c72b2ee2d5f651 2-5,9-13
+apps/api/tests/unit/capstone.test.ts
+  s_beb7708abc1117::t_3ece304eb3f6c1 138-140
+  s_beb7708abc1117::t_df89599dfbafac 1-51,53-59,61-63,65-70,72-73,75-80,82-86,88-93,95-100,102-104,106-111,113-114,116-127,129-136,141,143-144
+  s_beb7708abc1117::t_259afa290ed85d 52,60,71,74,81,87,94,101,112,115,128,137,142
+  s_beb7708abc1117::t_cdef6239e42aa4 64
+  s_beb7708abc1117::t_e86ca95720cde7 105
+apps/capstone-runner/package.json
+  s_beb7708abc1117::t_632194cfd5c060 22-23
+pnpm-lock.yaml
+  s_beb7708abc1117::t_766f226fe5c8a8 126-131,2874-2876,7343-7344
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "5a85b393e55c1da444dd5787aeb4de273541610b",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
