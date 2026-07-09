@@ -29,6 +29,11 @@ defmodule MyMacros do
   end
 end
 
+# A module's own macros can't be imported and used in the same top-level
+# compile unit as the `defmodule` that defines them — Elixir needs the
+# module to already be compiled first. `Code.eval_string/1` forces this demo
+# section into its own, later compilation pass so `import MyMacros` works.
+Code.eval_string(~S"""
 import MyMacros
 
 result = debug(2 + 3)
@@ -38,3 +43,4 @@ repeat(3, do: IO.puts("hello"))
 
 {val, _us} = measure(fn -> :timer.sleep(1); 42 end)
 IO.puts("result=#{val}")
+""")

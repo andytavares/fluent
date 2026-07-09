@@ -18,7 +18,7 @@ public class Solution {
         // swap returns a new Pair with first and second exchanged.
         public Pair<B, A> swap() {
             // TODO
-            return new Pair<>(second, first);
+            return null;
         }
     }
 

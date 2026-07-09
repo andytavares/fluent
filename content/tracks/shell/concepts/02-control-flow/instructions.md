@@ -2,7 +2,7 @@
 
 ## What you'll learn
 
-Bash conditions are exit codes, not boolean expressions. Understanding that one fact unlocks all of `if`, `[[ ]]`, and `case`.
+Building on the variables and quoting from lesson 1: Bash conditions are exit codes, not boolean expressions. Understanding that one fact unlocks all of `if`, `[[ ]]`, and `case`.
 
 ## Key concepts
 
@@ -82,6 +82,13 @@ esac
 
 Each pattern ends with `;;`. Patterns support globs: `*.log)`, `[0-9]*)`.
 
+## Watch out
+
+- **`[ ]` vs `[[ ]]`:** `[ ]` is the POSIX `test` command — a real external-or-builtin program, so `$a` and `$b` are word-split and glob-expanded before `[` ever sees them. `[[ ]]` is a Bash keyword: it skips word-splitting/globbing on its operands and supports `&&`, `||`, and `=~` directly. Prefer `[[ ]]` in Bash scripts; reach for `[ ]` only when writing POSIX `sh`.
+- Numeric vs string comparison is a common mixup: `[[ "10" -lt "9" ]]` is false (numeric: 10 is not less than 9), but `[[ "10" < "9" ]]` inside `[[ ]]` is true — `<`/`>` do **lexicographic string** comparison there, not numeric. Always use `-lt`/`-gt`/etc. for numbers.
+- An unquoted empty variable inside `[ ]` throws `unary operator expected`: `[ -z $var ]` breaks if `$var` is empty and unquoted, because it collapses to `[ -z ]`. Quote it: `[ -z "$var" ]`. `[[ ]]` doesn't have this problem.
+- `case` falls through only with `;&` (next clause) or `;;&` (re-test) — plain `;;` does **not** fall through, unlike C's `switch`.
+
 ## vs other languages
 
 | Concept | C/Python/JS | Bash |
@@ -96,10 +103,30 @@ The inverted truthiness catches everyone: exit code `0` means success (true), no
 
 ## The task
 
-Implement three functions:
+You're writing three classifier functions using `[[ ]]` and `case`.
 
 **`classify_number n`** — echoes `positive`, `negative`, or `zero`.
 
-**`file_status path`** — echoes `directory`, `file`, `empty-file`, or `missing`. Check if path doesn't exist first, then directory, then whether the file is empty (size 0), then regular file.
+```bash
+classify_number 42     # positive
+classify_number -7     # negative
+classify_number 0      # zero
+```
 
-**`day_type day`** — accepts a day name (Monday–Sunday) and echoes `weekday` or `weekend`. Use a `case` statement.
+**`file_status path`** — echoes `directory`, `file`, `empty-file`, or `missing`. Check in this order: does the path not exist → `missing`; is it a directory → `directory`; is it a regular file with size 0 → `empty-file`; otherwise → `file`.
+
+```bash
+file_status "/tmp"                 # directory
+file_status "/tmp/report.txt"      # file          (non-empty regular file)
+file_status "/tmp/empty.txt"       # empty-file     (0-byte regular file)
+file_status "/tmp/does-not-exist"  # missing
+```
+
+**`day_type day`** — accepts a day name (`Monday`–`Sunday`) and echoes `weekday` or `weekend`. Use a `case` statement with `Saturday|Sunday` and the five weekday names as patterns.
+
+```bash
+day_type "Saturday"   # weekend
+day_type "Sunday"     # weekend
+day_type "Monday"     # weekday
+day_type "Wednesday"  # weekday
+```

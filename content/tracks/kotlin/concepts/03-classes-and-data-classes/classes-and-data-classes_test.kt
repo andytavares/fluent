@@ -60,7 +60,7 @@ fun main() {
 
     println("ExchangeRates")
     test("usdToEur") { assertNear(92.0, ExchangeRates.usdToEur(100.0)) }
-    test("eurToUsd") { assertNear(108.69, ExchangeRates.eurToUsd(100.0)) }
+    test("eurToUsd") { assertNear(108.70, ExchangeRates.eurToUsd(100.0), 0.01) }
     test("round-trip") { assertNear(100.0, ExchangeRates.eurToUsd(ExchangeRates.usdToEur(100.0)), 0.01) }
 
     println("\n$passed passed, $failed failed")

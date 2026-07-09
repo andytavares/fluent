@@ -129,26 +129,54 @@ end  # file deleted here
 
 Ruby's stdlib has no async I/O — all file operations are synchronous. For high-concurrency I/O in Ruby, use threads (CRuby has a GVL but releases it for I/O) or Ractors (Ruby 3+).
 
+## Watch out
+
+- `File.exist?` (and most `File` methods) accept either a `String` or anything that responds to `to_path`/`to_str` — but to be safe, call `.to_s` on a `Pathname` argument before passing it to older APIs that expect a plain string.
+- `JSON.parse` returns **string** keys by default (`data["name"]`, not `data[:name]`) — you need `symbolize_names: true` to get symbols. Mixing this up with a hash literal (which defaults to symbols) is a common source of `nil` lookups.
+- `File.foreach`/`File.readlines` without `chomp: true` leave the trailing `"\n"` on every line — don't forget it when counting or comparing lines.
+- `CSV.parse(str, headers: true)` treats the first row as headers, not data — iterating gives you one row per **data** row, and `row["col"]` looks up by header name, not by string content.
+- `Tempfile.create` requires an explicit `f.flush` (or closing the file) before another process/method reads it — writes are buffered and not guaranteed visible until flushed.
+
 ## The task
 
+Implement four functions covering file reading/writing, JSON, and CSV.
+
+**`count_lines(path)`** — returns the number of lines in the file at `path` (a `String` or `Pathname`). Returns `0` if the file does not exist.
+
 ```ruby
-def count_lines(path)
-  # Return the number of lines in the file at path (String or Pathname).
-  # Return 0 if the file does not exist.
-end
+# file contains "alpha\nbeta\ngamma\n"
+count_lines("data.txt")               # => 3
+count_lines(Pathname.new("data.txt")) # => 3
+count_lines("/nonexistent/file.txt")  # => 0
+# file contains "no trailing newline" (no \n at end)
+count_lines("one_line.txt")           # => 1
+```
 
-def parse_json_keys(json_string)
-  # Parse json_string and return an Array of the top-level keys as strings,
-  # sorted alphabetically.
-end
+**`parse_json_keys(json_string)`** — parses `json_string` and returns an `Array` of the top-level keys as strings, sorted alphabetically.
 
-def csv_column(csv_string, column_name)
-  # Parse csv_string (with headers) and return an Array of values
-  # from the given column_name. Values should be strings as-is from the CSV.
-end
+```ruby
+parse_json_keys('{"zebra":1,"apple":2,"mango":3}')  # => ["apple", "mango", "zebra"]
+parse_json_keys('{}')                                # => []
+parse_json_keys('{"x":null}')                        # => ["x"]
+```
 
-def write_lines(path, lines)
-  # Write each element of lines as a separate line to path.
-  # Overwrite if file exists.
-end
+**`csv_column(csv_string, column_name)`** — parses `csv_string` (whose first row is a header row) and returns an `Array` of values from the column named `column_name`, as strings exactly as they appear in the CSV.
+
+```ruby
+csv = "name,score\nAlice,95\nBob,87\nCarol,91"
+csv_column(csv, "name")   # => ["Alice", "Bob", "Carol"]
+csv_column(csv, "score")  # => ["95", "87", "91"]  — strings, not integers
+```
+
+**`write_lines(path, lines)`** — writes each element of the `lines` array as a separate line to the file at `path`, overwriting any existing content.
+
+```ruby
+write_lines("out.txt", ["hello", "world", "ruby"])
+File.readlines("out.txt", chomp: true)  # => ["hello", "world", "ruby"]
+
+write_lines("out.txt", ["overwritten"])
+File.readlines("out.txt", chomp: true)  # => ["overwritten"]  — old content gone
+
+write_lines("out.txt", [])
+File.read("out.txt")  # => ""
 ```

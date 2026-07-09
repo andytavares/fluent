@@ -67,6 +67,13 @@ Terraform modules are a closer analogy than you'd expect — you declare module 
 
 Docker Compose `extends` and Kustomize `bases` are weaker — they don't have version pinning or a registry concept.
 
+## Watch out
+
+- **`alias` renames the values key everywhere, including `condition`.** If you set `alias: cache` on the `redis` dependency, the condition must reference `cache.enabled`, not `redis.enabled` — the alias is a full identity swap from the parent's point of view, not just a display label.
+- **Forgetting `helm dependency update` is the #1 dependency bug.** `Chart.yaml` declaring a dependency is a promise, not an action — `helm install` fails with "found in Chart.yaml, but missing in charts/ directory" if you never ran `helm dependency update` (or `build`) after editing `Chart.yaml`.
+- **Subchart values are read-only from the parent's perspective and vice versa** — a parent template cannot read a value the subchart computed internally (e.g. a generated password), only what's under `.Values.<subchart>.*` that the parent itself set. If you need to share a runtime-generated value between parent and subchart, it has to flow through a Kubernetes resource (Secret/ConfigMap) both sides read, not through the values tree.
+- **`global` values are shared, but only one level of nesting is guaranteed.** `.Values.global.imageRegistry` is visible to every subchart and the parent, but don't assume deeply nested structures under `global` merge the way you'd expect across chart versions — keep `global` flat and small (registry, storage class, a couple of feature flags), not a dumping ground for entire config blocks.
+
 ## The task
 
 Write a `Chart.yaml` for a chart named `platform` that declares:
@@ -81,3 +88,39 @@ Then write a `values.yaml` that:
 - Enables redis via alias: `cache.enabled: true`
 - Sets a global image registry: `global.imageRegistry: "gcr.io/myproject"`
 - Disables the `cache` subchart's persistence: `cache.master.persistence.enabled: false`
+
+The finished `Chart.yaml` dependency block should read:
+
+```yaml
+dependencies:
+  - name: postgresql
+    version: "12.x.x"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled
+  - name: redis
+    version: "17.x.x"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: redis.enabled
+    alias: cache
+```
+
+And `values.yaml`:
+
+```yaml
+global:
+  imageRegistry: "gcr.io/myproject"
+
+postgresql:
+  enabled: true
+  auth:
+    database: myplatform
+    username: platform
+
+cache:
+  enabled: true
+  master:
+    persistence:
+      enabled: false
+```
+
+Note that the second dependency's block in `values.yaml` is keyed `cache:`, not `redis:` — because `alias: cache` in `Chart.yaml` renames how the parent addresses that subchart. After `helm dependency update` downloads both charts into `charts/`, the `redis` subchart itself still sees these values as `.Values.enabled` and `.Values.master.persistence.enabled` — it has no idea it's been aliased.

@@ -1,4 +1,5 @@
 import { Worker } from "@temporalio/worker";
+import { CAPSTONE_TASK_QUEUE } from "@fluent/capstone-contract";
 import * as activities from "./activities/index.js";
 
 export async function createWorker() {
@@ -11,7 +12,7 @@ export async function createWorker() {
   return Worker.create({
     connection,
     namespace: "default",
-    taskQueue: "capstone-sessions",
+    taskQueue: CAPSTONE_TASK_QUEUE,
     workflowsPath: new URL(
       import.meta.url.endsWith(".ts") ? "./workflows/index.ts" : "./workflows/index.js",
       import.meta.url,

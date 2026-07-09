@@ -6,13 +6,6 @@
 #include <string>
 #include <vector>
 
-// Forward declarations — learner's types compiled in from stub.cpp.
-class Shape;
-class Circle;
-class Rectangle;
-double      totalArea(const std::vector<Shape*>& shapes);
-std::string largestName(const std::vector<Shape*>& shapes);
-
 static int passed = 0, failed = 0;
 
 void check(const std::string& name, bool condition) {

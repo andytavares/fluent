@@ -9,6 +9,7 @@ function test(name, fn) {
 
 test("multiply(3, 4)",      () => assert.strictEqual(multiply(3, 4),  12));
 test("multiply(5)",         () => assert.strictEqual(multiply(5),      5));
+test("multiply(4, undefined) uses default", () => assert.strictEqual(multiply(4, undefined), 4));
 test("multiply(0, 100)",    () => assert.strictEqual(multiply(0, 100), 0));
 test("multiply(-2, 3)",     () => assert.strictEqual(multiply(-2, 3), -6));
 

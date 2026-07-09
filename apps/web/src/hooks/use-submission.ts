@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import type { TraceFrame } from "@fluent/execution-contract";
 import { trpc } from "@/lib/trpc/client";
+import { consumeExecutionStream } from "@/lib/execution-stream";
 
 type SubmissionState = "idle" | "submitting" | "streaming" | "complete" | "error";
+type SubmissionKind = "lesson" | "test_out" | "placement";
 
 interface OutputLine {
   type: "stdout" | "stderr" | "result";
@@ -13,20 +16,21 @@ interface OutputLine {
   timed_out?: boolean;
 }
 
-export interface TraceFrame {
-  label?: string;
-  state?: Record<string, unknown>;
-  highlights?: {
-    arrays?: Record<string, number[]>;
-    nodes?: string[];
-  };
+export interface CompletionMeta {
+  isSuite: boolean;
+  kind: SubmissionKind;
 }
 
 interface UseSubmissionOptions {
   conceptId: string;
   enrollmentId: string;
   language?: string;
-  onComplete?: (passed: boolean) => void;
+  /**
+   * Called with the server's verdict once the submission is finalized. The
+   * meta is bound to the submission that completed — not to component state —
+   * so overlapping runs can't misroute their verdicts.
+   */
+  onComplete?: (passed: boolean, meta: CompletionMeta) => void;
 }
 
 export function useSubmission({ conceptId, enrollmentId, language = "go", onComplete }: UseSubmissionOptions) {
@@ -39,9 +43,13 @@ export function useSubmission({ conceptId, enrollmentId, language = "go", onComp
 
   const createSubmission = trpc.submissions.createSubmission.useMutation();
   const doCompleteSubmission = trpc.submissions.completeSubmission.useMutation();
+  const closeStreamRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => () => closeStreamRef.current?.(), []);
 
   const submit = useCallback(
-    async (code: string, isSuite = false) => {
+    async (code: string, isSuite = false, kind: SubmissionKind = "lesson") => {
+      closeStreamRef.current?.();
       setState("submitting");
       setLines([]);
       setExitCode(undefined);
@@ -52,65 +60,33 @@ export function useSubmission({ conceptId, enrollmentId, language = "go", onComp
       try {
         const { submissionId, streamToken } = await createSubmission.mutateAsync({
           conceptId,
+          ...(enrollmentId ? { enrollmentId } : {}),
           code,
           language,
           isSuite,
+          kind,
         });
 
         setState("streaming");
 
-        const collectedLines: OutputLine[] = [];
-        const es = new EventSource(`/api/stream/${streamToken}`);
+        closeStreamRef.current = consumeExecutionStream(streamToken, {
+          onStdout: (data) => setLines((prev) => [...prev, { type: "stdout", data }]),
+          onStderr: (data) => setLines((prev) => [...prev, { type: "stderr", data }]),
+          onTrace: (frames) => setTraceFrames(frames),
+          onResult: (result) => {
+            setExitCode(result.exit_code);
+            setRuntimeMs(result.runtime_ms);
+            setState("complete");
 
-        es.addEventListener("stdout", (e: MessageEvent<string>) => {
-          const data = JSON.parse(e.data) as { data: string };
-          const line: OutputLine = { type: "stdout", data: data.data };
-          setLines((prev) => [...prev, line]);
-          collectedLines.push(line);
+            // The server owns the verdict: finalize reads the worker's result
+            // from Redis, scores it, and advances concept state.
+            void doCompleteSubmission
+              .mutateAsync({ submissionId })
+              .then(({ passed }) => onComplete?.(passed, { isSuite, kind }))
+              .catch(() => setState("error"));
+          },
+          onError: () => setState("error"),
         });
-
-        es.addEventListener("trace", (e: MessageEvent<string>) => {
-          const data = JSON.parse(e.data) as { frames: TraceFrame[] };
-          setTraceFrames(data.frames ?? []);
-        });
-
-        es.addEventListener("stderr", (e: MessageEvent<string>) => {
-          const data = JSON.parse(e.data) as { data: string };
-          const line: OutputLine = { type: "stderr", data: data.data };
-          setLines((prev) => [...prev, line]);
-          collectedLines.push(line);
-        });
-
-        es.addEventListener("result", (e: MessageEvent<string>) => {
-          const result = JSON.parse(e.data) as { exit_code: number; runtime_ms: number; timed_out: boolean };
-          setExitCode(result.exit_code);
-          setRuntimeMs(result.runtime_ms);
-          setState("complete");
-          es.close();
-
-          const passed = result.exit_code === 0 && !result.timed_out;
-          onComplete?.(passed);
-
-          if (enrollmentId) {
-            const stdout = collectedLines.filter((l) => l.type === "stdout").map((l) => l.data ?? "").join("\n");
-            const stderr = collectedLines.filter((l) => l.type === "stderr").map((l) => l.data ?? "").join("\n");
-            void doCompleteSubmission.mutateAsync({
-              submissionId,
-              enrollmentId,
-              stdout,
-              stderr,
-              exitCode: result.exit_code,
-              runtimeMs: result.runtime_ms,
-              timedOut: result.timed_out,
-              passed: isSuite ? passed : undefined,
-            });
-          }
-        });
-
-        es.onerror = () => {
-          setState("error");
-          es.close();
-        };
       } catch {
         setState("error");
       }

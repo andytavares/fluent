@@ -69,22 +69,41 @@ In C, `for (int i = 0; i < n; i++) sum += arr[i]` compiles to exactly the counte
 
 Java and Go iterate over slices/arrays with bounds checking inserted by the runtime. In assembly there is no bounds check — accessing `arr[-1]` or `arr[n]` silently reads adjacent memory or crashes with SIGSEGV.
 
+## Watch out
+
+- `loop` decrements `rcx` and jumps if the result is nonzero. If `rcx` is 0 on entry, it wraps to `0xFFFFFFFFFFFFFFFF` and the CPU appears to hang — always test `n == 0` before the first `loop`.
+- Off-by-one at the loop bound: `cmp rcx, n` / `jge .done` correctly processes indices `0..n-1`; using `jg` instead runs one iteration past the end of the array.
+- Pointer-walking loops must advance the pointer by the element's size every iteration. Forgetting `add rdi, 8` for an `int64_t` array re-reads element 0 forever instead of advancing.
+- `array_max`'s precondition `n >= 1` is a real contract, not just documentation — calling it with `n == 0` dereferences `[rdi]` before the array has any valid elements, reading whatever memory happens to precede it.
+
 ## The task
 
-Implement `array_sum` and `array_max`:
+Implement `array_sum` and `array_max`, both operating on arrays of `int64_t`:
 
 ```nasm
 ; int64_t array_sum(int64_t *arr, int64_t n)
 ; rdi=arr, rsi=n
-; Returns sum of all elements. Returns 0 if n==0.
+; Returns the sum of all n elements in rax. Returns 0 if n == 0.
 array_sum:
     ; TODO
 
 ; int64_t array_max(int64_t *arr, int64_t n)
 ; rdi=arr, rsi=n
-; Returns the maximum element. Assumes n >= 1.
+; Returns the maximum element in rax. Precondition: n >= 1 (undefined for n == 0).
 array_max:
     ; TODO
 ```
 
-Use a loop with `rcx` as the counter for `array_sum`. Use pointer walking for `array_max`.
+Register contract: `rdi` (array pointer) and `rsi` (count) are inputs, both caller-saved — clobber freely once read. Return the result in `rax`.
+
+```nasm
+array_sum([1,2,3,4,5], 5);        // 15
+array_sum([-10,0,10,5,-5], 5);    // 0
+array_sum([], 0);                 // 0   — empty array
+array_sum([42], 1);                // 42  — single element
+
+array_max([1,2,3,4,5], 5);        // 5
+array_max([-10,0,10,5,-5], 5);    // 10
+```
+
+Use a loop with `rcx` as the down-counter for `array_sum` (guard against `n == 0` before the first `loop`). Use pointer walking (advance `rdi` by 8 each iteration) for `array_max`.

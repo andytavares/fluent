@@ -33,6 +33,11 @@ export class MasteryService {
     // Skip transition if already in a terminal state (mastered/completed)
     const terminalStates = ["mastered", "completed"];
     if (!currentState || !terminalStates.includes(currentState.state)) {
+      // If lesson completion fires before the concept was opened (still available),
+      // advance through in_progress first so the transition chain is valid.
+      if (newState === "completed" && currentState?.state === "available") {
+        await this.stateService.transition(input.enrollmentId, input.conceptId, "in_progress");
+      }
       await this.stateService.transition(
         input.enrollmentId,
         input.conceptId,

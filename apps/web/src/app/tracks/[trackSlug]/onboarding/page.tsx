@@ -32,7 +32,6 @@ export default function OnboardingPage() {
   const conceptsQuery = trpc.tracks.listConcepts.useQuery({ trackSlug });
   const createEnrollment = trpc.enrollments.createEnrollment.useMutation();
   const startPlacement = trpc.placement.startPlacement.useMutation();
-  const submitTask = trpc.placement.submitTask.useMutation();
   const skipPlacement = trpc.placement.skipPlacement.useMutation();
 
   const currentConcept = placementConcepts[currentConceptIdx];
@@ -42,6 +41,8 @@ export default function OnboardingPage() {
     conceptId: currentConcept?.id ?? "",
     enrollmentId: enrollmentId ?? "",
     language: currentConcept?.language,
+    // Server verdict: the pipeline scored the task and applied the placement
+    // transition before this fires.
     onComplete: (passed) => onCompleteRef.current?.(passed),
   });
 
@@ -86,18 +87,10 @@ export default function OnboardingPage() {
     }
   }
 
-  // Score current concept and show result
-  async function advanceOrFinish(conceptId: string, passed: boolean) {
-    if (!enrollmentId) return;
-    await submitTask.mutateAsync({ enrollmentId, conceptId, passed });
-    setPlacementResult({ passed });
-  }
-
   function handlePlacementSubmit(code: string) {
     if (!currentConcept) return;
-    const conceptId = currentConcept.id;
-    onCompleteRef.current = (passed) => void advanceOrFinish(conceptId, passed);
-    runCode(code, true);
+    onCompleteRef.current = (passed) => setPlacementResult({ passed });
+    void runCode(code, true, "placement");
   }
 
   function handleTryAgain() {

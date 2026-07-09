@@ -1,5 +1,6 @@
 /*
- * Build: gcc -DTESTING -o test stub.c control_flow_test.c && ./test
+ * Build: gcc -o test stub.c control_flow_test.c && ./test
+ * (The lesson harness strips main() from stub.c before linking.)
  */
 #include <stdio.h>
 

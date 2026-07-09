@@ -70,6 +70,13 @@ Everything in `values.yaml` is the default. Operators override with `-f custom-v
 
 Kustomize is declarative and merge-based — good for ops teams applying overlays they don't own. Helm is programmable — good for app teams shipping reusable charts. The two aren't mutually exclusive; many teams run `helm template | kubectl apply -k`.
 
+## Watch out
+
+- **`name` in `Chart.yaml` isn't cosmetic.** Helm uses it (with `.Release.Name`) to build default resource names and label values throughout the chart. A chart directory named `webapp/` with `name: my-app` inside `Chart.yaml` is legal but confusing — keep them in sync.
+- **`version` must be valid semver** (`MAJOR.MINOR.PATCH`, optionally with a pre-release suffix). `helm lint` and `helm package` reject `version: 1.0` or `version: latest`. `appVersion` has no such restriction — it's a free-form string, which is why it's usually quoted (`appVersion: "2.3.1"`) to stop YAML from parsing something like `2.3` as a float and dropping the trailing zero.
+- **`dependencies` in `Chart.yaml` only *declares* subcharts** — it doesn't fetch them. Nothing downloads `charts/redis-17.x.x.tgz` until you run `helm dependency update`. A chart with a `dependencies` block but an empty `charts/` directory will fail to install.
+- **`values.yaml` has no schema by default** — a typo like `replicaCont: 2` is silently ignored; the template that reads `.Values.replicaCount` just falls back to whatever default (or nil) it has. (`values.schema.json`, covered in a later concept, closes this gap.)
+
 ## The task
 
 Fill in `Chart.yaml` with the correct fields for a chart named `webapp` that:
@@ -86,3 +93,33 @@ Also provide a `values.yaml` with:
 - `replicaCount: 2`
 - `image.repository: myregistry/webapp`, `image.tag: ""`, `image.pullPolicy: IfNotPresent`
 - `redis.enabled: true`
+
+Both files are separated by a `---` document divider in the stub, matching how they'd exist as separate files in a real chart directory. The finished `Chart.yaml` should read:
+
+```yaml
+apiVersion: v2
+name: webapp
+description: A production-ready web application chart
+type: application
+version: 0.1.0
+appVersion: "2.3.1"
+dependencies:
+  - name: redis
+    version: "17.x.x"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: redis.enabled
+```
+
+And `values.yaml`:
+
+```yaml
+replicaCount: 2
+
+image:
+  repository: myregistry/webapp
+  tag: ""
+  pullPolicy: IfNotPresent
+
+redis:
+  enabled: true
+```

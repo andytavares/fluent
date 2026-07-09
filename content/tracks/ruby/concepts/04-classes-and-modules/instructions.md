@@ -151,20 +151,52 @@ Team.greet  # => "Hi, I'm Engineering"
 
 Ruby has no access modifiers like `private` / `protected` in the Java sense as part of the class signature — they're method calls that apply to the methods defined after them in the source. `private` is the most common; Ruby methods are public by default.
 
+## Watch out
+
+- `attr_accessor :width` generates a plain `@width` getter/setter — it does **not** call your custom `initialize` logic or validate anything. If you need validation, write the setter method by hand instead of using `attr_writer`/`attr_accessor`.
+- `super` (no parens) forwards the **exact arguments the current method received**; `super()` forwards **none**. Forgetting the distinction is the most common inheritance bug — a subclass `initialize(side)` calling bare `super` (not `super(side, side)`) passes only `side` up, not two arguments.
+- `@@count` class variables are shared down the **entire** inheritance chain — a subclass increments the same counter as its superclass. Prefer a class-level instance variable (`@count` read via `self.count`) if each subclass needs its own count.
+- `square?` returning `width == height` works here because both are numeric; don't assume `==` does deep/structural comparison for arbitrary objects unless you define `#==` yourself.
+
 ## The task
 
-```ruby
-class Rectangle
-  # attr_reader for width and height
-  # initialize(width, height)
-  # area → Integer/Float
-  # perimeter → Integer/Float
-  # square? → Boolean (width == height)
-  # to_s → "Rectangle(#{width}x#{height})"
-end
+Model rectangles and squares with a small class hierarchy.
 
-class Square < Rectangle
-  # initialize(side) — calls super appropriately
-  # to_s → "Square(#{width})"
-end
+**`Rectangle`** — has `attr_reader :width, :height`, and:
+
+- `initialize(width, height)` — stores both dimensions.
+- `area` — returns `width * height`.
+- `perimeter` — returns `2 * (width + height)`.
+- `square?` — returns `true` if `width == height`, else `false`.
+- `to_s` — returns `"Rectangle(#{width}x#{height})"`.
+
+```ruby
+r = Rectangle.new(4, 6)
+r.width       # => 4
+r.height      # => 6
+r.area        # => 24
+r.perimeter   # => 20
+r.square?     # => false
+r.to_s        # => "Rectangle(4x6)"
+
+Rectangle.new(5, 5).square?  # => true
+```
+
+**`Square < Rectangle`** — a rectangle whose width and height are always equal:
+
+- `initialize(side)` — calls `super` so that both `width` and `height` are set to `side`.
+- `to_s` — overridden to return `"Square(#{width})"`.
+
+All other `Rectangle` methods (`area`, `perimeter`, `square?`) are inherited unchanged.
+
+```ruby
+s = Square.new(7)
+s.width       # => 7
+s.height      # => 7
+s.area        # => 49
+s.perimeter   # => 28
+s.square?     # => true
+s.to_s        # => "Square(7)"
+
+s.is_a?(Rectangle)  # => true
 ```

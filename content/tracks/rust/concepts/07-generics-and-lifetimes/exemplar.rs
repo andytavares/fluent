@@ -11,23 +11,23 @@ struct Stack<T> {
 }
 
 impl<T> Stack<T> {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self { items: Vec::new() }
     }
 
-    fn push(&mut self, item: T) {
+    pub fn push(&mut self, item: T) {
         self.items.push(item);
     }
 
-    fn pop(&mut self) -> Option<T> {
+    pub fn pop(&mut self) -> Option<T> {
         self.items.pop()
     }
 
-    fn peek(&self) -> Option<&T> {
+    pub fn peek(&self) -> Option<&T> {
         self.items.last()
     }
 
-    fn is_empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.items.is_empty()
     }
 }

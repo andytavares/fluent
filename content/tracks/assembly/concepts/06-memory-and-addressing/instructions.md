@@ -85,16 +85,32 @@ In C, `int arr[4]; arr[2] = 7;` compiles to `mov dword [rdi + 8], 7` — the com
 
 `lea` has no direct syntactic equivalent in high-level languages. It surfaces in compiler output whenever an address computation is cheaper than a multiply, or when you need a pointer to a stack local (`lea rdi, [rbp-16]`).
 
+## Watch out
+
+- `mov r8, [ptr]` on a 1-byte value reads 8 bytes starting at `ptr`, not 1 — it pulls in three bytes of whatever memory follows. Use `movzx r8, byte [ptr]` (or a `byte`-sized destination) whenever the source is smaller than the register.
+- Without `movzx`, a byte with its high bit set (e.g. `0xFF`) read via a sign-extending path would corrupt the upper bits of the register — `movzx` guarantees zero-extension, which is what you want when packing raw byte values rather than signed numbers.
+- The scale in `[base + index*scale]` only accepts 1, 2, 4, or 8. `[rbx + rcx*3]` is a NASM assembly error, not a silently wrong instruction — the assembler catches it, but it's easy to reach for the wrong scale when the element size isn't a power of two (you need an extra `lea`/`imul` for that case).
+- `lea` computes an address; it never reads memory. If you meant to load the value at that address, you wanted `mov`, not `lea` — this mixup compiles cleanly and fails at runtime.
+
 ## The task
 
-Implement `pack_bytes` which reads four individual bytes from separate memory locations and packs them into a single 64-bit integer:
+Implement `pack_bytes`, which reads four individual bytes from four separate memory locations and packs them into a single 64-bit integer with `b0` as the least-significant byte:
 
 ```nasm
 ; uint64_t pack_bytes(uint8_t *b0, uint8_t *b1, uint8_t *b2, uint8_t *b3)
 ; rdi=b0, rsi=b1, rdx=b2, rcx=b3
-; Returns (b0 | b1<<8 | b2<<16 | b3<<24)
+; Returns (b0 | b1<<8 | b2<<16 | b3<<24) in rax
 pack_bytes:
     ; TODO: load each byte with movzx, shift, OR together, return in rax
 ```
 
-Use `movzx` to zero-extend bytes into 64-bit registers before shifting.
+Register contract: `rdi`, `rsi`, `rdx`, `rcx` are input pointers, all caller-saved — clobber freely once read. Return the packed value in `rax`. Any other register (`r8`–`r11` are natural scratch choices) may be used without saving.
+
+```nasm
+pack_bytes(&0x01, &0x02, &0x03, &0x04);  // 0x04030201
+pack_bytes(&0xFF, &0x00, &0xFF, &0x00);  // 0x00FF00FF
+pack_bytes(&0x00, &0x00, &0x00, &0x00);  // 0x0000000000000000
+pack_bytes(&0xAB, &0xCD, &0xEF, &0x12);  // 0x12EFCDAB
+```
+
+Edge case: a byte value of `0xFF` must contribute exactly `0xFF` at its shifted position — not sign-extend into the bits above it. Use `movzx` to zero-extend each byte into a 64-bit register before shifting.

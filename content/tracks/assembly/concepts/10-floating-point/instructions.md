@@ -70,9 +70,16 @@ In C, `double x = 3.14; double y = x * 2.0;` compiles to `movsd xmm0, [const]` /
 
 Go's `float64` maps directly to SSE2 scalar doubles. The Go compiler emits identical SSE2 instructions for floating-point math.
 
+## Watch out
+
+- Never compare doubles for exact equality. Floating-point arithmetic accumulates rounding error, so two mathematically-equal expressions can differ in their last bit — always compare with an epsilon tolerance, the way the test suite does.
+- `ucomisd` sets flags differently from integer `cmp`. `je`/`jne` happen to work correctly afterward (both read `ZF`), but `jl`/`jg` do **not** — use the unsigned forms `jb`/`ja` after `ucomisd`, even though the operands are signed doubles.
+- `cvttsd2si` truncates toward zero (like a C cast); `cvtsd2si` rounds per the current MXCSR mode (nearest, by default). Reaching for the wrong one silently changes the result for values like `2.5` — truncating gives `2`, rounding gives `2`, but `2.9` gives `2` vs `3`.
+- All XMM registers (`xmm0`–`xmm15`) are caller-saved in the System V ABI — never assume a value in an XMM register survives a `call` the way `rbx` would.
+
 ## The task
 
-Implement `euclidean_distance` which computes the 2D Euclidean distance between two points:
+Implement `euclidean_distance`, which computes the 2D Euclidean distance between two points, and `int_to_double`, which converts a signed integer to its double-precision representation:
 
 ```nasm
 ; double euclidean_distance(double x1, double y1, double x2, double y2)
@@ -80,14 +87,26 @@ Implement `euclidean_distance` which computes the 2D Euclidean distance between 
 ; Returns sqrt((x2-x1)^2 + (y2-y1)^2) in xmm0
 euclidean_distance:
     ; TODO: compute dx=x2-x1, dy=y2-y1, return sqrt(dx*dx + dy*dy)
-```
 
-Also implement `int_to_double` for the conversion exercise:
-
-```nasm
 ; double int_to_double(int64_t n)
 ; rdi = integer
 ; Returns (double)n in xmm0
 int_to_double:
     ; TODO
 ```
+
+Register contract: for `euclidean_distance`, `xmm0`–`xmm3` are inputs and all caller-saved, so clobbering them (including the ones that hold `x1`/`y1`) is fine as long as the final result ends up in `xmm0`. For `int_to_double`, `rdi` is the input integer; the result goes in `xmm0`.
+
+```nasm
+euclidean_distance(0.0, 0.0, 3.0, 4.0);   // 5.0            — classic 3-4-5 triangle
+euclidean_distance(0.0, 0.0, 1.0, 1.0);   // ~1.4142135...  — sqrt(2)
+euclidean_distance(3.0, 4.0, 3.0, 4.0);   // 0.0            — distance to itself
+euclidean_distance(-3.0, -4.0, 0.0, 0.0); // 5.0            — negative coordinates
+
+int_to_double(10);   // 10.0
+int_to_double(0);     // 0.0
+int_to_double(42);    // 42.0
+int_to_double(-7);    // -7.0
+```
+
+Test comparisons use an epsilon of `0.001` — you don't need bit-exact results, just standard IEEE 754 double arithmetic via `subsd`/`mulsd`/`addsd`/`sqrtsd`.

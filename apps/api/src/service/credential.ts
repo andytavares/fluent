@@ -1,5 +1,6 @@
 import type { PrismaClient } from "@prisma/client";
 import { randomBytes } from "node:crypto";
+import { computeProgress } from "./learner-progress.js";
 
 type DB = PrismaClient;
 
@@ -14,12 +15,16 @@ export class CredentialService {
 
     const enrollment = await this.db.enrollment.findUniqueOrThrow({
       where: { userId_trackId: { userId, trackId: track.id } },
-      include: { masteryEvents: true, user: { select: { name: true } } },
+      include: { user: { select: { name: true } }, masteryEvents: true },
     });
 
-    const testedOutCount = enrollment.masteryEvents.filter(
-      (me) => me.achievedVia === "test_out",
-    ).length;
+    // One stat definition (computeProgress), zero extra queries — the rows
+    // are already in hand.
+    const { testedOut: testedOutCount } = computeProgress({
+      conceptStates: [],
+      masteryEvents: enrollment.masteryEvents,
+      activeSession: null,
+    });
 
     const token = randomBytes(32).toString("base64url");
 

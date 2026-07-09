@@ -26,9 +26,25 @@ func TestDivide(t *testing.T) {
 	}
 }
 
+func TestDivideNegative(t *testing.T) {
+	result, err := Divide(-9, 3)
+	if err != nil {
+		t.Fatalf("Divide(-9, 3) unexpected error: %v", err)
+	}
+	if result != -3.0 {
+		t.Errorf("Divide(-9, 3) = %f, want -3.0", result)
+	}
+}
+
 func TestDivideByZero(t *testing.T) {
-	_, err := Divide(10, 0)
+	result, err := Divide(10, 0)
 	if err == nil {
 		t.Error("Divide(10, 0) expected error, got nil")
+	}
+	if result != 0 {
+		t.Errorf("Divide(10, 0) result = %f, want 0", result)
+	}
+	if err != nil && err.Error() != "cannot divide by zero" {
+		t.Errorf("Divide(10, 0) error message = %q, want %q", err.Error(), "cannot divide by zero")
 	}
 }

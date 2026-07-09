@@ -1,38 +1,39 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
+import { PlacementService } from "../../src/service/placement.js";
 
-// Placement scoring rules (pure logic — no DB required)
-function scorePlacementTask(passed: boolean): "mastered" | "available" {
-  return passed ? "mastered" : "available";
+// Placement task scoring lives in SubmissionPipeline (kind "placement") and
+// is covered by submission-pipeline.test.ts.
+
+function makeMockDb() {
+  return {
+    enrollment: { findUniqueOrThrow: vi.fn() },
+  };
 }
 
-function placementTaskCount(totalConcepts: number): number {
-  const MIN = 5;
-  const MAX = 8;
-  return Math.min(Math.max(MIN, Math.floor(totalConcepts * 0.5)), MAX);
-}
+describe("PlacementService.startPlacement", () => {
+  it("returns the track's published concepts in position order", async () => {
+    const db = makeMockDb();
+    const concepts = [
+      { id: "c1", position: 1 },
+      { id: "c2", position: 2 },
+    ];
+    db.enrollment.findUniqueOrThrow.mockResolvedValue({ track: { concepts } });
+    const service = new PlacementService(db as never);
 
-describe("Placement scoring service", () => {
-  it("pass → mastered", () => {
-    expect(scorePlacementTask(true)).toBe("mastered");
+    const result = await service.startPlacement("enr1");
+
+    expect(result).toEqual(concepts);
+    expect(db.enrollment.findUniqueOrThrow).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: "enr1" } }),
+    );
   });
+});
 
-  it("fail → available (no penalty)", () => {
-    expect(scorePlacementTask(false)).toBe("available");
-  });
-
-  it("placement task count is between 5 and 8 for a 10-concept track", () => {
-    const count = placementTaskCount(10);
-    expect(count).toBeGreaterThanOrEqual(5);
-    expect(count).toBeLessThanOrEqual(8);
-  });
-
-  it("placement task count is exactly 5 for a 4-concept track (min floor)", () => {
-    const count = placementTaskCount(4);
-    expect(count).toBe(5);
-  });
-
-  it("placement task count is exactly 8 for a 20-concept track (max cap)", () => {
-    const count = placementTaskCount(20);
-    expect(count).toBe(8);
+describe("PlacementService.skipPlacement", () => {
+  it("returns skipped: true with the enrollmentId", async () => {
+    const db = makeMockDb();
+    const service = new PlacementService(db as never);
+    const result = await service.skipPlacement("enr1");
+    expect(result).toEqual({ enrollmentId: "enr1", skipped: true });
   });
 });

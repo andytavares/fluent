@@ -19,6 +19,7 @@ test("lerp: t=0 → a",      () => assert.strictEqual(lerp(0, 100, 0),   0));
 test("lerp: t=1 → b",      () => assert.strictEqual(lerp(0, 100, 1),   100));
 test("lerp: t=0.5 → mid",  () => assert.strictEqual(lerp(0, 100, 0.5), 50));
 test("lerp: negative range", () => assert.strictEqual(lerp(-10, 10, 0.5), 0));
+test("lerp: t > 1 extrapolates", () => assert.strictEqual(lerp(0, 10, 2), 20));
 
 // VERSION
 test("VERSION is '1.0.0'", () => assert.strictEqual(VERSION, "1.0.0"));
@@ -32,6 +33,8 @@ test("error: formats correctly", () => assert.strictEqual(logger.error("boom"), 
 test("default export has clamp", () => assert.strictEqual(typeof MathUtils.clamp, "function"));
 test("default export has lerp",  () => assert.strictEqual(typeof MathUtils.lerp,  "function"));
 test("default export VERSION",   () => assert.strictEqual(MathUtils.VERSION, "1.0.0"));
+test("default export clamp behaves like named export", () => assert.strictEqual(MathUtils.clamp(15, 0, 10), 10));
+test("default export lerp behaves like named export",  () => assert.strictEqual(MathUtils.lerp(0, 100, 0.5), 50));
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed > 0) process.exit(1);

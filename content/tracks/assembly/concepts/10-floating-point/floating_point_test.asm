@@ -15,6 +15,9 @@ section .data
     d_sqrt2  dq 1.4142135623730951   ; sqrt(2), for (0,0)-(1,1)
     d_10_0   dq 10.0
     d_42_0   dq 42.0
+    d_neg7_0 dq -7.0
+    d_neg3_0 dq -3.0
+    d_neg4_0 dq -4.0
     d_0_001  dq 0.001                ; epsilon for float comparison
 
     msg_p1  db "PASS: dist((0,0),(3,4))=5.0", 10
@@ -46,6 +49,16 @@ section .data
     len_p6  equ $ - msg_p6
     msg_f6  db "FAIL: int_to_double(42) != 42.0", 10
     len_f6  equ $ - msg_f6
+
+    msg_p7  db "PASS: int_to_double(-7)=-7.0", 10
+    len_p7  equ $ - msg_p7
+    msg_f7  db "FAIL: int_to_double(-7) != -7.0", 10
+    len_f7  equ $ - msg_f7
+
+    msg_p8  db "PASS: dist((-3,-4),(0,0))=5.0 (negative coords)", 10
+    len_p8  equ $ - msg_p8
+    msg_f8  db "FAIL: dist((-3,-4),(0,0)) != ~5.0", 10
+    len_f8  equ $ - msg_f8
 
     msg_ok  db "All tests passed", 10
     len_ok  equ $ - msg_ok
@@ -167,8 +180,35 @@ _start:
     test   r14, r14
     jnz    .f6
     print  msg_p6, len_p6
-    jmp    .summary
+    jmp    .t7
 .f6: print msg_f6, len_f6
+    inc    r15
+
+    ; Test 7: int_to_double(-7) = -7.0
+.t7:
+    mov    rdi, -7
+    call   int_to_double
+    approx_eq d_neg7_0
+    test   r14, r14
+    jnz    .f7
+    print  msg_p7, len_p7
+    jmp    .t8
+.f7: print msg_f7, len_f7
+    inc    r15
+
+    ; Test 8: euclidean_distance(-3,-4,0,0) = 5.0 (negative coordinates)
+.t8:
+    movsd  xmm0, [d_neg3_0]
+    movsd  xmm1, [d_neg4_0]
+    movsd  xmm2, [d_0_0]
+    movsd  xmm3, [d_0_0]
+    call   euclidean_distance
+    approx_eq d_5_0
+    test   r14, r14
+    jnz    .f8
+    print  msg_p8, len_p8
+    jmp    .summary
+.f8: print msg_f8, len_f8
     inc    r15
 
 .summary:

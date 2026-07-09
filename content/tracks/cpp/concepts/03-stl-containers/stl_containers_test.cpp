@@ -6,10 +6,6 @@
 #include <string>
 #include <unordered_map>
 
-std::vector<int> unique_sorted(std::vector<int> v);
-std::unordered_map<std::string, int> word_count(const std::string& text);
-std::vector<int> top_n(std::vector<int> v, int n);
-
 static int passed = 0, failed = 0;
 
 void check(const std::string& name, bool condition) {

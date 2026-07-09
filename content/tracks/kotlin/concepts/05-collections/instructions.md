@@ -75,6 +75,12 @@ Use sequences when chaining multiple operations on large collections. For small 
 
 Java's `Stream` is closest to Kotlin's `Sequence`, but you must explicitly call `.stream()` and terminal operations are more verbose. Kotlin's collection functions work directly on `List` and return `List`, making them easier to compose.
 
+## Watch out
+
+- `Map` iteration order for `mapOf`/`mutableMapOf` (backed by `LinkedHashMap`) is **insertion order**, not sorted or hash order — don't rely on it staying stable if you swap in a `HashMap` explicitly.
+- `sortedBy`/`sortedByDescending` are stable sorts — equal elements keep their relative input order. This matters for tie-breaking behavior; an unstable sort would not guarantee it.
+- Chaining several `filter`/`map` calls directly on a `List` builds an intermediate list at every step. That's fine for small collections but wasteful for large ones — reach for `.asSequence()` before the chain, not after.
+
 ## The task
 
 Implement the following top-level functions in `stub.kt`:

@@ -1,21 +1,17 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { CodeEditor, OutputPane, TestOutModal, CongratsModal, TracePanel, AlgorithmVisualizer } from "@fluent/ui";
+import { extractTaskPrompt } from "@fluent/content-config/task-prompt";
 import { trpc } from "@/lib/trpc/client";
 import { useSubmission } from "@/hooks/use-submission";
 
 function countPassedTests(lines: { type: string; data?: string }[]): number {
   const text = lines.map((l) => l.data ?? "").join("\n");
   return (text.match(/^--- PASS:/gm) ?? []).length;
-}
-
-function extractTaskPrompt(instructions: string): string {
-  const match = instructions.match(/## The task\n([\s\S]*?)(?=\n## |$)/);
-  return match?.[1]?.trim() ?? "";
 }
 
 export default function LessonPage() {
@@ -26,14 +22,11 @@ export default function LessonPage() {
   const [code, setCode] = useState("");
   // null = no testout result yet; object = result after testout submission completes
   const [testOutResult, setTestOutResult] = useState<{ passed: boolean } | null>(null);
-  const isTestOutRef = useRef(false);
 
   const conceptQuery = trpc.tracks.getConceptLesson.useQuery({ trackSlug, conceptSlug });
 
   const enrollmentsQuery = trpc.enrollments.listEnrollments.useQuery();
   const enrollment = enrollmentsQuery.data?.find((e) => e.track.slug === trackSlug);
-
-  const completeSubmission = trpc.submissions.completeSubmission.useMutation();
 
   useEffect(() => {
     if (conceptQuery.data && !code) {
@@ -48,24 +41,18 @@ export default function LessonPage() {
     conceptId: conceptQuery.data?.id ?? "",
     enrollmentId: enrollment?.id ?? "",
     language: conceptQuery.data?.language,
-    onComplete: (passed) => {
-      if (isTestOutRef.current) {
+    // Fires with the server's verdict; the meta is bound to the submission
+    // that completed, so a test-out run can't misroute into the congrats flow.
+    onComplete: (passed, meta) => {
+      if (meta.kind === "test_out") {
         setTestOutResult({ passed });
-        isTestOutRef.current = false;
         return;
       }
-      if (passed && isSuite) {
+      if (passed && meta.isSuite) {
         setCongratsOpen(true);
       }
     },
   });
-
-  // Also catch isSuite=true runs that complete with exitCode 0 (onComplete fires before isSuite state propagates)
-  useEffect(() => {
-    if (state === "complete" && exitCode === 0 && isSuite && !isTestOutRef.current) {
-      setCongratsOpen(true);
-    }
-  }, [state, exitCode, isSuite]);
 
   if (conceptQuery.isLoading) {
     return <div className="p-8 text-[var(--color-text-secondary)]">Loading…</div>;
@@ -178,12 +165,11 @@ export default function LessonPage() {
         onClose={() => setTestOutOpen(false)}
         concept={{
           title: concept.title,
-          stub: concept.stub ?? `// ${concept.title}\n`,
+          stub: concept.testoutStub || concept.stub || `// ${concept.title}\n`,
           taskPrompt,
         }}
         onSubmit={(testCode) => {
-          isTestOutRef.current = true;
-          void submit(testCode, true);
+          void submit(testCode, true, "test_out");
         }}
         onEscape={() => setTestOutOpen(false)}
         isSubmitting={state === "streaming" || state === "submitting"}

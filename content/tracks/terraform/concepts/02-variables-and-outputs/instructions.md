@@ -75,12 +75,43 @@ Outputs are printed at the end of `terraform apply` and accessible via `terrafor
 
 Terraform's validation block is more powerful than CloudFormation's `AllowedValues` — it can express arbitrary conditions using the full expression language.
 
+## Watch out
+
+- **A variable with no `default` is a required input.** Omitting `default` on `db_password` is intentional here — it forces every caller to supply a value rather than silently deploying with an empty password. Don't add a `default` to "fix" a plan-time prompt; that defeats the point of `sensitive`.
+- **`type` is not optional in practice.** You can omit it (Terraform infers `any`), but then a caller passing a number where you expected a string won't be caught until it breaks something downstream. Always declare `type`.
+- **`validation.condition` must reference `var.<name>` of the *same* variable it's attached to** — you cannot validate one variable's block against another variable directly (use a `precondition` elsewhere for cross-variable checks).
+- **`sensitive = true` only redacts CLI/UI output.** It does not encrypt the value at rest in `terraform.tfstate`. Anyone with read access to the state file (or the backend) can still see it in plaintext.
+
 ## The task
 
-Write a Terraform configuration that:
+You're defining the input/output surface for a small module: three variables (a public region config, a validated instance size, a secret) and two outputs that echo the non-secret ones back.
 
-1. Declares a `variable "region"` of type `string` with default `"us-east-1"` and a description.
-2. Declares a `variable "instance_type"` of type `string` with default `"t3.micro"` and a `validation` block that only allows `"t3.micro"`, `"t3.small"`, or `"t3.medium"`.
-3. Declares a `variable "db_password"` of type `string` with `sensitive = true` and no default.
-4. Declares an `output "region"` that outputs `var.region`.
-5. Declares an `output "instance_type"` that outputs `var.instance_type` with a description.
+```hcl
+variable "region" {
+  # type, default, description
+}
+
+variable "instance_type" {
+  # type, default, and a validation { } block
+}
+
+variable "db_password" {
+  # type, sensitive — required (no default)
+}
+
+output "region" {
+  # value
+}
+
+output "instance_type" {
+  # value, description
+}
+```
+
+Fill it in so that:
+
+1. `variable "region"` has `type = string`, `default = "us-east-1"`, and a `description`.
+2. `variable "instance_type"` has `type = string`, `default = "t3.micro"`, and a `validation` block whose `condition` uses `contains([...], var.instance_type)` to allow only `"t3.micro"`, `"t3.small"`, or `"t3.medium"`, plus an `error_message`.
+3. `variable "db_password"` has `type = string`, `sensitive = true`, and **no `default`** (it must be a required input).
+4. `output "region"` has `value = var.region`.
+5. `output "instance_type"` has `value = var.instance_type` and a `description`.

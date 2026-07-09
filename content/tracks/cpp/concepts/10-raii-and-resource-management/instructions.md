@@ -42,18 +42,48 @@ private:
 
 **vs other languages:** Java's `try-with-resources` and Python's `with` statement are close equivalents — but they require explicit syntax at every use site. C++ RAII is automatic: any object going out of scope cleans up, even inside called functions, even when exceptions are thrown. Go's `defer` is similar but per-function, not per-scope.
 
+## Watch out
+
+- **Deleting the copy operations is a design decision, not boilerplate.** A `ScopedBuffer` represents exclusive ownership of one heap array — allowing copies would mean two objects both believe they own (and will `delete[]`) the same memory, a double free waiting to happen. `= delete` turns an accidental `ScopedBuffer b2 = b1;` into a compile error instead of a runtime crash.
+- **Self-move-assignment (`b = std::move(b);`)** must leave the object intact — guard with `if (this != &other)` just as in copy assignment, and note that skipping the guard causes the buffer to `delete[]` its own data before "stealing" it from itself.
+- **A moved-from `ScopedBuffer` must still be safely destructible.** Null out the source's pointer in the move constructor/assignment — otherwise both the moved-from and moved-to objects hold the same pointer, and the destructor runs `delete[]` on it twice when both go out of scope.
+
 ## The task
 
 Implement `class ScopedBuffer` in `stub.cpp` — an RAII wrapper around a heap-allocated `int` array:
 
 - `explicit ScopedBuffer(size_t size)` — allocate `size` ints with `new int[size]{}` (zero-initialized)
 - `~ScopedBuffer()` — `delete[]` the array
-- Copy constructor and copy assignment: **deleted**
+- Copy constructor and copy assignment: **deleted** (already written in the stub — don't remove the `= delete`)
 - `ScopedBuffer(ScopedBuffer&& other) noexcept` — move constructor: steal pointer and size, null out source
-- `ScopedBuffer& operator=(ScopedBuffer&& other) noexcept` — move assignment
+- `ScopedBuffer& operator=(ScopedBuffer&& other) noexcept` — move assignment (guard against self-move-assignment)
 - `size_t size() const`
 - `int& operator[](size_t i)` and `const int& operator[](size_t i) const`
 - `int* data()` — return the raw pointer (for interop with C APIs)
 
 Free function:
-- `ScopedBuffer concat(ScopedBuffer a, ScopedBuffer b)` — return a new ScopedBuffer with all elements of `a` followed by `b` (takes by value to trigger moves at call sites)
+- `ScopedBuffer concat(ScopedBuffer a, ScopedBuffer b)` — return a new `ScopedBuffer` with all elements of `a` followed by all elements of `b` (takes both parameters by value, so moves happen at the call site — callers must pass `std::move(x)`)
+
+```cpp
+ScopedBuffer b(5);
+b.size();     // 5
+b[0];         // 0 — zero-initialized
+b[0] = 7; b[4] = 42;
+b.data() != nullptr;  // true
+
+ScopedBuffer orig(3);
+orig[0] = 1; orig[1] = 2; orig[2] = 3;
+ScopedBuffer moved(std::move(orig));
+moved.size();  // 3
+orig.size();   // 0 — moved-from, safely empty (destructor still runs fine on orig)
+
+ScopedBuffer a(3); a[0] = 1; a[1] = 2; a[2] = 3;
+ScopedBuffer c(2); c[0] = 4; c[1] = 5;
+ScopedBuffer result = concat(std::move(a), std::move(c));
+result.size();  // 5
+result[0];      // 1
+result[3];      // 4
+
+// This does not compile — copying is deleted:
+// ScopedBuffer dup = b;
+```

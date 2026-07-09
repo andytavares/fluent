@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { CodeEditor, OutputPane, TracePanel, AlgorithmVisualizer } from "@fluent/ui";
-import type { TraceFrame } from "@fluent/ui";
-import { trpc } from "@/lib/trpc/client";
+import type { TraceFrame } from "@fluent/execution-contract";
+import { useSandboxRun } from "@/hooks/use-sandbox-run";
 
 const ALGOS = [
   { slug: "custom",                    title: "Custom — write your own" },
@@ -339,63 +339,18 @@ console.log(lcs('ABCBDAB','BDCAB'));
 `,
 };
 
-type RunState = "idle" | "running" | "complete" | "error";
-interface OutputLine { type: "stdout" | "stderr"; data: string; }
-
 export default function SandboxPage() {
   const [algo, setAlgo] = useState<AlgoSlug>("custom");
   const [code, setCode] = useState(STARTERS["custom"]);
-  const [runState, setRunState] = useState<RunState>("idle");
-  const [lines, setLines] = useState<OutputLine[]>([]);
-  const [traceFrames, setTraceFrames] = useState<TraceFrame[]>([]);
-  const [exitCode, setExitCode] = useState<number | undefined>();
-  const [runtimeMs, setRuntimeMs] = useState<number | undefined>();
 
-  const runSandbox = trpc.submissions.runSandbox.useMutation();
+  const { runState, lines, traceFrames, exitCode, runtimeMs, run, reset } =
+    useSandboxRun("javascript");
 
   const handleAlgoChange = (slug: AlgoSlug) => {
     setAlgo(slug);
     setCode(STARTERS[slug]);
-    setLines([]);
-    setTraceFrames([]);
-    setExitCode(undefined);
-    setRuntimeMs(undefined);
-    setRunState("idle");
+    reset();
   };
-
-  const run = useCallback(async () => {
-    setRunState("running");
-    setLines([]);
-    setTraceFrames([]);
-    setExitCode(undefined);
-    setRuntimeMs(undefined);
-    try {
-      const { streamToken } = await runSandbox.mutateAsync({ code, language: "javascript" });
-      const es = new EventSource(`/api/stream/${streamToken}`);
-      es.addEventListener("stdout", (e: MessageEvent<string>) => {
-        const { data } = JSON.parse(e.data) as { data: string };
-        setLines((prev) => [...prev, { type: "stdout", data }]);
-      });
-      es.addEventListener("stderr", (e: MessageEvent<string>) => {
-        const { data } = JSON.parse(e.data) as { data: string };
-        setLines((prev) => [...prev, { type: "stderr", data }]);
-      });
-      es.addEventListener("trace", (e: MessageEvent<string>) => {
-        const { frames } = JSON.parse(e.data) as { frames: TraceFrame[] };
-        setTraceFrames(frames ?? []);
-      });
-      es.addEventListener("result", (e: MessageEvent<string>) => {
-        const result = JSON.parse(e.data) as { exit_code: number; runtime_ms: number };
-        setExitCode(result.exit_code);
-        setRuntimeMs(result.runtime_ms);
-        setRunState("complete");
-        es.close();
-      });
-      es.onerror = () => { setRunState("error"); es.close(); };
-    } catch {
-      setRunState("error");
-    }
-  }, [code, runSandbox]);
 
   const selectedAlgo = ALGOS.find((a) => a.slug === algo)!;
   const showViz = algo !== "custom";
@@ -443,20 +398,20 @@ export default function SandboxPage() {
           "flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-6",
           traceFrames.length > 0 ? "border-r border-[var(--color-border-subtle)]" : "",
         ].join(" ")}>
-          <CodeEditor value={code} onChange={setCode} onRun={() => void run()} />
+          <CodeEditor value={code} onChange={setCode} onRun={() => void run(code)} />
 
           <div className="flex gap-3">
             <button
-              onClick={() => void run()}
-              disabled={runState === "running" || !code}
+              onClick={() => void run(code)}
+              disabled={runState === "streaming" || !code}
               className="rounded-lg bg-[var(--color-interactive-primary)] px-4 py-2 text-sm font-medium text-[var(--color-interactive-primary-text)] disabled:opacity-50"
             >
-              {runState === "running" ? "Running…" : "Run (Ctrl+Enter)"}
+              {runState === "streaming" ? "Running…" : "Run (Ctrl+Enter)"}
             </button>
           </div>
 
           <OutputPane
-            state={runState === "idle" ? "idle" : runState === "running" ? "streaming" : runState === "complete" ? "complete" : "error"}
+            state={runState}
             lines={lines}
             isSuite={false}
             {...(exitCode !== undefined ? { exitCode } : {})}

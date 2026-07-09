@@ -1,4 +1,4 @@
-Code.require_file("exemplar.ex", __DIR__)
+Code.require_file("stub.ex", __DIR__)
 
 defmodule ListsAndRecursionTest do
   defp run do

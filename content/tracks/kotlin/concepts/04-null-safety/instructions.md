@@ -96,6 +96,12 @@ val list = mutableListOf<String>().apply {
 
 Kotlin and Swift have the closest models. The key difference: Kotlin's `let`/`run`/`also`/`apply` are generic scope functions, not null-specific — but they compose naturally with `?.` for null-safe transformations.
 
+## Watch out
+
+- `!!` throws `NullPointerException`, the one exception Kotlin's type system was designed to prevent — treat every `!!` in a code review as a question: "why doesn't the type already prove this is non-null?"
+- Smart casts only work on `val`s (or `var`s the compiler can prove aren't mutated between the check and the use, e.g. locals) — a mutable `var` property on another class can't be smart-cast, because another thread could null it out between the check and the use.
+- `?:` (Elvis) short-circuits: `a ?: expensiveDefault()` only evaluates `expensiveDefault()` when `a` is null, so it's safe to put non-trivial fallback logic on the right-hand side.
+
 ## The task
 
 Implement the following top-level functions in `stub.kt`:

@@ -1,15 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import type { TraceFrame } from "@fluent/execution-contract";
 
-export interface TraceFrame {
-  label?: string;
-  state?: Record<string, unknown>;
-  highlights?: {
-    arrays?: Record<string, number[]>;
-    nodes?: string[];
-  };
-}
+export type { TraceFrame };
 
 interface TracePanelProps {
   frames: TraceFrame[];

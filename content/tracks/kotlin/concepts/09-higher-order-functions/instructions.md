@@ -103,6 +103,12 @@ addOneThenDouble(3)   // 8
 
 The trailing lambda convention is Kotlin's way of making DSL-style APIs ergonomic. You see it in `buildString { append("hello") }`, `transaction { save(entity) }`, and every coroutine builder.
 
+## Watch out
+
+- A non-`inline` higher-order function allocates a real object for every lambda passed to it — fine almost everywhere, but avoid it in hot loops if you control the function and can mark it `inline`.
+- Non-local `return` (returning from the enclosing function from inside a lambda) only works inside an `inline` function's lambda parameter. Do it inside a lambda passed to a non-inline function and it's a compile error.
+- `it` is only available when the lambda has exactly one parameter and you don't name it. Add a second parameter (or destructure) and you must name both — `it` disappears.
+
 ## The task
 
 Implement the following top-level functions in `stub.kt`:

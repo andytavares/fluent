@@ -6,9 +6,6 @@
 #include <string>
 #include <stdexcept>
 
-template <typename T> T clamp(T value, T lo, T hi);
-template <typename T> class Stack;
-
 static int passed = 0, failed = 0;
 
 void check(const std::string& name, bool condition) {
@@ -41,6 +38,14 @@ int main() {
 
         s.pop(); s.pop();
         check("empty after all pops", s.empty());
+
+        bool threw = false;
+        try { s.pop(); } catch (const std::underflow_error&) { threw = true; }
+        check("pop on empty throws underflow_error", threw);
+
+        bool threwTop = false;
+        try { s.top(); } catch (const std::underflow_error&) { threwTop = true; }
+        check("top on empty throws underflow_error", threwTop);
     }
 
     // Stack<std::string> tests

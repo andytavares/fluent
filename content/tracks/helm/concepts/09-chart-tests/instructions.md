@@ -58,6 +58,13 @@ helm test myapp --logs
 
 Raw Kubernetes manifests have no built-in test mechanism. You'd write separate scripts or use tools like `kuttl` or `chainsaw`. Kustomize has no equivalent. Argo CD has post-sync hooks that can serve a similar purpose. The advantage of `helm test` is that tests are bundled with the chart — whoever installs the chart gets the tests for free and can verify the installation without understanding the application internals.
 
+## Watch out
+
+- **`test` is a hook type, so everything from the hooks concept applies** — annotations not labels, weights for ordering, and delete policies. The one difference: leaving the Pod around after success (no `hook-succeeded` delete policy) is *intentional* here, so `helm test --logs` has something to read.
+- **A test Pod that never terminates hangs `helm test` until timeout.** Always set a container command that exits (curl/psql/wget with explicit flags like `--max-time` or `-w`) rather than a long-running process — there's no `restartPolicy: Never` equivalent that saves you from a container that just never exits on its own.
+- **Test pods run with whatever the *current* release's values are**, not the values from the install that's being tested against — if you `helm test` right after `helm upgrade`, the test Pod picks up the new values, which is usually what you want but matters if a test hardcodes an assumption from a previous version.
+- **`command` as a YAML list vs a single string produces very different results.** `command: ['curl', '--fail', 'http://...']` runs `curl` directly; `command: ['sh', '-c', 'curl --fail http://...']` runs it through a shell (needed if you want shell features like `&&` or `$VAR` expansion). Pick the list form unless you actually need shell semantics — it avoids a whole class of quoting bugs.
+
 ## The task
 
 Write a `templates/tests/test-connection.yaml` that:
@@ -75,3 +82,29 @@ Also write a `templates/tests/test-db-connection.yaml` that:
 - Uses image `postgres:15-alpine`
 - Command: `['psql', '-h', '{{ .Release.Name }}-postgresql', '-U', '{{ .Values.postgresql.auth.username }}', '-c', 'SELECT 1']`
 - Sets environment variable `PGPASSWORD` from a secretKeyRef pointing to `{{ .Release.Name }}-postgresql` secret, key `password`
+
+For a release named `myapp` with `.Values.service.port: 8080` and `.Values.postgresql.auth.username: platform`, running `helm test myapp` executes both Pods and reports their results. The first renders as:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp-test-connection
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  restartPolicy: Never
+  containers:
+    - name: curl
+      image: curlimages/curl:latest
+      command:
+        - curl
+        - --fail
+        - --silent
+        - --max-time
+        - "5"
+        - http://myapp-webapp:8080/health
+```
+
+(assuming `webapp.fullname` resolves to `myapp-webapp`). The second Pod adds `"helm.sh/hook-weight": "1"` so it runs after the first, and references the same release's PostgreSQL credentials Secret. Both must set `restartPolicy: Never` — `helm test` treats a Pod that could restart as ambiguous about when to report success.

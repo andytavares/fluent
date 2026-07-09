@@ -81,6 +81,12 @@ struct Excerpt<'a> {
 
 Java generics erase type info at runtime — `List<String>` and `List<Integer>` are the same class at runtime. Rust monomorphizes: `Vec<String>` and `Vec<i32>` are genuinely different compiled types.
 
+## Watch out
+
+- Methods inside an `impl<T> SomeStruct<T>` block need their own `pub` if callers outside the module should use them — `pub struct Stack<T>` does not make `Stack::new` or any other associated function callable from elsewhere. This trips people up constantly: the struct is visible, the methods silently aren't.
+- Turbofish (`::<T>`) disambiguates the type parameter when it can't be inferred, e.g. calling `first_element::<i32>(&[])` on an empty slice — there's no element to infer `T` from.
+- A lifetime parameter is not a lifetime *value* you choose; it's a name for a relationship the compiler already sees in your code. If the compiler rejects your annotation, the fix is almost always to change what the function actually borrows from, not to relabel the lifetime.
+
 ## The task
 
 Implement three generic utilities:
@@ -95,14 +101,37 @@ fn first_element<T: Clone>(slice: &[T]) -> Option<T>
 // Requires a lifetime annotation.
 fn longer<'a>(a: &'a str, b: &'a str) -> &'a str
 
-// A generic stack backed by a Vec.
+// A generic LIFO stack backed by a Vec.
 struct Stack<T> { ... }
 
 impl<T> Stack<T> {
-    fn new() -> Self
-    fn push(&mut self, item: T)
-    fn pop(&mut self) -> Option<T>
-    fn peek(&self) -> Option<&T>
-    fn is_empty(&self) -> bool
+    pub fn new() -> Self
+    pub fn push(&mut self, item: T)
+    // Removes and returns the most recently pushed item, or None if empty.
+    pub fn pop(&mut self) -> Option<T>
+    // Returns a reference to the most recently pushed item without removing it.
+    pub fn peek(&self) -> Option<&T>
+    pub fn is_empty(&self) -> bool
 }
+```
+
+```rust
+first_element(&[1, 2, 3]);       // Some(1)
+first_element::<i32>(&[]);       // None
+first_element(&["a", "b"]);      // Some("a")
+
+longer("hello", "hi");           // "hello"
+longer("hi", "hello");           // "hello"
+longer("abc", "xyz");            // "abc" — equal length, first wins
+longer("", "a");                 // "a"
+
+let mut s: Stack<i32> = Stack::new();
+s.is_empty();   // true
+s.pop();        // None
+s.push(10);
+s.push(20);
+s.peek();       // Some(&20)
+s.pop();        // Some(20) — LIFO
+s.pop();        // Some(10)
+s.is_empty();   // true
 ```

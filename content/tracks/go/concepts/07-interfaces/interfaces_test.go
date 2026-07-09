@@ -15,6 +15,7 @@ func TestCircleArea(t *testing.T) {
 		{1, math.Pi},
 		{5, math.Pi * 25},
 		{0, 0},
+		{2, math.Pi * 4},
 	}
 	for _, tt := range tests {
 		c := Circle{Radius: tt.radius}
@@ -36,4 +37,11 @@ func TestCirclePerimeter(t *testing.T) {
 
 func TestCircleImplementsShape(t *testing.T) {
 	var _ Shape = Circle{Radius: 1}
+}
+
+func TestCirclePerimeterZero(t *testing.T) {
+	c := Circle{Radius: 0}
+	if c.Perimeter() != 0 {
+		t.Errorf("Circle{0}.Perimeter() = %v, want 0", c.Perimeter())
+	}
 }

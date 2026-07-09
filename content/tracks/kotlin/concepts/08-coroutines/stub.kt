@@ -1,29 +1,30 @@
-import kotlinx.coroutines.*
-
-// retry calls block up to `times` times, returning on first success.
-// Rethrows the last exception if all attempts fail.
-suspend fun retry(times: Int, block: suspend () -> String): String {
+// fibonacciSequence lazily yields 0, 1, 1, 2, 3, 5, ... forever.
+fun fibonacciSequence(): Sequence<Long> {
     // TODO
-    return ""
+    return emptySequence()
 }
 
-// fetchAll fetches all IDs concurrently and returns results in order.
-suspend fun fetchAll(ids: List<Int>, fetch: suspend (Int) -> String): List<String> {
+// pairwise lazily yields consecutive pairs from seq: [a, b, c] -> [(a, b), (b, c)].
+fun <T> pairwise(seq: Sequence<T>): Sequence<Pair<T, T>> {
     // TODO
-    return emptyList()
+    return emptySequence()
 }
 
-// withTimeout runs block and returns null if it exceeds ms milliseconds.
-suspend fun withTimeout(ms: Long, block: suspend () -> String): String? {
+// countdown lazily yields from, from - 1, ..., 1, 0 and then stops.
+fun countdown(from: Int): Sequence<Int> {
     // TODO
-    return null
+    return emptySequence()
 }
 
-fun main() = runBlocking {
-    // var attempts = 0
-    // val result = retry(3) {
-    //     attempts++
-    //     if (attempts < 3) throw Exception("fail") else "ok"
-    // }
-    // println(result)  // ok
+// interleave lazily alternates elements from a and b, then drains whichever has leftovers.
+fun <T> interleave(a: Sequence<T>, b: Sequence<T>): Sequence<T> {
+    // TODO
+    return emptySequence()
+}
+
+fun main() {
+    println(fibonacciSequence().take(6).toList())              // [0, 1, 1, 2, 3, 5]
+    println(pairwise(sequenceOf(1, 2, 3, 4)).toList())          // [(1, 2), (2, 3), (3, 4)]
+    println(countdown(3).toList())                              // [3, 2, 1, 0]
+    println(interleave(sequenceOf(1, 3, 5), sequenceOf(2, 4)).toList())  // [1, 2, 3, 4, 5]
 }

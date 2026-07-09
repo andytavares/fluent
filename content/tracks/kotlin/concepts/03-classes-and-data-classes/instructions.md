@@ -93,11 +93,30 @@ User.MAX_NAME_LENGTH
 
 The biggest shift from Java: Kotlin's `==` calls `equals`. Reference equality is `===`.
 
+## Watch out
+
+- `1.0 / 0.92` is not an exact decimal — it's `108.695652...`. Tests on `Double` results should always compare with a tolerance (`kotlin.math.abs(expected - actual) < epsilon`), never exact `==`. Don't round a stored `Double` just to make an equality test pass; round only at the presentation boundary (e.g. in `format()`).
+- `data class` equality/`hashCode`/`toString`/`copy` are generated **only from properties declared in the primary constructor**. A property added in the class body is invisible to all of them.
+- `object` is a singleton — it's constructed once, lazily, on first access. Don't put per-request mutable state in one; use a regular class instead.
+
 ## The task
 
 Implement the following in `stub.kt`:
 
 - `data class Money(val amount: Double, val currency: String)` — a data class representing a monetary value.
-- `fun Money.add(other: Money): Money` — extension function that adds two `Money` values. Throw `IllegalArgumentException` if currencies differ.
-- `fun Money.format(): String` — returns a string like `"USD 42.50"` (currency, space, amount formatted to 2 decimal places).
-- `object ExchangeRates` — singleton with `fun usdToEur(amount: Double): Double` that multiplies by `0.92`, and `fun eurToUsd(amount: Double): Double` that multiplies by `1.0 / 0.92`.
+- `fun Money.add(other: Money): Money` — extension function that adds two `Money` values with the same currency, returning a new `Money`. Throws `IllegalArgumentException` if the currencies differ.
+- `fun Money.format(): String` — returns a string like `"USD 42.50"` (currency, space, amount formatted to exactly 2 decimal places, rounding as needed).
+- `object ExchangeRates` — a singleton with two conversions:
+  - `fun usdToEur(amount: Double): Double` — multiplies by `0.92`.
+  - `fun eurToUsd(amount: Double): Double` — multiplies by `1.0 / 0.92`. This does **not** land on a clean two-decimal value (`eurToUsd(100.0)` is `~108.6957`, not `108.70`) — the function returns the raw `Double`; only `format()` rounds for display.
+
+```kotlin
+val m1 = Money(10.0, "USD")
+val m2 = Money(5.50, "USD")
+m1.format()                     // "USD 10.00"
+m1.add(m2).format()             // "USD 15.50"
+m1.add(Money(1.0, "EUR"))       // throws IllegalArgumentException
+
+ExchangeRates.usdToEur(100.0)   // 92.0
+ExchangeRates.eurToUsd(92.0)    // ~100.0 (within floating-point tolerance)
+```

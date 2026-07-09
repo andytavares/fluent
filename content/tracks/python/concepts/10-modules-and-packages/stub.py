@@ -19,9 +19,9 @@ def safe_import(module_name: str) -> "object | None":
 
 
 if __name__ == "__main__":
-    print(is_cached("json"))        # False (not yet imported)
-    import json
-    print(is_cached("json"))        # True
+    print(is_cached("csv"))         # False (not yet imported)
+    import csv
+    print(is_cached("csv"))         # True
 
     print(safe_import("os"))        # <module 'os' ...>
     print(safe_import("no_such_module_xyz"))  # None

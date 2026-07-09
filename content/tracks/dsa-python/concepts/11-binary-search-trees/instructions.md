@@ -1,125 +1,216 @@
-# Binary Search Trees
+# Binary Search Tree
 
 ## What you'll learn
 
-The BST invariant and why naive "check adjacent nodes" validation is wrong, how BST order reduces LCA from O(n) to O(h), and how preorder traversal uniquely determines a BST structure.
+Building on tree DFS and the level loop from Tree BFS: the one property that makes a BST more than a binary tree — **in-order traversal visits values in sorted order** — and the three algorithms interviews build on it. You'll validate the BST invariant correctly (the classic wrong answer only checks children, not subtrees), find the k-th smallest value with an early-exit traversal, and compute the minimum gap between any two values by comparing in-order neighbors only.
 
 ## Key concepts
 
-**BST invariant:** for every node, all values in its left subtree are strictly less than `node.val`, and all values in its right subtree are strictly greater. This must hold globally — not just for adjacent parent-child pairs.
+### The invariant covers whole subtrees, not just children
 
-### Validate BST — carry bounds, don't check neighbors
+A binary search tree requires that for *every* node, **all** values in its left subtree are strictly less than the node and **all** values in its right subtree are strictly greater. Comparing each node only to its immediate children accepts trees like this one:
 
-The common mistake: only checking `node.left.val < node.val < node.right.val`. This misses cross-subtree violations like a node in the right subtree that is less than the root.
+```text
+      5
+     / \
+    4   6
+       / \
+      3   7      ← 3 < 6 locally, but 3 < 5 sits in 5's RIGHT subtree: not a BST
+```
+
+The correct formulation propagates bounds — each node must lie inside an open interval `(lo, hi)`; recursing left tightens `hi`, recursing right tightens `lo`:
 
 ```python
-def is_valid_bst(root: TreeNode | None) -> bool:
-    def validate(node: TreeNode | None, lo: float, hi: float) -> bool:
+def valid(node, lo, hi):
+    if node is None:
+        return True
+    if not (lo < node.val < hi):
+        return False
+    return valid(node.left, lo, node.val) and valid(node.right, node.val, hi)
+
+# valid(root, float("-inf"), float("inf"))
+```
+
+### In-order traversal yields sorted order
+
+Left subtree, node, right subtree — on a BST that is exactly ascending order. This single fact solves an entire family of problems: validation becomes "is the in-order sequence strictly increasing?", k-th smallest becomes "the k-th node visited", minimum gap becomes "the smallest difference between in-order neighbors".
+
+The workhorse pattern is in-order with a **previous-value tracker** — you rarely need the whole sorted list, just each value and the one before it. In Python, `prev` lives in an enclosing scope and the inner walker updates it via `nonlocal`:
+
+```python
+def inorder_with_prev(root, visit):
+    prev = None  # value of the previously visited node
+
+    def walk(node):
+        nonlocal prev
         if node is None:
-            return True
-        if not (lo < node.val < hi):
-            return False
-        return (validate(node.left, lo, node.val) and
-                validate(node.right, node.val, hi))
-    return validate(root, float('-inf'), float('inf'))
+            return
+        walk(node.left)
+        visit(node.val, prev)
+        prev = node.val
+        walk(node.right)
+
+    walk(root)
 ```
 
-### Kth Smallest — iterative inorder (in-order = sorted for BST)
+### Iterative in-order — the early-exit version
+
+Recursion visits all n nodes even when you only need the first k. An explicit stack (a Python `list` used stack-style) lets you stop mid-traversal:
 
 ```python
-def kth_smallest(root: TreeNode | None, k: int) -> int:
-    stack: list[TreeNode] = []
-    curr = root
-    count = 0
-    while curr or stack:
-        while curr:
-            stack.append(curr)
-            curr = curr.left          # go as far left as possible
-        curr = stack.pop()
-        count += 1
-        if count == k:
-            return curr.val
-        curr = curr.right
-    return -1
+stack = []
+node = root
+while node or stack:
+    while node:               # slide to the leftmost unvisited node
+        stack.append(node)
+        node = node.left
+    node = stack.pop()        # next value in sorted order
+    # ... use node.val; `return` here aborts the traversal early ...
+    node = node.right
 ```
 
-### Build BST from preorder — BST split point
+The stack holds the path of ancestors whose left subtrees are done — at most O(h) entries, h = tree height.
 
-In a BST preorder sequence, the root is `preorder[0]`. All values less than the root form the left subtree; all values greater form the right subtree.
+### Complexity of the flagship problems
 
-```python
-def build_bst_from_preorder(preorder: list[int]) -> TreeNode | None:
-    if not preorder:
-        return None
-    root = TreeNode(preorder[0])
-    # Find first index where value > root.val (right subtree start)
-    i = 1
-    while i < len(preorder) and preorder[i] < root.val:
-        i += 1
-    root.left = build_bst_from_preorder(preorder[1:i])
-    root.right = build_bst_from_preorder(preorder[i:])
-    return root
-```
-
-**O(n²) worst case** for skewed trees. O(n log n) average. The O(n) solution uses a monotonic stack or an upper-bound parameter to decide recursion without slicing.
-
-## Time and space complexity
-
-| Operation | BST average | BST worst (skewed) |
-|-----------|-------------|---------------------|
-| Validate BST | O(n) | O(n) |
-| Kth Smallest | O(h + k) | O(n) |
-| Build from Preorder | O(n log n) avg | O(n²) worst |
-| LCA (BST-aware) | O(h) | O(n) |
-
-## Common variations
-
-- **Insert into BST** — recurse left/right based on value; create leaf
-- **Delete from BST** — three cases: leaf, one child, two children (replace with inorder successor)
-- **Convert Sorted Array to BST** — always pick middle as root for height-balanced result
-- **LCA in BST** — iterative: walk left if both < root, right if both > root, else root is LCA
-
-## vs other languages
-
-Python has no built-in BST. For production use: `sortedcontainers.SortedList` (PyPI) provides O(log n) insert/delete/find. Java has `TreeMap` and `TreeSet`. C++ has `std::set` / `std::map`. In interviews, you're always implementing the BST yourself.
-
-`float('-inf')` and `float('inf')` compare correctly with integers in Python — safe to use as boundary sentinels in `is_valid_bst`.
+| Problem | Time | Space | Technique |
+|---------|------|-------|-----------|
+| Minimum Absolute Difference | O(n) | O(h) | in-order + prev |
+| Kth Smallest Element | O(h + k) | O(h) | iterative in-order, early exit |
+| Validate BST | O(n) | O(h) | range propagation or in-order + prev |
 
 ## Watch out
 
-- **The classic BST validation trap:** `[10, 5, 15, null, null, 6, 20]` is invalid because `6 < 10` but sits in the right subtree. Local parent-child checks miss this. Only the global bounds approach catches it.
-- **Iterative inorder uses two loops:** outer `while curr or stack`, inner `while curr` to push left spine. The inner loop advances `curr = curr.left` all the way to `None`, then the outer pops and moves right.
-- **`preorder` assumes a valid BST preorder sequence** — no duplicates, all values unique.
-- **Preorder split:** use a linear scan to find the partition index. `bisect_left(preorder, root.val)` won't work directly since the array is not sorted.
+- **Checking children instead of subtrees** is the canonical wrong validation — it passes `2 → (1, 3)` shapes and also, incorrectly, `5 → (4, 6)` with `6 → (3, 7)`. Propagate bounds or check the in-order sequence.
+- **Duplicates are invalid.** The BST invariant here is strict: `node.val <= lo` or `node.val >= hi` (or a `prev` comparison with `<=`) means *not* a BST. Using `<` where you need `<=` accepts duplicate values.
+- **Initialize bounds to `float("-inf")` / `float("inf")`, and `prev` to `None`.** Sentinel integers (like a fixed `-2**31`) are how validation bugs at integer boundaries happen in fixed-width languages; Python's `float("inf")` and `None` sidestep the whole class of bug.
+- **`k` is 1-indexed** in k-th smallest. Decrement-and-test (`k -= 1; if k == 0`) or count-then-compare — pick one and be consistent.
+- **The minimum gap is between in-order neighbors.** You never need all O(n²) pairs: in a sorted sequence the closest pair is adjacent. Comparing each node against its *parent* instead of its in-order predecessor is wrong — in the BST `4 → (2, 6), 2 → (1, 3)` the closest pair `(3, 4)` crosses subtrees.
+- **Don't sort.** Collecting all values and calling `sorted()` works but wastes O(n log n) — the tree already *is* the sorted order.
 
-## FAANG follow-up questions
+## Problem walkthroughs
 
-> "Why does iterative inorder avoid the recursion limit but recursive doesn't?" — Both are O(h) space; recursive uses the call stack while iterative uses an explicit stack. Python's call stack limit is ~1000; your explicit stack can be as large as memory allows.
+### Minimum Absolute Difference in BST ★
 
-> "Can you build a balanced BST from a sorted array in O(n)?" — Yes: `root = mid = sorted_arr[n//2]`, recurse on left and right halves. Same O(n) as preorder build but always balanced.
+**Problem.** Given the root of a BST with at least two nodes, return the smallest absolute difference between the values of any two different nodes.
 
-> "How would you find the floor/ceiling of a value in a BST?" — Walk left/right based on comparisons; track the last valid candidate at each step.
+**Example.**
+
+    BST 4 → (2, 6), 2 → (1, 3)      →  1   (e.g. |3 − 4| = 1)
+    BST 1 → (0, 48), 48 → (12, 49)  →  1   (|48 − 49| = 1)
+
+**Steps.**
+1. In a sorted sequence, the minimum difference over all pairs is achieved by some *adjacent* pair — anything farther apart differs by at least as much.
+2. Run in-order with a `prev` tracker and a running `best = float("inf")`.
+3. At each visited node where `prev is not None`, fold in `node.val - prev` (no `abs()` needed — in-order is ascending, the difference is non-negative).
+4. Set `prev = node.val` and continue; return `best` at the end.
+
+**Complexity.** O(n) time / O(h) recursion stack — every node visited once, one comparison each.
+
+### Kth Smallest Element in a BST ★
+
+**Problem.** Given the root of a BST and an integer `k` (1-indexed, `1 <= k <=` number of nodes), return the k-th smallest value in the tree.
+
+**Example.**
+
+    BST 3 → (1, 4), 1.right = 2, k = 1            →  1
+    BST 5 → (3, 6), 3 → (2, 4), 2.left = 1, k = 3 →  3
+
+**Steps.**
+1. In-order visits values in ascending order, so the k-th node visited is the answer — the only question is stopping there.
+2. Use the iterative stack template: slide left pushing ancestors, then pop and decrement `k`.
+3. When `k` hits 0, return the popped node's value — the rest of the tree is never touched.
+4. After using a popped node, move to `node.right` and continue sliding left from there.
+
+**Complexity.** O(h + k) time / O(h) space — you descend the left spine once, then visit exactly k nodes.
+
+### Validate Binary Search Tree ★
+
+**Problem.** Given the root of a binary tree, return `True` if it is a valid BST: every node's left subtree contains only values strictly less than the node, every right subtree only values strictly greater, and both subtrees are themselves valid BSTs.
+
+**Example.**
+
+    tree 2 → (1, 3)              →  True
+    tree 5 → (1, 4), 4 → (3, 6)  →  False  (3 and 6 sit under 5's right child)
+    tree 5 → (4, 6), 6 → (3, 7)  →  False  (3 violates the ROOT, not its parent)
+
+**Steps.**
+1. Range propagation: validate `(node, lo, hi)` meaning "every value in this subtree must satisfy `lo < val < hi`". Start with `(float("-inf"), float("inf"))`.
+2. At each node: fail if `node.val <= lo or node.val >= hi` (the `=` cases reject duplicates).
+3. Recurse left with `(lo, node.val)` and right with `(node.val, hi)` — each edge tightens exactly one bound, which is how a deep violation like the `3` under `6` gets caught against the root's value.
+4. Alternative with identical complexity: in-order with `prev`, failing when `node.val <= prev`. Both are worth knowing; the in-order form reuses the pattern from the other two problems.
+
+**Complexity.** O(n) time / O(h) space — every node checked once against two bounds.
+
+## Interview follow-ups
+
+- After **Validate BST**: "Two nodes of a BST were swapped — recover it." (in-order with `prev`; the inversions found identify the swapped pair.) "Why not collect the in-order list and check it's sorted?" (correct but O(n) extra space; `prev` needs O(1).)
+- After **Kth Smallest**: "The tree is modified often and k-th smallest is queried often — optimize." (augment each node with its left-subtree size; queries become an O(h) rank walk.)
+- After **Minimum Absolute Difference**: "What if the tree is *not* a BST?" (in-order is no longer sorted — collect values, sort, scan neighbors: O(n log n).)
+- General: "All three run on the same traversal — what changes?" (only what you do at the visit point: compare to `prev`, count down `k`, or check bounds. Interviewers love hearing this stated explicitly.)
 
 ## The task
 
+Three algorithms over binary search trees. Every node is `TreeNode(val, left, right)`; missing children are `None`, and an empty tree is `None` itself. In a valid BST, for every node, **all** values in the left subtree are strictly less than `node.val` and **all** values in the right subtree are strictly greater (no duplicates).
+
 ```python
-class TreeNode:
-    def __init__(self, val=0, left=None, right=None): ...
-
-def is_valid_bst(root: TreeNode | None) -> bool:
-    """Return True if the tree satisfies the BST property for all nodes."""
-
-def kth_smallest(root: TreeNode | None, k: int) -> int:
-    """Return the kth smallest value in the BST (1-indexed)."""
-
-def build_bst_from_preorder(preorder: list[int]) -> TreeNode | None:
-    """Construct and return the BST whose preorder traversal equals preorder."""
+# The BST used in the samples below:
+#        4
+#       / \
+#      2   6
+#     / \
+#    1   3
+t = TreeNode(4,
+    TreeNode(2, TreeNode(1), TreeNode(3)),
+    TreeNode(6))
 ```
 
-**Examples:**
-- `is_valid_bst([2,1,3])` → `True`
-- `is_valid_bst([5,1,4,null,null,3,6])` → `False`
-- `is_valid_bst([10,5,15,null,null,6,20])` → `False` (6 in right subtree but < 10)
-- `kth_smallest([3,1,4,null,2], k=1)` → `1`
-- `kth_smallest([5,3,6,2,4,null,null,1], k=3)` → `3`
-- `build_bst_from_preorder([8,5,1,7,10,12])` → BST with inorder `[1,5,7,8,10,12]`
+### `get_minimum_difference(root)`
+
+`root` is a valid BST with **at least two nodes**. Return the smallest absolute difference between the values of any two different nodes. Target O(n) time without sorting — the closest pair in a BST is always adjacent in in-order.
+
+```python
+get_minimum_difference(t)  # 1   (|3 - 4| = 1, also |1 - 2|, |2 - 3|)
+
+# 1 → (0, 48), 48 → (12, 49): closest pair is 48 and 49
+get_minimum_difference(TreeNode(1,
+    TreeNode(0),
+    TreeNode(48, TreeNode(12), TreeNode(49))))  # 1
+```
+
+Edge cases: exactly two nodes, the closest pair crossing subtrees (e.g. `3` and `4` in the sample — neither is the other's child or parent), negative values, evenly spaced values.
+
+### `kth_smallest(root, k)`
+
+`root` is a valid BST; `k` is 1-indexed with `1 <= k <=` number of nodes. Return the k-th smallest value in the tree. Target O(h + k) time — stop traversing once the k-th value is found rather than visiting all n nodes.
+
+```python
+kth_smallest(t, 1)  # 1
+kth_smallest(t, 3)  # 3
+kth_smallest(t, 5)  # 6   (k = node count -> largest value)
+```
+
+Edge cases: `k = 1` (smallest), `k` equal to the node count (largest), single-node tree with `k = 1`, skewed trees where the answer sits deep on one side.
+
+### `is_valid_bst(root)`
+
+`root` is a binary tree that may or may not satisfy the BST invariant. Return `True` if it does, `False` otherwise. Duplicates make a tree invalid (strict inequality on both sides). A violation can be several levels away from the value it violates — checking each node against only its direct children is not enough. An empty tree (`None`) is valid.
+
+```python
+is_valid_bst(t)             # True
+is_valid_bst(TreeNode(1))   # True
+is_valid_bst(None)          # True
+
+# 5 → (1, 4), 4 → (3, 6): 3 and 6 live under 5's right child
+is_valid_bst(TreeNode(5,
+    TreeNode(1),
+    TreeNode(4, TreeNode(3), TreeNode(6))))  # False
+
+# 5 → (4, 6), 6 → (3, 7): every parent-child pair is fine, but 3 < 5
+# sits inside 5's right subtree — invalid
+is_valid_bst(TreeNode(5,
+    TreeNode(4),
+    TreeNode(6, TreeNode(3), TreeNode(7))))  # False
+```
+
+Edge cases: empty tree (`True`), single node (`True`), duplicate values (`False` — a child equal to its parent), deep violations against an ancestor rather than the parent (the last sample), values at numeric extremes (a single node holding `2147483647` is valid — don't rely on fixed integer sentinel bounds).

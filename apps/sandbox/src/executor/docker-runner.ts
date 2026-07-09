@@ -4,20 +4,13 @@ import { randomUUID } from "node:crypto";
 import { writeFile, rm, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { executionTimeoutMs } from "@fluent/execution-contract";
+import type { TraceFrame } from "@fluent/execution-contract";
 
 const execFileAsync = promisify(execFile);
 
 const DOCKER_IMAGE = process.env["GO_RUNNER_IMAGE"] ?? "golang:1.21-alpine";
-const TIMEOUT_MS = parseInt(process.env["EXECUTION_TIMEOUT_MS"] ?? "30000", 10);
-
-export interface TraceFrame {
-  label?: string;
-  state?: Record<string, unknown>;
-  highlights?: {
-    arrays?: Record<string, number[]>;
-    nodes?: string[];
-  };
-}
+const TIMEOUT_MS = executionTimeoutMs(process.env["EXECUTION_TIMEOUT_MS"]);
 
 export interface ExecutionResult {
   stdout: string | null;
@@ -41,7 +34,7 @@ export async function runGoCode(code: string, testFiles?: string[]): Promise<Exe
     let cmd: string[];
     if (testFiles && testFiles.length > 0) {
       for (let i = 0; i < testFiles.length; i++) {
-        await writeFile(join(dir, `solution_test.go`), testFiles[i]!, "utf8");
+        await writeFile(join(dir, `solution_test_${i}.go`), testFiles[i]!, "utf8");
       }
       cmd = ["go", "test", "-v", "./..."];
     } else {

@@ -1,30 +1,45 @@
-import kotlinx.coroutines.*
-
-suspend fun retry(times: Int, block: suspend () -> String): String {
-    var lastError: Exception? = null
-    repeat(times) {
-        try { return block() }
-        catch (e: Exception) { lastError = e }
+fun fibonacciSequence(): Sequence<Long> = sequence {
+    var a = 0L
+    var b = 1L
+    while (true) {
+        yield(a)
+        val next = a + b
+        a = b
+        b = next
     }
-    throw lastError!!
 }
 
-suspend fun fetchAll(ids: List<Int>, fetch: suspend (Int) -> String): List<String> =
-    coroutineScope {
-        ids.map { async { fetch(it) } }.map { it.await() }
+fun <T> pairwise(seq: Sequence<T>): Sequence<Pair<T, T>> = sequence {
+    val iter = seq.iterator()
+    if (!iter.hasNext()) return@sequence
+    var prev = iter.next()
+    while (iter.hasNext()) {
+        val curr = iter.next()
+        yield(prev to curr)
+        prev = curr
     }
+}
 
-suspend fun withTimeout(ms: Long, block: suspend () -> String): String? =
-    withTimeoutOrNull(ms) { block() }
-
-fun main() = runBlocking {
-    var attempts = 0
-    val result = retry(3) {
-        attempts++
-        if (attempts < 3) throw Exception("fail") else "ok"
+fun countdown(from: Int): Sequence<Int> = sequence {
+    var n = from
+    while (n >= 0) {
+        yield(n)
+        n--
     }
-    println(result)  // ok
+}
 
-    val results = fetchAll(listOf(1, 2, 3)) { id -> "item-$id" }
-    println(results)  // [item-1, item-2, item-3]
+fun <T> interleave(a: Sequence<T>, b: Sequence<T>): Sequence<T> = sequence {
+    val iterA = a.iterator()
+    val iterB = b.iterator()
+    while (iterA.hasNext() || iterB.hasNext()) {
+        if (iterA.hasNext()) yield(iterA.next())
+        if (iterB.hasNext()) yield(iterB.next())
+    }
+}
+
+fun main() {
+    println(fibonacciSequence().take(6).toList())              // [0, 1, 1, 2, 3, 5]
+    println(pairwise(sequenceOf(1, 2, 3, 4)).toList())          // [(1, 2), (2, 3), (3, 4)]
+    println(countdown(3).toList())                              // [3, 2, 1, 0]
+    println(interleave(sequenceOf(1, 3, 5), sequenceOf(2, 4)).toList())  // [1, 2, 3, 4, 5]
 }

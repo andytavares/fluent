@@ -154,32 +154,57 @@ Note that later `include` calls appear earlier in the chain — `B` was included
 
 `prepend` is Ruby-specific and genuinely powerful — it lets you wrap any method without subclassing or changing the original class. ActiveSupport and Rails use it extensively for around-hooks.
 
+## Watch out
+
+- `include` order is reversed in the ancestor chain — the **last** module included is searched **first**. If two included modules define the same method, the one included last wins.
+- A mixin method that reads `@tags` before it's ever set gets `nil`, not `[]` — initialize lazily with `@tags ||= []` inside the accessor rather than assuming an `initialize` elsewhere set it up.
+- `include` only works at the class body level (or via `klass.include Module` at runtime) — you can't `include` inside an instance method to affect a single object; for that, use `extend` on the specific object.
+- Two modules included into the same class share **one** ancestor chain; if `Taggable` and another mixin both defined `tags`, only the one that's later in `ancestors` would ever run — there's no automatic conflict detection.
+
 ## The task
 
+Implement two mixin modules and include both into a class.
+
+**`Printable`** — a module adding one instance method:
+
+- `print_info` — prints `"#{self.class.name}: #{to_s}"` to standard output (via `puts`). Relies on the including class defining `to_s`.
+
 ```ruby
-module Printable
-  # Add an instance method `print_info` that prints "#{self.class.name}: #{to_s}"
-end
-
-module Taggable
-  # Add instance methods:
-  #   tags         -> returns the @tags array (initialize it to [] if nil)
-  #   add_tag(tag) -> appends tag to @tags, returns self (for chaining)
-  #   tagged_with?(tag) -> returns true if @tags includes tag
-end
-
 class Article
   include Printable
-  include Taggable
-
-  attr_reader :title
-
-  def initialize(title)
-    @title = title
-  end
-
-  def to_s
-    title
-  end
+  def to_s = "Hello World"
 end
+
+Article.new.print_info  # prints: "Article: Hello World"
+```
+
+**`Taggable`** — a module adding three instance methods that manage a per-instance tag list:
+
+- `tags` — returns the `@tags` array, initializing it to `[]` on first access if it's `nil`.
+- `add_tag(tag)` — appends `tag` to `tags` and returns `self`, so calls can be chained.
+- `tagged_with?(tag)` — returns `true` if `tags` includes `tag`.
+
+```ruby
+a = Article.new
+a.tags                    # => []
+a.tagged_with?("ruby")    # => false
+
+a.add_tag("ruby").add_tag("programming")  # chaining via returned self
+a.tags                    # => ["ruby", "programming"]
+a.tagged_with?("ruby")    # => true
+a.tagged_with?("python")  # => false
+
+b = Article.new
+b.tags                    # => []  — independent from `a`
+```
+
+**`Article`** — includes both `Printable` and `Taggable`, has `attr_reader :title`, `initialize(title)`, and `to_s` returning `title`.
+
+```ruby
+a = Article.new("Ruby Metaprogramming")
+a.print_info                       # prints "Article: Ruby Metaprogramming"
+a.add_tag("ruby").add_tag("meta")
+a.tags                             # => ["ruby", "meta"]
+Article.ancestors.include?(Printable)  # => true
+Article.ancestors.include?(Taggable)   # => true
 ```

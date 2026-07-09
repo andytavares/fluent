@@ -2,7 +2,7 @@
 
 ## What you'll learn
 
-`grep`, `sed`, and `awk` are the core text-processing triad. Together they handle 90% of the log parsing, data extraction, and transformation tasks you'll face in shell scripts.
+So far you've manipulated data you already had in variables and arrays; now you'll pull data out of arbitrary text. `grep`, `sed`, and `awk` are the core text-processing triad. Together they handle 90% of the log parsing, data extraction, and transformation tasks you'll face in shell scripts.
 
 ## Key concepts
 
@@ -59,6 +59,13 @@ grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' access.log \
   | sort | uniq -c | sort -rn | head -10
 ```
 
+## Watch out
+
+- `grep` without `-o` prints the whole matching **line**, not the matched substring — a common surprise for people expecting `re.search().group()` semantics. Use `-o` (or `-oE`) to print just what matched.
+- BRE vs ERE: plain `grep`/`sed` use POSIX Basic Regular Expressions, where `(`, `)`, `|`, `+`, `{` are literal characters unless backslash-escaped. `grep -E`/`sed -E` (or `egrep`) switch to Extended syntax where those are metacharacters. Mixing the two up is the most common "my regex doesn't match" bug.
+- `sed -i` differs between GNU (Linux) and BSD (macOS) — GNU accepts `sed -i 's/a/b/' f`, BSD requires an explicit (possibly empty) backup extension: `sed -i '' 's/a/b/' f`. Scripts that need to run on both should detect the platform or use `perl -pi -e` instead.
+- `awk '{print $1}'` splits on **runs of whitespace** by default, not a single delimiter — two spaces between fields doesn't create an empty field like `str.split(" ")` would in Python. Set `-F` explicitly when the delimiter matters (e.g. `-F:` for `/etc/passwd`).
+
 ## vs other languages
 
 | Task | Python | Bash triad |
@@ -73,10 +80,34 @@ grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' access.log \
 
 ## The task
 
-Implement three functions. Each receives text via stdin (use `cat` or pipe redirection in tests).
+You're writing three functions that read text from **stdin** (not arguments) and print to stdout — call them as the right side of a pipe: `echo "..." | extract_emails`.
 
-**`extract_emails`** — reads stdin, prints all email addresses found (one per line). Use `grep -oE` with an email pattern.
+**`extract_emails`** — reads stdin, prints every email address found, one per line, in the order encountered. Use `grep -oE` with an email pattern. If no email is found, prints nothing.
 
-**`remove_comments`** — reads stdin, strips lines that start with `#` (after optional whitespace), and prints the remaining lines. Use `grep -v` or `sed`.
+```bash
+echo "contact user@example.com" | extract_emails
+# user@example.com
 
-**`sum_second_column`** — reads stdin with whitespace-separated columns, echoes the sum of the second column as an integer. Use `awk`.
+echo "send to a@b.com and x@y.org today" | extract_emails
+# a@b.com
+# x@y.org
+
+echo "no addresses here" | extract_emails
+# (nothing printed)
+```
+
+**`remove_comments`** — reads stdin, strips lines that start with `#` (allowing leading whitespace before the `#`), and prints the remaining lines unchanged. Use `grep -v`/`grep -E -v` or `sed`.
+
+```bash
+printf '# comment\nreal line\n  # indented comment\nanother line\n' | remove_comments
+# real line
+# another line
+```
+
+**`sum_second_column`** — reads stdin with whitespace-separated columns, echoes the sum of the second column as an integer. Use `awk`. Empty input sums to `0`.
+
+```bash
+printf 'a 10\nb 20\nc 30\n' | sum_second_column   # 60
+printf 'item 42\n' | sum_second_column            # 42
+printf '' | sum_second_column                     # 0
+```

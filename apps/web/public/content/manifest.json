@@ -1,10 +1,89 @@
 {
+  "assembly": {
+    "slug": "assembly",
+    "title": "x86-64 Assembly",
+    "description": "Learn x86-64 assembly — the language of the machine. Understand registers, the stack, calling conventions, and how high-level code maps to hardware.",
+    "language": "assembly",
+    "status": "published",
+    "concepts": [
+      {
+        "slug": "registers-and-data-movement",
+        "title": "Registers & Data Movement",
+        "position": 1,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "arithmetic-and-flags",
+        "title": "Arithmetic & Flags",
+        "position": 2,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "control-flow",
+        "title": "Control Flow",
+        "position": 3,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "the-stack",
+        "title": "The Stack",
+        "position": 4,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "procedures",
+        "title": "Procedures & Calling Conventions",
+        "position": 5,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "memory-and-addressing",
+        "title": "Memory & Addressing",
+        "position": 6,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "system-calls",
+        "title": "System Calls",
+        "position": 7,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "arrays-and-loops",
+        "title": "Arrays & Loops",
+        "position": 8,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "string-operations",
+        "title": "String Operations",
+        "position": 9,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "floating-point",
+        "title": "Floating-Point with SSE2",
+        "position": 10,
+        "has_testout": false,
+        "status": "published"
+      }
+    ]
+  },
   "c": {
     "slug": "c",
     "title": "C Foundations",
     "description": "Learn C — the language closest to the machine. Understand memory, pointers, and systems programming from first principles.",
     "language": "c",
-    "status": "draft",
+    "status": "published",
     "concepts": [
       {
         "slug": "variables-and-types",
@@ -83,7 +162,7 @@
     "title": "Modern C++",
     "description": "Learn C++ with a modern mindset — RAII, smart pointers, templates, and the STL. Write expressive, efficient, safe C++.",
     "language": "cpp",
-    "status": "draft",
+    "status": "published",
     "concepts": [
       {
         "slug": "classes-and-objects",
@@ -157,12 +236,771 @@
       }
     ]
   },
+  "dsa-java": {
+    "slug": "dsa-java",
+    "title": "DSA Patterns: Java",
+    "description": "Master the 16 core algorithmic patterns that appear in nearly every technical interview — implemented in Java. Two pointers, sliding window, BFS/DFS, dynamic programming, backtracking, and more.",
+    "language": "java",
+    "status": "published",
+    "concepts": [
+      {
+        "slug": "array-string",
+        "title": "Arrays & Strings",
+        "position": 1,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "two-pointers",
+        "title": "Two Pointers",
+        "position": 2,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "sliding-window",
+        "title": "Sliding Window",
+        "position": 3,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "matrix",
+        "title": "Matrix",
+        "position": 4,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "hash-maps-and-sets",
+        "title": "Hash Maps",
+        "position": 5,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "intervals",
+        "title": "Intervals",
+        "position": 6,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "stacks",
+        "title": "Stack",
+        "position": 7,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "linked-list-patterns",
+        "title": "Linked List",
+        "position": 8,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "tree-dfs",
+        "title": "Binary Tree",
+        "position": 9,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "tree-bfs",
+        "title": "Tree BFS",
+        "position": 10,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "binary-search-trees",
+        "title": "Binary Search Tree",
+        "position": 11,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "graphs-bfs-dfs",
+        "title": "Graphs",
+        "position": 12,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "graph-bfs",
+        "title": "Graph BFS",
+        "position": 13,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "tries",
+        "title": "Trie",
+        "position": 14,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "backtracking",
+        "title": "Backtracking",
+        "position": 15,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "divide-and-conquer",
+        "title": "Divide & Conquer",
+        "position": 16,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "kadane",
+        "title": "Kadane's Algorithm",
+        "position": 17,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "binary-search",
+        "title": "Binary Search",
+        "position": 18,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "heaps-and-priority-queues",
+        "title": "Heap / Priority Queue",
+        "position": 19,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "bit-manipulation",
+        "title": "Bit Manipulation",
+        "position": 20,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "math",
+        "title": "Math",
+        "position": 21,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "dynamic-programming-1d",
+        "title": "Dynamic Programming: 1D",
+        "position": 22,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "dynamic-programming-2d",
+        "title": "Dynamic Programming: Multidimensional",
+        "position": 23,
+        "has_testout": true,
+        "status": "published"
+      }
+    ]
+  },
+  "dsa-javascript": {
+    "slug": "dsa-javascript",
+    "title": "DSA Patterns: JavaScript",
+    "description": "Master the 16 core algorithmic patterns that appear in nearly every technical interview — implemented in JavaScript. Two pointers, sliding window, BFS/DFS, dynamic programming, backtracking, and more.",
+    "language": "javascript",
+    "status": "published",
+    "concepts": [
+      {
+        "slug": "array-string",
+        "title": "Arrays & Strings",
+        "position": 1,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "two-pointers",
+        "title": "Two Pointers",
+        "position": 2,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "sliding-window",
+        "title": "Sliding Window",
+        "position": 3,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "matrix",
+        "title": "Matrix",
+        "position": 4,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "hash-maps-and-sets",
+        "title": "Hash Maps",
+        "position": 5,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "intervals",
+        "title": "Intervals",
+        "position": 6,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "stacks",
+        "title": "Stack",
+        "position": 7,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "linked-list-patterns",
+        "title": "Linked List",
+        "position": 8,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "tree-dfs",
+        "title": "Binary Tree",
+        "position": 9,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "tree-bfs",
+        "title": "Tree BFS",
+        "position": 10,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "binary-search-trees",
+        "title": "Binary Search Tree",
+        "position": 11,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "graphs-bfs-dfs",
+        "title": "Graphs",
+        "position": 12,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "graph-bfs",
+        "title": "Graph BFS",
+        "position": 13,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "tries",
+        "title": "Trie",
+        "position": 14,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "backtracking",
+        "title": "Backtracking",
+        "position": 15,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "divide-and-conquer",
+        "title": "Divide & Conquer",
+        "position": 16,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "kadane",
+        "title": "Kadane's Algorithm",
+        "position": 17,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "binary-search",
+        "title": "Binary Search",
+        "position": 18,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "heaps-and-priority-queues",
+        "title": "Heap / Priority Queue",
+        "position": 19,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "bit-manipulation",
+        "title": "Bit Manipulation",
+        "position": 20,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "math",
+        "title": "Math",
+        "position": 21,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "dynamic-programming-1d",
+        "title": "Dynamic Programming: 1D",
+        "position": 22,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "dynamic-programming-2d",
+        "title": "Dynamic Programming: Multidimensional",
+        "position": 23,
+        "has_testout": true,
+        "status": "published"
+      }
+    ]
+  },
+  "dsa-python": {
+    "slug": "dsa-python",
+    "title": "DSA Patterns: Python",
+    "description": "Master the 16 core algorithmic patterns that appear in nearly every technical interview — implemented in Python. Two pointers, sliding window, BFS/DFS, dynamic programming, backtracking, and more.",
+    "language": "python",
+    "status": "published",
+    "concepts": [
+      {
+        "slug": "array-string",
+        "title": "Arrays & Strings",
+        "position": 1,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "two-pointers",
+        "title": "Two Pointers",
+        "position": 2,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "sliding-window",
+        "title": "Sliding Window",
+        "position": 3,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "matrix",
+        "title": "Matrix",
+        "position": 4,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "hash-maps-and-sets",
+        "title": "Hash Maps",
+        "position": 5,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "intervals",
+        "title": "Intervals",
+        "position": 6,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "stacks",
+        "title": "Stack",
+        "position": 7,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "linked-list-patterns",
+        "title": "Linked List",
+        "position": 8,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "tree-dfs",
+        "title": "Binary Tree",
+        "position": 9,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "tree-bfs",
+        "title": "Tree BFS",
+        "position": 10,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "binary-search-trees",
+        "title": "Binary Search Tree",
+        "position": 11,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "graphs-bfs-dfs",
+        "title": "Graphs",
+        "position": 12,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "graph-bfs",
+        "title": "Graph BFS",
+        "position": 13,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "tries",
+        "title": "Trie",
+        "position": 14,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "backtracking",
+        "title": "Backtracking",
+        "position": 15,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "divide-and-conquer",
+        "title": "Divide & Conquer",
+        "position": 16,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "kadane",
+        "title": "Kadane's Algorithm",
+        "position": 17,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "binary-search",
+        "title": "Binary Search",
+        "position": 18,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "heaps-and-priority-queues",
+        "title": "Heap / Priority Queue",
+        "position": 19,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "bit-manipulation",
+        "title": "Bit Manipulation",
+        "position": 20,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "math",
+        "title": "Math",
+        "position": 21,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "dynamic-programming-1d",
+        "title": "Dynamic Programming: 1D",
+        "position": 22,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "dynamic-programming-2d",
+        "title": "Dynamic Programming: Multidimensional",
+        "position": 23,
+        "has_testout": true,
+        "status": "published"
+      }
+    ]
+  },
+  "dsa-typescript": {
+    "slug": "dsa-typescript",
+    "title": "DSA Patterns: TypeScript",
+    "description": "Master the 16 core algorithmic patterns that appear in nearly every technical interview — implemented in TypeScript with full type annotations. Two pointers, sliding window, BFS/DFS, dynamic programming, backtracking, and more.",
+    "language": "typescript",
+    "status": "published",
+    "concepts": [
+      {
+        "slug": "array-string",
+        "title": "Arrays & Strings",
+        "position": 1,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "two-pointers",
+        "title": "Two Pointers",
+        "position": 2,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "sliding-window",
+        "title": "Sliding Window",
+        "position": 3,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "matrix",
+        "title": "Matrix",
+        "position": 4,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "hash-maps-and-sets",
+        "title": "Hash Maps and Sets",
+        "position": 5,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "intervals",
+        "title": "Intervals",
+        "position": 6,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "stacks",
+        "title": "Stacks",
+        "position": 7,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "linked-list-patterns",
+        "title": "Linked List Patterns",
+        "position": 8,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "tree-dfs",
+        "title": "Tree DFS",
+        "position": 9,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "tree-bfs",
+        "title": "Tree BFS",
+        "position": 10,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "binary-search-trees",
+        "title": "Binary Search Trees",
+        "position": 11,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "graphs-bfs-dfs",
+        "title": "Graphs: BFS and DFS",
+        "position": 12,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "graph-bfs",
+        "title": "Graph BFS",
+        "position": 13,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "tries",
+        "title": "Tries",
+        "position": 14,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "backtracking",
+        "title": "Backtracking",
+        "position": 15,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "divide-and-conquer",
+        "title": "Divide & Conquer",
+        "position": 16,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "kadane",
+        "title": "Kadane's Algorithm",
+        "position": 17,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "binary-search",
+        "title": "Binary Search",
+        "position": 18,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "heaps-and-priority-queues",
+        "title": "Heap / Priority Queue",
+        "position": 19,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "bit-manipulation",
+        "title": "Bit Manipulation",
+        "position": 20,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "math",
+        "title": "Math",
+        "position": 21,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "dynamic-programming-1d",
+        "title": "Dynamic Programming: 1D",
+        "position": 22,
+        "has_testout": true,
+        "status": "published"
+      },
+      {
+        "slug": "dynamic-programming-2d",
+        "title": "Dynamic Programming: Multidimensional",
+        "position": 23,
+        "has_testout": true,
+        "status": "published"
+      }
+    ]
+  },
+  "elixir": {
+    "slug": "elixir",
+    "title": "Elixir Essentials",
+    "description": "Learn Elixir — a functional, concurrent language built on the Erlang VM. Master pattern matching, processes, OTP, and fault-tolerant system design.",
+    "language": "elixir",
+    "status": "published",
+    "concepts": [
+      {
+        "slug": "modules-and-functions",
+        "title": "Modules & Functions",
+        "position": 1,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "pattern-matching",
+        "title": "Pattern Matching",
+        "position": 2,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "lists-and-recursion",
+        "title": "Lists & Recursion",
+        "position": 3,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "maps-and-structs",
+        "title": "Maps & Structs",
+        "position": 4,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "processes",
+        "title": "Processes",
+        "position": 5,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "error-handling",
+        "title": "Error Handling",
+        "position": 6,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "genserver",
+        "title": "GenServer",
+        "position": 7,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "enum-and-streams",
+        "title": "Enum & Streams",
+        "position": 8,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "protocols",
+        "title": "Protocols",
+        "position": 9,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "macros",
+        "title": "Macros",
+        "position": 10,
+        "has_testout": false,
+        "status": "published"
+      }
+    ]
+  },
   "go": {
     "slug": "go",
     "title": "Go Fundamentals",
     "description": "Learn Go from first principles — syntax, types, concurrency, and the standard library — culminating in a real CRUD API capstone project.",
     "language": "go",
-    "status": "draft",
+    "status": "published",
     "concepts": [
       {
         "slug": "variables-and-types",
@@ -236,12 +1074,91 @@
       }
     ]
   },
+  "helm": {
+    "slug": "helm",
+    "title": "Helm",
+    "description": "Learn Helm — the Kubernetes package manager. Write reusable, parameterized charts that deploy complex applications reliably across environments.",
+    "language": "helm",
+    "status": "published",
+    "concepts": [
+      {
+        "slug": "chart-structure",
+        "title": "Chart Structure",
+        "position": 1,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "templates-and-values",
+        "title": "Templates & Values",
+        "position": 2,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "built-in-objects",
+        "title": "Built-in Objects",
+        "position": 3,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "control-flow",
+        "title": "Control Flow",
+        "position": 4,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "named-templates",
+        "title": "Named Templates",
+        "position": 5,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "functions-and-pipelines",
+        "title": "Functions & Pipelines",
+        "position": 6,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "hooks",
+        "title": "Hooks",
+        "position": 7,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "dependencies",
+        "title": "Dependencies",
+        "position": 8,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "chart-tests",
+        "title": "Chart Tests",
+        "position": 9,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "production-patterns",
+        "title": "Production Patterns",
+        "position": 10,
+        "has_testout": false,
+        "status": "published"
+      }
+    ]
+  },
   "java": {
     "slug": "java",
     "title": "Java Essentials",
     "description": "Learn Java — a statically typed, object-oriented language built for large-scale systems. Master classes, interfaces, generics, and the streams API.",
     "language": "java",
-    "status": "draft",
+    "status": "published",
     "concepts": [
       {
         "slug": "classes-and-objects",
@@ -320,7 +1237,7 @@
     "title": "JavaScript Fundamentals",
     "description": "Master modern JavaScript — the language of the web. Learn the syntax, idioms, and async patterns every JS engineer uses daily.",
     "language": "javascript",
-    "status": "draft",
+    "status": "published",
     "concepts": [
       {
         "slug": "variables-and-types",
@@ -394,12 +1311,486 @@
       }
     ]
   },
+  "kotlin": {
+    "slug": "kotlin",
+    "title": "Kotlin Essentials",
+    "description": "Learn Kotlin — a modern, concise JVM language with null safety, coroutines, and a powerful type system. The primary language for Android and a great Java alternative.",
+    "language": "kotlin",
+    "status": "published",
+    "concepts": [
+      {
+        "slug": "variables-and-types",
+        "title": "Variables & Types",
+        "position": 1,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "functions",
+        "title": "Functions",
+        "position": 2,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "classes-and-data-classes",
+        "title": "Classes & Data Classes",
+        "position": 3,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "null-safety",
+        "title": "Null Safety",
+        "position": 4,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "collections",
+        "title": "Collections",
+        "position": 5,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "sealed-classes-and-when",
+        "title": "Sealed Classes & When",
+        "position": 6,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "generics",
+        "title": "Generics",
+        "position": 7,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "coroutines",
+        "title": "Coroutines",
+        "position": 8,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "higher-order-functions",
+        "title": "Higher-Order Functions",
+        "position": 9,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "interfaces-and-delegation",
+        "title": "Interfaces & Delegation",
+        "position": 10,
+        "has_testout": false,
+        "status": "published"
+      }
+    ]
+  },
+  "python": {
+    "slug": "python",
+    "title": "Python Essentials",
+    "description": "Learn Python — the language of data science, scripting, and rapid prototyping. Master Pythonic idioms, the standard library, and async patterns.",
+    "language": "python",
+    "status": "published",
+    "concepts": [
+      {
+        "slug": "variables-and-types",
+        "title": "Variables & Types",
+        "position": 1,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "functions",
+        "title": "Functions",
+        "position": 2,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "lists-and-dicts",
+        "title": "Lists & Dicts",
+        "position": 3,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "classes-and-objects",
+        "title": "Classes & Objects",
+        "position": 4,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "comprehensions-and-generators",
+        "title": "Comprehensions & Generators",
+        "position": 5,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "decorators",
+        "title": "Decorators",
+        "position": 6,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "error-handling",
+        "title": "Error Handling",
+        "position": 7,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "iterators-and-protocols",
+        "title": "Iterators & Protocols",
+        "position": 8,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "async-await",
+        "title": "Async & Await",
+        "position": 9,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "modules-and-packages",
+        "title": "Modules & Packages",
+        "position": 10,
+        "has_testout": false,
+        "status": "published"
+      }
+    ]
+  },
+  "ruby": {
+    "slug": "ruby",
+    "title": "Ruby Essentials",
+    "description": "Learn Ruby — an expressive, object-oriented language built for developer happiness. Master blocks, modules, metaprogramming, and Ruby's elegant standard library.",
+    "language": "ruby",
+    "status": "published",
+    "concepts": [
+      {
+        "slug": "variables-and-types",
+        "title": "Variables & Types",
+        "position": 1,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "methods-and-blocks",
+        "title": "Methods & Blocks",
+        "position": 2,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "collections",
+        "title": "Collections",
+        "position": 3,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "classes-and-modules",
+        "title": "Classes & Modules",
+        "position": 4,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "enumerables",
+        "title": "Enumerables",
+        "position": 5,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "blocks-procs-lambdas",
+        "title": "Blocks, Procs & Lambdas",
+        "position": 6,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "exception-handling",
+        "title": "Exception Handling",
+        "position": 7,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "metaprogramming",
+        "title": "Metaprogramming",
+        "position": 8,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "modules-and-mixins",
+        "title": "Modules & Mixins",
+        "position": 9,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "file-io-and-stdlib",
+        "title": "File I/O & Stdlib",
+        "position": 10,
+        "has_testout": false,
+        "status": "published"
+      }
+    ]
+  },
+  "rust": {
+    "slug": "rust",
+    "title": "Rust Essentials",
+    "description": "Learn Rust — a systems language with memory safety without garbage collection. Master ownership, borrowing, lifetimes, and fearless concurrency.",
+    "language": "rust",
+    "status": "published",
+    "concepts": [
+      {
+        "slug": "variables-and-types",
+        "title": "Variables & Types",
+        "position": 1,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "ownership",
+        "title": "Ownership",
+        "position": 2,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "borrowing-and-references",
+        "title": "Borrowing & References",
+        "position": 3,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "structs-and-enums",
+        "title": "Structs & Enums",
+        "position": 4,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "pattern-matching",
+        "title": "Pattern Matching",
+        "position": 5,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "traits",
+        "title": "Traits",
+        "position": 6,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "generics-and-lifetimes",
+        "title": "Generics & Lifetimes",
+        "position": 7,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "error-handling",
+        "title": "Error Handling",
+        "position": 8,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "closures-and-iterators",
+        "title": "Closures & Iterators",
+        "position": 9,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "concurrency",
+        "title": "Concurrency",
+        "position": 10,
+        "has_testout": false,
+        "status": "published"
+      }
+    ]
+  },
+  "shell": {
+    "slug": "shell",
+    "title": "Shell Scripting",
+    "description": "Master Bash scripting — the glue of every Unix system. Write robust scripts for automation, text processing, and system administration.",
+    "language": "shell",
+    "status": "published",
+    "concepts": [
+      {
+        "slug": "variables-and-strings",
+        "title": "Variables & Strings",
+        "position": 1,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "control-flow",
+        "title": "Control Flow",
+        "position": 2,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "loops",
+        "title": "Loops",
+        "position": 3,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "functions",
+        "title": "Functions",
+        "position": 4,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "arrays",
+        "title": "Arrays",
+        "position": 5,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "text-processing",
+        "title": "Text Processing",
+        "position": 6,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "pipes-and-redirection",
+        "title": "Pipes & Redirection",
+        "position": 7,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "file-operations",
+        "title": "File Operations",
+        "position": 8,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "scripts-and-arguments",
+        "title": "Scripts & Arguments",
+        "position": 9,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "process-management",
+        "title": "Process Management",
+        "position": 10,
+        "has_testout": false,
+        "status": "published"
+      }
+    ]
+  },
+  "terraform": {
+    "slug": "terraform",
+    "title": "Terraform",
+    "description": "Learn Terraform — the infrastructure-as-code standard. Define, plan, and provision cloud infrastructure with HCL across any provider.",
+    "language": "terraform",
+    "status": "published",
+    "concepts": [
+      {
+        "slug": "providers-and-resources",
+        "title": "Providers & Resources",
+        "position": 1,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "variables-and-outputs",
+        "title": "Variables & Outputs",
+        "position": 2,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "data-sources",
+        "title": "Data Sources",
+        "position": 3,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "expressions-and-functions",
+        "title": "Expressions & Functions",
+        "position": 4,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "locals-and-depends-on",
+        "title": "Locals & depends_on",
+        "position": 5,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "count-and-for-each",
+        "title": "count & for_each",
+        "position": 6,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "modules",
+        "title": "Modules",
+        "position": 7,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "state-management",
+        "title": "State Management",
+        "position": 8,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "backends-and-remote-state",
+        "title": "Backends & Remote State",
+        "position": 9,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "workspaces-and-environments",
+        "title": "Workspaces & Environments",
+        "position": 10,
+        "has_testout": false,
+        "status": "published"
+      }
+    ]
+  },
   "typescript": {
     "slug": "typescript",
     "title": "TypeScript Essentials",
     "description": "Add static types to JavaScript. Learn TypeScript's type system, generics, and tooling to write safer, more maintainable code.",
     "language": "typescript",
-    "status": "draft",
+    "status": "published",
     "concepts": [
       {
         "slug": "types-and-interfaces",

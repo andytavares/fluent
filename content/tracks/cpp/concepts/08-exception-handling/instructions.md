@@ -50,11 +50,51 @@ private:
 
 **vs other languages:** Java checked exceptions force callers to handle or declare them — C++ has no checked exceptions. Go avoids exceptions entirely (errors are values). Python and JavaScript use exceptions similarly to C++ but with reference-counted GC, so stack unwinding is simpler. C has no exceptions at all — `errno` and return codes are the idiom.
 
+## Watch out
+
+- **Throwing by value, catching by `const&`.** `throw ValueError("...")` copies the exception object onto a side channel the runtime manages; catch it as `catch (const ValueError& e)` to avoid an extra copy and to preserve polymorphism (catching a base-class reference still lets virtual `what()` resolve to the derived override).
+- **`catch (...)` swallows everything**, including logic errors you'd want to know about during development. Prefer catching specific types, and only reach for `catch (...)` at a true top-level boundary (e.g. a server's request handler) where any exception must not crash the process.
+- **A `noexcept` function that throws calls `std::terminate` immediately** — it doesn't propagate the exception to the caller. Never mark a function `noexcept` unless you're certain nothing it calls can throw.
+
 ## The task
 
 Implement the following in `stub.cpp`:
 
-- `class ValueError : public std::runtime_error` — constructor takes a `std::string` message; forward to `std::runtime_error`
-- `int parse_positive_int(const std::string& s)` — parse `s` as an integer; throw `ValueError` if the string is not a valid integer or if the value is ≤ 0; return the parsed value
-- `double safe_divide(double a, double b)` — throw `ValueError("division by zero")` if b is 0; otherwise return a/b
-- `std::string exception_message(std::function<void()> fn)` — call fn inside a try/catch; if it throws a `std::exception`, return its `what()` string; if nothing throws, return `""`
+**`class ValueError : public std::runtime_error`** — constructor `ValueError(const std::string& message, int code = 0)`; forwards `message` to `std::runtime_error` (so `.what()` returns it) and stores `code` (default `0`, retrievable via `int code() const`).
+
+```cpp
+ValueError e("bad input");
+e.what();  // "bad input"
+e.code();  // 0
+
+ValueError coded("not found", 404);
+coded.code();  // 404
+```
+
+**`int parse_positive_int(const std::string& s)`** — parses `s` as an integer and returns it. Throws `ValueError` if `s` isn't a valid integer (including trailing non-numeric characters, or a floating-point string like `"3.14"`) or if the parsed value is `<= 0`.
+
+```cpp
+parse_positive_int("42");    // 42
+parse_positive_int("1");     // 1
+parse_positive_int("abc");   // throws ValueError
+parse_positive_int("0");     // throws ValueError — not positive
+parse_positive_int("-5");    // throws ValueError — not positive
+parse_positive_int("3.14");  // throws ValueError — not an integer
+parse_positive_int("42abc"); // throws ValueError — trailing junk
+```
+
+**`double safe_divide(double a, double b)`** — returns `a / b`. Throws `ValueError("division by zero")` if `b == 0`.
+
+```cpp
+safe_divide(10, 2);   // 5.0
+safe_divide(-10, 2);  // -5.0
+safe_divide(1, 0);    // throws ValueError
+```
+
+**`std::string exception_message(std::function<void()> fn)`** — calls `fn()` inside a try/catch. If `fn` throws any `std::exception`, returns `e.what()`. If `fn` returns normally (no throw), returns `""`.
+
+```cpp
+exception_message([] {});                                  // ""
+exception_message([] { throw std::runtime_error("oops"); }); // "oops"
+exception_message([] { throw ValueError("bad value"); });    // "bad value"
+```

@@ -24,8 +24,8 @@ public class SolutionTest {
         // larger
         Solution.Shape big   = new Solution.Circle(10);
         Solution.Shape small = new Solution.Rectangle(1, 1);
-        check("larger returns circle",     "Circle".equals(Solution.larger(big, small).name()));
-        check("larger returns rect",       "Rectangle".equals(Solution.larger(small, big).name()));
+        check("larger returns circle (a larger)", "Circle".equals(Solution.larger(big, small).name()));
+        check("larger returns circle (b larger)", "Circle".equals(Solution.larger(small, big).name()));
         check("larger equal areas → a",    Solution.larger(small, small) == small);
 
         System.out.println("\n" + passed + " passed, " + failed + " failed");

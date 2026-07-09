@@ -114,24 +114,53 @@ add_then_double.call(3)  # => 8
 
 The Proc `return` behavior is a real footgun. A Proc that contains `return` passed to a method that `yield`s to it will exit **that method**, not the Proc. This surprises everyone coming from JavaScript or Python.
 
+## Watch out
+
+- `->(n) { n * 2 }.lambda?` returns `true`; `Proc.new { |n| n * 2 }.lambda?` returns `false` — use `.lambda?` when you need to check which kind of callable you have.
+- A memoizing cache keyed on argument must distinguish "never computed" from "computed and the result was `nil`/`false`". Use `cache.key?(arg)` to check presence, not `cache[arg].nil?` — the latter recomputes forever for any argument whose legitimate result is `nil` or `false`.
+- `callable.call(x)` on a lambda enforces arity strictly — passing a lambda of the wrong arity into `apply_twice` or `compose` raises `ArgumentError`, whereas a `Proc` would silently pad missing arguments with `nil`.
+- Closures capture the **variable**, not a snapshot: `make_multiplier(3)` closes over `factor`, but if a later reassignment mutated `factor` in the same scope, every lambda created from it would see the new value too (this doesn't apply here since `factor` is a method parameter local to each call).
+
 ## The task
 
+Implement four higher-order functions built on lambdas.
+
+**`make_multiplier(factor)`** — returns a lambda that takes one number and multiplies it by `factor`.
+
 ```ruby
-def make_multiplier(factor)
-  # Return a lambda that multiplies its argument by factor
-end
+triple = make_multiplier(3)
+triple.call(4)   # => 12
+triple.call(0)   # => 0
+triple.call(-2)  # => -6
+triple.lambda?   # => true
+```
 
-def apply_twice(value, callable)
-  # Call callable on value, then call callable on the result. Return the final value.
-end
+**`apply_twice(value, callable)`** — calls `callable` on `value`, then calls `callable` again on that result, and returns the final value.
 
-def compose(f, g)
-  # Return a lambda that applies g first, then f (i.e. f(g(x)))
-end
+```ruby
+apply_twice(2, ->(n) { n * 3 })     # => 18   (2 -> 6 -> 18)
+apply_twice(4, ->(n) { n + 1 })     # => 6    (4 -> 5 -> 6)
+apply_twice("a", ->(s) { s * 2 })   # => "aaaa"
+```
 
-def memoize(callable)
-  # Return a lambda that caches results by argument.
-  # On first call with a given arg, compute via callable and store.
-  # On subsequent calls with the same arg, return cached result.
-end
+**`compose(f, g)`** — returns a new lambda that, given `x`, computes `f.call(g.call(x))` — i.e. applies `g` first, then `f`.
+
+```ruby
+add1   = ->(n) { n + 1 }
+double = ->(n) { n * 2 }
+
+compose(double, add1).call(5)  # => 12   double(add1(5)) = double(6) = 12
+compose(add1, double).call(5)  # => 11   add1(double(5)) = add1(10) = 11
+```
+
+**`memoize(callable)`** — returns a lambda that caches results by argument. The first call with a given argument invokes `callable` and stores the result; subsequent calls with that same argument return the cached value **without** invoking `callable` again.
+
+```ruby
+calls = 0
+expensive = ->(n) { calls += 1; n ** 2 }
+cached = memoize(expensive)
+
+cached.call(4)  # => 16 — computed, calls == 1
+cached.call(4)  # => 16 — cached, calls still == 1
+cached.call(3)  # => 9  — new argument, calls == 2
 ```

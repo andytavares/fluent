@@ -35,7 +35,7 @@ check "t3.large in environments"            grep -q '"t3.large"' "$FILE"
 
 # aws_subnet for_each
 check "aws_subnet app declared"             grep -q 'resource "aws_subnet" "app"' "$FILE"
-check "subnet uses for_each"                grep -q 'for_each.*=.*var\.subnet_names\|for_each.*=.*var\.subnet_names' "$FILE"
+check "subnet uses for_each"                grep -q 'for_each[[:space:]]*=[[:space:]]*var\.subnet_names' "$FILE"
 check "subnet uses each.key for Name"       grep -q 'each\.key' "$FILE"
 
 # aws_instance for_each

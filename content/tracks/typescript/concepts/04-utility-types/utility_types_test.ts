@@ -22,6 +22,10 @@ test("updateProduct: inStock changed",  () => assert.strictEqual(patched.inStock
 test("updateProduct: id preserved",     () => assert.strictEqual(patched.id,      1));
 test("updateProduct: name unchanged",   () => assert.strictEqual(patched.name,    "Widget"));
 test("updateProduct: original unchanged", () => assert.strictEqual(p.price,      9.99));
+test("updateProduct: empty patch returns equivalent copy", () => {
+  const copy = updateProduct(p, {});
+  assert.deepStrictEqual(copy, p);
+});
 
 const entry = catalogEntry(p);
 test("catalogEntry: has id",    () => assert.strictEqual(entry.id,    1));

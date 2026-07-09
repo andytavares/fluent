@@ -5,5 +5,6 @@ export default defineWorkspace([
   "apps/sandbox/vitest.config.ts",
   "apps/capstone-runner/vitest.config.ts",
   "packages/ui/vitest.config.ts",
+  "packages/content-config/vitest.config.ts",
   "tools/content-linter/vitest.config.ts",
 ]);

@@ -130,25 +130,50 @@ MyClass.new.hello  # => "world"
 
 The big risk with `method_missing` is silent failures. If you forget to call `super` at the end, any truly undefined method will return `nil` instead of raising `NoMethodError`. Always call `super` in `method_missing` for unhandled cases.
 
+## Watch out
+
+- `respond_to?` does **not** automatically know about methods you handle in `method_missing` — you must also override `respond_to_missing?`, or `respond_to?` will report `false` for a method call that would actually work.
+- `method_missing(name, *args)` intercepts **every** unmatched method call, including typos. Always fall through to `super` for anything you don't explicitly handle, so real `NoMethodError`s still surface instead of being swallowed.
+- `define_method` accepts a block, and that block is a real closure — it captures variables from the surrounding scope (like the `style` loop variable above), unlike `def`, which cannot close over local variables.
+- `send(:method_name)` bypasses `private`/`protected` visibility — it can call private methods from outside the class. Use `public_send` if you want normal visibility rules enforced.
+
 ## The task
 
+Implement two dynamic-dispatch helpers and a proxy class.
+
+**`method_exists?(obj, method_name)`** — returns `true` if `obj` responds to `method_name`, which may be passed as either a `Symbol` or a `String`.
+
 ```ruby
-def method_exists?(obj, method_name)
-  # Return true if obj responds to method_name (as a symbol or string)
-end
+method_exists?("hello", :upcase)       # => true
+method_exists?("hello", "length")      # => true
+method_exists?("hello", :nonexistent)  # => false
+method_exists?(42, :+)                 # => true
+method_exists?(42, :each)              # => false
+```
 
-def dynamic_accessor(klass, *attr_names)
-  # For each name in attr_names, add a getter and setter to klass
-  # using define_method (do not use attr_accessor).
-  # Getters read from @name, setters write to @name.
-end
+**`dynamic_accessor(klass, *attr_names)`** — for each name in `attr_names`, adds a getter and setter method to `klass` using `define_method` (not `attr_accessor`). The getter reads from the instance variable `@name`; the setter writes to it.
 
-class HashProxy
-  # Wrap a Hash so that any key can be accessed as a method call.
-  # hp = HashProxy.new({ name: "Alice", age: 30 })
-  # hp.name  => "Alice"
-  # hp.age   => 30
-  # hp.missing raises NoMethodError (via super)
-  # implement with method_missing and respond_to_missing?
-end
+```ruby
+klass = Class.new
+dynamic_accessor(klass, :name, :age)
+
+obj = klass.new
+obj.name = "Bob"
+obj.name        # => "Bob"
+obj.age         # => nil  — never set
+klass.new.name  # => nil  — fresh instance, unset ivar
+```
+
+**`HashProxy`** — wraps a `Hash` so any key can be read as a method call, via `method_missing` and `respond_to_missing?`. Keys may be symbols or strings in the underlying hash.
+
+```ruby
+hp = HashProxy.new({ name: "Alice", city: "Portland" })
+hp.name              # => "Alice"
+hp.city              # => "Portland"
+hp.respond_to?(:name)         # => true
+hp.respond_to?(:missing_key)  # => false
+hp.totally_missing            # raises NoMethodError (falls through to super)
+
+hp2 = HashProxy.new({ "country" => "Canada" })
+hp2.country          # => "Canada"  — string keys work too
 ```

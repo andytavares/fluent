@@ -80,6 +80,17 @@ println!("{}", a + b); // 3 (order not guaranteed)
 
 Go channels are bidirectional and goroutines are cheap (green threads). Rust uses OS threads by default but the `tokio` and `rayon` crates add green threads and data parallelism. The key difference: Go catches data races at runtime with its race detector; Rust prevents them at compile time — you cannot even express the pattern.
 
+## Watch out
+
+- **Returning a locked value directly as a function's tail expression doesn't compile.** `*counter.lock().unwrap()` as the very last line of a function looks fine, but the temporary `MutexGuard` and the `counter` binding it borrows from are both dropped at the end of that same block — in the wrong order for the borrow checker. Bind the dereferenced value to a local first, then return the local:
+  ```rust
+  let result = *counter.lock().unwrap();
+  result
+  ```
+  Inside a `println!` or a mid-function statement this pattern is fine — the guard is dropped right after that statement, before anything else needs `counter`. It's specifically the "last expression of the function" position that's a footgun.
+- **`mpsc` channels only close once every `Sender` is dropped.** If you `clone()` a `tx` per thread but never drop the original, `rx.iter()` (or `recv()`) blocks forever waiting for a message that will never come, because the original sender is still technically able to send.
+- **A poisoned `Mutex`.** If a thread panics while holding the lock, `.lock()` returns `Err` on every subsequent call. `.unwrap()` on that turns a panic in one thread into a panic in every thread that touches the mutex afterward — acceptable in this lesson's exercises, not in production code that must stay available.
+
 ## The task
 
 Implement two functions using threads, `Arc`, `Mutex`, and `mpsc`:
@@ -94,4 +105,16 @@ fn parallel_sum(n: u32) -> i32
 // back through an mpsc channel. Collect and return all results.
 // Order in the returned Vec does not need to be preserved.
 fn parallel_double(items: Vec<i32>) -> Vec<i32>
+```
+
+```rust
+parallel_sum(5);   // 0+1+2+3+4 = 10
+parallel_sum(0);   // 0 — no threads spawned
+parallel_sum(1);   // 0 — only index 0 is added
+
+let mut r = parallel_double(vec![1, 2, 3, 4]);
+r.sort();
+r; // [2, 4, 6, 8]
+
+parallel_double(vec![]); // [] — no threads spawned, channel closes immediately
 ```

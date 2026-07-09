@@ -118,6 +118,12 @@ user.age    // 30
 
 Swift's `lazy var` is the closest equivalent to `by lazy`. The key difference: Kotlin's delegation system is extensible — you can write your own delegates by implementing `ReadOnlyProperty` or `ReadWriteProperty`.
 
+## Watch out
+
+- `by delegate` forwards **every** interface method to the delegate automatically — if you override one, you must call through to the delegate yourself inside the override; the compiler won't do it for you.
+- `by lazy { }` defaults to thread-safe (synchronized) initialization, which has a small overhead on every access after the first. Pass `LazyThreadSafetyMode.NONE` if you know the property is only ever touched from one thread and want to skip the lock.
+- Delegating a property `by map` requires the exact property name to exist as a key in the map (or a custom `getValue` overload) — a typo'd property name fails at runtime with a `NoSuchElementException`, not a compile error.
+
 ## The task
 
 Implement the following in `stub.kt`:

@@ -1,4 +1,6 @@
-// Compile: g++ -std=c++17 -pthread -o test concurrency_test.cpp && ./test
+// Test runner — concatenated after stub.cpp (with main() stripped) into one
+// translation unit.
+// Build: g++ -std=c++17 -pthread -o test stub.cpp concurrency_test.cpp && ./test
 #include <atomic>
 #include <thread>
 #include <mutex>
@@ -6,19 +8,6 @@
 #include <vector>
 #include <numeric>
 #include <cstdio>
-
-class Counter {
-public:
-    Counter() : value_(0) {}
-    void increment() { value_++; }
-    void decrement() { value_--; }
-    int value() const { return value_.load(); }
-private:
-    std::atomic<int> value_;
-};
-
-int parallel_sum(const std::vector<int>& data, int num_threads);
-std::future<int> async_square(int n);
 
 static int passed = 0, failed = 0;
 #define CHECK(name, cond) \
@@ -46,12 +35,23 @@ int main() {
         CHECK("Counter: 100 concurrent increments", c.value() == 100);
     }
 
+    // Counter: concurrent increments and decrements
+    {
+        Counter c;
+        std::vector<std::thread> threads;
+        for (int i = 0; i < 50; ++i) threads.emplace_back([&] { c.increment(); });
+        for (int i = 0; i < 30; ++i) threads.emplace_back([&] { c.decrement(); });
+        for (auto& t : threads) t.join();
+        CHECK("Counter: 50 up, 30 down nets to 20", c.value() == 20);
+    }
+
     // parallel_sum
     {
         std::vector<int> data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
         CHECK("parallel_sum: 1 thread",  parallel_sum(data, 1)  == 55);
         CHECK("parallel_sum: 2 threads", parallel_sum(data, 2)  == 55);
         CHECK("parallel_sum: 4 threads", parallel_sum(data, 4)  == 55);
+        CHECK("parallel_sum: more threads than elements", parallel_sum(data, 20) == 55);
         CHECK("parallel_sum: empty",     parallel_sum({}, 4)    == 0);
         CHECK("parallel_sum: 1 element", parallel_sum({42}, 2)  == 42);
     }

@@ -1,5 +1,12 @@
-Code.require_file("exemplar.ex", __DIR__)
+Code.require_file("stub.ex", __DIR__)
 
+# NOTE: `elixir` compiles an entire .exs file as a single unit before any of
+# it runs — so `import MyMacros` here would fail to find the module the
+# `Code.require_file/2` above only *loads* at runtime, one line "earlier" in
+# wall-clock terms but not in compile-unit terms. Wrapping the code that
+# imports and calls the macros in `Code.eval_string/1` forces it into its
+# own, later compilation pass, once MyMacros genuinely exists.
+Code.eval_string(~S"""
 import MyMacros
 
 defmodule MacrosTest do
@@ -80,3 +87,4 @@ defmodule MacrosTest do
 end
 
 MacrosTest.main()
+""")

@@ -1,14 +1,11 @@
 import type { PrismaClient } from "@prisma/client";
-import { ConceptStateService } from "./concept-state.js";
 
 type DB = PrismaClient;
 
+// Scoring placement tasks lives in SubmissionPipeline (kind "placement") —
+// this service only assembles the placement task list.
 export class PlacementService {
-  private stateService: ConceptStateService;
-
-  constructor(private db: DB) {
-    this.stateService = new ConceptStateService(db);
-  }
+  constructor(private db: DB) {}
 
   async startPlacement(enrollmentId: string) {
     const enrollment = await this.db.enrollment.findUniqueOrThrow({
@@ -17,16 +14,6 @@ export class PlacementService {
     });
 
     return enrollment.track.concepts;
-  }
-
-  async scoreTask(enrollmentId: string, conceptId: string, passed: boolean) {
-    if (!passed) {
-      // fail → leave available (no transition)
-      return { conceptId, result: "available" as const };
-    }
-
-    await this.stateService.transition(enrollmentId, conceptId, "mastered", "placement");
-    return { conceptId, result: "mastered" as const };
   }
 
   async skipPlacement(enrollmentId: string) {

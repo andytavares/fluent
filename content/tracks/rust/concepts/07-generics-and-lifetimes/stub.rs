@@ -9,31 +9,31 @@ fn longer<'a>(a: &'a str, b: &'a str) -> &'a str {
 }
 
 struct Stack<T> {
-    // TODO: add a Vec<T> field
+    items: Vec<T>,
 }
 
 impl<T> Stack<T> {
-    fn new() -> Self {
+    pub fn new() -> Self {
         // TODO
         todo!()
     }
 
-    fn push(&mut self, item: T) {
+    pub fn push(&mut self, item: T) {
         // TODO
         todo!()
     }
 
-    fn pop(&mut self) -> Option<T> {
+    pub fn pop(&mut self) -> Option<T> {
         // TODO
         todo!()
     }
 
-    fn peek(&self) -> Option<&T> {
+    pub fn peek(&self) -> Option<&T> {
         // TODO
         todo!()
     }
 
-    fn is_empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         // TODO
         todo!()
     }

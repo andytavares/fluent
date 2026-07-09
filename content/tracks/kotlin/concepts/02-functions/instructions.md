@@ -87,6 +87,12 @@ sum(*arr)            // spread
 
 The extension function design means you can add methods to `String`, `List`, or any third-party class without inheritance. This is heavily used in the Kotlin stdlib itself.
 
+## Watch out
+
+- Extension functions are resolved **statically**, based on the declared type at the call site, not the runtime type — there is no dynamic dispatch to an extension the way there is to a member function.
+- `vararg` only accepts one variadic parameter per function, and (if present) it doesn't have to be last, but any parameters after it must be named at the call site.
+- Mixing positional and named arguments: once you use a named argument, every argument after it must also be named — you can't go back to positional.
+
 ## The task
 
 Implement the following in `stub.kt`:

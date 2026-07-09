@@ -2,7 +2,7 @@
 
 ## What you'll learn
 
-The difference between a one-liner and a production script is mostly discipline: a proper shebang, `set -euo pipefail`, and structured argument parsing with `getopts`. These three things eliminate entire categories of bugs.
+You now know functions, control flow, and the filesystem tools; this lesson assembles them into a real script. The difference between a one-liner and a production script is mostly discipline: a proper shebang, `set -euo pipefail`, and structured argument parsing with `getopts`. These three things eliminate entire categories of bugs.
 
 ## Key concepts
 
@@ -87,6 +87,13 @@ trap 'rm -f "$tmpfile"' EXIT
 log() { echo "[$(date +%T)] $*" >&2; }
 ```
 
+## Watch out
+
+- `set -e` does **not** trigger inside the condition of `if`, `while`, `until`, after `!`, or on the left side of `&&`/`||` — a failing command there is expected to potentially fail. This is why `grep -q pattern file || true` is redundant (the `if`/`&&` context already suppresses `-e`), but a bare `grep -q pattern file` as a whole *statement* under `-e` will abort the script if it doesn't match.
+- `set -e` also does not fire for the non-last command in a pipeline unless `pipefail` is also set — `false | echo ok` still exits the script with status 0 without `pipefail`.
+- Getting a function's exit code with `local x=$(cmd)` masks `cmd`'s exit code — `$?` after that line reflects the `local` builtin's own exit status (almost always 0), not `cmd`'s. Split the declaration and assignment: `local x; x=$(cmd)`.
+- Reusing `getopts` across multiple calls in the same shell (including inside a function that's called more than once) requires resetting `OPTIND=1` first — otherwise the second call picks up parsing from where the first left off and silently misparses.
+
 ## vs other languages
 
 | Concept | Python/Go/Node | Bash |
@@ -101,10 +108,29 @@ The gotcha with `set -e`: it doesn't trigger inside `if` conditions, `while` con
 
 ## The task
 
-Implement three functions:
+You're writing three functions that model production-script patterns: option parsing, error-as-exit-code, and guaranteed cleanup.
 
-**`parse_args [args...]`** — parses the flags `-v` (verbose), `-o <output>`, and a required positional argument. Echoes a summary line: `verbose=<true|false> output=<value|""> input=<value>`. If the positional argument is missing, echoes `error: missing input` to stderr and returns exit code 1.
+**`parse_args [args...]`** — parses the flags `-v` (verbose, no argument) and `-o <output>` (takes a value), plus one required positional argument. Echoes a summary line: `verbose=<true|false> output=<value|""> input=<value>`. If the positional argument is missing after parsing options, writes `error: missing input` to **stderr** and returns exit code `1` (no stdout in that case).
 
-**`safe_divide a b`** — echoes the integer result of `a / b`. If `b` is zero, echoes `error: division by zero` to stderr and returns exit code 1. Use `set -e` semantics internally.
+```bash
+parse_args "myinput"                  # verbose=false output= input=myinput
+parse_args -v "data.txt"              # verbose=true output= input=data.txt
+parse_args -o out.txt "src.txt"       # verbose=false output=out.txt input=src.txt
+parse_args -v -o report.csv "raw.csv" # verbose=true output=report.csv input=raw.csv
+parse_args                            # (stderr) error: missing input   — exit code 1
+```
 
-**`with_tempfile`** — creates a temp file, writes the string `hello from tempfile` to it, echoes the file's content, then deletes it. Use `trap ... EXIT` for cleanup.
+**`safe_divide a b`** — echoes the integer (truncating) result of `a / b`. If `b` is `0`, writes `error: division by zero` to **stderr** and returns exit code `1` instead of dividing.
+
+```bash
+safe_divide 10 2   # 5
+safe_divide 7 2    # 3    — integer division truncates toward zero
+safe_divide -6 3   # -2
+safe_divide 5 0    # (stderr) error: division by zero   — exit code 1
+```
+
+**`with_tempfile`** — creates a temp file (`mktemp`), writes the string `hello from tempfile` to it, echoes the file's contents, and deletes the file — using `trap ... EXIT` so the file is removed even if something in between fails.
+
+```bash
+with_tempfile   # hello from tempfile
+```

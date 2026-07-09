@@ -1,36 +1,47 @@
 // Run: tsx stub.ts
+//
+// Binary tree nodes are plain objects: { val, left, right }.
+// left/right are child nodes or null; an empty tree is null.
+// BST invariant: for every node, ALL left-subtree values < node.val < ALL
+// right-subtree values (strict — duplicates are invalid).
 
-export class TreeNode {
+export interface TreeNode {
   val: number;
   left: TreeNode | null;
   right: TreeNode | null;
-  constructor(val: number, left: TreeNode | null = null, right: TreeNode | null = null) {
-    this.val = val;
-    this.left = left;
-    this.right = right;
-  }
 }
 
-// Return true if the tree is a valid BST (strict inequalities, no duplicates).
-export function isValidBST(root: TreeNode | null): boolean {
-  // TODO: inner helper with (node, min, max) bounds narrowing as you descend
-  return false;
-}
-
-// Return the kth smallest value in the BST (1-indexed).
-export function kthSmallest(root: TreeNode | null, k: number): number {
-  // TODO: inorder traversal; increment a counter; return when counter === k
+/** Returns the smallest absolute difference between any two node values. root is a valid BST with at least two nodes. */
+export function getMinimumDifference(root: TreeNode): number {
+  // TODO: in-order traversal with a prev tracker — the closest pair in a
+  // sorted sequence is adjacent, so compare each value only to prev
   return 0;
 }
 
-// Reconstruct a BST from its preorder traversal. Return the root.
-export function buildBSTFromPreorder(preorder: number[]): TreeNode | null {
-  // TODO: use an index variable shared across calls;
-  // pass maxVal to bound the subtree being built
-  return null;
+/** Returns the k-th smallest value in the BST (k is 1-indexed, 1 <= k <= node count). */
+export function kthSmallest(root: TreeNode, k: number): number {
+  // TODO: iterative in-order with an explicit stack; slide left, pop,
+  // decrement k — return the popped value when k hits 0 (early exit)
+  return 0;
 }
 
-// Usage example (uncomment to test manually):
-// const bst = new TreeNode(5, new TreeNode(3, new TreeNode(2), new TreeNode(4)), new TreeNode(6));
-// console.log(isValidBST(bst));       // true
-// console.log(kthSmallest(bst, 2));   // 3
+/** Returns true if the tree satisfies the BST invariant. */
+export function isValidBST(root: TreeNode | null): boolean {
+  // TODO: propagate (lo, hi) bounds — left tightens hi, right tightens lo;
+  // checking only parent vs child misses violations against an ancestor
+  return false;
+}
+
+function node(val: number, left: TreeNode | null = null, right: TreeNode | null = null): TreeNode {
+  return { val, left, right };
+}
+
+function main(): void {
+  const bst = node(4, node(2, node(1), node(3)), node(6));
+  console.log(getMinimumDifference(bst)); // 1
+  console.log(kthSmallest(bst, 3)); // 3
+  console.log(isValidBST(bst)); // true
+  console.log(isValidBST(node(5, node(1), node(4, node(3), node(6))))); // false
+}
+
+main();

@@ -1,14 +1,22 @@
 import type { FastifyReply } from "fastify";
+import {
+  resultStreamKey,
+  flattenStreamFields,
+  streamMaxWaitMs,
+  executionTimeoutMs,
+} from "@fluent/execution-contract";
 import { redis } from "../db/redis.js";
 
 const STREAM_POLL_INTERVAL_MS = 200;
-const STREAM_MAX_WAIT_MS = 60_000;
+// Derived from the execution ceiling × retry attempts — the stream must
+// outlive the worker's full retry envelope, not race it.
+const STREAM_MAX_WAIT_MS = streamMaxWaitMs(executionTimeoutMs(process.env["EXECUTION_TIMEOUT_MS"]));
 
 export async function streamExecutionResult(
   jobId: string,
   reply: FastifyReply,
 ): Promise<void> {
-  const streamKey = `result:${jobId}`;
+  const streamKey = resultStreamKey(jobId);
 
   reply.raw.setHeader("Content-Type", "text/event-stream");
   reply.raw.setHeader("Cache-Control", "no-cache");
@@ -29,10 +37,7 @@ export async function streamExecutionResult(
       const [, messages] = entries[0]!;
       for (const [id, fields] of messages) {
         lastId = id;
-        const obj: Record<string, string> = {};
-        for (let i = 0; i < fields.length; i += 2) {
-          obj[fields[i]!] = fields[i + 1]!;
-        }
+        const obj = flattenStreamFields(fields);
 
         if (obj["type"] === "stdout") {
           send("stdout", { data: obj["data"] });

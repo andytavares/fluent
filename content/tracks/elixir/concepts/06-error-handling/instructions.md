@@ -75,11 +75,48 @@ content = File.read!("known_file.txt")  # raises on error
 
 The philosophical difference: Elixir encourages "let it crash" for unexpected failures. Because processes are isolated, a crash doesn't take down the system — a supervisor restarts the failed process. This means you should write less defensive code, not more.
 
+## Watch out
+
+- `with`'s `<-` clauses only short-circuit on **pattern mismatch**, not on any falsy value — `false <- some_call()` does *not* short-circuit if `some_call()` returns `false` and the pattern is a bare variable (it would just bind). Always match a specific shape like `{:ok, _}` to get short-circuiting behavior.
+- Mixing tagged-tuple returns with exceptions inconsistently is worse than picking one: if `divide/2` can fail with `{:error, _}`, don't also let it raise `ArithmeticError` for some inputs — callers need one contract to pattern-match against.
+- `Integer.parse/1` is lenient: `Integer.parse("42abc")` succeeds and returns `{42, "abc"}` rather than failing — you must check that the leftover string is `""` if you want to reject trailing garbage.
+
 ## The task
 
-Implement these functions in the `SafeMath` module:
+Implement these functions in the `SafeMath` module, all following the `{:ok, value}` / `{:error, reason}` convention.
 
-1. `divide(a, b)` — returns `{:ok, result}` or `{:error, "division by zero"}`.
-2. `sqrt(n)` — returns `{:ok, result}` for non-negative `n`, or `{:error, "cannot take sqrt of negative number"}`.
-3. `safe_pipeline(a, b, c)` — divides `a` by `b`, then takes the square root of the result, then divides by `c`. Uses `with` to chain the operations. Returns `{:ok, result}` or the first `{:error, reason}` encountered.
-4. `parse_positive_int(str)` — parses a string to an integer. Returns `{:ok, n}` if `n > 0`, or `{:error, reason}` with a descriptive reason for any other outcome (non-integer string, zero, negative).
+**`divide(a, b)`** — returns `{:ok, a / b}`, or `{:error, "division by zero"}` when `b` is `0`.
+
+```elixir
+SafeMath.divide(10, 2)  # => {:ok, 5.0}
+SafeMath.divide(10, 0)  # => {:error, "division by zero"}
+SafeMath.divide(-6, 2)  # => {:ok, -3.0}
+```
+
+**`sqrt(n)`** — returns `{:ok, result}` for non-negative `n`, or `{:error, "cannot take sqrt of negative number"}` otherwise.
+
+```elixir
+SafeMath.sqrt(9.0)   # => {:ok, 3.0}
+SafeMath.sqrt(0)     # => {:ok, 0.0}
+SafeMath.sqrt(-1.0)  # => {:error, "cannot take sqrt of negative number"}
+```
+
+**`safe_pipeline(a, b, c)`** — divides `a` by `b`, takes the square root of that result, then divides by `c`, using `with` to chain the three fallible steps. Returns `{:ok, result}`, or the first `{:error, reason}` encountered along the way (from whichever step failed).
+
+```elixir
+# 100 / 4 = 25, sqrt(25) = 5, 5 / 2 = 2.5
+SafeMath.safe_pipeline(100.0, 4.0, 2.0)   # => {:ok, 2.5}
+SafeMath.safe_pipeline(100.0, 0, 2.0)     # => {:error, "division by zero"}   — b is 0
+SafeMath.safe_pipeline(100.0, 4.0, 0)     # => {:error, "division by zero"}   — c is 0
+SafeMath.safe_pipeline(-100.0, 4.0, 2.0)  # => {:error, "cannot take sqrt of negative number"}
+```
+
+**`parse_positive_int(str)`** — parses a string to an integer. Returns `{:ok, n}` only if the entire string is a valid integer and `n > 0`; otherwise `{:error, reason}` with a reason describing what went wrong (non-integer string, zero, or negative).
+
+```elixir
+SafeMath.parse_positive_int("42")     # => {:ok, 42}
+SafeMath.parse_positive_int("0")      # => {:error, "must be positive, got 0"}
+SafeMath.parse_positive_int("-5")     # => {:error, "must be positive, got -5"}
+SafeMath.parse_positive_int("abc")    # => {:error, "not a valid integer: abc"}
+SafeMath.parse_positive_int("3.14")   # => {:error, "not a valid integer: 3.14"}
+```

@@ -79,13 +79,38 @@ resource "aws_s3_bucket_versioning" "logs" {
 
 Terraform's key difference: the **plan** step separates intent from execution. You always see an exact diff before anything is created, changed, or destroyed.
 
+## Watch out
+
+- **Two labels, not one.** `resource "aws_vpc" "main"` — the first string is always the resource *type* (defined by the provider), the second is *your* name for this instance. Swap them or drop one and it's a parse error.
+- **Version constraints are strings.** `version = ~> 5.0` (unquoted) is invalid HCL — it must be `version = "~> 5.0"`. Every scalar value in HCL follows this: strings need quotes, `true`/`false`/numbers don't.
+- **References only work between declared resources.** `aws_vpc.main.id` resolves only if a `resource "aws_vpc" "main"` block exists in the same module. Typo the name and Terraform reports "reference to undeclared resource" at plan time — not a silent null.
+- **`required_providers` lives inside `terraform {}`**, not beside it. A top-level `required_providers {}` block outside `terraform {}` is simply ignored (and, in recent Terraform versions, a parse error).
+
 ## The task
 
-Write a Terraform configuration that:
+You're writing the root module for a small AWS network — the file `terraform init` / `plan` / `apply` would run against. Structure it like this:
 
-1. Declares a `terraform {}` block requiring the `hashicorp/aws` provider at version `~> 5.0` and Terraform itself at `>= 1.5.0`.
-2. Configures the `aws` provider with `region = "us-west-2"`.
-3. Declares an `aws_vpc` resource named `"main"` with:
-   - `cidr_block = "10.0.0.0/16"`
-   - A `tags` map containing `Name = "main-vpc"` and `Environment = "production"`.
-4. Declares an `aws_subnet` resource named `"public"` that references `aws_vpc.main.id` as its `vpc_id` and uses `cidr_block = "10.0.1.0/24"`.
+```hcl
+terraform {
+  # required_version and required_providers go here
+}
+
+provider "aws" {
+  # region goes here
+}
+
+resource "aws_vpc" "main" {
+  # cidr_block and tags go here
+}
+
+resource "aws_subnet" "public" {
+  # vpc_id (a reference to the VPC) and cidr_block go here
+}
+```
+
+Fill it in so that:
+
+1. The `terraform {}` block requires Terraform `>= 1.5.0` and the `hashicorp/aws` provider (`source = "hashicorp/aws"`) at version `~> 5.0`.
+2. The `aws` provider block sets `region = "us-west-2"`.
+3. `resource "aws_vpc" "main"` sets `cidr_block = "10.0.0.0/16"` and a `tags` map containing `Name = "main-vpc"` and `Environment = "production"`.
+4. `resource "aws_subnet" "public"` sets `vpc_id` to a **reference** to the VPC's exported `id` attribute (`aws_vpc.main.id` — not a hardcoded string) and `cidr_block = "10.0.1.0/24"`.

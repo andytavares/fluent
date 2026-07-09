@@ -2,7 +2,7 @@
 
 ## What you'll learn
 
-A Java interface defines a contract — a set of method signatures that implementing classes must provide. Interfaces enable polymorphism: code written against an interface works with any implementation.
+Building on classes and objects (concept 1): a Java interface defines a contract — a set of method signatures that implementing classes must provide, with no state of their own. Interfaces enable polymorphism: code written against an interface works with any implementation, including ones that don't exist yet.
 
 ## Key concepts
 
@@ -56,14 +56,43 @@ interface Shape {
 }
 ```
 
-**vs other languages:** Java interfaces are nominal — a class must explicitly `implements` an interface. TypeScript and Go use structural typing (duck typing), where compatibility is inferred from the shape of the type.
+**vs other languages:** Java interfaces are nominal — a class must explicitly `implements` an interface. TypeScript and Go use structural typing (duck typing), where compatibility is inferred from the shape of the type alone, with no `implements` keyword required.
+
+## Watch out
+
+- **A variable declared with the interface type only exposes interface methods.** `Shape s = new Circle(5);` means `s.getRadius()` won't compile even though the underlying object has that method — you'd need to cast back to `Circle` first.
+- **Multiple interfaces can't have conflicting default methods** without you resolving the conflict explicitly — the compiler forces you to override and pick (or combine) the behavior.
+- **`implements` vs `extends`:** classes use `implements` for interfaces and `extends` for a superclass (singular). Interfaces use `extends` to inherit from other interfaces. Mixing these up is a common compile error for newcomers.
 
 ## The task
 
-Implement two classes that both implement the `Shape` interface (defined in `Solution.java`):
+Two shapes need to satisfy a common `Shape` interface (already defined in `Solution.java`) so a caller can compare shapes without knowing their concrete type.
 
-- `Circle(double radius)` — area: `π * r²`, perimeter: `2πr`, name: `"Circle"`
-- `Rectangle(double width, double height)` — area: `w * h`, perimeter: `2(w+h)`, name: `"Rectangle"`
+Implement two classes that both implement `Shape`:
+
+**`Circle(double radius)`** — `area()` returns `π * r²`, `perimeter()` returns `2πr`, `name()` returns `"Circle"`.
+
+**`Rectangle(double width, double height)`** — `area()` returns `w * h`, `perimeter()` returns `2(w+h)`, `name()` returns `"Rectangle"`.
 
 Also implement the utility method:
-- `static Shape larger(Shape a, Shape b)` — returns whichever shape has the larger area (return `a` if equal)
+
+**`static Shape larger(Shape a, Shape b)`** — returns whichever shape has the larger area; if the areas are equal, returns `a`.
+
+```java
+Shape c = new Circle(5);
+Shape r = new Rectangle(4, 6);
+
+c.area();               // ~78.54  (π * 25)
+c.perimeter();           // ~31.42  (2π * 5)
+c.name();                // "Circle"
+
+r.area();                // 24.0
+r.perimeter();            // 20.0
+r.name();                 // "Rectangle"
+
+Shape big   = new Circle(10);
+Shape small = new Rectangle(1, 1);
+larger(big, small).name();     // "Circle"    — big is the first arg and larger
+larger(small, big).name();     // "Circle"    — order of args doesn't change which shape wins
+larger(small, small).name();   // "Rectangle" — tie: returns the first argument (a)
+```

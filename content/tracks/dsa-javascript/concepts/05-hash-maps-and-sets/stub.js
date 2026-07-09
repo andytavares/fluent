@@ -1,46 +1,59 @@
 // Run: node stub.js
 
 /**
- * Returns indices [i, j] of two numbers that add up to target.
- * @param {number[]} nums
+ * Returns true if t is an anagram of s (same characters, same multiplicities).
+ * @param {string} s
+ * @param {string} t
+ * @returns {boolean}
+ */
+function isAnagram(s, t) {
+  // TODO: lengths must match; count up over s, count down over t —
+  // a missing/zero count during the count-down means false
+  return false;
+}
+
+/**
+ * Groups anagrams together. Group order and order within groups don't matter.
+ * @param {string[]} strs
+ * @returns {string[][]}
+ */
+function groupAnagrams(strs) {
+  // TODO: Map keyed by each string's canonical form ([...s].sort().join(""));
+  // push into the bucket, return [...map.values()]
+  return [];
+}
+
+/**
+ * Returns the 0-based indexes [i, j] (i < j) of the two positions summing to
+ * target. Exactly one solution exists.
+ * @param {number[]} nums  unsorted
  * @param {number} target
  * @returns {number[]}
  */
 function twoSum(nums, target) {
-  // TODO: iterate nums, store complement -> index in a Map
-  // if the complement of the current value exists in the map, return indices
+  // TODO: Map value → index; check the complement BEFORE inserting nums[i]
   return [];
 }
 
 /**
- * Groups anagrams together. Returns an array of groups.
- * @param {string[]} words
- * @returns {string[][]}
- */
-function groupAnagrams(words) {
-  // TODO: sort each word's characters to get a canonical key
-  // group words by key using a Map
-  return [];
-}
-
-/**
- * Returns the length of the longest consecutive sequence in an unsorted array.
- * Must run in O(n).
- * @param {number[]} nums
+ * Returns the length of the longest run of consecutive integer values.
+ * @param {number[]} nums  unsorted, may contain duplicates
  * @returns {number}
  */
-function longestConsecutiveSequence(nums) {
-  // TODO: put all nums into a Set
-  // for each n where n-1 is NOT in the set (sequence start), count forward
+function longestConsecutive(nums) {
+  // TODO: Set of all values; only count upward from run starts
+  // (values with no n - 1 in the set) to stay O(n)
   return 0;
 }
 
-module.exports = { twoSum, groupAnagrams, longestConsecutiveSequence };
+module.exports = { isAnagram, groupAnagrams, twoSum, longestConsecutive };
 
 function main() {
-  console.log(twoSum([2, 7, 11, 15], 9));                                    // [0, 1]
-  console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));    // grouped
-  console.log(longestConsecutiveSequence([100, 4, 200, 1, 3, 2]));           // 4
+  console.log(isAnagram("anagram", "nagaram")); // true
+  console.log(JSON.stringify(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"])));
+  // [["eat","tea","ate"],["tan","nat"],["bat"]] (any order)
+  console.log(JSON.stringify(twoSum([2, 7, 11, 15], 9))); // [0,1]
+  console.log(longestConsecutive([100, 4, 200, 1, 3, 2])); // 4
 }
 
 main();

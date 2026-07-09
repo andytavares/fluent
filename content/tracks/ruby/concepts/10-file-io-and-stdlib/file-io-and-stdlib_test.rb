@@ -1,4 +1,4 @@
-require_relative "exemplar"
+require_relative "stub"
 require "tempfile"
 require "pathname"
 

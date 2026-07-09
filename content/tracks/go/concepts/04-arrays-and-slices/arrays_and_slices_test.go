@@ -14,6 +14,7 @@ func TestSum(t *testing.T) {
 		{[]int{}, 0},
 		{[]int{-1, -2, 3}, 0},
 		{[]int{10}, 10},
+		{nil, 0},
 	}
 	for _, tt := range tests {
 		if got := Sum(tt.nums); got != tt.want {
@@ -34,5 +35,19 @@ func TestFilterEmpty(t *testing.T) {
 	got := Filter([]int{1, 2, 3}, 10)
 	if len(got) != 0 {
 		t.Errorf("Filter with threshold above all values should return empty, got %v", got)
+	}
+}
+
+func TestFilterEmptyInput(t *testing.T) {
+	got := Filter([]int{}, 0)
+	if len(got) != 0 {
+		t.Errorf("Filter([], 0) should return empty, got %v", got)
+	}
+}
+
+func TestFilterThresholdExclusive(t *testing.T) {
+	got := Filter([]int{5, 5, 5}, 5)
+	if len(got) != 0 {
+		t.Errorf("Filter with threshold equal to all values should return empty (exclusive), got %v", got)
 	}
 }

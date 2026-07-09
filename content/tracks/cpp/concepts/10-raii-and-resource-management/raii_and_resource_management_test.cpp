@@ -1,30 +1,11 @@
-// Compile: g++ -std=c++17 -o test raii_and_resource_management_test.cpp && ./test
+// Test runner — concatenated after stub.cpp (with main() stripped) into one
+// translation unit.
+// Build: g++ -std=c++17 -o test stub.cpp raii_and_resource_management_test.cpp && ./test
 #include <cstddef>
 #include <algorithm>
 #include <cstdio>
 #include <type_traits>
-
-class ScopedBuffer {
-public:
-    explicit ScopedBuffer(size_t size)
-        : data_(size > 0 ? new int[size]{} : nullptr), size_(size) {}
-    ~ScopedBuffer() { delete[] data_; }
-    ScopedBuffer(const ScopedBuffer&) = delete;
-    ScopedBuffer& operator=(const ScopedBuffer&) = delete;
-    ScopedBuffer(ScopedBuffer&& o) noexcept : data_(o.data_), size_(o.size_) { o.data_ = nullptr; o.size_ = 0; }
-    ScopedBuffer& operator=(ScopedBuffer&& o) noexcept {
-        if (this != &o) { delete[] data_; data_ = o.data_; size_ = o.size_; o.data_ = nullptr; o.size_ = 0; }
-        return *this;
-    }
-    size_t size() const { return size_; }
-    int* data() { return data_; }
-    int& operator[](size_t i) { return data_[i]; }
-    const int& operator[](size_t i) const { return data_[i]; }
-private:
-    int* data_; size_t size_;
-};
-
-ScopedBuffer concat(ScopedBuffer a, ScopedBuffer b);
+#include <utility>
 
 static int passed = 0, failed = 0;
 #define CHECK(name, cond) \
@@ -37,6 +18,10 @@ int main() {
           !std::is_copy_constructible<ScopedBuffer>::value);
     CHECK("ScopedBuffer: not copy-assignable",
           !std::is_copy_assignable<ScopedBuffer>::value);
+    CHECK("ScopedBuffer: is move-constructible",
+          std::is_move_constructible<ScopedBuffer>::value);
+    CHECK("ScopedBuffer: is move-assignable",
+          std::is_move_assignable<ScopedBuffer>::value);
 
     // Constructor + element access
     {
@@ -62,6 +47,7 @@ int main() {
         CHECK("move ctor: size", moved.size() == 3);
         CHECK("move ctor: values", moved[0] == 1 && moved[2] == 3);
         CHECK("move ctor: source zeroed", orig.size() == 0);
+        CHECK("move ctor: source data() null", orig.data() == nullptr);
     }
 
     // Move assignment
@@ -72,6 +58,10 @@ int main() {
         CHECK("move assign: size", b.size() == 2);
         CHECK("move assign: values", b[0] == 5 && b[1] == 6);
         CHECK("move assign: source zeroed", a.size() == 0);
+
+        // self-move-assignment must not corrupt the buffer
+        b = std::move(b);
+        CHECK("move assign: self-move-assign safe", b.size() == 2 && b[0] == 5);
     }
 
     // concat
@@ -82,6 +72,15 @@ int main() {
         CHECK("concat: size", c.size() == 5);
         CHECK("concat: first half", c[0] == 1 && c[2] == 3);
         CHECK("concat: second half", c[3] == 4 && c[4] == 5);
+    }
+
+    // concat with an empty operand
+    {
+        ScopedBuffer a(0);
+        ScopedBuffer b(2); b[0] = 9; b[1] = 10;
+        ScopedBuffer c = concat(std::move(a), std::move(b));
+        CHECK("concat: empty + non-empty size", c.size() == 2);
+        CHECK("concat: empty + non-empty values", c[0] == 9 && c[1] == 10);
     }
 
     printf("\n%d passed, %d failed\n", passed, failed);

@@ -119,24 +119,50 @@ nil.to_i     # => 0
 
 The "only `nil` and `false` are falsy" rule catches everyone coming from Python or JavaScript. `0` is truthy. `""` is truthy. `[]` is truthy. Plan accordingly.
 
+## Watch out
+
+- `if value` treats every non-`nil`, non-`false` value as true — including `0` and `""`. Coming from Python or JS, this is the single most common source of bugs in ported code.
+- `"a".to_sym` and `"a"` are never `==` — a symbol and a string with the same characters are different objects of different classes. Hash lookups with the wrong key type (`h["name"]` vs `h[:name]`) silently return `nil` instead of raising.
+- `<<` mutates a string in place; `+` does not. `s = "a"; t = s; s << "b"` also changes what `t` sees, because both variables reference the same string object.
+- `10 / 3` truncates toward zero like integer division in C — but `-7 / 2` is `-4` in Ruby (floors), not `-3` (truncates), because `Integer#/` floors. Use `.fdiv` when you want the exact float result.
+
 ## The task
 
-Implement these utility functions:
+Implement four small utility functions that exercise Ruby's type system, symbols, `nil`, and string interpolation.
+
+**`describe_type(value)`** — returns a `String` describing `value`'s runtime type: `"integer"`, `"float"`, `"string"`, `"symbol"`, `"boolean"` (for both `true` and `false`), or `"nil"`.
 
 ```ruby
-def describe_type(value)
-  # Return a string: "integer", "float", "string", "symbol", "boolean", or "nil"
-end
+describe_type(42)     # => "integer"
+describe_type(3.14)   # => "float"
+describe_type("hi")   # => "string"
+describe_type(:ok)    # => "symbol"
+describe_type(true)   # => "boolean"
+describe_type(false)  # => "boolean"
+describe_type(nil)    # => "nil"
+```
 
-def to_symbol(str)
-  # Convert a string to a symbol
-end
+**`to_symbol(str)`** — converts a `String` to a `Symbol`.
 
-def safe_divide(a, b)
-  # Return a.fdiv(b), but return nil if b is zero
-end
+```ruby
+to_symbol("hello")    # => :hello
+to_symbol("foo_bar")  # => :foo_bar
+to_symbol("")         # => :""
+```
 
-def interpolate_greeting(name, lang)
-  # Return "Hello, #{name}! Welcome to #{lang}."
-end
+**`safe_divide(a, b)`** — returns `a.fdiv(b)` (float division), but returns `nil` instead of raising when `b` is zero.
+
+```ruby
+safe_divide(10, 3)   # => 3.3333333333333335
+safe_divide(10, 2)   # => 5.0
+safe_divide(10, 0)   # => nil  — no ZeroDivisionError
+safe_divide(0, 0)    # => nil
+safe_divide(-5, 2)   # => -2.5
+```
+
+**`interpolate_greeting(name, lang)`** — returns `"Hello, #{name}! Welcome to #{lang}."` using string interpolation.
+
+```ruby
+interpolate_greeting("Alice", "Ruby")  # => "Hello, Alice! Welcome to Ruby."
+interpolate_greeting("", "Ruby")       # => "Hello, ! Welcome to Ruby."
 ```

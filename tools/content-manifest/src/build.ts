@@ -1,64 +1,26 @@
 #!/usr/bin/env node
-import { readdir, readFile, writeFile, mkdir } from "node:fs/promises";
-import { join, basename } from "node:path";
-import { z } from "zod";
-
-const conceptConfigSchema = z.object({
-  slug: z.string(),
-  title: z.string(),
-  position: z.number().int().positive(),
-  has_testout: z.boolean().default(false),
-  status: z.enum(["wip", "published"]).default("wip"),
-  prereq_slug: z.string().optional(),
-});
-
-const trackConfigSchema = z.object({
-  slug: z.string(),
-  title: z.string(),
-  description: z.string(),
-  language: z.string(),
-  status: z.enum(["coming_soon", "draft", "published"]).default("draft"),
-});
+import { writeFile, mkdir } from "node:fs/promises";
+import { join, resolve } from "node:path";
+import { createContentStore } from "@fluent/content-config";
 
 async function buildManifest(contentDir: string, outDir: string) {
-  const tracksDir = join(contentDir, "tracks");
-  const trackFolders = await readdir(tracksDir);
+  // The store is rooted at the repo root; contentDir is `<root>/content`.
+  const content = createContentStore(resolve(contentDir, ".."));
 
   const manifest: Record<string, unknown> = {};
 
-  for (const trackFolder of trackFolders) {
-    const trackPath = join(tracksDir, trackFolder);
-    const trackConfigRaw = JSON.parse(
-      await readFile(join(trackPath, "config.json"), "utf-8"),
-    ) as unknown;
-    const trackConfig = trackConfigSchema.parse(trackConfigRaw);
+  for (const track of content.listTracks()) {
+    const concepts = content
+      .listConcepts(track.dir)
+      .map((c) => c.config)
+      .sort((a, b) => a.position - b.position);
 
-    const conceptsDir = join(trackPath, "concepts");
-    let conceptFolders: string[] = [];
-    try {
-      conceptFolders = await readdir(conceptsDir);
-    } catch {
-      // no concepts yet
-    }
-
-    const concepts = await Promise.all(
-      conceptFolders.map(async (folder) => {
-        const conceptPath = join(conceptsDir, folder);
-        const configRaw = JSON.parse(
-          await readFile(join(conceptPath, "config.json"), "utf-8"),
-        ) as unknown;
-        return conceptConfigSchema.parse(configRaw);
-      }),
-    );
-
-    concepts.sort((a, b) => a.position - b.position);
-
-    manifest[trackConfig.slug] = {
-      ...trackConfig,
+    manifest[track.config.slug] = {
+      ...track.config,
       concepts,
     };
 
-    console.log(`✓ Track: ${trackConfig.slug} (${concepts.length} concepts)`);
+    console.log(`✓ Track: ${track.config.slug} (${concepts.length} concepts)`);
   }
 
   await mkdir(outDir, { recursive: true });

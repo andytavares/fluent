@@ -1,28 +1,33 @@
-from __future__ import annotations
+# Run: python3 exemplar.py
+#
+# Every tree node is a TreeNode(val, left, right); missing children are
+# None. An empty tree is None.
+
 from collections import deque
 
 
 class TreeNode:
-    def __init__(
-        self,
-        val: int = 0,
-        left: TreeNode | None = None,
-        right: TreeNode | None = None,
-    ) -> None:
+    def __init__(self, val=0, left=None, right=None):
         self.val = val
         self.left = left
         self.right = right
 
 
-def level_order(root: TreeNode | None) -> list[list[int]]:
-    """Return level-order traversal as a list of lists, one per level."""
+def level_order(root):
+    """Level order traversal via BFS with a deque.
+
+    The level_size snapshot marks the boundary: children pushed while
+    draining land at the back of the deque, so they always belong to the
+    next level.
+    O(n) time, O(w) space where w is the widest level.
+    """
     if root is None:
         return []
-    result: list[list[int]] = []
-    queue: deque[TreeNode] = deque([root])
+    result = []
+    queue = deque([root])
     while queue:
-        level_size = len(queue)
-        level: list[int] = []
+        level_size = len(queue)  # snapshot: exactly one level
+        level = []
         for _ in range(level_size):
             node = queue.popleft()
             level.append(node.val)
@@ -34,17 +39,22 @@ def level_order(root: TreeNode | None) -> list[list[int]]:
     return result
 
 
-def right_side_view(root: TreeNode | None) -> list[int]:
-    """Return values visible from the right side (last node at each level)."""
+def right_side_view(root):
+    """Rightmost node per level: same level loop, but only the last node
+    drained from each level is recorded. Enqueue order is left-to-right, so
+    the last node of a level is its rightmost — even when it lives in a
+    left subtree.
+    O(n) time, O(w) space.
+    """
     if root is None:
         return []
-    result: list[int] = []
-    queue: deque[TreeNode] = deque([root])
+    result = []
+    queue = deque([root])
     while queue:
         level_size = len(queue)
         for i in range(level_size):
             node = queue.popleft()
-            if i == level_size - 1:
+            if i == level_size - 1:  # last of this level
                 result.append(node.val)
             if node.left:
                 queue.append(node.left)
@@ -53,16 +63,20 @@ def right_side_view(root: TreeNode | None) -> list[int]:
     return result
 
 
-def zigzag_level_order(root: TreeNode | None) -> list[list[int]]:
-    """Return level-order where odd levels go left-to-right, even go right-to-left."""
+def zigzag_level_order(root):
+    """Zigzag is a presentation change, not a traversal change: children are
+    always enqueued left-then-right, and only the collected level list is
+    reversed on odd depths.
+    O(n) time, O(w) space.
+    """
     if root is None:
         return []
-    result: list[list[int]] = []
-    queue: deque[TreeNode] = deque([root])
+    result = []
+    queue = deque([root])
     left_to_right = True
     while queue:
         level_size = len(queue)
-        level: list[int] = []
+        level = []
         for _ in range(level_size):
             node = queue.popleft()
             level.append(node.val)
@@ -75,20 +89,15 @@ def zigzag_level_order(root: TreeNode | None) -> list[list[int]]:
     return result
 
 
-def _build(vals: list) -> TreeNode | None:
-    if not vals or vals[0] is None:
-        return None
-    root = TreeNode(vals[0])
-    q: deque[TreeNode] = deque([root])
-    i = 1
-    while q and i < len(vals):
-        node = q.popleft()
-        if i < len(vals) and vals[i] is not None:
-            node.left = TreeNode(vals[i])
-            q.append(node.left)
-        i += 1
-        if i < len(vals) and vals[i] is not None:
-            node.right = TreeNode(vals[i])
-            q.append(node.right)
-        i += 1
-    return root
+def main():
+    def node(val, left=None, right=None):
+        return TreeNode(val, left, right)
+
+    root = node(3, node(9), node(20, node(15), node(7)))
+    print(level_order(root))        # [[3],[9,20],[15,7]]
+    print(right_side_view(root))    # [3,20,7]
+    print(zigzag_level_order(root))  # [[3],[20,9],[15,7]]
+
+
+if __name__ == "__main__":
+    main()

@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@fastify/cors": "^9.0.0",
+    "@fluent/content-config": "workspace:*",
     "@prisma/client": "^5.15.0",
     "@temporalio/client": "^1.10.0",
     "@trpc/server": "^11.0.0",
@@ -29,7 +30,9 @@
     "pino-http": "^10.2.0",
     "prom-client": "^15.1.0",
     "superjson": "^2.2.0",
-    "zod": "^3.23.0"
+    "zod": "^3.23.0",
+    "@fluent/capstone-contract": "workspace:*",
+    "@fluent/execution-contract": "workspace:*"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

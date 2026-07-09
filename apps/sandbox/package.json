@@ -10,17 +10,18 @@
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "verify-content": "tsx scripts/verify-content.ts"
   },
   "dependencies": {
-    "@trpc/server": "^11.0.0",
     "bullmq": "^5.0.0",
     "fastify": "^4.28.0",
     "ioredis": "^5.4.0",
     "pino": "^9.3.0",
     "pino-http": "^10.2.0",
     "prom-client": "^15.1.0",
-    "zod": "^3.23.0"
+    "@fluent/execution-contract": "workspace:*",
+    "@fluent/content-config": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

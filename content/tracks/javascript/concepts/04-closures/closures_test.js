@@ -41,5 +41,9 @@ test("once: fn still called only once",    () => assert.strictEqual(callCount, 1
 test("once: third call same result",       () => assert.strictEqual(sideEffect(), 42));
 test("once: fn still called only once",    () => assert.strictEqual(callCount, 1));
 
+const addOnce = once((a, b) => a + b);
+test("once: first call's arguments are forwarded", () => assert.strictEqual(addOnce(2, 3), 5));
+test("once: later arguments are ignored",          () => assert.strictEqual(addOnce(10, 20), 5));
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed > 0) process.exit(1);

@@ -90,18 +90,30 @@ data class Failure(val error: String) : Result<Nothing>
 
 Kotlin's `sealed class` is closest to Swift's enum with associated values. The difference: Kotlin variants are full classes, so each can have its own methods and hierarchy.
 
+## Watch out
+
+- `when` is only exhaustiveness-checked (no `else` required) when it's used as an **expression** (its result is assigned or returned) against a sealed type. As a bare statement, the compiler won't complain about a missing branch.
+- Nesting the subclasses inside the sealed class (as in the task below) means every reference to a variant is qualified, e.g. `Expr.Num(3.0)`, not bare `Num(3.0)` — unless you add `import Expr.*`.
+- `sealed class` still lets you add an abstract member (property or function) that every subclass must implement — combine this with `when` for exhaustive dispatch instead of instance checks scattered through the codebase.
+
 ## The task
 
-Define and implement the following in `stub.kt`:
+Define and implement the following in `stub.kt`. `Expr` is a small arithmetic expression tree.
 
-- `sealed class Expr` with subclasses:
-  - `data class Num(val value: Double)`
-  - `data class Add(val left: Expr, val right: Expr)`
-  - `data class Mul(val left: Expr, val right: Expr)`
-  - `data class Neg(val expr: Expr)`
-- `fun evaluate(expr: Expr): Double` — recursively evaluates an `Expr` tree.
-- `fun describe(expr: Expr): String` — returns a human-readable string:
-  - `Num(3.0)` → `"3.0"`
-  - `Add(Num(1.0), Num(2.0))` → `"(1.0 + 2.0)"`
-  - `Mul(Num(2.0), Num(3.0))` → `"(2.0 * 3.0)"`
-  - `Neg(Num(4.0))` → `"(-4.0)"`
+- `sealed class Expr` with subclasses nested inside it (so they're referenced as `Expr.Num`, `Expr.Add`, etc.):
+  - `data class Num(val value: Double) : Expr()` — a literal number.
+  - `data class Add(val left: Expr, val right: Expr) : Expr()` — sum of two sub-expressions.
+  - `data class Mul(val left: Expr, val right: Expr) : Expr()` — product of two sub-expressions.
+  - `data class Neg(val expr: Expr) : Expr()` — negation of a sub-expression.
+- `fun evaluate(expr: Expr): Double` — recursively evaluates an `Expr` tree to its numeric value.
+- `fun describe(expr: Expr): String` — recursively renders an `Expr` tree as a human-readable string, fully parenthesized:
+  - `Expr.Num(3.0)` → `"3.0"`
+  - `Expr.Add(Expr.Num(1.0), Expr.Num(2.0))` → `"(1.0 + 2.0)"`
+  - `Expr.Mul(Expr.Num(2.0), Expr.Num(3.0))` → `"(2.0 * 3.0)"`
+  - `Expr.Neg(Expr.Num(4.0))` → `"(-4.0)"`
+
+```kotlin
+val e = Expr.Add(Expr.Num(1.0), Expr.Mul(Expr.Num(2.0), Expr.Num(3.0)))
+evaluate(e)   // 7.0
+describe(e)   // "(1.0 + (2.0 * 3.0))"
+```

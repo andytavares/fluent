@@ -1,59 +1,77 @@
-from __future__ import annotations
+# Run: python3 stub.py
+#
+# Every list node is a small ListNode object; next is None at the tail.
+# An empty list is None.
+
 
 
 class ListNode:
-    def __init__(self, val: int = 0, next: ListNode | None = None) -> None:
+    def __init__(self, val: int = 0, next: "ListNode | None" = None) -> None:
         self.val = val
         self.next = next
 
-    def __repr__(self) -> str:
-        vals: list[int] = []
-        curr: ListNode | None = self
-        seen: set[int] = set()
-        while curr and id(curr) not in seen:
-            seen.add(id(curr))
-            vals.append(curr.val)
-            curr = curr.next
-        return "->".join(str(v) for v in vals)
 
-
-def reverse_list(head: ListNode | None) -> ListNode | None:
-    """Reverse the linked list in place. Return the new head."""
-    # TODO: track prev, curr, next_node; rewire curr.next = prev each iteration
-    return None
-
-
-def has_cycle(head: ListNode | None) -> bool:
-    """Return True if the linked list contains a cycle."""
-    # TODO: Floyd's: slow moves 1 step, fast moves 2; they meet if there's a cycle
+def has_cycle(head: "ListNode | None") -> bool:
+    """Returns True if the list contains a cycle."""
+    # TODO: Floyd's fast/slow — slow moves 1, fast moves 2
+    # loop while fast is not None and fast.next is not None; compare node identity
     return False
 
 
-def merge_two_sorted_lists(
-    l1: ListNode | None, l2: ListNode | None
-) -> ListNode | None:
-    """Merge two sorted linked lists and return the head of the merged list."""
-    # TODO: use a dummy head; advance whichever list has the smaller current value;
-    #       attach the remaining non-empty list at the end
+def add_two_numbers(l1: ListNode, l2: ListNode) -> "ListNode | None":
+    """Adds two numbers stored as reverse-order digit lists (head = ones digit).
+    Returns the sum in the same format."""
+    # TODO: dummy head + carry; loop while l1 or l2 or carry
+    # digit = total % 10, carry = total // 10
     return None
 
 
-def _make_list(vals: list[int]) -> ListNode | None:
-    """Helper: build a linked list from a list of values."""
-    if not vals:
-        return None
-    head = ListNode(vals[0])
-    curr = head
-    for v in vals[1:]:
-        curr.next = ListNode(v)
-        curr = curr.next
-    return head
+def merge_two_lists(list1: "ListNode | None", list2: "ListNode | None") -> "ListNode | None":
+    """Merges two sorted lists by splicing the existing nodes. Returns the head."""
+    # TODO: dummy head + tail; attach the smaller head each step,
+    # then attach the leftover list; return dummy.next
+    return None
+
+
+def reverse_between(head: "ListNode | None", left: int, right: int) -> "ListNode | None":
+    """Reverses positions left..right (1-indexed) in place. Returns the head."""
+    # TODO: dummy head; walk prev to position left-1; front-insert the node
+    # after start, right-left times; return dummy.next
+    return None
+
+
+def list_from(vals: list[int]) -> "ListNode | None":
+    """Builds a linked list from a list of values."""
+    dummy = ListNode(0)
+    tail = dummy
+    for v in vals:
+        tail.next = ListNode(v)
+        tail = tail.next
+    return dummy.next
+
+
+def to_list(head: "ListNode | None") -> list[int]:
+    """Reads a linked list back into a Python list."""
+    out = []
+    node = head
+    while node is not None:
+        out.append(node.val)
+        node = node.next
+    return out
+
+
+def main() -> None:
+    cyclic = list_from([3, 2, 0, -4])
+    node = cyclic
+    while node.next is not None:
+        node = node.next
+    node.next = cyclic.next  # -4 loops back to 2
+    print(has_cycle(cyclic))  # True
+
+    print(to_list(add_two_numbers(list_from([2, 4, 3]), list_from([5, 6, 4]))))  # [7, 0, 8]
+    print(to_list(merge_two_lists(list_from([1, 2, 4]), list_from([1, 3, 4]))))  # [1, 1, 2, 3, 4, 4]
+    print(to_list(reverse_between(list_from([1, 2, 3, 4, 5]), 2, 4)))  # [1, 4, 3, 2, 5]
 
 
 if __name__ == "__main__":
-    head = _make_list([1, 2, 3, 4, 5])
-    print(reverse_list(head))                            # 5->4->3->2->1
-    print(has_cycle(_make_list([1, 2, 3])))             # False
-    l1 = _make_list([1, 2, 4])
-    l2 = _make_list([1, 3, 4])
-    print(merge_two_sorted_lists(l1, l2))               # 1->1->2->3->4->4
+    main()

@@ -108,10 +108,41 @@ When Python runs a file directly, `__name__` is `"__main__"`. When it's imported
 
 Python's circular import handling is fragile — if module A imports B and B imports A at the top level, you get `ImportError` or partially-initialized modules. The fix is to move imports inside functions or restructure the package.
 
+## Watch out
+
+- Circular imports (A imports B, B imports A) at module top level raise `ImportError` or hand you a half-initialized module — move the import inside a function, or restructure the dependency, rather than fighting the import order.
+- Relative imports (`from . import x`) only work inside a package that was itself imported — running `python user.py` directly makes `__name__ == "__main__"` and relative imports fail with `ImportError: attempted relative import with no known parent package`.
+- Module-level code runs exactly **once**, on first import, no matter how many times or where it's imported from afterward — don't rely on top-level side effects (like appending to a global list) running again on a second `import`.
+- `importlib.reload()` re-executes the module body but does **not** update references other modules already hold to the old objects (`from mod import func` keeps the old `func`) — reload is a development convenience, not a live-patching mechanism.
+
 ## The task
 
-Implement three functions. These are standalone functions — no package structure needed for this exercise.
+Implement three standalone functions around Python's import machinery. No package structure is needed for this exercise — everything operates on already-installed stdlib module names passed as strings.
 
-- `list_public_names(module_name: str) -> list[str]` — dynamically imports the module by name using `importlib.import_module`, then returns its `__all__` attribute if present, otherwise returns all names that don't start with `_`. Returns a sorted list.
-- `is_cached(module_name: str) -> bool` — returns `True` if the module name is already in `sys.modules`.
-- `safe_import(module_name: str) -> object | None` — attempts to import the module; returns the module object on success, `None` if the module doesn't exist (catches `ModuleNotFoundError` only).
+**`list_public_names(module_name: str) -> list[str]`** — dynamically imports the module named `module_name` using `importlib.import_module`. If the module defines `__all__`, return a **sorted** list of that. Otherwise, return a sorted list of every name in the module's namespace that doesn't start with `_`.
+
+```python
+list_public_names("os.path")
+# a sorted list of os.path's public names, e.g. ['abspath', 'altsep', 'basename', ...]
+
+list_public_names("json")
+# sorted(json.__all__) if json defines __all__, else its sorted public names
+```
+
+**`is_cached(module_name: str) -> bool`** — returns `True` if `module_name` is currently a key in `sys.modules` (i.e. has already been imported somewhere in the process), `False` otherwise.
+
+```python
+import sys
+sys.modules.pop("csv", None)   # ensure a clean slate for this example
+is_cached("csv")   # False
+import csv
+is_cached("csv")   # True
+is_cached("sys")   # True — sys itself is always loaded
+```
+
+**`safe_import(module_name: str) -> object | None`** — attempts `importlib.import_module(module_name)` and returns the resulting module object on success. If the module doesn't exist, catches **only** `ModuleNotFoundError` and returns `None` (let any other exception the module might raise on import propagate normally).
+
+```python
+safe_import("os")                      # <module 'os' ...>
+safe_import("no_such_module_xyz")      # None
+```

@@ -51,7 +51,7 @@ fn main() {
         };
     }
 
-    use solution::{Circle, Triangle};
+    use solution::{Area, Circle, Triangle};
 
     // Circle area
     let c = Circle { radius: 1.0 };

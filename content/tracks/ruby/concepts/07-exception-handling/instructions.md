@@ -138,23 +138,50 @@ Never `rescue Exception` — it catches signals and `SystemExit`, which breaks C
 
 Go engineers should note: Ruby exceptions are zero-cost when not raised (exceptions are exceptional). The idiomatic approach in Ruby is to raise for truly exceptional conditions and use `nil` / sentinel values for expected failures — similar to Go's `ok` returns, but without the enforced call-site checking.
 
+## Watch out
+
+- `rescue` clauses are checked top-to-bottom, first match wins — put more specific exception classes before `StandardError`. A bare `rescue` (no class named) only catches `StandardError` and subclasses, never `Exception` directly.
+- `Integer("abc")` raises `ArgumentError`, but `Integer(nil)` raises `TypeError` — if you only rescue `ArgumentError`, a `nil` input will blow past your handler. Decide up front which inputs are possible.
+- `ensure` runs even if the `begin`/method body hits `return` or another exception — don't put a `return` inside `ensure` itself, it silently swallows whatever exception was propagating.
+- `retry` re-runs the **entire** `begin` block from the top, including any side effects already performed (e.g. incrementing a counter again) — track attempt counts outside the retried block if you need to bound them.
+
 ## The task
 
+Implement a custom exception class and two functions that raise, rescue, and retry.
+
+**`ValidationError < StandardError`** — a custom exception with `attr_reader :field`. `initialize(field, message)` stores `field` and calls `super` with the combined message `"#{field}: #{message}"`.
+
 ```ruby
-class ValidationError < StandardError
-  # Custom exception. initialize(field, message) should call super with
-  # "#{field}: #{message}" and expose a `field` attr_reader.
-end
+err = ValidationError.new("email", "is invalid")
+err.message  # => "email: is invalid"
+err.field    # => "email"
+err.is_a?(StandardError)  # => true
+```
 
-def parse_positive_integer(str)
-  # Parse str as an integer. Raise ArgumentError if str is not a valid integer.
-  # Raise RangeError if the parsed integer is <= 0.
-  # Return the integer on success.
-end
+**`parse_positive_integer(str)`** — parses `str` as an integer using `Integer(str)`. Raises `ArgumentError` if `str` is not a valid integer string. Raises `RangeError` if the parsed integer is `<= 0`. Returns the integer on success.
 
-def with_retry(max_attempts, &block)
-  # Call block. If it raises StandardError, retry up to max_attempts total.
-  # After max_attempts, re-raise the last exception.
-  # Return the block's return value on success.
+```ruby
+parse_positive_integer("42")   # => 42
+parse_positive_integer("1")    # => 1
+parse_positive_integer("abc")  # raises ArgumentError
+parse_positive_integer("3.14") # raises ArgumentError — not an integer string
+parse_positive_integer("0")    # raises RangeError
+parse_positive_integer("-5")   # raises RangeError
+```
+
+**`with_retry(max_attempts, &block)`** — calls `block`. If it raises any `StandardError`, retries the call, up to `max_attempts` total attempts. If the final attempt still raises, re-raises that exception to the caller. Returns `block`'s return value on the first successful call.
+
+```ruby
+calls = 0
+with_retry(3) do
+  calls += 1
+  raise "fail" if calls < 3
+  "success"
 end
+# => "success", calls == 3  (succeeded on the 3rd attempt)
+
+with_retry(1) { "immediate" }  # => "immediate", block called once
+
+with_retry(2) { raise "always fails" }
+# raises RuntimeError after 2 attempts
 ```

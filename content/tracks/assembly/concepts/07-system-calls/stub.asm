@@ -23,9 +23,7 @@ print_message:
 ; rdi = exit status
 exit_with_code:
     ; TODO: syscall exit(60) with status = rdi
-    mov  eax, 60
-    xor  edi, edi
-    syscall
+    ret
 
 _start:
     lea  rdi, [hello]
@@ -34,3 +32,8 @@ _start:
 
     mov  rdi, 0
     call exit_with_code
+
+    ; fallback exit in case exit_with_code above isn't implemented yet
+    mov  eax, 60
+    xor  edi, edi
+    syscall

@@ -1,5 +1,10 @@
 import sys
-# Remove any pre-cached test modules so our is_cached tests are clean
+# Remove any pre-cached test modules so our is_cached tests are clean.
+# Note: importing "stub" below can itself trigger imports of some stdlib
+# modules as a side effect of the execution harness. "csv" is never touched
+# by that path, which is why the "not yet imported" check below uses it
+# instead of "json" — a module that already gets pulled in as a side effect
+# would make that assertion order-dependent.
 for _mod in ["json", "csv", "textwrap"]:
     sys.modules.pop(_mod, None)
 
@@ -66,7 +71,7 @@ def check_list_json_all():
 
 
 # is_cached
-test("is_cached: not yet imported",    lambda: assert_eq(is_cached("json"), False))
+test("is_cached: not yet imported",    lambda: assert_eq(is_cached("csv"), False))
 test("is_cached: after import",        check_is_cached_after_import)
 test("is_cached: stdlib always cached", lambda: assert_eq(is_cached("sys"), True))
 

@@ -43,8 +43,9 @@ ScopedBuffer concat(ScopedBuffer a, ScopedBuffer b) {
     return ScopedBuffer(0);
 }
 
+#include <cstdio>
 int main() {
     ScopedBuffer buf(5);
-    buf[0] = 1; buf[4] = 99;
+    std::printf("size: %zu\n", buf.size());
     return 0;
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestGenerate(t *testing.T) {
@@ -33,5 +34,28 @@ func TestGenerateSingle(t *testing.T) {
 	}
 	if !reflect.DeepEqual(got, []int{42}) {
 		t.Errorf("Generate(42) = %v, want [42]", got)
+	}
+}
+
+func TestGenerateChannelCloses(t *testing.T) {
+	ch := Generate(1, 2)
+	<-ch
+	<-ch
+	_, ok := <-ch
+	if ok {
+		t.Error("Generate channel should be closed after all values are drained")
+	}
+}
+
+func TestGenerateDoesNotBlockCaller(t *testing.T) {
+	done := make(chan struct{})
+	go func() {
+		Generate(1, 2, 3)
+		close(done)
+	}()
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Error("Generate blocked the calling goroutine instead of returning immediately")
 	}
 }

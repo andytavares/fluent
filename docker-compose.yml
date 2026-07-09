@@ -27,36 +27,6 @@ services:
       timeout: 3s
       retries: 5
 
-  judge0:
-    image: judge0/judge0:latest
-    depends_on:
-      - postgres
-      - redis
-    environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      POSTGRES_HOST: postgres
-      POSTGRES_USER: fluent
-      POSTGRES_PASSWORD: fluent
-      POSTGRES_DB: fluent_judge0
-    ports:
-      - "2358:2358"
-    privileged: true
-
-  judge0-worker:
-    image: judge0/judge0:latest
-    depends_on:
-      - judge0
-    command: ["./scripts/workers"]
-    environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      POSTGRES_HOST: postgres
-      POSTGRES_USER: fluent
-      POSTGRES_PASSWORD: fluent
-      POSTGRES_DB: fluent_judge0
-    privileged: true
-
   temporal:
     image: temporalio/auto-setup:latest
     depends_on:

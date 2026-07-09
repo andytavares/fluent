@@ -11,17 +11,23 @@ test("typeLabel: string",    () => assert.strictEqual(typeLabel("hi"),        "s
 test("typeLabel: number",    () => assert.strictEqual(typeLabel(42),          "number"));
 test("typeLabel: boolean",   () => assert.strictEqual(typeLabel(true),        "boolean"));
 test("typeLabel: undefined", () => assert.strictEqual(typeLabel(undefined),   "undefined"));
+test("typeLabel: null is 'object'",  () => assert.strictEqual(typeLabel(null),     "object"));
+test("typeLabel: array is 'object'", () => assert.strictEqual(typeLabel([]),       "object"));
+test("typeLabel: function",          () => assert.strictEqual(typeLabel(() => {}), "function"));
 
 test("strictEquals: 1 === 1",      () => assert.strictEqual(strictEquals(1, 1),     true));
 test("strictEquals: 1 === '1'",    () => assert.strictEqual(strictEquals(1, "1"),   false));
 test("strictEquals: null === null", () => assert.strictEqual(strictEquals(null, null), true));
 test("strictEquals: 0 === false",  () => assert.strictEqual(strictEquals(0, false), false));
+test("strictEquals: NaN === NaN is false", () => assert.strictEqual(strictEquals(NaN, NaN), false));
 
 test("clamp: below min",   () => assert.strictEqual(clamp(-5, 0, 10), 0));
 test("clamp: above max",   () => assert.strictEqual(clamp(15, 0, 10), 10));
 test("clamp: within range", () => assert.strictEqual(clamp(5,  0, 10), 5));
 test("clamp: at min",      () => assert.strictEqual(clamp(0,  0, 10), 0));
 test("clamp: at max",      () => assert.strictEqual(clamp(10, 0, 10), 10));
+test("clamp: negative range", () => assert.strictEqual(clamp(-3, -10, -1), -3));
+test("clamp: min === max",    () => assert.strictEqual(clamp(7, 7, 7), 7));
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed > 0) process.exit(1);

@@ -4,15 +4,15 @@ struct Rectangle {
 }
 
 impl Rectangle {
-    fn new(width: f64, height: f64) -> Self {
+    pub fn new(width: f64, height: f64) -> Self {
         Self { width, height }
     }
 
-    fn area(&self) -> f64 {
+    pub fn area(&self) -> f64 {
         self.width * self.height
     }
 
-    fn is_square(&self) -> bool {
+    pub fn is_square(&self) -> bool {
         self.width == self.height
     }
 }

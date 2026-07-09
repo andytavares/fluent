@@ -6,10 +6,6 @@
 #include <vector>
 #include <string>
 
-std::function<int()> make_counter(int start);
-std::vector<int> transform_if(std::vector<int>, std::function<bool(int)>, std::function<int(int)>);
-std::function<int(int)> compose(std::function<int(int)>, std::function<int(int)>);
-
 static int passed = 0, failed = 0;
 
 void check(const std::string& name, bool condition) {
@@ -20,6 +16,9 @@ void check(const std::string& name, bool condition) {
 int main() {
     // make_counter
     {
+        auto defaulted = make_counter();
+        check("counter: default start is 0", defaulted() == 0);
+
         auto c = make_counter(0);
         check("counter: first call",  c() == 0);
         check("counter: second call", c() == 1);

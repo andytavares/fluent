@@ -80,6 +80,13 @@ Terraform has built-in functions (`format`, `toset`, `merge`, etc.) and a simila
 
 Kustomize has no functions. Period.
 
+## Watch out
+
+- **`required` only guards against missing/empty values — it doesn't validate type or format.** `required "db.host is required" .Values.db.host` passes as long as `db.host` is any non-empty string; it won't catch a typo'd hostname. Combine with `values.schema.json` (covered in production patterns) for real validation.
+- **`b64enc` operates on the string, not the YAML-decoded value.** `.Values.db.password | b64enc` encodes whatever string `password` holds — if `password: "12345"` was written unquoted and YAML parsed it as a number, piping a number into `b64enc` still works (Sprig coerces it to a string first), but a nested map or list passed to `b64enc` errors, because there's no sensible string form.
+- **Pipeline order matters and reads left-to-right, but nesting reads inside-out.** `{{ .Values.db.name | default "appdb" | b64enc | quote }}` is *not* the same as `{{ quote (b64enc (default "appdb" .Values.db.name)) }}` written differently — they're the same computation, but the pipeline form is idiomatic Helm and the nested-call form is rare outside of Sprig's own docs. Prefer pipelines; they're what every real chart uses.
+- **`toString` matters more than it looks.** Piping a Go `int` or `bool` value into a function that expects a string (like `upper` or `b64enc`) sometimes works because Sprig auto-converts, but relying on it is fragile across Sprig versions — pipe through `toString` explicitly when the source value's type isn't guaranteed to be a string.
+
 ## The task
 
 Write a `templates/secret.yaml` that demonstrates the key functions:
@@ -90,3 +97,32 @@ Write a `templates/secret.yaml` that demonstrates the key functions:
 4. Store a `DB_PASSWORD` key: take `.Values.db.password`, use `required "db.password is required"`, then `b64enc`
 5. Store a `DB_NAME` key: take `.Values.db.name | default "appdb"` then `b64enc | quote`
 6. In `metadata.labels`, apply a label `environment` set to `.Values.global.env | default "production" | lower`
+
+For example, given a release named `myapp` and this `values.yaml`:
+
+```yaml
+db:
+  host: "db.internal"
+  password: "s3cr3t"
+global:
+  env: "PRODUCTION"
+```
+
+(note: `db.name` is intentionally omitted), the rendered Secret is:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: myapp-db-credentials
+  namespace: <release namespace>
+  labels:
+    environment: production
+type: Opaque
+data:
+  DB_HOST: ZGIuaW50ZXJuYWw=
+  DB_PASSWORD: czNjcjN0
+  DB_NAME: "YXBwZGI="
+```
+
+`DB_HOST` and `DB_PASSWORD` are the base64 encodings of `db.internal` and `s3cr3t`; `DB_NAME` falls back to `appdb` (base64: `YXBwZGI=`) because `db.name` wasn't set. `environment` is lowercased from `"PRODUCTION"` to `production` regardless of how the operator capitalized it in `values.yaml`. If `db.host` or `db.password` is missing entirely, the chart must fail to render with the exact `required` message rather than producing a Secret with an empty credential.

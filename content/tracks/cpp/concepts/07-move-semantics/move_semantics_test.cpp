@@ -1,50 +1,10 @@
-// Compile and run: g++ -std=c++17 -o test move_semantics_test.cpp && ./test
+// Test runner — concatenated after stub.cpp's Buffer class and merge function
+// (with stub.cpp's main() stripped) into one translation unit.
+// Build: g++ -std=c++17 -o test stub.cpp move_semantics_test.cpp && ./test
 #include <cstddef>
 #include <algorithm>
 #include <cstdio>
-#include <cstring>
-
-// --- paste Buffer and merge from stub.cpp above main ---
-
-class Buffer {
-public:
-    explicit Buffer(size_t size)
-        : data_(size > 0 ? new double[size]{} : nullptr), size_(size) {}
-    Buffer(const Buffer& other)
-        : data_(other.size_ > 0 ? new double[other.size_] : nullptr), size_(other.size_) {
-        std::copy(other.data_, other.data_ + size_, data_);
-    }
-    Buffer& operator=(const Buffer& other) {
-        if (this == &other) return *this;
-        delete[] data_; size_ = other.size_;
-        data_ = size_ > 0 ? new double[size_] : nullptr;
-        std::copy(other.data_, other.data_ + size_, data_);
-        return *this;
-    }
-    Buffer(Buffer&& other) noexcept : data_(other.data_), size_(other.size_) {
-        other.data_ = nullptr; other.size_ = 0;
-    }
-    Buffer& operator=(Buffer&& other) noexcept {
-        if (this == &other) return *this;
-        delete[] data_; data_ = other.data_; size_ = other.size_;
-        other.data_ = nullptr; other.size_ = 0; return *this;
-    }
-    ~Buffer() { delete[] data_; }
-    size_t size() const { return size_; }
-    double& operator[](size_t i) { return data_[i]; }
-    const double& operator[](size_t i) const { return data_[i]; }
-private:
-    double* data_; size_t size_;
-};
-
-Buffer merge(Buffer a, Buffer b) {
-    Buffer result(a.size() + b.size());
-    for (size_t i = 0; i < a.size(); ++i) result[i] = a[i];
-    for (size_t i = 0; i < b.size(); ++i) result[a.size() + i] = b[i];
-    return result;
-}
-
-// --- test harness ---
+#include <utility>
 
 static int passed = 0, failed = 0;
 
@@ -112,6 +72,9 @@ int main() {
         CHECK("move assign: destination size", b.size() == 3);
         CHECK("move assign: destination value", b[0] == 5.0);
         CHECK("move assign: source size zeroed", a.size() == 0);
+        // self-move-assignment must not corrupt the buffer
+        b = std::move(b);
+        CHECK("move assign: self-move-assign safe", b.size() == 3 && b[0] == 5.0);
     }
 
     // merge
@@ -128,6 +91,8 @@ int main() {
     {
         Buffer empty(0);
         CHECK("empty buffer: size 0", empty.size() == 0);
+        Buffer copyOfEmpty(empty);
+        CHECK("copy of empty buffer: size 0", copyOfEmpty.size() == 0);
     }
 
     printf("\n%d passed, %d failed\n", passed, failed);

@@ -117,23 +117,48 @@ a, b = [10, 20]
 
 One trap: `Hash[]` and `{}` are both valid hash literals, but `{}` at the start of a statement is parsed as a block, not a hash. Always use parentheses or assign to a variable when a bare `{}` would be ambiguous.
 
+## Watch out
+
+- `Hash.new(0)` is safe for numeric counters, but **never** use `Hash.new([])` for an accumulator — every missing key returns the *same* array object, so pushing into one key's "array" mutates every other missing key too. Use `Hash.new { |h, k| h[k] = [] }` instead when the default must be a fresh mutable object per key.
+- `h[:missing]` returns `nil` silently; `h.fetch(:missing)` raises `KeyError`. Prefer `fetch` when a missing key is a bug, `[]` when `nil` is a legitimate "not present" result.
+- `{ "name" => "Alice", name: "Bob" }` has two distinct keys — `"name"` (String) and `:name` (Symbol) never collide. Mixing string-keyed and symbol-keyed hashes (e.g. `JSON.parse` output vs. a literal) is a common source of `nil`-where-value-expected bugs.
+- `nums[10]` on a 3-element array returns `nil`, not an error — Ruby never raises `IndexError` for `Array#[]` reads out of range (only for `Array#fetch`).
+
 ## The task
 
+Implement four functions covering array iteration, hash transformation, and grouping.
+
+**`sum_of_squares(nums)`** — returns the sum of the square of each number in the `nums` array.
+
 ```ruby
-def sum_of_squares(nums)
-  # Return the sum of squares of each number in nums
-end
+sum_of_squares([1, 2, 3, 4])   # => 30   (1 + 4 + 9 + 16)
+sum_of_squares([5])            # => 25
+sum_of_squares([])             # => 0
+sum_of_squares([-1, -2, -3])   # => 14
+```
 
-def words_longer_than(words, min_length)
-  # Return words whose length is strictly greater than min_length
-end
+**`words_longer_than(words, min_length)`** — returns the subset of `words` whose length is **strictly greater than** `min_length`, preserving original order.
 
-def invert_hash(h)
-  # Swap keys and values. Assume values are unique.
-end
+```ruby
+words_longer_than(["hi", "hello", "hey", "greetings"], 3)  # => ["hello", "greetings"]
+words_longer_than(["a", "bb", "ccc"], 5)                   # => []
+words_longer_than([], 2)                                   # => []
+```
 
-def group_by_first_letter(words)
-  # Return a Hash mapping the first letter (String) to an Array of matching words.
-  # E.g. ["apple", "avocado", "banana"] => { "a" => ["apple", "avocado"], "b" => ["banana"] }
-end
+**`invert_hash(h)`** — returns a new `Hash` with keys and values swapped. Assume all values in `h` are unique (so the inversion is well-defined).
+
+```ruby
+invert_hash({ a: 1, b: 2, c: 3 })   # => { 1 => :a, 2 => :b, 3 => :c }
+invert_hash({ "foo" => "x" })       # => { "x" => "foo" }
+invert_hash({})                     # => {}
+```
+
+**`group_by_first_letter(words)`** — returns a `Hash` mapping each first letter (as a `String`) to an `Array` of the words that start with it, preserving each word's original relative order within its group.
+
+```ruby
+group_by_first_letter(["apple", "avocado", "banana", "apricot"])
+# => { "a" => ["apple", "avocado", "apricot"], "b" => ["banana"] }
+
+group_by_first_letter([])
+# => {}
 ```

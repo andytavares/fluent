@@ -16,6 +16,11 @@ test("head: throws on empty array",   () => assert.throws(() => head([]), /empty
 test("tail: returns rest",            () => assert.deepStrictEqual(tail([1, 2, 3, 4]), [2, 3, 4]));
 test("tail: single element → []",     () => assert.deepStrictEqual(tail([1]), []));
 test("tail: empty → []",              () => assert.deepStrictEqual(tail([]), []));
+test("tail: does not mutate the input", () => {
+  const src = [1, 2, 3];
+  assert.deepStrictEqual(tail(src), [2, 3]);
+  assert.deepStrictEqual(src, [1, 2, 3]);
+});
 
 // unzip
 test("unzip: keys and values", () => {
@@ -41,6 +46,18 @@ test("mergeWithDefaults: does not mutate defaults", () => {
   mergeWithDefaults(defaults, { x: 99 });
   assert.strictEqual(defaults.x, 1);
 });
+test("mergeWithDefaults: does not mutate overrides", () => {
+  const overrides = { x: 99 };
+  mergeWithDefaults({ x: 1, y: 2 }, overrides);
+  assert.deepStrictEqual(overrides, { x: 99 });
+});
+test("mergeWithDefaults: shallow — nested objects replaced wholesale", () => {
+  const result = mergeWithDefaults(
+    { theme: { dark: true, font: 12 } },
+    { theme: { dark: false } }
+  );
+  assert.deepStrictEqual(result, { theme: { dark: false } });
+});
 
 // sumRest
 test("sumRest: multiple args", () => assert.strictEqual(sumRest(1, 2, 3, 4), 10));
@@ -54,6 +71,9 @@ test("pluck: extracts key", () => {
 });
 test("pluck: empty array", () => {
   assert.deepStrictEqual(pluck([], "name"), []);
+});
+test("pluck: missing key → undefined", () => {
+  assert.deepStrictEqual(pluck([{ a: 1 }, { b: 2 }], "a"), [1, undefined]);
 });
 
 console.log(`\n${passed} passed, ${failed} failed`);

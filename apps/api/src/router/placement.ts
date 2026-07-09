@@ -1,45 +1,9 @@
 import { z } from "zod";
-import { readFileSync, readdirSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, join, resolve } from "node:path";
 import { router, protectedProcedure } from "./trpc.js";
 import { PlacementService } from "../service/placement.js";
+import { createContentStore } from "@fluent/content-config";
 
-const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
-
-const LANG_EXT: Record<string, string> = {
-  go: "go",
-  javascript: "js",
-  typescript: "ts",
-  c: "c",
-  cpp: "cpp",
-  java: "java",
-  elixir: "ex",
-  ruby: "rb",
-  python: "py",
-  shell: "sh",
-  assembly: "asm",
-  terraform: "tf",
-  helm: "yaml",
-  kotlin: "kt",
-  rust: "rs",
-};
-
-function readStub(dir: string, ext: string): string {
-  try {
-    const files = readdirSync(dir);
-    const match = files.find((f) => f.startsWith("stub.") && f.endsWith(`.${ext}`))
-      ?? files.find((f) => f.startsWith("stub."));
-    return match ? readFileSync(join(dir, match), "utf8") : "";
-  } catch {
-    return "";
-  }
-}
-
-function extractTaskPrompt(instructions: string): string {
-  const match = instructions.match(/## The task\n([\s\S]*?)(?=\n## |$)/);
-  return match?.[1]?.trim() ?? "";
-}
+const content = createContentStore();
 
 export const placementRouter = router({
   startPlacement: protectedProcedure
@@ -52,7 +16,6 @@ export const placementRouter = router({
         where: { id: input.enrollmentId },
         include: { track: true },
       });
-      const ext = LANG_EXT[enrollment.track.language] ?? "go";
 
       return Promise.all(
         concepts.map(async (concept) => {
@@ -62,32 +25,17 @@ export const placementRouter = router({
           let stub = "";
           let taskPrompt = "";
           if (exercise?.contentPath) {
-            const dir = join(REPO_ROOT, exercise.contentPath);
-            stub = readStub(dir, ext);
-            try {
-              const instructions = readFileSync(join(dir, "instructions.md"), "utf8");
-              taskPrompt = extractTaskPrompt(instructions);
-            } catch {
-              // missing instructions — leave empty
-            }
+            stub = content.getLessonStub(exercise.contentPath, enrollment.track.language);
+            taskPrompt = content.getTaskPrompt(exercise.contentPath);
           }
           return { ...concept, stub, taskPrompt, language: enrollment.track.language };
         }),
       );
     }),
 
-  submitTask: protectedProcedure
-    .input(
-      z.object({
-        enrollmentId: z.string().uuid(),
-        conceptId: z.string().uuid(),
-        passed: z.boolean(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const service = new PlacementService(ctx.db);
-      return service.scoreTask(input.enrollmentId, input.conceptId, input.passed);
-    }),
+  // Placement tasks are scored server-side by the submission pipeline
+  // (submissions.createSubmission with kind "placement") — there is no
+  // client-supplied verdict endpoint.
 
   skipPlacement: protectedProcedure
     .input(z.object({ enrollmentId: z.string().uuid() }))

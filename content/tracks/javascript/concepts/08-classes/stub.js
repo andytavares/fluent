@@ -74,12 +74,14 @@ class Rectangle extends Shape {
 
 module.exports = { Stack, Shape, Circle, Rectangle };
 
-// Quick demo
-const s = new Stack();
-s.push(1);
-s.push(2);
-console.log(s.size);     // 2
-console.log(s.pop());    // 2
+// Quick smoke-check — run with: node stub.js
+if (require.main === module) {
+  const s = new Stack();
+  s.push(1);
+  s.push(2);
+  console.log(s.size);     // 2
+  console.log(s.pop());    // 2
 
-const c = Circle.unitCircle();
-console.log(c.describe()); // A white circle with radius 1
+  const c = Circle.unitCircle();
+  console.log(c && c.describe()); // A white circle with radius 1
+}

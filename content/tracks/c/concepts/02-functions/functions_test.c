@@ -1,6 +1,6 @@
 /*
  * Build: gcc -o test stub.c functions_test.c && ./test
- * (Remove or guard the main() in stub.c with #ifndef TESTING before linking.)
+ * (The lesson harness strips main() from stub.c before linking.)
  */
 #include <stdio.h>
 

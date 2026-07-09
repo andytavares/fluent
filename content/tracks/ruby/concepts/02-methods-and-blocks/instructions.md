@@ -107,25 +107,44 @@ doubler = ->(n) { n * 2 }
 
 The block mechanism has no direct parallel in most languages. In JavaScript you pass a callback function explicitly as an argument. Ruby's blocks sit outside the argument list and are passed implicitly — the called method can `yield` to them without the caller ever naming them.
 
+## Watch out
+
+- `yield` without `block_given?` raises `LocalJumpError: no block given` if the caller didn't pass one. Always guard with `block_given?` (or capture with `&block` and check `block.nil?`) when the block is optional.
+- A method can only capture **one** block — `&block` must be the last parameter, and there's no way to accept two separate blocks.
+- Required keyword arguments (`name:` with no default) raise `ArgumentError: missing keyword` if omitted — unlike positional defaults, there's no silent `nil` fallback.
+- `&block` inside the method is a real `Proc` object; you must call it with `.call` (or `.()`), not invoke it like a bare `block(x)`.
+
 ## The task
 
-Implement these methods:
+Implement four methods that exercise splat/keyword arguments, `yield`, and capturing blocks as `Proc`s.
+
+**`repeat_call(n, &block)`** — calls `block` exactly `n` times, passing the 0-based iteration index each time. Returns `nil` regardless of what the block returns.
 
 ```ruby
-def repeat_call(n, &block)
-  # Call block n times, passing the iteration index (0-based). Return nil.
-end
+repeat_call(3) { |i| puts i }   # prints 0, 1, 2 — returns nil
+repeat_call(0) { |i| puts i }   # prints nothing — returns nil
+```
 
-def transform_all(values, &block)
-  # Apply block to each element of values. Return a new array of results.
-  # If no block given, return values unchanged.
-end
+**`transform_all(values, &block)`** — applies `block` to each element of the `values` array and returns a **new** array of the results, leaving `values` untouched. If no block is given, returns `values` unchanged.
 
-def build_logger(prefix)
-  # Return a Proc that, when called with a message string, returns "#{prefix}: #{message}"
-end
+```ruby
+transform_all([1, 2, 3]) { |n| n * 2 }      # => [2, 4, 6]
+transform_all(["a", "b"]) { |s| s.upcase }  # => ["A", "B"]
+transform_all([1, 2, 3])                    # => [1, 2, 3]  — no block given
+transform_all([])          { |n| n }        # => []
+```
 
-def keyword_summary(name:, age:, city: "Unknown")
-  # Return "#{name}, age #{age}, from #{city}"
-end
+**`build_logger(prefix)`** — returns a `Proc` that, when called with a message string, returns `"#{prefix}: #{message}"`.
+
+```ruby
+info = build_logger("INFO")
+info.call("server started")  # => "INFO: server started"
+info.call("")                # => "INFO: "
+```
+
+**`keyword_summary(name:, age:, city: "Unknown")`** — `name` and `age` are required keyword arguments; `city` defaults to `"Unknown"`. Returns `"#{name}, age #{age}, from #{city}"`.
+
+```ruby
+keyword_summary(name: "Alice", age: 30, city: "Portland")  # => "Alice, age 30, from Portland"
+keyword_summary(name: "Bob", age: 25)                      # => "Bob, age 25, from Unknown"
 ```

@@ -27,6 +27,7 @@ func TestRectanglePerimeter(t *testing.T) {
 		{Rectangle{Width: 4, Height: 3}, 14},
 		{Rectangle{Width: 5, Height: 5}, 20},
 		{Rectangle{Width: 1, Height: 1}, 4},
+		{Rectangle{Width: 0, Height: 10}, 20},
 	}
 	for _, tt := range tests {
 		if got := tt.r.Perimeter(); got != tt.want {

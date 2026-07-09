@@ -4,17 +4,17 @@ struct Rectangle {
 }
 
 impl Rectangle {
-    fn new(width: f64, height: f64) -> Self {
+    pub fn new(width: f64, height: f64) -> Self {
         // TODO: construct and return a Rectangle
         todo!()
     }
 
-    fn area(&self) -> f64 {
+    pub fn area(&self) -> f64 {
         // TODO: return width * height
         todo!()
     }
 
-    fn is_square(&self) -> bool {
+    pub fn is_square(&self) -> bool {
         // TODO: return true if width == height
         todo!()
     }

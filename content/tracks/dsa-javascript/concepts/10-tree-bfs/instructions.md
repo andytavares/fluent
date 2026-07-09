@@ -2,24 +2,25 @@
 
 ## What you'll learn
 
-Level-by-level BFS using the `levelSize` snapshot pattern, the right-side-view extraction, and zigzag traversal — a variation that interviews use to probe whether you truly understand level boundaries.
+Tree DFS gave you recursion down paths; this concept gives you the other traversal: breadth-first, level by level, with a queue. The one idea that matters is the **level-size snapshot** — freeze the queue length before draining a level so you know exactly where one depth ends and the next begins. With that loop in hand, level order traversal, right side view, per-level averages, and zigzag ordering are each a one-line variation on the same template.
 
 ## Key concepts
 
-BFS uses a queue. The critical insight: snapshot the queue length at the start of each level's loop to process exactly one level at a time.
+### The queue and the level-size snapshot
 
-### Level order — the fundamental BFS template
+BFS visits nodes in order of distance from the root: the root, then both its children, then all four grandchildren, and so on. A plain queue gives you that order for free — but it does *not* tell you where level boundaries fall. The fix: at the top of each outer iteration, snapshot how many nodes are currently queued. That count is exactly one complete level, because every node queued so far is from the current depth and everything you push while draining it is from the next.
 
 ```js
 function levelOrder(root) {
   if (!root) return [];
   const result = [];
   const queue = [root];
-  while (queue.length) {
-    const levelSize = queue.length; // snapshot: exactly how many nodes this level
+  let head = 0;                     // index-based queue — shift() is O(n)
+  while (head < queue.length) {
+    const levelEnd = queue.length;  // snapshot: [head, levelEnd) is one level
     const level = [];
-    for (let i = 0; i < levelSize; i++) {
-      const node = queue.shift();
+    while (head < levelEnd) {
+      const node = queue[head++];
       level.push(node.val);
       if (node.left) queue.push(node.left);
       if (node.right) queue.push(node.right);
@@ -30,98 +31,195 @@ function levelOrder(root) {
 }
 ```
 
-### Right side view — last node at each level
+Invariant: children pushed during the inner loop land at indexes `>= levelEnd`, so they are never consumed as part of the current level. That's the whole trick.
 
-Same template; push `node.val` only when `i === levelSize - 1`.
+### Every level problem is this template plus one line
 
-### Zigzag level order — alternate direction per level
+| Problem | Change to the template |
+|---------|------------------------|
+| Level order traversal | none — collect each level array |
+| Right side view | keep only the value drained last in each level |
+| Average of levels | sum the level, divide by the snapshot size |
+| Zigzag level order | reverse the level array on odd depths |
 
-Same template; reverse the level array on odd-numbered levels.
+Recognize this in interviews: if the problem statement says "per level", "by depth", "visible from the side", or "top to bottom", reach for the snapshot loop before anything else.
+
+### The queue in JavaScript
+
+JavaScript has no built-in deque. `Array.prototype.shift()` re-indexes the whole array — O(n) per call, O(n²) for the traversal. Two clean alternatives:
 
 ```js
-if (levelNum % 2 === 1) level.reverse(); // right-to-left on odd levels
-result.push(level);
-levelNum++;
+// 1. Head index (used above): push to the tail, read with queue[head++].
+//    The array only grows, but total work is O(n).
+
+// 2. Level-swap: hold the current level in one array, collect children
+//    into the next, then swap.
+let current = [root];
+while (current.length) {
+  const next = [];
+  for (const node of current) {
+    if (node.left) next.push(node.left);
+    if (node.right) next.push(node.right);
+  }
+  current = next;
+}
 ```
 
-## Time and space complexity
+The level-swap form makes the snapshot implicit — the whole array *is* one level — and is often the cleanest way to write these.
+
+### Complexity of the flagship problems
 
 | Problem | Time | Space |
 |---------|------|-------|
-| levelOrder | O(n) | O(w) |
-| rightSideView | O(n) | O(w) |
-| zigzagLevelOrder | O(n) | O(w) |
+| Level Order Traversal | O(n) | O(w) queue, w = max level width |
+| Right Side View | O(n) | O(w) |
+| Zigzag Level Order | O(n) | O(w) |
 
-`w` = maximum level width. For a complete binary tree, `w = n/2`, so O(n) in the worst case.
-
-## Common variations
-
-- **Minimum depth** (LC 111) — BFS finds the first leaf faster than DFS in sparse trees
-- **Average of levels** (LC 637) — sum each level, divide by levelSize
-- **Connect next right pointers** (LC 116/117) — BFS assigns `node.next = nextInQueue`
-- **Binary tree level order bottom-up** (LC 107) — collect level order, then reverse the result array
-
-## vs other languages
-
-BFS is universally queue-based. Python's `collections.deque` gives O(1) `popleft()`. JavaScript's `Array.shift()` is O(n). For large trees in production, use an index pointer to simulate dequeue: `let head = 0; const node = queue[head++]`. For interview purposes, `shift()` is fine.
-
-## FAANG follow-up questions
-
-After levelOrder:
-- "Can you do level order traversal using DFS?" (yes — pass depth as a parameter; use depth as an index into the result array. O(n) time but O(h) space instead of O(w))
-- "How do you get the level with maximum sum?" (track sum per level during BFS; compare at end)
-
-After zigzagLevelOrder:
-- "Can you avoid the `reverse()` and do it in one pass?" (use a deque; push to front or back depending on direction — avoids O(w) reverse per level)
-- "What if you need a spiral order of a matrix?" (similar zigzag logic with boundary tracking)
+The queue peaks at the widest level — up to ⌈n/2⌉ nodes for a complete tree, so O(n) worst case.
 
 ## Watch out
 
-- **levelSize snapshot**: you MUST capture `queue.length` before the inner loop. If you use `queue.length` directly in the loop condition, newly-enqueued children are counted at the current level.
-- **zigzag direction**: level 0 (root) is left-to-right. Level 1 is right-to-left. Some interviewers define it the opposite way — clarify before coding.
-- **null root**: return `[]` immediately. All three functions have this edge case.
-- **Right side view with deep left subtree**: if the leftmost path goes deeper than the rightmost path, those left-side nodes are still visible from the right at their level (they're the only node at that depth).
+- **Snapshot before draining.** `for (let i = 0; i < queue.length; i++)` re-reads a length that grows as you push children — levels bleed into each other. Capture `const levelEnd = queue.length` first.
+- **`shift()` is quadratic.** Fine at interview scale, but say out loud that it's O(n) per call and show the head-index or level-swap fix.
+- **Guard the empty tree.** Return `[]` before touching the queue; a `null` in the queue crashes on `.left`.
+- **Right side view is not the right spine.** In the tree `1 → (2, 3)` with `2.left = 4` and nothing below `3`, the view is `[1, 3, 4]` — once the right side runs out of depth, a left-subtree node becomes visible. Walking `node.right` pointers gives the wrong answer; the last node per BFS level is always right.
+- **Zigzag reverses the collected level, not the queue.** Keep enqueueing left-then-right at every depth; flip only the output array. Reordering the queue corrupts every level below.
+- **Push only non-null children.** Enqueueing `null` and filtering at dequeue works but doubles queue traffic and invites crashes.
+
+## Problem walkthroughs
+
+### Binary Tree Level Order Traversal ★
+
+**Problem.** Given the root of a binary tree, return an array of arrays: the node values at each depth, top to bottom, left to right within a level.
+
+**Example.**
+
+    tree 3 → (9, 20), 20 → (15, 7)  →  [[3], [9, 20], [15, 7]]
+    empty tree                       →  []
+
+**Steps.**
+1. Return `[]` for a null root. Otherwise queue the root.
+2. While the queue is non-empty: snapshot `levelEnd = queue.length`, drain exactly that many nodes into a `level` array, pushing each node's non-null children as you go.
+3. Push `level` onto the result after the inner loop.
+4. The snapshot is the correctness argument: everything queued at the top of an iteration is one full level, and children land beyond `levelEnd`.
+
+**Complexity.** O(n) time / O(w) space — each node is queued and drained exactly once.
+
+### Binary Tree Right Side View ★
+
+**Problem.** Standing to the right of a binary tree, return the values you can see, top to bottom — the rightmost node at each depth.
+
+**Example.**
+
+    tree 1 → (2, 3), 2.right = 5, 3.right = 4  →  [1, 3, 4]
+    tree 1 → (2, 3), 2.left = 4 (3 is a leaf)  →  [1, 3, 4]
+
+**Steps.**
+1. Run the level loop; you don't need the `level` array — just the values.
+2. Inside the inner loop, when draining the node at position `i === levelEnd - 1` (the last of the level), push its value to the result.
+3. Children are enqueued left-to-right, so within a level the queue preserves left-to-right order — the last drained node is the rightmost one at that depth, whichever subtree it lives in.
+4. Note the second example: the deepest visible node (`4`) hangs off the *left* child. That's why this is a BFS problem, not a walk down `right` pointers.
+
+**Complexity.** O(n) time / O(w) space.
+
+### Average of Levels in Binary Tree
+
+**Problem.** Return an array where element `i` is the average of the node values at depth `i`.
+
+**Example.**
+
+    tree 3 → (9, 20), 20 → (15, 7)  →  [3, 14.5, 11]
+
+**Steps.**
+1. Same level loop; instead of collecting values, keep a running `sum` across the inner loop.
+2. After draining the level, push `sum / levelEnd` — the snapshot doubles as the divisor, which is exactly why you took it.
+3. Watch overflow in fixed-width languages (sum in a 64-bit accumulator); in JavaScript, plain numbers are exact until sums exceed 2⁵³.
+
+**Complexity.** O(n) time / O(w) space.
+
+### Binary Tree Zigzag Level Order Traversal ★
+
+**Problem.** Return the level order traversal, but alternate direction per level: level 0 left-to-right, level 1 right-to-left, level 2 left-to-right, and so on.
+
+**Example.**
+
+    tree 3 → (9, 20), 20 → (15, 7)  →  [[3], [20, 9], [15, 7]]
+
+**Steps.**
+1. Run the plain level loop, always enqueueing children left-then-right — traversal order never changes.
+2. Track the depth (or a `leftToRight` boolean you flip each level).
+3. On right-to-left levels, reverse the collected `level` array before pushing it — or, to skip the reverse, write each value into a pre-sized array at index `levelEnd - 1 - i`.
+4. The insight: zigzag is a *presentation* change, not a *traversal* change. Solutions that mess with queue order break because children of a reversed level would be discovered in the wrong order for the level after it.
+
+**Complexity.** O(n) time / O(w) space — the reverse costs O(levelSize), already paid for by draining it.
+
+## Interview follow-ups
+
+- After **Right Side View**: "Left side view?" (keep `i === 0` instead of the last). "Do it with DFS?" (visit right child first, record a value whenever `depth === result.length` — the first arrival at each depth is the rightmost node.)
+- After **Level Order**: "Bottom-up level order?" (collect normally, reverse the result — don't traverse upside down.)
+- After **Zigzag**: "Avoid the reverse?" (write into a pre-sized array back-to-front.)
+- General: "Why BFS over DFS here?" — DFS with a depth parameter can group by level too (append to `result[depth]`), but BFS finds level boundaries without bookkeeping and its memory is bounded by tree *width* instead of *height*, which matters for deep, narrow trees.
 
 ## The task
 
-Use the same `TreeNode` class as the DFS concept.
+Three level-by-level traversals over binary trees. Trees are plain objects — every node is `{ val, left, right }` where `left`/`right` are child nodes or `null`; an empty tree is `null` itself. All three functions must run in O(n) time.
+
+```js
+// The tree used in the samples below:
+//        3
+//       / \
+//      9  20
+//         / \
+//        15  7
+const t = {
+  val: 3,
+  left: { val: 9, left: null, right: null },
+  right: {
+    val: 20,
+    left: { val: 15, left: null, right: null },
+    right: { val: 7, left: null, right: null },
+  },
+};
+```
 
 ### `levelOrder(root)`
 
-Return an array of arrays, each inner array containing the values at that depth level.
+Return an array of arrays: the node values at each depth, top to bottom, left to right within each level. An empty tree returns `[]`.
 
 ```js
-//     3
-//    / \
-//   9  20
-//     /  \
-//    15   7
-levelOrder(tree) // [[3], [9, 20], [15, 7]]
-levelOrder(null) // []
+levelOrder(t);                                    // [[3], [9, 20], [15, 7]]
+levelOrder({ val: 1, left: null, right: null });  // [[1]]
+levelOrder(null);                                 // []
 ```
+
+Edge cases: empty tree, single node, skewed trees (every level has one node), negative values.
 
 ### `rightSideView(root)`
 
-Return the last value visible at each level from the right.
+Return the values visible from the right side of the tree, top to bottom — the rightmost node at each depth. A node in a *left* subtree is visible when nothing at its depth exists further right. An empty tree returns `[]`.
 
 ```js
-//   1
-//  / \
-// 2   3
-//  \
-//   5
-rightSideView(tree) // [1, 3, 5]
+rightSideView(t);     // [3, 20, 7]
+rightSideView(null);  // []
+
+// 1 → (2, 3), where 2.left = 4 and 3 is a leaf: depth 2 only contains 4
+const u = {
+  val: 1,
+  left: { val: 2, left: { val: 4, left: null, right: null }, right: null },
+  right: { val: 3, left: null, right: null },
+};
+rightSideView(u);     // [1, 3, 4]
 ```
+
+Edge cases: empty tree, single node, right-only and left-only chains, deeper nodes hanging off left subtrees (the `[1, 3, 4]` case above — do not just follow `right` pointers).
 
 ### `zigzagLevelOrder(root)`
 
-Return level order values, alternating left-to-right and right-to-left at each level.
+Return the level order traversal with alternating direction: level 0 left-to-right, level 1 right-to-left, and so on. An empty tree returns `[]`.
 
 ```js
-//     3
-//    / \
-//   9  20
-//     /  \
-//    15   7
-zigzagLevelOrder(tree) // [[3], [20, 9], [15, 7]]
+zigzagLevelOrder(t);     // [[3], [20, 9], [15, 7]]
+zigzagLevelOrder(null);  // []
 ```
+
+Edge cases: empty tree, single node, levels with one node (reversing changes nothing), trees deep enough to flip direction several times.

@@ -1,92 +1,89 @@
 // Run: node exemplar.js
-
-class TreeNode {
-  constructor(val, left = null, right = null) {
-    this.val = val;
-    this.left = left;
-    this.right = right;
-  }
-}
+//
+// Binary tree nodes are plain objects: { val, left, right }.
+// left/right are child nodes or null; an empty tree is null.
+// BST invariant: for every node, ALL left-subtree values < node.val < ALL
+// right-subtree values (strict — duplicates are invalid).
 
 /**
- * Returns true if the tree satisfies the BST property.
- * Propagates min/max bounds — catches violations where a node in the right
- * subtree is smaller than an ancestor (not just the immediate parent).
- * O(n) time, O(h) space.
- * @param {TreeNode|null} root
- * @param {number} min
- * @param {number} max
- * @returns {boolean}
+ * In-order traversal of a BST is ascending, and the closest pair in a
+ * sorted sequence is adjacent — so track only the previously visited value
+ * and fold each in-order gap into the running minimum.
+ * O(n) time, O(h) stack.
+ * @param {{val: number, left: object|null, right: object|null}} root
+ *   a valid BST with at least two nodes
+ * @returns {number}
  */
-function isValidBST(root, min = -Infinity, max = Infinity) {
-  if (!root) return true;
-  if (root.val <= min || root.val >= max) return false;
-  return isValidBST(root.left, min, root.val) &&
-         isValidBST(root.right, root.val, max);
+function getMinimumDifference(root) {
+  let prev = null;
+  let best = Infinity;
+  const walk = (node) => {
+    if (!node) return;
+    walk(node.left);
+    if (prev !== null) best = Math.min(best, node.val - prev);
+    prev = node.val;
+    walk(node.right);
+  };
+  walk(root);
+  return best;
 }
 
 /**
- * Returns the kth smallest value in the BST (1-indexed).
- * In-order traversal yields sorted order; stop at the kth node visited.
- * Shared closure variables count and result enable early exit.
- * O(h + k) time, O(h) space.
- * @param {TreeNode} root
- * @param {number} k
+ * Iterative in-order with early exit: slide down the left spine pushing
+ * ancestors, pop the next value in sorted order, stop at the k-th pop.
+ * Nodes past the k-th are never touched.
+ * O(h + k) time, O(h) stack.
+ * @param {{val: number, left: object|null, right: object|null}} root
+ *   a valid BST
+ * @param {number} k  1 <= k <= number of nodes
  * @returns {number}
  */
 function kthSmallest(root, k) {
-  let count = 0, result = null;
-  function inorder(node) {
-    if (!node || result !== null) return; // early exit once found
-    inorder(node.left);
-    if (++count === k) { result = node.val; return; }
-    inorder(node.right);
+  const stack = [];
+  let node = root;
+  while (node || stack.length > 0) {
+    while (node) {
+      stack.push(node);
+      node = node.left;
+    }
+    node = stack.pop();
+    k--;
+    if (k === 0) return node.val;
+    node = node.right;
   }
-  inorder(root);
-  return result;
+  return -1; // unreachable when 1 <= k <= node count
 }
 
 /**
- * Reconstructs the BST from its preorder traversal. Returns the root.
- * Uses a shared index i and range bounds to assign each element to the
- * correct subtree in O(n) without finding split points explicitly.
- * O(n) time, O(h) space.
- * @param {number[]} preorder
- * @returns {TreeNode|null}
+ * Range propagation: every value in a subtree must lie strictly inside
+ * (lo, hi). Recursing left tightens hi, recursing right tightens lo — that
+ * is how a violation several levels below an ancestor is still caught.
+ * The <= / >= comparisons reject duplicates.
+ * O(n) time, O(h) stack.
+ * @param {{val: number, left: object|null, right: object|null}|null} root
+ * @returns {boolean}
  */
-function buildBSTFromPreorder(preorder) {
-  let i = 0;
-  function build(min, max) {
-    if (i === preorder.length || preorder[i] < min || preorder[i] > max) return null;
-    const val = preorder[i++];
-    const node = new TreeNode(val);
-    node.left  = build(min, val);  // left: must be in (min, val)
-    node.right = build(val, max);  // right: must be in (val, max)
-    return node;
-  }
-  return build(-Infinity, Infinity);
+function isValidBST(root) {
+  const valid = (node, lo, hi) => {
+    if (!node) return true;
+    if (node.val <= lo || node.val >= hi) return false;
+    return valid(node.left, lo, node.val) && valid(node.right, node.val, hi);
+  };
+  return valid(root, -Infinity, Infinity);
 }
 
-/** Helper: collect in-order values from a tree */
-function inorderValues(root) {
-  const res = [];
-  function dfs(n) { if (!n) return; dfs(n.left); res.push(n.val); dfs(n.right); }
-  dfs(root);
-  return res;
-}
+module.exports = { getMinimumDifference, kthSmallest, isValidBST };
 
-module.exports = { TreeNode, isValidBST, kthSmallest, buildBSTFromPreorder };
+function node(val, left = null, right = null) {
+  return { val, left, right };
+}
 
 function main() {
-  console.log(isValidBST(new TreeNode(2, new TreeNode(1), new TreeNode(3)))); // true
-  console.log(isValidBST(new TreeNode(5, new TreeNode(1), new TreeNode(4, new TreeNode(3), new TreeNode(6))))); // false
-
-  const bst = new TreeNode(3, new TreeNode(1, null, new TreeNode(2)), new TreeNode(4));
-  console.log(kthSmallest(bst, 1)); // 1
+  const bst = node(4, node(2, node(1), node(3)), node(6));
+  console.log(getMinimumDifference(bst)); // 1
   console.log(kthSmallest(bst, 3)); // 3
-
-  const tree = buildBSTFromPreorder([8, 5, 1, 7, 10, 12]);
-  console.log(inorderValues(tree)); // [1, 5, 7, 8, 10, 12]
+  console.log(isValidBST(bst)); // true
+  console.log(isValidBST(node(5, node(1), node(4, node(3), node(6))))); // false
 }
 
 main();

@@ -68,16 +68,33 @@ In C, `a / b` compiles to `cqo` + `idiv`. The compiler handles the `rdx` setup f
 
 Integer overflow in C is undefined behavior for signed types. At the hardware level, OF is just a flag — the CPU keeps running. There is no trap.
 
+## Watch out
+
+- Flags go stale fast: only arithmetic/logic instructions update RFLAGS. A `mov` between your `add`/`sub`/`imul` and a later conditional jump does **not** disturb the flags, but inserting another `add` or `cmp` in between will silently replace them.
+- Forgetting `cqo` before `idiv` is the single most common division bug — leftover garbage in `rdx` corrupts the 128-bit dividend, producing a wrong (and non-obviously wrong) quotient.
+- `imul reg, reg` truncates silently on overflow — there's no trap or exception, just a wrapped 64-bit result. Check `OF` yourself (`jo`) if you need to detect it.
+- `inc`/`dec` do not touch `CF`. A loop that increments a counter and then checks `CF` for overflow will never see it — use `add reg, 1` instead if you need that flag.
+
 ## The task
 
-Implement `arithmetic_ops` which takes two 64-bit signed integers in `rdi` and `rsi`, and returns a struct-like pair via memory. The procedure signature:
+Implement `arithmetic_ops` which takes two 64-bit signed integers and writes their sum and product to caller-provided memory. The procedure signature:
 
 ```nasm
 ; void arithmetic_ops(int64_t a, int64_t b, int64_t *out_sum, int64_t *out_product)
 ; rdi = a, rsi = b, rdx = out_sum, rcx = out_product
-; Writes a+b to *out_sum and a*b to *out_product
+; Writes a+b to *out_sum and a*b to *out_product. Returns nothing (void).
 arithmetic_ops:
     ; TODO
 ```
 
+Register contract: `rdi`, `rsi`, `rdx`, `rcx` are inputs. You'll need a scratch register for the arithmetic itself — `rax` is the natural choice, and since `rax`/`rcx`/`rdx`/`rsi`/`rdi` are all caller-saved, you're free to clobber any of them (including the input registers, once you no longer need their values) without saving/restoring anything.
+
 Use `add` for the sum and the two-operand `imul` for the product.
+
+```nasm
+arithmetic_ops(6, 7, &sum, &product);    // sum=13,  product=42
+arithmetic_ops(-3, 5, &sum, &product);   // sum=2,   product=-15
+arithmetic_ops(0, 0, &sum, &product);    // sum=0,   product=0
+```
+
+Edge cases: negative operands (two's complement — no special-casing needed, `add`/`imul` handle signed values transparently), and the zero/zero case.

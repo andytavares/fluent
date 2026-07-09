@@ -72,14 +72,46 @@ end
 
 The critical difference from Python/JS destructuring: Elixir's match is **bidirectional**. `{:ok, x} = val` doesn't just unpack — it asserts the shape of `val`. A shape mismatch crashes immediately rather than producing a confusing `undefined`.
 
+## Watch out
+
+- `case`/function clauses try patterns **top to bottom** and stop at the first match — order matters. A catch-all clause (`_` or an unguarded variable) placed too early shadows every clause below it.
+- A bare variable on the left of `=` or in a function head always **binds** (never compares) unless pinned with `^`. Forgetting the pin when you meant to compare against an existing value is the single most common pattern-matching bug.
+- Matching a list as `[a, b]` requires *exactly* two elements — it raises `MatchError` on a list with one or three elements. Use `[a, b | _]` when you only care about a prefix.
+
 ## The task
 
-Implement these functions in the `Matcher` module:
+Implement these functions in the `Matcher` module, all built on pattern matching rather than library helpers.
 
-1. `first(list)` — returns the first element of a non-empty list using head/tail pattern. Return `nil` for an empty list.
-2. `second(list)` — returns the second element, or `nil` if the list has fewer than two elements.
-3. `describe_tuple(tuple)` — accepts a tagged tuple and returns a string:
-   - `{:ok, val}` → `"ok: #{val}"`
-   - `{:error, reason}` → `"error: #{reason}"`
-   - anything else → `"unknown"`
-4. `contains?(list, target)` — returns true if `target` appears in `list`, using recursive pattern matching (no `Enum.member?`).
+**`first(list)`** — returns the first element of a list using a head/tail pattern, or `nil` for an empty list.
+
+```elixir
+Matcher.first([1, 2, 3])  # => 1
+Matcher.first([:a])       # => :a
+Matcher.first([])         # => nil
+```
+
+**`second(list)`** — returns the second element, or `nil` if the list has fewer than two elements.
+
+```elixir
+Matcher.second([1, 2, 3])  # => 2
+Matcher.second([1])        # => nil
+Matcher.second([])         # => nil
+```
+
+**`describe_tuple(tuple)`** — accepts a tagged tuple (a tuple whose first element is an atom acting as a label, e.g. `{:ok, 42}`) and returns a description string:
+
+```elixir
+Matcher.describe_tuple({:ok, 42})            # => "ok: 42"
+Matcher.describe_tuple({:error, :timeout})   # => "error: timeout"
+Matcher.describe_tuple({:other})             # => "unknown"  — anything else falls through
+```
+
+**`contains?(list, target)`** — returns `true` if `target` appears anywhere in `list`, implemented via recursive pattern matching on `[head | tail]` (no `Enum.member?` or `in`).
+
+```elixir
+Matcher.contains?([1, 2, 3], 2)   # => true
+Matcher.contains?([1, 2, 3], 9)   # => false
+Matcher.contains?([], 1)          # => false
+Matcher.contains?([5, 6, 7], 5)   # => true   — matches at the head
+Matcher.contains?([5, 6, 7], 7)   # => true   — matches at the tail end
+```

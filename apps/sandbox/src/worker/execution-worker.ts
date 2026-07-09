@@ -1,21 +1,13 @@
 import { Worker } from "bullmq";
+import { resultStreamKey } from "@fluent/execution-contract";
+import type { CodeExecutionJob } from "@fluent/execution-contract";
 import { redis } from "../db/redis.js";
 import { runGoCode } from "../executor/docker-runner.js";
+import type { ExecutionResult } from "../executor/docker-runner.js";
 import { runCode } from "../executor/polyglot-runner.js";
 import { logger } from "../middleware/logger.js";
 import { executionsTotal, executionDuration } from "../middleware/metrics.js";
 import { CODE_EXECUTION_QUEUE, WORKER_CONCURRENCY } from "./queues.js";
-
-interface CodeExecutionJob {
-  jobId: string;
-  userId: string;
-  conceptId: string;
-  exerciseId?: string;
-  code: string;
-  language: string;
-  isSuite: boolean;
-  testFiles?: string[];
-}
 
 export function createExecutionWorker() {
   return new Worker<CodeExecutionJob>(
@@ -27,13 +19,7 @@ export function createExecutionWorker() {
       logger.info({ event: "execution_start", jobId, userId, conceptId, language });
 
       try {
-        let result: {
-          stdout: string | null;
-          stderr: string | null;
-          exitCode: number | null;
-          runtimeMs: number | null;
-          timedOut: boolean;
-        };
+        let result: ExecutionResult;
 
         if (language === "go") {
           // Docker runner handles go test multi-file natively
@@ -47,17 +33,17 @@ export function createExecutionWorker() {
         const durationMs = Date.now() - start;
 
         if (result.stdout) {
-          await redis.xadd(`result:${jobId}`, "*", "type", "stdout", "data", result.stdout);
+          await redis.xadd(resultStreamKey(jobId), "*", "type", "stdout", "data", result.stdout);
         }
         if (result.stderr) {
-          await redis.xadd(`result:${jobId}`, "*", "type", "stderr", "data", result.stderr);
+          await redis.xadd(resultStreamKey(jobId), "*", "type", "stderr", "data", result.stderr);
         }
         if (result.trace && result.trace.length > 0) {
-          await redis.xadd(`result:${jobId}`, "*", "type", "trace", "data", JSON.stringify(result.trace));
+          await redis.xadd(resultStreamKey(jobId), "*", "type", "trace", "data", JSON.stringify(result.trace));
         }
 
         await redis.xadd(
-          `result:${jobId}`,
+          resultStreamKey(jobId),
           "*",
           "type",
           "result",
@@ -69,7 +55,7 @@ export function createExecutionWorker() {
           String(result.timedOut),
         );
 
-        await redis.expire(`result:${jobId}`, 300);
+        await redis.expire(resultStreamKey(jobId), 300);
 
         logger.info({
           event: "execution_complete",

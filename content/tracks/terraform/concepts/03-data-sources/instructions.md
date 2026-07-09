@@ -86,14 +86,44 @@ resource "aws_instance" "app" {
 
 Terraform's data sources are cleaner than CloudFormation's cross-stack exports because they can query arbitrary provider APIs, not just other CF stacks.
 
+## Watch out
+
+- **`data` blocks read during plan, not apply.** If the object your `filter` targets doesn't exist yet — including one being created earlier in the *same* apply — the plan fails with "no matching resource found." Data sources are for things that already exist independently of this run.
+- **`filter` is itself a nested block, not an attribute.** `filter { name = "..." ; values = [...] }` — you can repeat the `filter` block multiple times inside one `data` block to AND multiple conditions together.
+- **Data source attributes are read-only outputs of a query, not something you set.** You never write `ami = "ami-123"` inside a `data "aws_ami"` block — you write filter *criteria*, and the provider returns attributes like `id` for you to reference elsewhere.
+- **Referencing `data.<type>.<name>.<attr>`** looks just like a resource reference (`data.` prefix instead of nothing) — mixing them up (writing `aws_vpc.main.id` when you meant `data.aws_vpc.main.id`) is a common typo that produces "undeclared resource."
+
 ## The task
 
-Write a Terraform configuration that:
+You're wiring an EC2 instance to infrastructure your team doesn't own: an existing VPC (looked up by tag) and the latest Ubuntu AMI (looked up by owner + name pattern).
 
-1. Declares a `data "aws_vpc" "main"` block that filters by tag `Name` = `"production-vpc"`.
-2. Declares a `data "aws_ami" "ubuntu"` block that sets `most_recent = true`, filters `owners` to `["099720109477"]`, and filters by `name` pattern `"ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"`.
-3. Declares an `aws_instance` resource named `"web"` that:
-   - Sets `ami` from `data.aws_ami.ubuntu.id`
-   - Sets `instance_type = "t3.micro"`
-   - Sets `subnet_id` from a sub-filter on `data.aws_vpc.main` — specifically reference `data.aws_vpc.main.id` as a value in the resource (in `tags` is fine if subnet filtering isn't applicable).
-4. Declares an `output "vpc_id"` that outputs `data.aws_vpc.main.id`.
+```hcl
+data "aws_vpc" "main" {
+  filter {
+    # name and values go here
+  }
+}
+
+data "aws_ami" "ubuntu" {
+  # most_recent, owners go here
+
+  filter {
+    # name and values go here
+  }
+}
+
+resource "aws_instance" "web" {
+  # ami (from the data source), instance_type, and a tag referencing the VPC lookup go here
+}
+
+output "vpc_id" {
+  # value goes here
+}
+```
+
+Fill it in so that:
+
+1. `data "aws_vpc" "main"` has a `filter` block matching tag `Name` = `"production-vpc"` (i.e. `name = "tag:Name"`, `values = ["production-vpc"]`).
+2. `data "aws_ami" "ubuntu"` sets `most_recent = true`, `owners = ["099720109477"]` (Canonical's account ID), and a `filter` block matching `name = "name"`, `values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]`.
+3. `resource "aws_instance" "web"` sets `ami = data.aws_ami.ubuntu.id` (a reference, not a hardcoded AMI ID), `instance_type = "t3.micro"`, and a `tags` map containing a key (e.g. `VpcId`) whose value is `data.aws_vpc.main.id`.
+4. `output "vpc_id"` has `value = data.aws_vpc.main.id`.

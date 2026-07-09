@@ -68,6 +68,13 @@ spec:
 
 Raw Kubernetes manifests have no concept of ordered lifecycle operations — you `kubectl apply` everything and manage sequencing yourself (init containers, readiness gates, separate CI steps). Kustomize similarly has no hook mechanism. Argo CD has hooks as a separate concept (`argocd.argoproj.io/hook`), modeled after Helm's but cluster-managed. If you're using Argo CD with Helm, Argo CD's hooks take precedence for sync-time operations.
 
+## Watch out
+
+- **Hook resources are excluded from `helm uninstall`'s normal tracking unless you set a delete policy.** A hook Job with no `helm.sh/hook-delete-policy` at all sticks around forever, uncounted by `helm list` or `helm get manifest` — it just silently accumulates in the cluster across every install/upgrade.
+- **Annotations, not labels.** `helm.sh/hook` goes under `metadata.annotations`, never `metadata.labels`. Putting it under `labels` doesn't error — Kubernetes accepts arbitrary label keys — but Helm's hook machinery only reads `annotations`, so the Job just runs as a normal (non-hook) resource in install order.
+- **A failing pre-install hook with no `backoffLimit` retries indefinitely** by Kubernetes Job's own default (6 retries) or, worse, effectively forever if you set `backoffLimit` high and the pod keeps restarting under `restartPolicy: Never`'s Job-level retry logic. Setting `backoffLimit: 0` means one failure fails the hook (and the install) immediately — the deliberate choice for something like a migration you want to know about right away.
+- **Multiple hooks at the same phase without explicit weights sort alphabetically by resource name** — a fragile default. Always set `helm.sh/hook-weight` explicitly on any hook whose ordering relative to others matters, rather than relying on naming.
+
 ## The task
 
 Write a `templates/pre-install-job.yaml` for a database migration hook that:
@@ -80,3 +87,28 @@ Write a `templates/pre-install-job.yaml` for a database migration hook that:
 - Has `restartPolicy: Never` on the pod spec
 - Uses image `{{ .Values.migrations.image }}` with the command `["sh", "-c", "python manage.py migrate"]`
 - Only renders this Job if `.Values.migrations.enabled` is true (wrap the whole template in `{{- if .Values.migrations.enabled }}`)
+
+For a release named `myapp` with `values.yaml` containing `migrations.enabled: true` and `migrations.image: myregistry/webapp:2.1.0`, `helm install myapp ./webapp` renders (and runs, before any other pre-install hook, before the main resources are created):
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: myapp-db-migrate
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 120
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: myregistry/webapp:2.1.0
+          command: ["sh", "-c", "python manage.py migrate"]
+```
+
+If `migrations.enabled` is `false` (or unset), the template must render **nothing at all** — not an empty Job, no `apiVersion`/`kind` lines, nothing.

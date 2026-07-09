@@ -1,19 +1,121 @@
+import { PrismaClient, Prisma } from "@prisma/client";
+import { CAPSTONE_INACTIVITY_TIMEOUT_MS, capstoneJobName } from "@fluent/capstone-contract";
 import pino from "pino";
 
 const logger = pino({ base: { service: "capstone-runner" } });
+const prisma = new PrismaClient();
 
-// Teardown activity — deletes the K8s Job when session ends or times out
+type SessionDb = Pick<PrismaClient, "capstoneSessions" | "capstoneStepCompletion" | "$transaction">;
+
+// Internal seams (…With variants take the db) — the exported activities bind
+// the process-wide client; tests exercise the same logic with a mock.
+
+export async function recordProvisionedWith(
+  db: SessionDb,
+  {
+    sessionId,
+    jobName,
+    encryptedConn,
+  }: { sessionId: string; jobName: string; encryptedConn: string },
+) {
+  const now = new Date();
+  await db.capstoneSessions.update({
+    where: { id: sessionId },
+    data: {
+      k8sJobName: jobName,
+      dbConnectionEncrypted: encryptedConn,
+      dbProvisionedAt: now,
+      dbExpiresAt: new Date(now.getTime() + CAPSTONE_INACTIVITY_TIMEOUT_MS),
+    },
+  });
+  logger.info({ event: "provision_recorded", session_id: sessionId, job_name: jobName });
+}
+
+export async function recordStepCompletionWith(
+  db: SessionDb,
+  {
+    sessionId,
+    stepNumber,
+    verificationResult,
+  }: {
+    sessionId: string;
+    stepNumber: number;
+    verificationResult: { passed: boolean; http_tests: unknown[] };
+  },
+) {
+  const start = Date.now();
+
+  const resultJson = verificationResult as unknown as Prisma.InputJsonValue;
+  // One transaction: the completion row and the session pointer advance
+  // (forward-only — re-verifying an earlier step must not regress progress)
+  // land together or not at all.
+  await db.$transaction([
+    db.capstoneStepCompletion.upsert({
+      where: { sessionId_stepNumber: { sessionId, stepNumber } },
+      update: { verificationResult: resultJson, completedAt: new Date() },
+      create: { sessionId, stepNumber, verificationResult: resultJson },
+    }),
+    db.capstoneSessions.updateMany({
+      where: { id: sessionId, currentStep: { lte: stepNumber } },
+      data: { currentStep: stepNumber + 1, lastActiveAt: new Date() },
+    }),
+  ]);
+
+  logger.info({
+    event: "step_completion",
+    session_id: sessionId,
+    step: stepNumber,
+    duration_ms: Date.now() - start,
+  });
+
+  return { sessionId, stepNumber, verificationResult };
+}
+
+export async function markSessionCompletedWith(db: SessionDb, sessionId: string) {
+  // updateMany: idempotent, and tolerant of a row already completed or
+  // deleted (e.g. enrollment reset cascades while the workflow winds down).
+  await db.capstoneSessions.updateMany({
+    where: { id: sessionId, completedAt: null },
+    data: { completedAt: new Date() },
+  });
+}
+
+// ── Activities ────────────────────────────────────────────────────────────
+
+export async function recordProvisioned(input: {
+  sessionId: string;
+  jobName: string;
+  encryptedConn: string;
+}) {
+  return recordProvisionedWith(prisma, input);
+}
+
+export async function recordStepCompletion(input: {
+  sessionId: string;
+  stepNumber: number;
+  verificationResult: { passed: boolean; http_tests: unknown[] };
+}) {
+  return recordStepCompletionWith(prisma, input);
+}
+
+// Teardown activity — closes the session row and deletes the K8s Job when
+// the workflow ends (inactivity timeout or completion). The row is closed
+// first (idempotently) so a session never resumes as active after its
+// workflow has ended; a K8s deletion failure still throws so Temporal
+// retries the pod cleanup.
 export async function teardown({ sessionId }: { sessionId: string }) {
   const start = Date.now();
+  await markSessionCompletedWith(prisma, sessionId);
+
   try {
     const { KubeConfig, BatchV1Api } = await import("@kubernetes/client-node");
     const kc = new KubeConfig();
     kc.loadFromDefault();
     const batchApi = kc.makeApiClient(BatchV1Api);
     const NAMESPACE = process.env["K8S_NAMESPACE"] ?? "capstone-sessions";
-    const jobName = `capstone-${sessionId}`;
+    const jobName = capstoneJobName(sessionId);
 
-    await batchApi.deleteNamespacedJob({ name: jobName, namespace: NAMESPACE });
+    await batchApi.deleteNamespacedJob(jobName, NAMESPACE);
 
     logger.info({
       event: "teardown_complete",
@@ -24,26 +126,4 @@ export async function teardown({ sessionId }: { sessionId: string }) {
     logger.error({ event: "teardown_error", session_id: sessionId, err });
     throw err;
   }
-}
-
-// Record a completed step (called after verifier confirms pass)
-export async function recordStepCompletion({
-  sessionId,
-  stepNumber,
-  verificationResult,
-}: {
-  sessionId: string;
-  stepNumber: number;
-  verificationResult: { passed: boolean; http_tests: unknown[] };
-}) {
-  const start = Date.now();
-
-  logger.info({
-    event: "step_completion",
-    session_id: sessionId,
-    step: stepNumber,
-    duration_ms: Date.now() - start,
-  });
-
-  return { sessionId, stepNumber, verificationResult };
 }

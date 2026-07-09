@@ -15,24 +15,6 @@ export const testoutRouter = router({
       return service.startChallenge(input.enrollmentId, input.conceptId);
     }),
 
-  submitChallenge: protectedProcedure
-    .input(
-      z.object({
-        enrollmentId: z.string().uuid(),
-        conceptId: z.string().uuid(),
-        code: z.string().min(1),
-        timerExpired: z.boolean().default(false),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const userId = ctx.user.id!;
-      const service = new TestoutService(ctx.db);
-      return service.submitChallenge({
-        enrollmentId: input.enrollmentId,
-        conceptId: input.conceptId,
-        userId,
-        code: input.code,
-        timerExpired: input.timerExpired,
-      });
-    }),
+  // Test-out submissions are scored server-side by the submission pipeline
+  // (submissions.createSubmission with kind "test_out").
 });

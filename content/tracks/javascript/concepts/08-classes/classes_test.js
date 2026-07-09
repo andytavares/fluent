@@ -21,6 +21,14 @@ test("Stack: pop returns top", () => {
   assert.strictEqual(s.pop(), 20);
 });
 
+test("Stack: LIFO order across multiple pops", () => {
+  const s = new Stack(); s.push(1); s.push(2); s.push(3);
+  assert.strictEqual(s.pop(), 3);
+  assert.strictEqual(s.pop(), 2);
+  assert.strictEqual(s.pop(), 1);
+  assert.strictEqual(s.isEmpty, true);
+});
+
 test("Stack: pop decreases size", () => {
   const s = new Stack(); s.push(1); s.push(2); s.pop();
   assert.strictEqual(s.size, 1);
@@ -62,6 +70,13 @@ test("Circle instanceof Shape", () => {
 test("Circle.unitCircle returns white radius-1 circle", () => {
   const u = Circle.unitCircle();
   assert.strictEqual(u.describe(), "A white circle with radius 1");
+});
+
+test("Circle.unitCircle returns a Circle instance with expected fields", () => {
+  const u = Circle.unitCircle();
+  assert.ok(u instanceof Circle);
+  assert.strictEqual(u.color, "white");
+  assert.strictEqual(u.radius, 1);
 });
 
 // Rectangle

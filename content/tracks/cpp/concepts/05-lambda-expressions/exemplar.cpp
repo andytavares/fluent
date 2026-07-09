@@ -3,7 +3,7 @@
 #include <vector>
 #include <algorithm>
 
-std::function<int()> make_counter(int start) {
+std::function<int()> make_counter(int start = 0) {
     return [n = start]() mutable { return n++; };
 }
 

@@ -31,6 +31,17 @@ async function runTests() {
     assert.strictEqual(val, "primary");
   });
 
+  await test("fetchWithFallback: fallback NOT called when primary succeeds", async () => {
+    let fallbackCalls = 0;
+    await fetchWithFallback(
+      () => Promise.resolve("primary"),
+      () => { fallbackCalls++; return Promise.resolve("fallback"); }
+    );
+    // give any stray microtasks a beat to run
+    await Promise.resolve();
+    assert.strictEqual(fallbackCalls, 0);
+  });
+
   await test("fetchWithFallback: uses fallback on primary rejection", async () => {
     const val = await fetchWithFallback(
       () => Promise.reject(new Error("boom")),
@@ -65,6 +76,23 @@ async function runTests() {
     const result = await runAll(tasks);
     assert.deepStrictEqual(result, ["a", "b", "c"]);
     assert.strictEqual(order.length, 3);
+  });
+
+  await test("runAll: results follow input order, not completion order", async () => {
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    const result = await runAll([
+      () => sleep(30).then(() => "slow"),
+      () => sleep(1).then(() => "fast"),
+    ]);
+    assert.deepStrictEqual(result, ["slow", "fast"]);
+  });
+
+  await test("runAll: tasks run concurrently, not sequentially", async () => {
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    const start = Date.now();
+    await runAll([() => sleep(40), () => sleep(40), () => sleep(40)]);
+    const elapsed = Date.now() - start;
+    assert.ok(elapsed < 100, `three 40ms tasks took ${elapsed}ms — looks sequential`);
   });
 
   await test("runAll: rejects if any task rejects", async () => {

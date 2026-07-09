@@ -77,10 +77,45 @@ for word in ["cat", "car", "dog", "door"]:
 
 Unlike JS `Object`, Python `dict` is not a prototype chain — it's a pure hash map. Dict views (`keys()`, `values()`, `items()`) are live, reflecting mutations — they're not snapshots.
 
+## Watch out
+
+- Never mutate a list while iterating over it — `for x in items: items.remove(x)` skips elements because the indices shift under you. Iterate over `items[:]` (a copy) or build a new list instead.
+- `[[]] * 3` does **not** create three independent lists — it creates one list, referenced three times. Mutating one sublist mutates all of them. Use `[[] for _ in range(3)]` instead.
+- `dict[key]` raises `KeyError` on a missing key; `dict.get(key, default)` doesn't. Reach for `.get()` (or `defaultdict`) whenever a missing key is an expected case, not an error.
+- `zip()` silently truncates to the shortest iterable — a length mismatch produces no warning. Use `itertools.zip_longest` if you need to detect or pad uneven inputs.
+
 ## The task
 
-Implement three functions:
+Implement three functions over Python's core collection types.
 
-- `group_by_first_char(words: list[str]) -> dict[str, list[str]]` — groups words by their first character using `defaultdict`; words with the same first character share a list. Empty strings are skipped.
-- `zip_to_dict(keys: list[str], values: list) -> dict` — zips two lists into a dict; if lengths differ, truncate to the shorter one (standard `zip` behavior).
-- `top_n(scores: dict[str, int], n: int) -> list[str]` — returns the names of the top `n` scorers, sorted descending by score. Ties broken alphabetically.
+**`group_by_first_char(words: list[str]) -> dict[str, list[str]]`** — groups `words` by their first character, using `defaultdict`. Words with the same first character share a list, in the order they appeared in the input. Empty strings are skipped entirely (they have no first character to key on).
+
+```python
+group_by_first_char(["cat", "car", "dog", "door", "ant"])
+# {'c': ['cat', 'car'], 'd': ['dog', 'door'], 'a': ['ant']}
+
+group_by_first_char(["", "ant", ""])
+# {'a': ['ant']}    — empty strings skipped
+
+group_by_first_char([])
+# {}
+```
+
+**`zip_to_dict(keys: list[str], values: list) -> dict`** — zips `keys` and `values` together into a dict, pairing each key with the value at the same index. If the two lists have different lengths, stop at the shorter one — this is standard `zip` truncation behavior, not an error.
+
+```python
+zip_to_dict(["a", "b", "c"], [1, 2, 3])   # {'a': 1, 'b': 2, 'c': 3}
+zip_to_dict(["a", "b", "c"], [1, 2])      # {'a': 1, 'b': 2}       — keys truncated
+zip_to_dict(["a"], [1, 2, 3])             # {'a': 1}                — values truncated
+zip_to_dict([], [])                        # {}
+```
+
+**`top_n(scores: dict[str, int], n: int) -> list[str]`** — returns the names (keys) of the top `n` scorers, sorted descending by score. Ties are broken alphabetically by name. If `n` is greater than or equal to the number of entries, returns all names sorted the same way.
+
+```python
+top_n({"alice": 95, "bob": 87, "carol": 92}, 2)   # ['alice', 'carol']
+top_n({"alice": 95, "bob": 87}, 2)                 # ['alice', 'bob']  — n == size
+top_n({"zara": 90, "alice": 90, "bob": 80}, 2)     # ['alice', 'zara'] — tie broken alphabetically
+top_n({"alice": 95, "bob": 99}, 1)                  # ['bob']
+top_n({}, 3)                                        # []
+```

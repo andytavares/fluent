@@ -3,7 +3,7 @@ defprotocol Serializable do
   def serialize(value)
 
   @doc "Returns the byte size of the serialized form."
-  def byte_size(value)
+  def byte_length(value)
 end
 
 defimpl Serializable, for: Integer do
@@ -12,20 +12,20 @@ defimpl Serializable, for: Integer do
     ""
   end
 
-  def byte_size(n) do
-    # TODO
+  def byte_length(n) do
+    # TODO: byte_size(serialize(n))
     0
   end
 end
 
 defimpl Serializable, for: Float do
   def serialize(n) do
-    # TODO: "float:#{formatted}"
+    # TODO: "float:#{formatted}" using :erlang.float_to_binary(n, decimals: 2)
     ""
   end
 
-  def byte_size(n) do
-    # TODO
+  def byte_length(n) do
+    # TODO: byte_size(serialize(n))
     0
   end
 end
@@ -36,20 +36,20 @@ defimpl Serializable, for: BitString do
     ""
   end
 
-  def byte_size(s) do
-    # TODO
+  def byte_length(s) do
+    # TODO: byte_size(serialize(s))
     0
   end
 end
 
 defimpl Serializable, for: List do
   def serialize(list) do
-    # TODO: "list:[item1,item2,...]"
+    # TODO: "list:[item1,item2,...]" — serialize each element, comma-join
     ""
   end
 
-  def byte_size(list) do
-    # TODO
+  def byte_length(list) do
+    # TODO: byte_size(serialize(list))
     0
   end
 end
