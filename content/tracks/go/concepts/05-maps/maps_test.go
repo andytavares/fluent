@@ -34,3 +34,13 @@ func TestWordCountSingle(t *testing.T) {
 		t.Errorf("WordCount(\"hello\")[\"hello\"] = %d, want 1", got["hello"])
 	}
 }
+
+func TestWordCountExtraSpaces(t *testing.T) {
+	got := WordCount("a  a   a")
+	if got["a"] != 3 {
+		t.Errorf("WordCount(\"a  a   a\")[\"a\"] = %d, want 3", got["a"])
+	}
+	if len(got) != 1 {
+		t.Errorf("WordCount(\"a  a   a\") should have 1 unique word, got %d (%v)", len(got), got)
+	}
+}

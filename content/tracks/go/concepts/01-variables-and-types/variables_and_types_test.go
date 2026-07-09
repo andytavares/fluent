@@ -12,6 +12,7 @@ func TestDescribe(t *testing.T) {
 		{"Alice", 30, 95.5, "name=Alice age=30 score=95.50"},
 		{"Bob", 25, 100.0, "name=Bob age=25 score=100.00"},
 		{"Carol", 0, 0.0, "name=Carol age=0 score=0.00"},
+		{"Dee", -1, 12.345, "name=Dee age=-1 score=12.35"},
 	}
 	for _, tt := range tests {
 		got := Describe(tt.name, tt.age, tt.score)

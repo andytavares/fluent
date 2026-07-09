@@ -85,10 +85,39 @@ Python's `asyncio` is cooperative multitasking — coroutines voluntarily yield 
 
 **Threading vs asyncio:** `threading` gives true OS threads but has the GIL for CPU work. `asyncio` has no GIL contention (single thread) but only helps with I/O-bound tasks. The rule of thumb: I/O-bound + many concurrent connections → asyncio; CPU-bound → multiprocessing.
 
+## Watch out
+
+- Calling an `async def` function without `await` (or scheduling it) does nothing but create a coroutine object — Python emits a `RuntimeWarning: coroutine '...' was never awaited` and the body never runs. This is the single most common `asyncio` bug.
+- A blocking call (`time.sleep`, synchronous I/O, CPU-heavy work) inside a coroutine blocks the **entire event loop**, stalling every other concurrent task — use `asyncio.sleep` instead of `time.sleep`, and offload real blocking work to `run_in_executor`.
+- `asyncio.run()` creates and tears down a new event loop; you can't call it from inside code that's already running in an event loop (e.g. inside a running coroutine) — you'll get `RuntimeError: asyncio.run() cannot be called from a running event loop`.
+- `asyncio.gather` without `return_exceptions=True` cancels sibling tasks and re-raises on the **first** exception — you may lose results from tasks that had already completed successfully.
+
 ## The task
 
-Implement three async functions:
+Implement three coroutine functions that build up from a single delayed value to concurrent execution.
 
-- `async def delay_echo(message: str, delay: float) -> str` — waits `delay` seconds (using `asyncio.sleep`), then returns `message`
-- `async def gather_echoes(messages: list[str], delay: float) -> list[str]` — runs `delay_echo` concurrently for each message using `asyncio.gather`; returns results in input order
-- `async def first_success(coros: list) -> object` — runs all coroutines concurrently; returns the result of whichever completes first. Use `asyncio.wait` with `FIRST_COMPLETED`. Cancel remaining tasks after getting the first result.
+**`async def delay_echo(message: str, delay: float) -> str`** — waits `delay` seconds using `await asyncio.sleep(delay)`, then returns `message` unchanged.
+
+```python
+await delay_echo("hello", 0.05)   # "hello", after ~0.05s
+await delay_echo("", 0)           # ""
+```
+
+**`async def gather_echoes(messages: list[str], delay: float) -> list[str]`** — runs `delay_echo(m, delay)` **concurrently** for every `m` in `messages` using `asyncio.gather`, and returns the results as a list in the same order as the input (not completion order). Because the calls run concurrently, gathering 3 messages with `delay=0.05` takes roughly 0.05s total, not 0.15s.
+
+```python
+await gather_echoes(["a", "b", "c"], 0.05)   # ["a", "b", "c"], takes ~0.05s total (concurrent)
+await gather_echoes([], 0.05)                 # []
+```
+
+**`async def first_success(coros: list) -> object`** — runs every coroutine in `coros` concurrently and returns the result of whichever finishes **first**. Use `asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)`, and cancel the still-pending tasks once you have the first result (don't leave them running).
+
+```python
+result = await first_success([
+    delay_echo("slow", 0.1),
+    delay_echo("fast", 0.01),
+])
+result   # "fast" — the coroutine with the shorter delay wins
+
+await first_success([delay_echo("only", 0)])   # "only" — single coroutine, trivially "first"
+```

@@ -88,9 +88,58 @@ class CountCalls:
 
 Java `@Annotation` and Python `@decorator` look similar but are fundamentally different. Java annotations are compile-time metadata read by frameworks via reflection — they don't modify behavior at runtime. Python decorators execute at import time and completely replace the decorated object.
 
+## Watch out
+
+- Forgetting to `return wrapper` (or accidentally calling `fn()` instead of returning the wrapper) is the most common decorator bug — the function silently stops being decorated, or gets called at decoration time instead of call time.
+- Forgetting `@wraps(fn)` doesn't break behavior, but it breaks introspection: `help()`, debuggers, and other decorators that inspect `__name__`/`__doc__` all see `wrapper` instead of the real function.
+- A decorator factory (`repeat(n)`) needs **three** levels of nesting — factory → decorator → wrapper. Forgetting one level is a common off-by-one: `@repeat(3)` calls `repeat(3)` first (must return a decorator), then applies that decorator to the function.
+- Stacking order matters and reads bottom-up: `@a` above `@b` above `def f` means `a(b(f))` — `b` sees the raw `f`, `a` sees `b`'s wrapper.
+
 ## The task
 
-Implement two decorators:
+Implement two decorators.
 
-- `retry(times: int, exceptions: tuple = (Exception,))` — a decorator factory. The decorated function is called up to `times` attempts. If it raises one of the given `exceptions`, it retries. If all attempts fail, the last exception is re-raised. Use `@wraps`.
-- `memoize` — a decorator (not a factory) that caches return values by positional args. If the same args are passed again, return the cached result. The decorated function must expose a `.cache` dict attribute on the wrapper for inspection. Use `@wraps`.
+**`retry(times: int, exceptions: tuple = (Exception,))`** — a decorator **factory** (a function that returns a decorator). The decorated function is called up to `times` attempts. If it raises one of the exception types in `exceptions`, it's retried; if it succeeds on any attempt, that result is returned immediately with no further calls. If every attempt raises, the exception from the **last** attempt is re-raised. Exceptions not in `exceptions` propagate immediately without retrying. Use `@wraps` so the wrapper preserves the original function's metadata.
+
+```python
+attempts = 0
+
+@retry(times=3, exceptions=(ValueError,))
+def flaky():
+    global attempts
+    attempts += 1
+    if attempts < 3:
+        raise ValueError("not yet")
+    return "ok"
+
+flaky()       # "ok" — succeeded on the 3rd attempt; called exactly 3 times
+
+@retry(times=3)
+def always_fails():
+    raise RuntimeError("boom")
+
+always_fails()  # raises RuntimeError after 3 attempts — last exception re-raised
+
+@retry(times=3, exceptions=(ValueError,))
+def wrong_type():
+    raise TypeError("not a ValueError")
+
+wrong_type()    # raises TypeError immediately — not in `exceptions`, no retry
+```
+
+**`memoize`** — a decorator (not a factory — applied directly as `@memoize`) that caches a function's return value keyed by its positional arguments. Calling the wrapped function again with the same arguments returns the cached value without calling the underlying function. The wrapper must expose the cache as a `.cache` dict attribute (keyed by the argument tuple) for inspection. Use `@wraps`.
+
+```python
+calls = []
+
+@memoize
+def compute(n):
+    calls.append(n)
+    return n * 2
+
+compute(5)        # 10 — computed, calls == [5]
+compute(5)        # 10 — cached, calls still == [5]
+compute(3)        # 6  — new args, calls == [5, 3]
+
+compute.cache      # {(5,): 10, (3,): 6}
+```

@@ -37,6 +37,12 @@ test("translate: zero delta preserves point", () => {
   assert.strictEqual(r.x, 7);
   assert.strictEqual(r.y, 9);
 });
+test("translate: does not mutate the input point", () => {
+  const input = { x: 1, y: 2 };
+  translate(input, 5, 5);
+  assert.strictEqual(input.x, 1);
+  assert.strictEqual(input.y, 2);
+});
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed > 0) process.exit(1);

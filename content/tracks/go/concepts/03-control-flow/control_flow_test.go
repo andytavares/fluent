@@ -17,6 +17,9 @@ func TestFizzBuzz(t *testing.T) {
 		{15, "FizzBuzz"},
 		{30, "FizzBuzz"},
 		{7, "7"},
+		{0, "FizzBuzz"},
+		{-15, "FizzBuzz"},
+		{-3, "Fizz"},
 	}
 	for _, tt := range tests {
 		got := FizzBuzz(tt.n)

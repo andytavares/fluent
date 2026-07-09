@@ -107,10 +107,49 @@ def managed_resource():
 
 Go's error model forces you to handle errors at each call site; Python's exception model lets errors propagate up the call stack automatically. Both have tradeoffs — Python can lead to silent propagation; Go can lead to verbose boilerplate.
 
+## Watch out
+
+- Bare `except:` (no exception type) catches `BaseException`, including `KeyboardInterrupt` and `SystemExit` — it can make `Ctrl-C` and `sys.exit()` stop working as expected. Always catch a specific type, or at least `Exception`.
+- A `return` inside `finally` silently swallows any exception (and overrides any `return` from the `try`/`except`) — `finally` blocks should handle cleanup, not control flow.
+- `except Exception as e: pass` hides bugs. If you must suppress an error, log it or narrow the exception type — don't catch broadly "just in case."
+- `__exit__` must return a truthy value to **suppress** an exception; returning `None` (the default if you forget a `return`) lets the exception propagate. It's easy to write an `__exit__` that looks like it handles errors but doesn't.
+
 ## The task
 
-Implement three things:
+Implement three things: a custom exception, a function that translates one exception into another, and a context manager class.
 
-- `class ParseError(ValueError)` — custom exception with a `raw` attribute storing the original string that failed to parse, and a message `"cannot parse: '<raw>'"`.
-- `safe_divide(a: float, b: float) -> float` — returns `a / b`; raises `ValueError` with message `"division by zero"` if `b == 0`. Use `raise ... from None` to suppress the original `ZeroDivisionError`.
-- `class Accumulator` — a context manager class. On `__enter__`, returns itself. Collects any exception types (not instances) that occur inside the block via an `errors` list attribute, suppresses those exceptions, and lets others propagate. Constructor takes `*suppress_types`.
+**`class ParseError(ValueError)`** — a custom exception subclassing `ValueError`. Its `__init__(self, raw: str)` stores the original string on a `raw` attribute and passes the message `f"cannot parse: '{raw}'"` to the base class.
+
+```python
+try:
+    raise ParseError("abc123")
+except ParseError as e:
+    str(e)    # "cannot parse: 'abc123'"
+    e.raw     # "abc123"
+
+issubclass(ParseError, ValueError)  # True
+```
+
+**`safe_divide(a: float, b: float) -> float`** — returns `a / b`. If `b == 0`, raises `ValueError("division by zero")` instead of letting `ZeroDivisionError` propagate — use `raise ... from None` so the original `ZeroDivisionError` doesn't appear in the traceback as the cause.
+
+```python
+safe_divide(10, 2)   # 5.0
+safe_divide(1, 4)    # 0.25
+safe_divide(0, 5)    # 0.0
+safe_divide(5, 0)    # raises ValueError("division by zero")
+```
+
+**`class Accumulator`** — a context manager class. Constructor `__init__(self, *suppress_types)` stores the exception types to suppress and initializes an `errors: list` attribute to `[]`. `__enter__` returns `self`. `__exit__` inspects the exception type raised inside the `with` block (if any): if it's one of `suppress_types` (checked with `issubclass`), append that type to `self.errors` and suppress it (the exception does not propagate); otherwise let it propagate normally. A `with` block that raises nothing leaves `errors` empty.
+
+```python
+with Accumulator(ValueError, TypeError) as acc:
+    raise ValueError("oops")
+acc.errors   # [ValueError]  — suppressed, doesn't propagate
+
+with Accumulator(ValueError) as acc:
+    x = 1 + 1
+acc.errors   # []  — no exception was raised
+
+with Accumulator(ValueError):
+    raise TypeError("wrong")   # not in suppress_types — propagates out of the `with`
+```
