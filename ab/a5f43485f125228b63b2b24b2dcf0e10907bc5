@@ -1,0 +1,165 @@
+content/tracks/dsa-java/concepts/06-intervals/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-java/concepts/08-linked-list-patterns/SolutionTest.java
+  s_beb7708abc1117::t_332bb552cec93d 1-5,14-20,24-30,32-33,36-40,42,44-56,58-119
+content/tracks/dsa-java/concepts/02-two-pointers/instructions.md
+  s_beb7708abc1117::t_ed8d99be8972f2 29,32-34,38,40-42,45,47,53-54,57,59,65,67,69-74,76,78-83,85,87,89-157,159,161,163-187,191-208,211-213,215-240
+  s_beb7708abc1117::t_aa2154b8b2fe9c 27-28
+  s_101901275c8f72::t_2ca88d2f1676b3 5,9,11,14,16-22
+content/tracks/dsa-java/concepts/06-intervals/testout_stub.java
+  s_beb7708abc1117::t_a582959d842b46 1-14
+content/tracks/dsa-java/concepts/02-two-pointers/stub.java
+  s_beb7708abc1117::t_7eff71ea162a46 7,9-10,14-24,26,30,32-33,39-41
+content/tracks/dsa-java/concepts/08-linked-list-patterns/exemplar.java
+  s_beb7708abc1117::t_83fde2b58027d4 3-7,10-15,21,26-52,55-62,65-94,97-115
+content/tracks/dsa-java/concepts/03-sliding-window/stub.java
+  s_beb7708abc1117::t_b055633cd8bae6 2,6-12,16-19,23-31,36-38
+content/tracks/dsa-java/concepts/02-two-pointers/exemplar.java
+  s_beb7708abc1117::t_44c2b59e3f65bb 7-11,26-51,53-54,56-62,64,67-72,76,78-80,86,97,103-105
+content/tracks/dsa-java/concepts/01-array-string/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-java/concepts/08-linked-list-patterns/testout_test.java
+  s_beb7708abc1117::t_b0d948fdfe72fe 1-159
+content/tracks/dsa-java/concepts/06-intervals/exemplar.java
+  s_beb7708abc1117::t_f9f83d8f14a522 1-90
+content/tracks/dsa-java/concepts/06-intervals/testout_test.java
+  s_beb7708abc1117::t_97d2954ed89058 1-106
+content/tracks/dsa-java/concepts/03-sliding-window/exemplar.java
+  s_beb7708abc1117::t_2a8c80d1a9a334 2,6-35,38-39,41,47-55,57,60-64,68-71,73,76-81,85-86,90-92
+content/tracks/dsa-java/concepts/07-stacks/SolutionTest.java
+  s_beb7708abc1117::t_5fe5ea4e3f9762 55-89
+  s_beb7708abc1117::t_a6b9674016cbec 52-54
+  s_bcf58dfd3e3f70::t_eceb2ba2fc2a42 10-51
+content/tracks/dsa-java/concepts/04-matrix/stub.java
+  s_beb7708abc1117::t_6664e36f16828d 1-52
+content/tracks/dsa-java/concepts/02-two-pointers/SolutionTest.java
+  s_beb7708abc1117::t_fd2795337fdfa6 1,3,14-30,33-50,53-59,62-66,68,70-71,73-76
+content/tracks/dsa-java/concepts/05-hash-maps-and-sets/testout_stub.java
+  s_beb7708abc1117::t_8d140c87515187 1-21
+content/tracks/dsa-java/concepts/01-array-string/exemplar.java
+  s_beb7708abc1117::t_49ddbaeb744af0 1-100
+content/tracks/dsa-java/concepts/07-stacks/exemplar.java
+  s_beb7708abc1117::t_ebe695fcf96665 62-82,85,89-100
+  s_beb7708abc1117::t_7b2c5a03858daf 59-61
+  s_bcf58dfd3e3f70::t_203fdd7b035b29 2-3,7-15,19-20,23,26-44,47-49,51-54,56-58
+content/tracks/dsa-java/concepts/05-hash-maps-and-sets/stub.java
+  s_beb7708abc1117::t_f26c54e018d84a 2-3,5-6,10-14,17-20,24-36,41-45
+content/tracks/dsa-java/concepts/01-array-string/testout_test.java
+  s_beb7708abc1117::t_054284ff19ccfe 1-135
+content/tracks/dsa-java/concepts/01-array-string/stub.java
+  s_beb7708abc1117::t_7f88128154bdba 1-56
+content/tracks/dsa-java/concepts/03-sliding-window/testout_test.java
+  s_beb7708abc1117::t_3c951eecd59374 1-79
+content/tracks/dsa-java/concepts/08-linked-list-patterns/stub.java
+  s_beb7708abc1117::t_cf644e7c9a86db 3-7,10,12-13,17-64
+content/tracks/dsa-java/concepts/04-matrix/testout_stub.java
+  s_beb7708abc1117::t_08e9379761001c 1-16
+content/tracks/dsa-java/concepts/07-stacks/instructions.md
+  s_beb7708abc1117::t_05d4763971a17c 19,25,42,45-46,49,51,53,56-59,61,63,65-69,71,73-79,81,83,85,87-138,140,142,144-185,189-193,196-203,205-241
+  s_beb7708abc1117::t_2112acf16e9bfd 16-18
+  s_beb7708abc1117::t_b200138f5ea652 20-24
+  s_beb7708abc1117::t_6066c372d0a096 26-27
+  s_5c75b638b2f0ce::t_71bbc941737df9 1,5,9,11,14-15,31-32,35,38-40
+content/tracks/dsa-java/concepts/05-hash-maps-and-sets/SolutionTest.java
+  s_beb7708abc1117::t_3115eabcfa1350 1,13-23,25-34,37-71
+content/tracks/dsa-java/concepts/06-intervals/SolutionTest.java
+  s_beb7708abc1117::t_a7f1458efb191f 1-75
+content/tracks/dsa-java/concepts/05-hash-maps-and-sets/testout_test.java
+  s_beb7708abc1117::t_33d725db9c7b3f 1-120
+content/tracks/dsa-java/concepts/04-matrix/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-java/concepts/08-linked-list-patterns/instructions.md
+  s_beb7708abc1117::t_a03bdea8f19c50 1,5,9,11,14-18,20-22,25-27,29,32-35,38,40,42,45-49,51,54,56-71,73,75,77,79,81-86,90-207,209,211-302,306-307,313,317-321,324-327,329-335,337-342,344-369
+content/tracks/dsa-java/concepts/02-two-pointers/testout_stub.java
+  s_beb7708abc1117::t_e92677a4458e99 1-21
+content/tracks/dsa-java/concepts/05-hash-maps-and-sets/exemplar.java
+  s_beb7708abc1117::t_b23b23c94043bc 6-7,11-24,26,29-37,40,45-68,71,73-76,78,82-86
+content/tracks/dsa-java/concepts/03-sliding-window/instructions.md
+  s_beb7708abc1117::t_9da5790eb9f215 13-15,18-24,28-30,32,35,39-40,42,47,49,51,53-55,57,59,61,63,65-70,72,74-81,83,85-125,127-128,130-135,137-170,174-178,181-184,186-213
+  s_beb7708abc1117::t_b78be653dd257d 11-12
+  s_bcf58dfd3e3f70::t_aca27a927e4c8e 5,9
+content/tracks/dsa-java/concepts/07-stacks/testout_stub.java
+  s_beb7708abc1117::t_ea76a4e7450e6f 1-29
+content/tracks/dsa-java/concepts/07-stacks/stub.java
+  s_beb7708abc1117::t_073eb2489b9cf3 2-3,7-14,18-46,49-55,60-71
+content/tracks/dsa-java/concepts/06-intervals/stub.java
+  s_beb7708abc1117::t_8204c96def1c1d 1-47
+content/tracks/dsa-java/concepts/07-stacks/testout_test.java
+  s_beb7708abc1117::t_d45b879539a524 1-144
+content/tracks/dsa-java/concepts/08-linked-list-patterns/testout_stub.java
+  s_beb7708abc1117::t_17336696c2ba71 1-25
+content/tracks/dsa-java/concepts/01-array-string/SolutionTest.java
+  s_beb7708abc1117::t_edb7df8ccc8da3 1-100
+content/tracks/dsa-java/concepts/05-hash-maps-and-sets/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-java/concepts/04-matrix/exemplar.java
+  s_beb7708abc1117::t_c31524dc4d800f 1-119
+content/tracks/dsa-java/concepts/08-linked-list-patterns/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-java/concepts/04-matrix/SolutionTest.java
+  s_beb7708abc1117::t_471b7ed21a0e7d 1-116
+content/tracks/dsa-java/concepts/04-matrix/instructions.md
+  s_beb7708abc1117::t_421628588b129d 1-262
+content/tracks/dsa-java/concepts/01-array-string/instructions.md
+  s_beb7708abc1117::t_69dad6ab18ad79 1-541
+content/tracks/dsa-java/concepts/02-two-pointers/testout_test.java
+  s_beb7708abc1117::t_ff2a3138f5590c 1-106
+content/tracks/dsa-java/concepts/01-array-string/testout_stub.java
+  s_beb7708abc1117::t_d267c9ff4f86b7 1-16
+content/tracks/dsa-java/concepts/03-sliding-window/testout_stub.java
+  s_beb7708abc1117::t_3a620ad50473ed 1-14
+content/tracks/dsa-java/concepts/04-matrix/testout_test.java
+  s_beb7708abc1117::t_143a95caf3ef91 1-173
+content/tracks/dsa-java/concepts/05-hash-maps-and-sets/instructions.md
+  s_beb7708abc1117::t_4ac6f99b87a24f 1,5,9,11,14-49,52,57,59,62-67,71,73,75,77,79-84,86,88-94,96,98,100,102,104-105,107-111,113-183,185,187,189-263,267-284,287-291,293-318
+content/tracks/dsa-java/concepts/06-intervals/instructions.md
+  s_beb7708abc1117::t_415720d4a29166 1-215
+content/tracks/dsa-java/concepts/02-two-pointers/config.json
+  s_beb7708abc1117::t_70a3cbb6685551 1
+content/tracks/dsa-java/concepts/03-sliding-window/config.json
+  s_beb7708abc1117::t_174b3c77cec791 1
+content/tracks/dsa-java/concepts/07-stacks/config.json
+  s_beb7708abc1117::t_124ffcfafb9c70 1
+content/tracks/dsa-java/concepts/03-sliding-window/SolutionTest.java
+  s_bcf58dfd3e3f70::t_3acac4935865a1 10-20,22-32,34-45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "aba5f43485f125228b63b2b24b2dcf0e10907bc5",
+  "prompts": {},
+  "sessions": {
+    "s_101901275c8f72": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-aaf3204d67b5336fb",
+        "model": "unknown"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_5c75b638b2f0ce": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a07a8cf9586c9e1f4",
+        "model": "unknown"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_bcf58dfd3e3f70": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a414766e89388723d",
+        "model": "unknown"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
