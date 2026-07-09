@@ -1,0 +1,85 @@
+content/tracks/kotlin/concepts/02-functions/instructions.md
+  s_beb7708abc1117::t_3ea49adb3a18e5 90-95
+content/tracks/kotlin/concepts/01-variables-and-types/instructions.md
+  s_beb7708abc1117::t_779fff2aa94ff6 81-86
+content/tracks/ruby/concepts/05-enumerables/enumerables_test.rb
+  s_beb7708abc1117::t_e9cf965e9e1ae5 1
+content/tracks/kotlin/concepts/06-sealed-classes-and-when/instructions.md
+  s_beb7708abc1117::t_2f7d2fe3941544 93-98,101-119
+content/tracks/kotlin/concepts/08-coroutines/instructions.md
+  s_beb7708abc1117::t_15f14d80538bda 5,9,11,14-19,22-23,25,27,30-33,35-36,39-41,44-48,50-53,56,58,60,63-70,72-73,75,77,80-88,90-91,94,96-99,101,103,105-108,110-115,117-122
+content/tracks/ruby/concepts/04-classes-and-modules/classes-and-modules_test.rb
+  s_beb7708abc1117::t_929e8a3d77522d 1
+content/tracks/ruby/concepts/04-classes-and-modules/instructions.md
+  s_beb7708abc1117::t_d0878d891821af 154-160,163-172,174-183,185-201
+content/tracks/ruby/concepts/06-blocks-procs-lambdas/instructions.md
+  s_beb7708abc1117::t_fb946c19184823 117-123,126-129,131-136,138,140-144,146-165
+content/tracks/ruby/concepts/01-variables-and-types/variables-and-types_test.rb
+  s_beb7708abc1117::t_98a802431a19cd 1
+content/tracks/ruby/concepts/06-blocks-procs-lambdas/blocks-procs-lambdas_test.rb
+  s_beb7708abc1117::t_49379df4465981 1
+content/tracks/ruby/concepts/08-metaprogramming/metaprogramming_test.rb
+  s_beb7708abc1117::t_2b9956b7a373bb 1
+content/tracks/kotlin/concepts/05-collections/instructions.md
+  s_beb7708abc1117::t_f28871d980e1ce 78-83
+content/tracks/kotlin/concepts/10-interfaces-and-delegation/instructions.md
+  s_beb7708abc1117::t_1926b663f99120 121-126
+content/tracks/kotlin/concepts/03-classes-and-data-classes/classes-and-data-classes_test.kt
+  s_beb7708abc1117::t_6508947a640266 63
+content/tracks/kotlin/concepts/08-coroutines/coroutines_test.kt
+  s_beb7708abc1117::t_babf969092995e 20-22,24-25,27-28,30-32,35-40,42-43,45-46,48-55,58-69,71-72
+content/tracks/kotlin/concepts/08-coroutines/exemplar.kt
+  s_beb7708abc1117::t_15861aba574b7f 1-8,12-19,21,23-29,31-36,38,40-44
+content/tracks/ruby/concepts/10-file-io-and-stdlib/instructions.md
+  s_beb7708abc1117::t_e062ebb51ac480 132-139,142-145,147-153,155,157-161,163-181
+content/tracks/ruby/concepts/03-collections/collections_test.rb
+  s_beb7708abc1117::t_fa491e2aac4255 1
+content/tracks/ruby/concepts/07-exception-handling/exception-handling_test.rb
+  s_beb7708abc1117::t_ff76e845a2a92b 1
+content/tracks/ruby/concepts/05-enumerables/instructions.md
+  s_beb7708abc1117::t_54f291aa23244b 103-109,112-115,117-122,124,126-139
+content/tracks/ruby/concepts/02-methods-and-blocks/instructions.md
+  s_beb7708abc1117::t_e99448dd77db48 110-116,119-121,124-126,128,130-135,137-149
+content/tracks/ruby/concepts/07-exception-handling/instructions.md
+  s_beb7708abc1117::t_8d52d95de5585f 141-147,150-153,155-159,161,163-179,181-186
+content/tracks/kotlin/concepts/09-higher-order-functions/instructions.md
+  s_beb7708abc1117::t_d504bd7da4a50c 106-111
+content/tracks/ruby/concepts/01-variables-and-types/instructions.md
+  s_beb7708abc1117::t_79f2b6b0aa44b6 122-128,131-145,148-153,155-161,163,165-167
+content/tracks/ruby/concepts/09-modules-and-mixins/modules-and-mixins_test.rb
+  s_beb7708abc1117::t_55bc158648d8f5 1
+content/tracks/ruby/concepts/09-modules-and-mixins/instructions.md
+  s_beb7708abc1117::t_5b9bc285b787e5 157-163,166,168,170-172,175-176,178-179,181,183-209
+content/tracks/kotlin/concepts/03-classes-and-data-classes/instructions.md
+  s_beb7708abc1117::t_c5c9ff476e3eb0 96-101,107-122
+content/tracks/kotlin/concepts/08-coroutines/stub.kt
+  s_beb7708abc1117::t_6a9a89c2bf8aab 1-5,7-8,10,13-14,16,19-20,22,25-29
+content/tracks/ruby/concepts/10-file-io-and-stdlib/file-io-and-stdlib_test.rb
+  s_beb7708abc1117::t_a451e9a323e59f 1
+content/tracks/ruby/concepts/08-metaprogramming/instructions.md
+  s_beb7708abc1117::t_2de8cf763ed4c9 133-139,142-145,147-152,154,156-178
+content/tracks/ruby/concepts/02-methods-and-blocks/methods-and-blocks_test.rb
+  s_beb7708abc1117::t_e16d2fed93f452 1
+content/tracks/kotlin/concepts/04-null-safety/instructions.md
+  s_beb7708abc1117::t_daf8dd9aa8294c 99-104
+content/tracks/kotlin/concepts/07-generics/instructions.md
+  s_beb7708abc1117::t_10fd3d8b5e6858 83-88
+content/tracks/ruby/concepts/03-collections/instructions.md
+  s_beb7708abc1117::t_f0077e09c76ebd 120-126,129-132,134-138,140,142-146,148-163
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "cb01e4c1de5c5a86d63536ef3d298a5caef1d755",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
