@@ -1,0 +1,27 @@
+apps/api/tests/unit/learner-progress.test.ts
+  s_beb7708abc1117::t_344c262b40c0eb 1-92
+apps/api/src/service/learner-progress.ts
+  s_beb7708abc1117::t_81c61c73bff2b0 1-92
+apps/api/src/router/dashboard.ts
+  s_beb7708abc1117::t_6987b30635fdad 2,6-7,9-17,19-26
+apps/api/src/service/credential.ts
+  s_beb7708abc1117::t_38427960193e96 3,18,21-22
+apps/api/tests/unit/credential.test.ts
+  s_beb7708abc1117::t_ef7d99afe13539 14-15,20-21,23-24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "9d6a168386ea2efb2ba4443a28af00dea11e5895",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
