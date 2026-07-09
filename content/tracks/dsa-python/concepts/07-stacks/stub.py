@@ -1,30 +1,64 @@
-def is_valid_parentheses(s: str) -> bool:
-    """Return True if every open bracket has a matching close bracket
-    in the correct order. Valid pairs: (), [], {}."""
-    # TODO: push open brackets; on close, check top matches and pop
+# Run: python3 stub.py
+
+
+def is_valid(s: str) -> bool:
+    """Returns True if the bracket string is valid: matching types, properly
+    nested. s contains only ()[]{}."""
+    # TODO: push openers; on a closer, pop and compare against a
+    # closer -> opener dict; finish by checking the stack is empty
     return False
 
 
-def daily_temperatures(temps: list[int]) -> list[int]:
-    """For each day i, return days to wait until a warmer temperature.
-    Return 0 if no warmer future day exists."""
-    # TODO: monotonic decreasing stack of indices; pop when current temp is warmer
-    return []
+class MinStack:
+    """A stack of numbers with O(1) get_min.
+    All four methods must be O(1); pop/top/get_min are only called when
+    the stack is non-empty."""
+
+    def __init__(self) -> None:
+        # TODO: one list of (value, min_so_far) tuples (or two parallel stacks)
+        pass
+
+    def push(self, val: int) -> None:
+        # TODO: snapshot the min alongside the value —
+        # m = val if empty else min(val, self.get_min())
+        pass
+
+    def pop(self) -> None:
+        # TODO: remove the top entry; the previous entry's snapshot
+        # restores the minimum automatically
+        pass
+
+    def top(self) -> int:
+        # TODO
+        return 0
+
+    def get_min(self) -> int:
+        # TODO: read it off the top entry — no scanning
+        return 0
 
 
-def largest_rectangle_in_histogram(heights: list[int]) -> int:
-    """Given bar heights, return the area of the largest fitting rectangle."""
-    # TODO: monotonic increasing stack of indices; pop when current height is smaller;
-    #       append a sentinel 0 to flush all remaining bars
+def eval_rpn(tokens: list[str]) -> int:
+    """Evaluates a Reverse Polish Notation expression.
+    Division truncates toward zero."""
+    # TODO: number stack; on an operator pop b (right) then a (left),
+    # push a op b — truncate division toward zero, not Python's floor //
     return 0
 
 
+def main() -> None:
+    print(is_valid("()[]{}"))  # True
+    print(is_valid("([)]"))  # False
+
+    st = MinStack()
+    st.push(-2)
+    st.push(0)
+    st.push(-3)
+    print(st.get_min())  # -3
+    st.pop()
+    print(st.top(), st.get_min())  # 0 -2
+
+    print(eval_rpn(["2", "1", "+", "3", "*"]))  # 9
+
+
 if __name__ == "__main__":
-    print(is_valid_parentheses("()"))              # True
-    print(is_valid_parentheses("()[]{}")  )        # True
-    print(is_valid_parentheses("(]"))              # False
-    print(is_valid_parentheses("{[]}"))            # True
-    print(daily_temperatures([73, 74, 75, 71, 69, 72, 76, 73]))  # [1,1,4,2,1,1,0,0]
-    print(daily_temperatures([30, 60, 90]))                        # [1,1,0]
-    print(largest_rectangle_in_histogram([2, 1, 5, 6, 2, 3]))    # 10
-    print(largest_rectangle_in_histogram([2, 4]))                  # 4
+    main()

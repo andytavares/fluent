@@ -2,140 +2,211 @@
 
 ## What you'll learn
 
-How to process contiguous subarrays or substrings in O(n) time by maintaining two pointers that define a window — expanding it from the right and shrinking it from the left — instead of recomputing each subrange from scratch.
+The sliding window is the same-direction two-pointer pattern specialized for contiguous subarrays and substrings: a `[left, right]` window that expands on the right and shrinks on the left, with running state that updates in O(1) per move instead of being recomputed. You'll learn the two variable-size forms — *shrink while valid* (minimize the window) and *grow, then repair* (maximize the window) — plus the frequency-map-with-`formed`-counter machinery that cracks Minimum Window Substring.
 
 ## Key concepts
 
-Two variants cover almost every interview problem in this pattern:
+A window is a contiguous range `s[left:right+1]`. The pattern's whole value is the amortized cost argument: `right` advances n times, `left` advances at most n times, so the total work is O(n) even though the inner shrink loop *looks* nested. That argument only holds when the window state (a sum, a count map) can absorb one element entering or leaving in O(1).
 
-**Fixed-size window** — `k` is given; slide a window of exactly `k` elements by adding the incoming element and subtracting the outgoing one.
+Sliding window applies when the predicate on windows is **monotone**: growing a window never makes an "at least"-style condition worse (a sum of positives only grows), and shrinking never makes an "all distinct"-style condition worse. If adding an element can both help and hurt — e.g. sums with negative numbers — the shrink step loses its justification and you need a different tool (prefix sums, a deque).
 
-**Variable-size window** — grow the window by advancing `right`; shrink by advancing `left` whenever a constraint is violated. Each element enters and exits the window at most once → O(n) total.
+### Shrink while valid — minimize the window
 
-### Fixed window: maximum sum subarray of size k
-
-```python
-def max_sum_subarray(nums: list[int], k: int) -> int:
-    window_sum = sum(nums[:k])       # seed the first window
-    best = window_sum
-    for i in range(k, len(nums)):
-        window_sum += nums[i] - nums[i - k]   # slide: +new, -oldest
-        best = max(best, window_sum)
-    return best
-```
-
-### Variable window: longest substring without repeating characters
+For "shortest subarray satisfying X" (Minimum Size Subarray Sum, Minimum Window Substring): expand `right` until the window satisfies X, then shrink from the left *as long as it still satisfies X*, recording the best length at every valid shape.
 
 ```python
-def longest_unique_substring(s: str) -> int:
-    seen: set[str] = set()
-    left = best = 0
-    for right in range(len(s)):
-        while s[right] in seen:      # constraint violated: shrink
-            seen.remove(s[left])
-            left += 1
-        seen.add(s[right])
-        best = max(best, right - left + 1)
-    return best
+left = 0
+total = 0
+best = float("inf")
+for right in range(len(nums)):
+    total += nums[right]                    # expand: absorb nums[right]
+    while total >= target:                  # valid — try to make it shorter
+        best = min(best, right - left + 1)
+        total -= nums[left]                 # shrink: expel nums[left]
+        left += 1
 ```
 
-### Hard variant: minimum window substring (sliding window + frequency map)
+After the `while` loop the window is the *largest invalid* window ending at `right` — so every valid window has been measured exactly when it was tightest.
 
-Find the shortest substring of `s` that contains every character of `t`.
+### Grow, then repair — maximize the window
+
+For "longest substring satisfying X" (Longest Substring Without Repeating Characters): expand `right` unconditionally, and when the new character breaks the invariant, move `left` just far enough to repair it. With a last-seen-index dict the repair is a single jump instead of a loop:
 
 ```python
-from collections import Counter
-
-def min_window_substring(s: str, t: str) -> str:
-    if not t or not s:
-        return ""
-    need = Counter(t)           # characters we still need
-    missing = len(t)            # total characters still needed
-    best_start = best_len = 0
-    found_start = -1            # marks whether we have a valid window yet
-    left = 0
-
-    for right, ch in enumerate(s):
-        if need[ch] > 0:
-            missing -= 1        # one more required char covered
-        need[ch] -= 1           # track excess too (goes negative)
-
-        if missing == 0:        # valid window — try to shrink
-            # advance left past characters not needed or in excess
-            while need[s[left]] < 0:
-                need[s[left]] += 1
-                left += 1
-            # record best
-            window_len = right - left + 1
-            if found_start == -1 or window_len < best_len:
-                best_start, best_len = left, window_len
-                found_start = left
-            # shrink by one to look for a shorter valid window
-            need[s[left]] += 1
-            missing += 1
-            left += 1
-
-    return s[best_start : best_start + best_len] if found_start != -1 else ""
+last_seen: dict[str, int] = {}   # char -> index of latest occurrence
+left = 0
+best = 0
+for right, c in enumerate(s):
+    if c in last_seen and last_seen[c] >= left:
+        left = last_seen[c] + 1  # jump past the duplicate
+    last_seen[c] = right
+    best = max(best, right - left + 1)
 ```
 
-**Key insight:** `need[ch]` tracks how many of `ch` we still require. It can go negative (excess). `missing` counts how many required characters are not yet satisfied. When `missing == 0` we have a valid window; we shrink from the left until shrinking would break validity, record the window, then advance `left` by one to force `missing > 0` again and continue.
+The `>= left` guard is essential: a stale occurrence *behind* the window must not drag `left` backwards (that would re-admit duplicates the window already expelled).
 
-## Time and space complexity
+### The need/window/formed machinery
 
-| Problem | Time | Space |
-|---------|------|-------|
-| Longest unique substring | O(n) | O(min(n, ∣Σ∣)) — alphabet size |
-| Max sum subarray (fixed k) | O(n) | O(1) |
-| Min window substring | O(∣s∣ + ∣t∣) | O(∣Σ∣) |
+When "valid" means "covers every character of `t`, duplicates included," track it with two dicts and one counter:
 
-## Common variations
+- `need` — required count per character of `t` (built once, e.g. `Counter(t)`).
+- `window` — current count per needed character inside the window.
+- `formed` — how many *distinct* characters currently meet their required count.
 
-- **Longest substring with at most K distinct characters** — variable window with a `Counter`; shrink when `len(counter) > k`
-- **Permutation in String** — fixed window of `len(t)`, compare frequency maps
-- **Fruit Into Baskets** — variable window, at most 2 distinct values
-- **Minimum Size Subarray Sum** — variable window, shrink while sum ≥ target
+The window is valid exactly when `formed == len(need)`. Both dicts update in O(1) per character entering or leaving; `formed` changes only when a character's count crosses its requirement (increment when it *reaches* `need[c]`, decrement when it *drops below*). Comparing full dicts on every step would cost O(|alphabet|) per move — the `formed` counter is what keeps the pass linear.
 
-## vs other languages
+### Fixed-size windows
 
-Python's `collections.Counter` is a `dict` subclass that returns `0` for missing keys — this makes the frequency-map logic in `min_window_substring` cleaner than equivalent Java or C++ code that must handle `getOrDefault`. The `Counter(t)` initializer builds the entire frequency map in one call.
+When the window length is fixed (max sum of `k` elements; word-concatenation windows of `len(words) * word_len`), there is no shrink decision: slide by adding the entering element and subtracting the leaving one. Substring with Concatenation of All Words is the interesting hybrid — the window slides in *word-sized* steps, so you run one sliding pass per starting offset `0..word_len-1`.
 
-In Java you'd typically use a `HashMap<Character, Integer>` and manually track `have` vs `need` counts. The Python version's `need[ch] -= 1` into negative territory to track excess is an idiom that doesn't translate directly — but it's worth knowing because it eliminates a second data structure.
+### Complexity of the catalog problems
+
+| Problem | Time | Space | Form |
+|---------|------|-------|------|
+| Minimum Size Subarray Sum | O(n) | O(1) | shrink while valid |
+| Longest Substring Without Repeating Characters | O(n) | O(min(n, alphabet)) | grow, then repair |
+| Substring with Concatenation of All Words | O(n · word_len) | O(#words) | fixed-size, word steps |
+| Minimum Window Substring | O(\|s\| + \|t\|) | O(alphabet of t) | shrink while valid + `formed` |
 
 ## Watch out
 
-- **Window size formula:** `right - left + 1`, not `right - left`. Off-by-one here breaks fixed-window logic.
-- **Seeding the fixed window:** `sum(nums[:k])` before the loop — don't include it in the loop or you double-count index 0.
-- **`collections.Counter` returns 0 for missing keys**, not `KeyError` — safe to decrement directly. A plain `dict` would raise.
-- **`min_window_substring` with duplicate characters in `t`:** `need` correctly requires the count to be satisfied that many times. A `set` would break this.
-- **Empty `t` or `s`:** return `""` immediately — `Counter("")` is valid but the loop will report a spurious empty match.
+- **`right - left + 1`** is the window length. Forgetting the `+ 1` is the pattern's signature off-by-one.
+- **Record the best *inside* the shrink loop** for minimize-problems (every valid shape is a candidate), but *after* the repair for maximize-problems (only valid shapes count).
+- **The `>= left` guard** in the last-seen-index jump: without it, `"abba"` sends `left` backwards at the final `'a'` and you report an impossible window.
+- **Minimum Size Subarray Sum requires positive numbers.** With negatives the sum isn't monotone in the window size and shrinking can be wrong — say so in an interview; the follow-up answer is prefix sums + a monotonic deque.
+- **Don't return the length when the problem wants the substring** (and vice versa). Minimum Window Substring wants the actual string — track `best_start` alongside `best_len`, and slice **once** at the end. Slicing inside the loop turns O(n) into O(n²).
+- **`formed` counts distinct satisfied characters, not total matches.** Increment only on `count == need[c]`, decrement only when the count drops *below* the requirement — crossing the threshold twice must not double-count.
+- **"No valid window" sentinels**: initialize the best length to `float("inf")` and translate it to `0` / `""` at the very end, not inside the loop.
+- **`collections.Counter`** is a natural fit for `need`/`window` — `Counter(t)` builds the requirement in one call, and `len(need)` gives the distinct-character count for the `formed` comparison.
 
-## FAANG follow-up questions
+## Problem walkthroughs
 
-> "What if characters in `t` have duplicates — e.g., `t = "aa"`?" — The `Counter` handles this: `need['a']` starts at 2, and `missing` decrements only when `need[ch] > 0`, so both `'a'`s must be present.
+### Minimum Size Subarray Sum ★
 
-> "Can you do `min_window_substring` in one pass?" — Yes, the solution above is already one pass over `s` with O(1) inner work amortized. The `while` on `left` is O(n) total across all iterations.
+**Problem.** Given a list of **positive** integers `nums` and an integer `target`, return the length of the shortest contiguous subarray whose sum is `>= target`, or `0` if no such subarray exists.
 
-> "What's the sliding window approach for finding all anagrams of `p` in `s`?" — Fixed window of `len(p)`, compare `Counter` of window to `Counter(p)`, slide by one each step.
+**Example.**
+
+    target = 7, nums = [2,3,1,2,4,3] → 2   ([4,3])
+    target = 11, nums = [1,1,1,1,1] → 0    (total sum is only 5)
+
+**Steps.**
+1. Keep `left = 0`, a running `total = 0`, and `best = float("inf")`.
+2. For each `right`, add `nums[right]` to `total`.
+3. While `total >= target`: record `best = min(best, right - left + 1)`, then subtract `nums[left]` and advance `left`. The window is measured at every valid shape, tightest last.
+4. Return `0 if best == float("inf") else best`.
+5. Why shrinking is safe: all values are positive, so removing the left element strictly decreases the sum — once the window goes invalid, no further shrinking can revive it, and expanding right is the only move that can.
+
+**Complexity.** O(n) time / O(1) space — `left` and `right` each traverse the list once.
+
+### Longest Substring Without Repeating Characters ★
+
+**Problem.** Given a string `s`, return the length of the longest substring (contiguous) containing no repeated character.
+
+**Example.**
+
+    "abcabcbb" → 3   ("abc")
+    "bbbbb"    → 1   ("b")
+    "pwwkew"   → 3   ("wke" — substring, not subsequence)
+
+**Steps.**
+1. Keep a `dict` from character to the index of its most recent occurrence, plus `left = 0` and `best = 0`.
+2. For each `right`: if `s[right]` was seen at an index `>= left` (i.e. *inside* the current window), jump `left` to that index + 1 — everything before it can never be part of a duplicate-free window containing `s[right]`.
+3. Update the dict with `s[right] -> right`, then fold `right - left + 1` into `best`.
+4. The `>= left` check matters: in `"abba"`, when `right` hits the final `'a'`, the dict says `'a'` was at index 0 — but `left` is already 2, and moving it back to 1 would readmit the duplicate `'b'`s. Stale entries outside the window must be ignored, not cleaned up.
+
+**Complexity.** O(n) time / O(min(n, alphabet)) space — one pass, one dict entry per distinct character.
+
+### Substring with Concatenation of All Words
+
+**Problem.** Given a string `s` and a list `words` of **equal-length** strings, return the starting indexes of every substring of `s` that is exactly a concatenation of *all* the words, each used exactly as many times as it appears in `words`, in any order.
+
+**Example.**
+
+    s = "barfoothefoobarman", words = ["foo","bar"] → [0, 9]
+    ("barfoo" at 0, "foobar" at 9)
+
+**Steps.**
+1. Let `word_len = len(words[0])`, `window_len = word_len * len(words)`. Build `need`: word → required count (`Counter(words)`).
+2. Valid concatenations can start at any index, but they decompose into word-sized chunks only relative to their own offset mod `word_len`. So run `word_len` independent sliding passes, one per starting offset `0..word_len - 1`.
+3. Within a pass, treat `s` as a sequence of `word_len`-sized tokens. Maintain a window count dict and a word count. For each token at `right`: if it's not in `need`, reset the window entirely (dict cleared, `left` jumps past the junk token — no concatenation can span it).
+4. If it is a needed word, add it; while its count exceeds `need`, evict tokens from the left one at a time. When the window holds exactly `len(words)` tokens, record `left` and evict one token to keep sliding.
+5. This is the shrink-while-invalid form applied to tokens instead of characters — the per-offset pass is O(n / word_len) tokens, each entering and leaving once.
+
+**Complexity.** O(n · word_len) time (each of `word_len` passes does O(n/word_len) token operations costing O(word_len) each for slicing/hashing) / O(#distinct words) space.
+
+### Minimum Window Substring ★
+
+**Problem.** Given strings `s` and `t`, return the shortest substring of `s` that contains every character of `t` — **including duplicates** (if `t = "AABC"`, the window needs two `A`s). Return `""` if no such window exists. The answer is guaranteed unique when it exists.
+
+**Example.**
+
+    s = "ADOBECODEBANC", t = "ABC" → "BANC"
+    s = "a", t = "aa"              → ""
+
+**Steps.**
+1. Build `need` from `t` (`Counter(t)`). Keep `window` (char → count inside the window), `formed = 0`, `left = 0`, and `best_len = float("inf")` with `best_start = 0`.
+2. Expand: for each `right`, if `s[right]` is a needed character, bump its `window` count; when that count *reaches* `need[c]` exactly, increment `formed`.
+3. While `formed == len(need)` (window covers all of `t`): record the window if `right - left + 1 < best_len`, then expel `s[left]` — if it's a needed character, decrement its count, and if the count drops *below* the requirement, decrement `formed` (which exits the shrink loop).
+4. After the pass, return `"" if best_len == float("inf") else s[best_start:best_start + best_len]` — slice exactly once.
+5. The invariant: whenever the shrink loop exits, the window is missing at least one required character, so every minimal valid window was measured at the moment its left edge became load-bearing.
+
+**Complexity.** O(|s| + |t|) time / O(alphabet of t) space — each character of `s` enters and leaves the window at most once, with O(1) dict work per move.
+
+## Interview follow-ups
+
+After Minimum Size Subarray Sum:
+- "What if `nums` can contain negatives?" — sliding window breaks (the sum isn't monotone in window size); use prefix sums with a monotonic deque, O(n).
+- "Sum exactly equal to target?" — with positives, the same window works (check `total == target` when valid); with arbitrary integers, prefix-sum hash map.
+- "O(n log n) alternative?" — prefix sums + binary search for the smallest end index; worth mentioning as the follow-up the problem statement itself hints at.
+
+After Longest Substring Without Repeating Characters:
+- "At most k distinct characters instead of all-distinct?" — same skeleton, a count dict and a shrink loop while `len(window) > k`.
+- "Return the substring, not the length?" — track the best window's start; slice once at the end.
+
+After Minimum Window Substring:
+- "Why not compare `window` to `need` directly each step?" — that's O(|alphabet|) per step; `formed` makes validity checks O(1).
+- "Stream too large to hold in memory?" — the algorithm already reads `s` once, left to right; you only need the window's text, so keep a bounded buffer.
 
 ## The task
 
+Three flagship window problems: one minimize-with-sum, one maximize-with-uniqueness, one minimize-with-coverage. Each must run in linear time — a nested rescan of the window on every step is the failure mode the tests' larger inputs punish.
+
+### `min_sub_array_len(target, nums)`
+
+`nums` is a list of **positive** integers and `target` is a positive integer. Return the length of the shortest contiguous subarray of `nums` whose sum is greater than or equal to `target`. Return `0` if no subarray reaches `target`. O(n) time, O(1) space.
+
 ```python
-def longest_unique_substring(s: str) -> int:
-    """Return the length of the longest substring without repeating characters."""
-
-def max_sum_subarray(nums: list[int], k: int) -> int:
-    """Return the maximum sum of any contiguous subarray of exactly k elements."""
-
-def min_window_substring(s: str, t: str) -> str:
-    """Return the minimum window substring of s that contains all characters
-    of t (including duplicates). Return "" if no such window exists."""
+min_sub_array_len(7, [2, 3, 1, 2, 4, 3])   # 2   ([4, 3])
+min_sub_array_len(4, [1, 4, 4])            # 1   ([4])
+min_sub_array_len(11, [1, 1, 1, 1, 1])     # 0   (total sum is 5)
+min_sub_array_len(6, [1, 2, 3])            # 3   (the whole list, exactly 6)
 ```
 
-**Examples:**
-- `longest_unique_substring("abcabcbb")` → `3`
-- `longest_unique_substring("bbbbb")` → `1`
-- `max_sum_subarray([2,1,5,1,3,2], 3)` → `9`
-- `max_sum_subarray([-1,-2,-3,-4], 2)` → `-3`
-- `min_window_substring("ADOBECODEBANC", "ABC")` → `"BANC"`
-- `min_window_substring("a", "a")` → `"a"`
-- `min_window_substring("a", "b")` → `""`
+Edge cases: a single element already `>= target` (answer 1), the entire list summing to exactly `target`, no subarray sufficing (return 0), empty list (return 0).
+
+### `length_of_longest_substring(s)`
+
+Return the length of the longest contiguous substring of `s` that contains no repeated character. Case-sensitive; `s` may contain letters, digits, spaces, and symbols. O(n) time.
+
+```python
+length_of_longest_substring("abcabcbb")  # 3   ("abc")
+length_of_longest_substring("bbbbb")     # 1   ("b")
+length_of_longest_substring("pwwkew")    # 3   ("wke")
+length_of_longest_substring("")          # 0
+```
+
+Edge cases: empty string (0), single character (1), all characters identical, all characters distinct (the whole string), a repeat of the *first* character late in the string (`"abba"`-style inputs — a stale last-seen index must not move the window backwards).
+
+### `min_window(s, t)`
+
+Return the shortest substring of `s` containing every character of `t`, counting duplicates: if `t` has two `'a'`s, the window must contain at least two `'a'`s. Return `""` when no such window exists (including when `t` is longer than `s`). When a valid window exists, the answer is unique. Target O(|s| + |t|) time.
+
+```python
+min_window("ADOBECODEBANC", "ABC")  # "BANC"
+min_window("a", "a")                # "a"
+min_window("a", "aa")               # ""   (only one 'a' available)
+min_window("aa", "aa")              # "aa" (duplicates in t both required)
+```
+
+Edge cases: `t` longer than `s` (`""`), no valid window (`""`), the whole of `s` being the only valid window, duplicate characters in `t`, the minimal window sitting at the very start or very end of `s`, characters in `s` that never appear in `t`.

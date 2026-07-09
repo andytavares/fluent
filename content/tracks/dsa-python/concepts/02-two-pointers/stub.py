@@ -1,28 +1,40 @@
+# Run: python3 stub.py
+
+
 def is_palindrome(s: str) -> bool:
-    """Return True if s reads the same forwards and backwards.
-    Ignore non-alphanumeric characters and treat as case-insensitive."""
-    # TODO: use two pointers converging from both ends, skipping non-alnum chars
+    """Returns True if s is a palindrome, ignoring non-alphanumeric chars and case."""
+    # TODO: converging pointers; skip non-alphanumeric chars in place
+    # (re-check left < right inside the skip loops)
     return False
 
 
+def two_sum_ii(numbers: list[int], target: int) -> list[int]:
+    """Returns the 1-based indexes [i, j] (i < j) of the two elements that sum
+    to target. numbers is sorted ascending; exactly one solution exists."""
+    # TODO: converging pointers; sum too small -> left += 1, too big -> right -= 1
+    # remember the +1 for 1-based indexes
+    return []
+
+
 def container_with_most_water(heights: list[int]) -> int:
-    """Given heights representing vertical lines, find two lines that form
-    the container holding the most water. Return the maximum water volume."""
-    # TODO: start with widest container, greedily move the shorter pointer inward
+    """Returns the maximum water area between any two lines."""
+    # TODO: converging pointers; always move the shorter-line pointer inward
     return 0
 
 
 def three_sum(nums: list[int]) -> list[list[int]]:
-    """Return all unique triplets [a, b, c] such that a + b + c == 0.
-    The result must not contain duplicate triplets."""
-    # TODO: sort, then for each pivot use two pointers; skip duplicate pivots and values
+    """Returns all unique triplets of values that sum to zero."""
+    # TODO: sort numerically, fix pivot i, then converging pointers for the pair
+    # skip duplicate pivots (i > 0 and nums[i] == nums[i-1]) and inner duplicates
     return []
 
 
-if __name__ == "__main__":
+def main() -> None:
     print(is_palindrome("A man, a plan, a canal: Panama"))  # True
-    print(is_palindrome("race a car"))                       # False
+    print(two_sum_ii([2, 7, 11, 15], 9))  # [1, 2]
     print(container_with_most_water([1, 8, 6, 2, 5, 4, 8, 3, 7]))  # 49
-    print(container_with_most_water([1, 1]))                         # 1
-    print(three_sum([-1, 0, 1, 2, -1, -4]))  # [[-1,-1,2],[-1,0,1]]
-    print(three_sum([0, 0, 0]))              # [[0,0,0]]
+    print(three_sum([-1, 0, 1, 2, -1, -4]))  # [[-1, -1, 2], [-1, 0, 1]]
+
+
+if __name__ == "__main__":
+    main()
