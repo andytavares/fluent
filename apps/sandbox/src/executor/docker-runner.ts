@@ -4,20 +4,15 @@ import { randomUUID } from "node:crypto";
 import { writeFile, rm, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { DEFAULT_EXECUTION_TIMEOUT_MS } from "@fluent/execution-contract";
+import type { TraceFrame } from "@fluent/execution-contract";
+
+export type { TraceFrame };
 
 const execFileAsync = promisify(execFile);
 
 const DOCKER_IMAGE = process.env["GO_RUNNER_IMAGE"] ?? "golang:1.21-alpine";
-const TIMEOUT_MS = parseInt(process.env["EXECUTION_TIMEOUT_MS"] ?? "30000", 10);
-
-export interface TraceFrame {
-  label?: string;
-  state?: Record<string, unknown>;
-  highlights?: {
-    arrays?: Record<string, number[]>;
-    nodes?: string[];
-  };
-}
+const TIMEOUT_MS = parseInt(process.env["EXECUTION_TIMEOUT_MS"] ?? String(DEFAULT_EXECUTION_TIMEOUT_MS), 10);
 
 export interface ExecutionResult {
   stdout: string | null;

@@ -191,6 +191,9 @@ importers:
       '@fluent/content-config':
         specifier: workspace:*
         version: link:../../packages/content-config
+      '@fluent/execution-contract':
+        specifier: workspace:*
+        version: link:../../packages/execution-contract
       '@fluent/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -300,6 +303,9 @@ importers:
       '@codemirror/view':
         specifier: ^6.28.0
         version: 6.43.1
+      '@fluent/execution-contract':
+        specifier: workspace:*
+        version: link:../execution-contract
       '@radix-ui/react-dialog':
         specifier: ^1.1.0
         version: 1.1.17(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)

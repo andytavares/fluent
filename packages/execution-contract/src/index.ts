@@ -6,6 +6,38 @@ import { z } from "zod";
 
 export const CODE_EXECUTION_QUEUE = "code-execution";
 
+// ── Timing ────────────────────────────────────────────────────────────────
+// The execution ceiling, retry policy, and how long a client may wait on a
+// result stream are one budget — declared together so no consumer can
+// undercut another (e.g. an SSE cap shorter than the retry envelope).
+
+export const DEFAULT_EXECUTION_TIMEOUT_MS = 30_000;
+export const EXECUTION_ATTEMPTS = 3;
+export const EXECUTION_BACKOFF_MS = 1000;
+
+/**
+ * Max wall-clock a stream consumer should wait for a result: the full retry
+ * envelope (attempts × ceiling + exponential backoff) plus scheduling margin.
+ */
+export function streamMaxWaitMs(executionTimeoutMs = DEFAULT_EXECUTION_TIMEOUT_MS): number {
+  const backoffTotal = EXECUTION_BACKOFF_MS * (2 ** (EXECUTION_ATTEMPTS - 1) - 1);
+  const schedulingMarginMs = 7_000;
+  return EXECUTION_ATTEMPTS * executionTimeoutMs + backoffTotal + schedulingMarginMs;
+}
+
+// ── Trace protocol ────────────────────────────────────────────────────────
+// Shape of one visualizer trace frame: emitted by the sandbox runners'
+// __TRACE__ shim, carried in the result stream, rendered by the web UI.
+
+export interface TraceFrame {
+  label?: string;
+  state?: Record<string, unknown>;
+  highlights?: {
+    arrays?: Record<string, number[]>;
+    nodes?: string[];
+  };
+}
+
 export const codeExecutionJobSchema = z.object({
   jobId: z.string().uuid(),
   userId: z.string().uuid(),

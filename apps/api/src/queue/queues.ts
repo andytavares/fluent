@@ -1,4 +1,5 @@
 import type { JobsOptions } from "bullmq";
+import { EXECUTION_ATTEMPTS, EXECUTION_BACKOFF_MS } from "@fluent/execution-contract";
 
 export {
   CODE_EXECUTION_QUEUE,
@@ -7,8 +8,8 @@ export {
 } from "@fluent/execution-contract";
 
 export const defaultJobOptions: JobsOptions = {
-  attempts: 3,
-  backoff: { type: "exponential", delay: 1000 },
+  attempts: EXECUTION_ATTEMPTS,
+  backoff: { type: "exponential", delay: EXECUTION_BACKOFF_MS },
   removeOnComplete: { count: 1000 },
   removeOnFail: { count: 500 },
 };

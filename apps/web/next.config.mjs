@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ["@fluent/ui", "@fluent/content-config"],
+  transpilePackages: ["@fluent/ui", "@fluent/content-config", "@fluent/execution-contract"],
   experimental: {
     typedRoutes: true,
   },

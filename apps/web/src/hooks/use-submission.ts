@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import type { TraceFrame } from "@fluent/execution-contract";
 import { trpc } from "@/lib/trpc/client";
+import { consumeExecutionStream } from "@/lib/execution-stream";
 
 type SubmissionState = "idle" | "submitting" | "streaming" | "complete" | "error";
 type SubmissionKind = "lesson" | "test_out" | "placement";
@@ -14,14 +16,7 @@ interface OutputLine {
   timed_out?: boolean;
 }
 
-export interface TraceFrame {
-  label?: string;
-  state?: Record<string, unknown>;
-  highlights?: {
-    arrays?: Record<string, number[]>;
-    nodes?: string[];
-  };
-}
+export type { TraceFrame };
 
 export interface CompletionMeta {
   isSuite: boolean;
@@ -72,42 +67,24 @@ export function useSubmission({ conceptId, enrollmentId, language = "go", onComp
 
         setState("streaming");
 
-        const es = new EventSource(`/api/stream/${streamToken}`);
+        consumeExecutionStream(streamToken, {
+          onStdout: (data) => setLines((prev) => [...prev, { type: "stdout", data }]),
+          onStderr: (data) => setLines((prev) => [...prev, { type: "stderr", data }]),
+          onTrace: (frames) => setTraceFrames(frames),
+          onResult: (result) => {
+            setExitCode(result.exit_code);
+            setRuntimeMs(result.runtime_ms);
+            setState("complete");
 
-        es.addEventListener("stdout", (e: MessageEvent<string>) => {
-          const data = JSON.parse(e.data) as { data: string };
-          setLines((prev) => [...prev, { type: "stdout", data: data.data }]);
+            // The server owns the verdict: finalize reads the worker's result
+            // from Redis, scores it, and advances concept state.
+            void doCompleteSubmission
+              .mutateAsync({ submissionId })
+              .then(({ passed }) => onComplete?.(passed, { isSuite, kind }))
+              .catch(() => setState("error"));
+          },
+          onError: () => setState("error"),
         });
-
-        es.addEventListener("trace", (e: MessageEvent<string>) => {
-          const data = JSON.parse(e.data) as { frames: TraceFrame[] };
-          setTraceFrames(data.frames ?? []);
-        });
-
-        es.addEventListener("stderr", (e: MessageEvent<string>) => {
-          const data = JSON.parse(e.data) as { data: string };
-          setLines((prev) => [...prev, { type: "stderr", data: data.data }]);
-        });
-
-        es.addEventListener("result", (e: MessageEvent<string>) => {
-          const result = JSON.parse(e.data) as { exit_code: number; runtime_ms: number; timed_out: boolean };
-          setExitCode(result.exit_code);
-          setRuntimeMs(result.runtime_ms);
-          setState("complete");
-          es.close();
-
-          // The server owns the verdict: finalize reads the worker's result
-          // from Redis, scores it, and advances concept state.
-          void doCompleteSubmission
-            .mutateAsync({ submissionId })
-            .then(({ passed }) => onComplete?.(passed, { isSuite, kind }))
-            .catch(() => setState("error"));
-        });
-
-        es.onerror = () => {
-          setState("error");
-          es.close();
-        };
       } catch {
         setState("error");
       }

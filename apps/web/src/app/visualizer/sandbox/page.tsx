@@ -2,8 +2,9 @@
 
 import { useState, useCallback } from "react";
 import { CodeEditor, OutputPane, TracePanel, AlgorithmVisualizer } from "@fluent/ui";
-import type { TraceFrame } from "@fluent/ui";
+import type { TraceFrame } from "@fluent/execution-contract";
 import { trpc } from "@/lib/trpc/client";
+import { consumeExecutionStream } from "@/lib/execution-stream";
 
 const ALGOS = [
   { slug: "custom",                    title: "Custom — write your own" },
@@ -371,27 +372,17 @@ export default function SandboxPage() {
     setRuntimeMs(undefined);
     try {
       const { streamToken } = await runSandbox.mutateAsync({ code, language: "javascript" });
-      const es = new EventSource(`/api/stream/${streamToken}`);
-      es.addEventListener("stdout", (e: MessageEvent<string>) => {
-        const { data } = JSON.parse(e.data) as { data: string };
-        setLines((prev) => [...prev, { type: "stdout", data }]);
+      consumeExecutionStream(streamToken, {
+        onStdout: (data) => setLines((prev) => [...prev, { type: "stdout", data }]),
+        onStderr: (data) => setLines((prev) => [...prev, { type: "stderr", data }]),
+        onTrace: (frames) => setTraceFrames(frames),
+        onResult: (result) => {
+          setExitCode(result.exit_code);
+          setRuntimeMs(result.runtime_ms);
+          setRunState("complete");
+        },
+        onError: () => setRunState("error"),
       });
-      es.addEventListener("stderr", (e: MessageEvent<string>) => {
-        const { data } = JSON.parse(e.data) as { data: string };
-        setLines((prev) => [...prev, { type: "stderr", data }]);
-      });
-      es.addEventListener("trace", (e: MessageEvent<string>) => {
-        const { frames } = JSON.parse(e.data) as { frames: TraceFrame[] };
-        setTraceFrames(frames ?? []);
-      });
-      es.addEventListener("result", (e: MessageEvent<string>) => {
-        const result = JSON.parse(e.data) as { exit_code: number; runtime_ms: number };
-        setExitCode(result.exit_code);
-        setRuntimeMs(result.runtime_ms);
-        setRunState("complete");
-        es.close();
-      });
-      es.onerror = () => { setRunState("error"); es.close(); };
     } catch {
       setRunState("error");
     }
