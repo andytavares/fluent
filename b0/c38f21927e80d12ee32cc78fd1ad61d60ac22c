@@ -1,0 +1,66 @@
+content/tracks/rust/concepts/09-closures-and-iterators/instructions.md
+  s_beb7708abc1117::t_878976043d4501 79-84,90,93,96-97,101,104-117
+  s_beb7708abc1117::t_565019a85c4af4 118
+content/tracks/rust/concepts/04-structs-and-enums/instructions.md
+  s_beb7708abc1117::t_d87cb919e9056c 86-91,104,107,110,119,122-133
+  s_beb7708abc1117::t_4a833e98a6c372 134
+content/tracks/rust/concepts/02-ownership/instructions.md
+  s_beb7708abc1117::t_4d3bca83c74813 67-72,78,88-98
+  s_beb7708abc1117::t_259c8f23285a32 99
+content/tracks/rust/concepts/04-structs-and-enums/exemplar.rs
+  s_beb7708abc1117::t_8c99a4be07f46d 7,11,15
+content/tracks/rust/concepts/06-traits/stub.rs
+  s_beb7708abc1117::t_df3251a9984481 1
+content/tracks/rust/concepts/05-pattern-matching/instructions.md
+  s_beb7708abc1117::t_0c30a32e74dcc4 105-110,123-127,130,136-148
+  s_beb7708abc1117::t_6dad29c98662f0 149
+content/tracks/rust/concepts/06-traits/exemplar.rs
+  s_beb7708abc1117::t_d81fd2021bedf0 1
+content/tracks/rust/concepts/10-concurrency/instructions.md
+  s_beb7708abc1117::t_e4cf385a81959e 83-93,109-119
+  s_beb7708abc1117::t_f947e0e13fe273 120
+content/tracks/rust/concepts/10-concurrency/exemplar.rs
+  s_beb7708abc1117::t_c5427859cedcd9 20-21
+content/tracks/rust/concepts/03-borrowing-and-references/instructions.md
+  s_beb7708abc1117::t_92980f57a706f2 76-81,93,96-106
+  s_beb7708abc1117::t_2e1c33a9e15709 107
+content/tracks/rust/concepts/08-error-handling/instructions.md
+  s_beb7708abc1117::t_e4aee6e26bd895 92-97
+  s_beb7708abc1117::t_ab6617252180fb 100,110-111,114,116-117,122,125-136
+  s_beb7708abc1117::t_638d7e2444e1f3 137
+content/tracks/rust/concepts/06-traits/traits_test.rs
+  s_beb7708abc1117::t_98e9b3e890f7eb 54
+content/tracks/rust/concepts/04-structs-and-enums/stub.rs
+  s_beb7708abc1117::t_3f96b9dad106d2 7,12,17
+content/tracks/rust/concepts/07-generics-and-lifetimes/exemplar.rs
+  s_beb7708abc1117::t_2d5c73767dc299 14,18,22,26,30
+content/tracks/rust/concepts/01-variables-and-types/instructions.md
+  s_beb7708abc1117::t_94988c20266efa 72-77,94-108
+content/tracks/rust/concepts/10-concurrency/concurrency_test.rs
+  s_beb7708abc1117::t_bd0bbe64287182 21-22
+content/tracks/rust/concepts/07-generics-and-lifetimes/instructions.md
+  s_beb7708abc1117::t_75605b54169152 84-89,104,108-114,117-136
+  s_beb7708abc1117::t_7886570b523a66 137
+content/tracks/rust/concepts/06-traits/instructions.md
+  s_beb7708abc1117::t_fdbac6c031e590 85-90,96,111-122
+  s_beb7708abc1117::t_d1b1e5d88211b3 123
+content/tracks/rust/concepts/07-generics-and-lifetimes/stub.rs
+  s_beb7708abc1117::t_d996498031b928 12
+  s_beb7708abc1117::t_076ae7c33010ab 16,21,26,31,36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "b0c38f21927e80d12ee32cc78fd1ad61d60ac22c",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
