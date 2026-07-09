@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { Prisma } from "@prisma/client";
 
 // Integration tests exercise the shipping tRPC routers against the real
 // database and Redis (run with INTEGRATION=true and docker-compose up).
@@ -100,17 +101,33 @@ export async function loadEnv() {
     });
   }
 
+  // Only "already gone" (P2025 — a test explicitly deleted it, e.g. the
+  // enrollment-reset test) is expected; any other error means an FK still
+  // points at the row and cleanup genuinely failed, so it must surface
+  // rather than leave pollution behind silently.
+  async function deleteIfPresent<T>(op: Promise<T>): Promise<void> {
+    try {
+      await op;
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") return;
+      throw err;
+    }
+  }
+
   async function close() {
     for (const { userId, trackId } of created) {
       // Enrollment cascades ConceptState/MasteryEvent/Submission/
-      // CapstoneSessions(+StepCompletion); everything else has no cascade
-      // and must be deleted in FK order.
+      // CapstoneSessions(+StepCompletion) — but only for submissions tied to
+      // an enrollment; enrollmentId is optional on Submission, so any row
+      // created without one survives the cascade and would FK-block the
+      // exercise/concept deletes below.
       await prisma.enrollment.deleteMany({ where: { userId, trackId } });
+      await prisma.submission.deleteMany({ where: { concept: { trackId } } });
       await prisma.credential.deleteMany({ where: { userId } });
       await prisma.exercise.deleteMany({ where: { concept: { trackId } } });
       await prisma.concept.deleteMany({ where: { trackId } });
-      await prisma.track.delete({ where: { id: trackId } }).catch(() => {});
-      await prisma.user.delete({ where: { id: userId } }).catch(() => {});
+      await deleteIfPresent(prisma.track.delete({ where: { id: trackId } }));
+      await deleteIfPresent(prisma.user.delete({ where: { id: userId } }));
     }
     await prisma.$disconnect();
     redis.disconnect();

@@ -119,6 +119,10 @@ export function createContentStore(root: string = DEFAULT_ROOT): ContentStore {
       const conceptsDir = join(trackDir, "concepts");
       return listFiles(conceptsDir)
         .filter((name) => /^\d+-.+/.test(name))
+        // Numeric, not lexicographic: relying on zero-padding (01, 02, …) to
+        // keep string sort aligned with folder order is a latent trap once a
+        // track exceeds 9 or 99 concepts.
+        .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
         .map((name) => join(conceptsDir, name))
         .filter((dir) => existsSync(join(dir, "config.json")))
         .map((dir) => ({
