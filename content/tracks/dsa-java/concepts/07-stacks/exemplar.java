@@ -1,61 +1,102 @@
 import java.util.ArrayDeque;
-import java.util.Arrays;
+import java.util.Deque;
+import java.util.Map;
 
 class Solution {
 
-    public static boolean isValidParentheses(String s) {
-        var stack = new ArrayDeque<Character>();
+    /**
+     * Returns true if the bracket string is valid: matching types, properly
+     * nested. Openers defer an obligation; a closer must discharge the most
+     * recent one — LIFO, i.e. a stack.
+     * O(n) time, O(n) space.
+     */
+    public static boolean isValid(String s) {
+        Map<Character, Character> openerFor = Map.of(')', '(', ']', '[', '}', '{');
+        Deque<Character> stack = new ArrayDeque<>();
         for (char c : s.toCharArray()) {
             if (c == '(' || c == '[' || c == '{') {
                 stack.push(c);
-            } else {
-                if (stack.isEmpty()) return false;
-                char top = stack.pop();
-                if (c == ')' && top != '(') return false;
-                if (c == ']' && top != '[') return false;
-                if (c == '}' && top != '{') return false;
+            } else if (stack.isEmpty() || stack.pop() != openerFor.get(c)) {
+                return false; // wrong opener, or empty stack
             }
         }
-        return stack.isEmpty();
+        return stack.isEmpty(); // leftover openers are the second failure mode
     }
 
-    public static int[] dailyTemperatures(int[] temps) {
-        int n = temps.length;
-        int[] result = new int[n];
-        var stack = new ArrayDeque<Integer>();
-        for (int i = 0; i < n; i++) {
-            while (!stack.isEmpty() && temps[i] > temps[stack.peek()]) {
-                int idx = stack.pop();
-                result[idx] = i - idx;
-            }
-            stack.push(i);
+    /**
+     * A stack of numbers with O(1) getMin. Each entry stores [value, minSoFar]:
+     * the min is snapshotted at push time, so popping restores the previous
+     * minimum with no recomputation.
+     * All operations O(1), O(n) space.
+     */
+    static class MinStack {
+        private final Deque<int[]> entries = new ArrayDeque<>();
+
+        MinStack() {
         }
-        return result;
+
+        void push(int val) {
+            int min = entries.isEmpty() ? val : Math.min(val, getMin());
+            entries.push(new int[]{val, min});
+        }
+
+        void pop() {
+            entries.pop();
+        }
+
+        int top() {
+            return entries.peek()[0];
+        }
+
+        int getMin() {
+            return entries.peek()[1];
+        }
     }
 
-    public static int largestRectangleInHistogram(int[] heights) {
-        var stack = new ArrayDeque<Integer>();
-        stack.push(-1); // sentinel left boundary
-
-        int maxArea = 0;
-        int[] extended = Arrays.copyOf(heights, heights.length + 1); // trailing 0 flushes stack
-
-        for (int i = 0; i < extended.length; i++) {
-            while (stack.peek() != -1 && extended[i] < extended[stack.peek()]) {
-                int h = extended[stack.pop()];
-                int w = i - stack.peek() - 1;
-                maxArea = Math.max(maxArea, h * w);
+    /**
+     * Evaluates a Reverse Polish Notation expression. Operands wait on the
+     * stack; an operator pops b (right) then a (left) and pushes a op b.
+     * Java's int division already truncates toward zero.
+     * O(n) time, O(n) space.
+     */
+    public static int evalRPN(String[] tokens) {
+        Deque<Integer> stack = new ArrayDeque<>();
+        for (String token : tokens) {
+            switch (token) {
+                case "+" -> {
+                    int b = stack.pop(), a = stack.pop();
+                    stack.push(a + b);
+                }
+                case "-" -> {
+                    int b = stack.pop(), a = stack.pop();
+                    stack.push(a - b);
+                }
+                case "*" -> {
+                    int b = stack.pop(), a = stack.pop();
+                    stack.push(a * b);
+                }
+                case "/" -> {
+                    int b = stack.pop(), a = stack.pop();
+                    stack.push(a / b);
+                }
+                default -> stack.push(Integer.parseInt(token));
             }
-            stack.push(i);
         }
-        return maxArea;
+        return stack.pop();
     }
 
     public static void main(String[] args) {
-        System.out.println(isValidParentheses("()[]{}")); // true
-        System.out.println(isValidParentheses("([)]"));   // false
-        System.out.println(Arrays.toString(dailyTemperatures(
-            new int[]{73,74,75,71,69,72,76,73}))); // [1,1,4,2,1,1,0,0]
-        System.out.println(largestRectangleInHistogram(new int[]{2,1,5,6,2,3})); // 10
+        System.out.println(isValid("()[]{}")); // true
+        System.out.println(isValid("([)]"));   // false
+
+        MinStack st = new MinStack();
+        st.push(-2);
+        st.push(0);
+        st.push(-3);
+        System.out.println(st.getMin()); // -3
+        st.pop();
+        System.out.println(st.top() + " " + st.getMin()); // 0 -2
+
+        System.out.println(evalRPN(new String[]{"2", "1", "+", "3", "*"})); // 9
     }
 }

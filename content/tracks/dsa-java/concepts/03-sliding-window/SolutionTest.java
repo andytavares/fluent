@@ -7,42 +7,42 @@ public class SolutionTest {
     }
 
     public static void main(String[] args) {
-        // longestUniqueSubstring
-        check("lus: abcabcbb -> 3",   Solution.longestUniqueSubstring("abcabcbb") == 3);
-        check("lus: bbbbb -> 1",      Solution.longestUniqueSubstring("bbbbb") == 1);
-        check("lus: pwwkew -> 3",     Solution.longestUniqueSubstring("pwwkew") == 3);
-        check("lus: empty -> 0",      Solution.longestUniqueSubstring("") == 0);
-        check("lus: single char -> 1",Solution.longestUniqueSubstring("z") == 1);
-        check("lus: all unique",      Solution.longestUniqueSubstring("abcde") == 5);
-        check("lus: abba -> 2",       Solution.longestUniqueSubstring("abba") == 2);
+        // minSubArrayLen
+        check("minSubArrayLen: classic example", Solution.minSubArrayLen(7, new int[]{2, 3, 1, 2, 4, 3}) == 2);
+        check("minSubArrayLen: single element suffices", Solution.minSubArrayLen(4, new int[]{1, 4, 4}) == 1);
+        check("minSubArrayLen: no subarray reaches target", Solution.minSubArrayLen(11, new int[]{1, 1, 1, 1, 1, 1, 1, 1}) == 0);
+        check("minSubArrayLen: whole array sums exactly to target", Solution.minSubArrayLen(6, new int[]{1, 2, 3}) == 3);
+        check("minSubArrayLen: single-element array meets target", Solution.minSubArrayLen(5, new int[]{5}) == 1);
+        check("minSubArrayLen: single-element array misses target", Solution.minSubArrayLen(6, new int[]{5}) == 0);
+        check("minSubArrayLen: empty array", Solution.minSubArrayLen(1, new int[]{}) == 0);
+        check("minSubArrayLen: best window in the middle", Solution.minSubArrayLen(8, new int[]{1, 1, 7, 1, 1, 1}) == 2);
+        check("minSubArrayLen: shrink past several small elements", Solution.minSubArrayLen(15, new int[]{1, 2, 3, 4, 5}) == 5);
+        check("minSubArrayLen: large value late beats long early window", Solution.minSubArrayLen(10, new int[]{1, 1, 1, 1, 1, 1, 1, 1, 10}) == 1);
 
-        // maxSumSubarray
-        check("mss: [2,1,5,1,3,2] k=3 -> 9",
-              Solution.maxSumSubarray(new int[]{2,1,5,1,3,2}, 3) == 9);
-        check("mss: [2,3,4,1,5] k=2 -> 7",
-              Solution.maxSumSubarray(new int[]{2,3,4,1,5}, 2) == 7);
-        check("mss: k=len returns total",
-              Solution.maxSumSubarray(new int[]{1,2,3}, 3) == 6);
-        check("mss: k=1 returns max element",
-              Solution.maxSumSubarray(new int[]{3,1,4,1,5}, 1) == 5);
-        check("mss: all negatives",
-              Solution.maxSumSubarray(new int[]{-1,-2,-3,-4}, 2) == -3);
+        // lengthOfLongestSubstring
+        check("lengthOfLongestSubstring: classic example", Solution.lengthOfLongestSubstring("abcabcbb") == 3);
+        check("lengthOfLongestSubstring: all identical", Solution.lengthOfLongestSubstring("bbbbb") == 1);
+        check("lengthOfLongestSubstring: substring not subsequence", Solution.lengthOfLongestSubstring("pwwkew") == 3);
+        check("lengthOfLongestSubstring: empty string", Solution.lengthOfLongestSubstring("") == 0);
+        check("lengthOfLongestSubstring: single character", Solution.lengthOfLongestSubstring("z") == 1);
+        check("lengthOfLongestSubstring: all distinct", Solution.lengthOfLongestSubstring("abcdef") == 6);
+        check("lengthOfLongestSubstring: stale index must not move left backwards", Solution.lengthOfLongestSubstring("abba") == 2);
+        check("lengthOfLongestSubstring: duplicate before current window", Solution.lengthOfLongestSubstring("tmmzuxt") == 5);
+        check("lengthOfLongestSubstring: repeat forces partial jump", Solution.lengthOfLongestSubstring("dvdf") == 3);
+        check("lengthOfLongestSubstring: spaces and symbols count as characters", Solution.lengthOfLongestSubstring("a b!a") == 4);
 
-        // minWindowSubstring
-        check("mws: ADOBECODEBANC / ABC -> BANC",
-              Solution.minWindowSubstring("ADOBECODEBANC", "ABC").equals("BANC"));
-        check("mws: a / a -> a",
-              Solution.minWindowSubstring("a", "a").equals("a"));
-        check("mws: a / b -> empty",
-              Solution.minWindowSubstring("a", "b").equals(""));
-        check("mws: aa / aa -> aa",
-              Solution.minWindowSubstring("aa", "aa").equals("aa"));
-        check("mws: empty s -> empty",
-              Solution.minWindowSubstring("", "a").equals(""));
-        check("mws: t longer than s -> empty",
-              Solution.minWindowSubstring("ab", "abc").equals(""));
-        check("mws: exact match",
-              Solution.minWindowSubstring("ABC", "ABC").equals("ABC"));
+        // minWindow
+        check("minWindow: classic example", Solution.minWindow("ADOBECODEBANC", "ABC").equals("BANC"));
+        check("minWindow: single char match", Solution.minWindow("a", "a").equals("a"));
+        check("minWindow: t longer than s", Solution.minWindow("a", "aa").equals(""));
+        check("minWindow: duplicates in t both required", Solution.minWindow("aa", "aa").equals("aa"));
+        check("minWindow: no valid window", Solution.minWindow("abc", "d").equals(""));
+        check("minWindow: window at the very start", Solution.minWindow("abcde", "ab").equals("ab"));
+        check("minWindow: window at the very end", Solution.minWindow("abcde", "de").equals("de"));
+        check("minWindow: whole of s is the only valid window", Solution.minWindow("acb", "abc").equals("acb"));
+        check("minWindow: must keep shrinking to the tightest window", Solution.minWindow("cabwefgewcwaefgcf", "cae").equals("cwae"));
+        check("minWindow: duplicate requirement stops premature shrink", Solution.minWindow("abcdefa", "aa").equals("abcdefa"));
+        check("minWindow: case sensitivity", Solution.minWindow("Aa", "A").equals("A"));
 
         System.out.printf("%n%d passed, %d failed%n", passed, failed);
         if (failed > 0) System.exit(1);

@@ -1,120 +1,318 @@
-# Hash Maps and Sets
+# Hash Maps
 
 ## What you'll learn
 
-How to trade O(n) space for O(1) lookup time — the core pattern behind dozens of interview problems. Once you recognize the "complement lookup" and "group by key" shapes, most hash map problems become mechanical.
+The hash-map patterns that turn O(n²) scans into single passes: frequency counting, canonical keys for grouping, value→index lookup, set membership for O(1) "have I seen this?" checks, and cycle detection with a seen-set. After this concept you'll reach for a `HashMap` or `HashSet` reflexively whenever a problem says "find a pair", "group these", or "does X appear".
 
 ## Key concepts
 
-### Pattern 1 — Complement lookup (Two Sum)
+### Frequency counting
 
-For each element, ask "have I already seen the value that completes the pair?" One pass, O(n).
+Count occurrences in one pass, then answer questions about the counts. This is the backbone of Ransom Note, Valid Anagram, and half the string problems you'll ever see:
 
 ```java
-var seen = new HashMap<Integer, Integer>(); // value -> index
+Map<Character, Integer> counts = new HashMap<>();
+for (char c : s.toCharArray()) counts.merge(c, 1, Integer::sum);
+```
+
+`merge(key, 1, Integer::sum)` is the increment-or-initialize idiom — it's Java's answer to `counts[c] = (counts[c] ?? 0) + 1`. For a comparison ("does `t` use exactly the letters of `s`?"), count up over one string and count *down* over the other — a count that would go below zero means mismatch.
+
+### `HashMap`/`HashSet` vs arrays
+
+Use `HashMap`/`HashSet` for arbitrary or sparse keys; fall back to a fixed-size `int[26]` array only when the alphabet is known and small (lowercase ASCII). A `HashMap<Character, Integer>` handles Unicode with no extra thought; an array keyed by `c - 'a'` breaks silently on any character outside `'a'..'z'`.
+
+| | `HashMap`/`HashSet` | `int[26]` array |
+|---|---|---|
+| Key space | anything, autoboxed | fixed alphabet only |
+| Lookup | O(1) average, boxing overhead | O(1), no boxing |
+| `.size()` | O(1) | track separately |
+| Correctness on wide input | always correct | breaks on out-of-range chars |
+
+### Canonical keys — grouping by signature
+
+To group items that are "the same" under some equivalence (anagrams, isomorphic shapes), compute a **canonical form** and use it as the map key. For anagrams, the sorted string:
+
+```java
+char[] chars = s.toCharArray();
+Arrays.sort(chars);
+String key = new String(chars); // "eat", "tea", "ate" → all "aet"
+groups.computeIfAbsent(key, k -> new ArrayList<>()).add(s);
+```
+
+Anything with the same signature lands in the same bucket. A 26-slot count array joined into a string (`"1#0#2#..."`) is the O(k) alternative when sorting each string is too slow.
+
+### Value → index maps and the complement trick
+
+Two Sum in one pass: for each element, ask the map whether its **complement** (`target - x`) has already been seen. Check *before* you insert the current element — that's what prevents pairing an element with itself:
+
+```java
+Map<Integer, Integer> seen = new HashMap<>(); // value -> index
 for (int i = 0; i < nums.length; i++) {
     int complement = target - nums[i];
-    if (seen.containsKey(complement)) {
-        return new int[]{seen.get(complement), i};
-    }
+    if (seen.containsKey(complement)) return new int[]{seen.get(complement), i};
     seen.put(nums[i], i);
 }
 ```
 
-### Pattern 2 — Group by canonical key (Group Anagrams)
+### Set membership — only do expensive work at sequence starts
 
-All anagrams share the same sorted form. Use the sorted form as a map key to bucket them.
-
-```java
-var groups = new HashMap<String, List<String>>();
-for (String word : words) {
-    char[] chars = word.toCharArray();
-    Arrays.sort(chars);
-    String key = new String(chars);
-    groups.computeIfAbsent(key, k -> new ArrayList<>()).add(word);
-}
-return new ArrayList<>(groups.values());
-```
-
-`computeIfAbsent` creates the list on first access and returns it — cleaner than a `containsKey` + `put` + `get` triple.
-
-### Pattern 3 — Sequence detection with HashSet (Longest Consecutive Sequence)
-
-Only start counting a sequence from its smallest element (no predecessor in the set). This ensures each element is visited at most twice.
+Longest Consecutive Sequence looks like it needs sorting, but a `HashSet` gives O(1) membership, and one guard makes the scan linear: only start counting from numbers that **begin** a run (no `n - 1` in the set). Every element is then visited at most twice — once by the outer loop, once inside some run walk:
 
 ```java
-var set = new HashSet<Integer>();
+Set<Integer> set = new HashSet<>();
 for (int n : nums) set.add(n);
-
-int longest = 0;
 for (int n : set) {
-    if (!set.contains(n - 1)) { // n is the start of a sequence
-        int length = 1;
-        while (set.contains(n + length)) length++;
-        longest = Math.max(longest, length);
-    }
+    if (set.contains(n - 1)) continue;      // not a run start — skip
+    int len = 1;
+    while (set.contains(n + len)) len++;    // walk the run once
 }
-return longest;
 ```
 
-The `!set.contains(n - 1)` guard is why this is O(n) and not O(n²): inner `while` only runs for sequence starts.
+Without the guard the same run gets re-walked from every one of its members — O(n²) on a single long run.
 
-## Time and space complexity
+### Seen-sets for cycle detection
 
-| Problem | Time | Space | Why |
-|---------|------|-------|-----|
-| `twoSum` | O(n) | O(n) | One pass; map stores at most n entries |
-| `groupAnagrams` | O(n · k log k) | O(n · k) | Sort each word of length k; store all words |
-| `longestConsecutiveSequence` | O(n) | O(n) | Each element added/checked at most twice |
+When a process iterates a deterministic step (`n → f(n)`) over a bounded state space, it must eventually repeat. Record every visited state in a `Set`; revisiting one means you're in a loop and will never make progress (Happy Number). The O(1)-space alternative is Floyd's tortoise-and-hare, which you'll meet again in linked lists.
 
-## Common variations this pattern solves
+### Complexity of the flagship problems
 
-1. **Contains Duplicate** — `HashSet.add` returns false if already present
-2. **Intersection of Two Arrays** — set intersection; `retainAll` or manual loop
-3. **Top K Frequent Elements** — frequency map + bucket sort by frequency
-4. **Isomorphic Strings** — two maps: forward and backward character mapping
-
-## vs other languages
-
-Python's `dict` and `set` are identical in concept to Java's `HashMap` and `HashSet`, but Python's `Counter(words)` and `defaultdict(list)` eliminate boilerplate. In Java, `merge` and `computeIfAbsent` are the idiomatic equivalents.
-
-Go's maps auto-initialize to zero values; Java's maps return `null` for missing keys. Java `int` primitives can't be stored directly — they're autoboxed to `Integer`. Use `getOrDefault(key, 0)` to avoid null pointer exceptions.
+| Problem | Time | Space | Technique |
+|---------|------|-------|-----------|
+| Valid Anagram | O(n) | O(k) alphabet | count up / count down |
+| Group Anagrams | O(n · k log k) | O(n · k) | canonical (sorted) key |
+| Two Sum | O(n) | O(n) | value → index + complement |
+| Longest Consecutive Sequence | O(n) | O(n) | set + run-start guard |
 
 ## Watch out
 
-- **`==` vs `.equals()` on `Integer`**: `seen.get(complement) == i` compares references, not values, for `Integer` objects outside the cache range (-128 to 127). Always use `.equals()` or unbox first.
-- **Autoboxing cost**: `HashMap<Integer, Integer>` boxes every `int`. For performance-critical code with primitive keys, consider a third-party `IntIntHashMap`. In interviews, `HashMap` is always acceptable.
-- **`computeIfAbsent` vs `getOrDefault`**: `computeIfAbsent` is for building collections (creates on first access). `getOrDefault` is for reading with a fallback. Using `getOrDefault` to build a list of lists is a common antipattern.
-- **`longestConsecutiveSequence` in O(n log n)** with sorting is also valid. The O(n) HashSet approach is what interviewers expect when they specify O(n).
+- **Check the complement before inserting** in Two Sum, or `target = 2 × nums[i]` will happily return `[i, i]`.
+- **`Integer` autoboxing and `==`**: `map.get(...)` returns a boxed `Integer`; comparing two `Integer` objects with `==` works only inside the cached range `[-128, 127]` by coincidence of JVM implementation — always use `.equals()` or unbox to `int` first for correctness.
+- **The run-start guard is the whole algorithm** in Longest Consecutive Sequence — skipping it still passes small tests but goes quadratic on one long run.
+- **`Arrays.sort(char[])`, not sorting a `String` directly** — strings are immutable in Java too; convert to a `char[]` first, sort it, then build a new `String` from it.
+- **Length check first** in anagram problems: different lengths can never be anagrams, and with equal lengths a "never goes negative" check during count-down is sufficient — no leftover pass needed.
+- **Word Pattern / Isomorphic Strings need the mapping in both directions.** One map catches `"abba"` vs `"dog dog dog dog"` in only one direction; the reverse map catches the other.
+- **Duplicates in the input** (Two Sum's `[3, 3]`, Longest Consecutive's repeated values): the map/set handles them naturally — as long as you don't pre-dedupe indexes away.
 
-## FAANG follow-up questions
+## Problem walkthroughs
 
-> "Why not sort for longestConsecutiveSequence?" — Sorting is O(n log n). The HashSet approach is O(n). Both are correct; the follow-up is usually "can you do O(n)?"
->
-> "What if there are duplicates in longestConsecutiveSequence?" — Adding all values to a `HashSet` first deduplicates them, so duplicates don't affect correctness.
->
-> "How would you handle groupAnagrams if words can be up to 50,000 characters long?" — Sorting each word is O(k log k). An alternative key is a character frequency array: `new int[26]` — hashed to a string like `"1#0#2#..."`. This avoids the sort, giving O(k) per word.
->
-> "What is the worst-case time complexity of HashMap operations?" — O(n) due to hash collisions (all keys map to the same bucket). In practice with a good hash function and load factor ≤ 0.75, it's amortized O(1).
+### Ransom Note
+
+**Problem.** Given strings `ransomNote` and `magazine`, return `true` if the note can be assembled from the magazine's letters, each magazine letter usable at most once.
+
+**Example.**
+
+    ransomNote = "aa", magazine = "ab"  → false
+    ransomNote = "aa", magazine = "aab" → true
+
+**Steps.**
+1. Early exit: if `ransomNote.length() > magazine.length()`, it's impossible before counting anything.
+2. Count every character of `magazine` into a map.
+3. Walk `ransomNote`; for each character, look up its count. If it's missing or zero, return `false`; otherwise decrement.
+4. Return `true` after the walk — every note letter found an unused magazine letter.
+
+**Complexity.** O(m + n) time / O(k) space for the alphabet actually used.
+
+### Isomorphic Strings
+
+**Problem.** Two equal-length strings `s` and `t` are isomorphic if replacing characters of `s` can produce `t`, where every occurrence of a character maps to the same character and no two characters map to the same one. Return `true` if they are.
+
+**Example.**
+
+    s = "egg",   t = "add"  → true   (e→a, g→d)
+    s = "foo",   t = "bar"  → false  (o would map to both a and r)
+    s = "badc",  t = "baba" → false  (d and b can't both map to b... a and c can't both map to a)
+
+**Steps.**
+1. Keep two maps: `sToT` and `tToS`.
+2. Walk both strings in lockstep. For each pair `(a, b)`:
+3. If `sToT` has `a` mapped to something other than `b`, or `tToS` has `b` mapped to something other than `a`, return `false`.
+4. Otherwise record `sToT.put(a, b)` and `tToS.put(b, a)`.
+5. The two maps enforce a bijection — one map alone misses two source characters colliding on the same target.
+
+**Complexity.** O(n) time / O(k) space.
+
+### Word Pattern
+
+**Problem.** Given `pattern` (letters) and `s` (space-separated words), return `true` if the words follow the pattern: a bijection between pattern letters and words.
+
+**Example.**
+
+    pattern = "abba", s = "dog cat cat dog"  → true
+    pattern = "abba", s = "dog cat cat fish" → false
+    pattern = "abba", s = "dog dog dog dog"  → false
+
+**Steps.**
+1. `String[] words = s.split(" ")`. If `words.length != pattern.length()`, return `false` immediately.
+2. Same double-map dance as Isomorphic Strings, but letter ↔ word: `letterToWord` and `wordToLetter`.
+3. On each `(letter, word)` pair, reject any conflict with an existing entry in either map; otherwise record both directions.
+4. This *is* Isomorphic Strings with words as the second alphabet — recognizing the reduction is the interview win.
+
+**Complexity.** O(n) time / O(n) space for the word map.
+
+### Valid Anagram ★
+
+**Problem.** Return `true` if `t` is an anagram of `s` — the exact same characters with the exact same multiplicities, rearranged.
+
+**Example.**
+
+    s = "anagram", t = "nagaram" → true
+    s = "rat",     t = "car"     → false
+
+**Steps.**
+1. If lengths differ, return `false` — this also makes step 3's single-direction check sufficient.
+2. Count up over `s`: `counts.merge(c, 1, Integer::sum)`.
+3. Count down over `t`: if `counts.get(c)` is missing or zero, return `false`; else decrement.
+4. Return `true`. Equal lengths plus "never goes negative" together imply every count ends exactly at zero — no leftover-check pass needed.
+
+**Complexity.** O(n) time / O(k) space — beats sort-both-and-compare's O(n log n).
+
+### Group Anagrams ★
+
+**Problem.** Given an array of strings, group the anagrams together. Return a collection of groups; group order and order within a group don't matter.
+
+**Example.**
+
+    ["eat","tea","tan","ate","nat","bat"]
+    → [["eat","tea","ate"], ["tan","nat"], ["bat"]]
+
+**Steps.**
+1. Create a `Map<String, List<String>>`.
+2. For each string, compute its canonical key: sort its `char[]` and build a `String` from it. Anagrams — and only anagrams — produce identical keys.
+3. Append the string to the bucket at that key with `computeIfAbsent(key, k -> new ArrayList<>()).add(s)`.
+4. Return `new ArrayList<>(groups.values())`.
+5. Follow-up key: a 26-count signature (`counts` joined with `#`) drops the per-string cost from O(k log k) to O(k) for lowercase input.
+
+**Complexity.** O(n · k log k) time (n strings of length ≤ k) / O(n · k) space.
+
+### Two Sum ★
+
+**Problem.** Given `nums` and `target`, return the **indexes** of the two distinct positions whose values sum to `target`. Exactly one answer exists. Unlike Two Sum II from the two-pointers concept, the array is *unsorted* — and sorting would destroy the indexes you need to return.
+
+**Example.**
+
+    nums = [2,7,11,15], target = 9 → [0,1]
+    nums = [3,3],       target = 6 → [0,1]
+
+**Steps.**
+1. Create `Map<Integer, Integer> seen` from value to index.
+2. For each index `i`: compute `complement = target - nums[i]`.
+3. If `seen.containsKey(complement)`, return `{seen.get(complement), i}` — the stored index is always the smaller one.
+4. Otherwise `seen.put(nums[i], i)` and continue.
+5. Checking before inserting is what makes `[3, 3]` with target 6 work (the second 3 finds the first) while a lone 3 can't match itself.
+
+**Complexity.** O(n) time / O(n) space — the map buys back the ordering information two pointers got from sortedness.
+
+### Happy Number
+
+**Problem.** Repeatedly replace a positive integer `n` with the sum of the squares of its digits. `n` is *happy* if this process reaches 1. Return `true` if it does; unhappy numbers loop forever without hitting 1.
+
+**Example.**
+
+    19 → 1² + 9² = 82 → 68 → 100 → 1   → true
+    2  → 4 → 16 → 37 → ... → 4 (cycle) → false
+
+**Steps.**
+1. Write the step function `sumOfSquaredDigits(n)`: peel digits with `n % 10` and `n / 10`, accumulate `digit * digit`.
+2. Keep a `Set<Integer>` of every value seen. Loop: if `n == 1`, return `true`; if the set already has `n`, you're cycling — return `false`.
+3. Otherwise add `n` to the set and step.
+4. Termination is guaranteed: a number with `d` digits maps to at most `81d`, so large values shrink and the reachable state space is finite — the process must repeat or reach 1.
+5. O(1)-space alternative: Floyd's cycle detection — slow pointer steps once, fast twice; meeting anywhere other than 1 means a cycle.
+
+**Complexity.** O(log n) per step for digit peeling, bounded total steps / O(1) with Floyd, small-bounded with the set.
+
+### Contains Duplicate II
+
+**Problem.** Given `nums` and an integer `k`, return `true` if there are two indexes `i != j` with `nums[i] == nums[j]` and `|i - j| <= k`.
+
+**Example.**
+
+    nums = [1,2,3,1],     k = 3 → true
+    nums = [1,2,3,1,2,3], k = 2 → false
+
+**Steps.**
+1. Keep `Map<Integer, Integer> lastIndex` from value to its most recent index.
+2. For each `i`: if the map has `nums[i]` and `i - lastIndex.get(nums[i]) <= k`, return `true`.
+3. Either way, update `lastIndex.put(nums[i], i)` — only the *most recent* previous occurrence can be within `k` of a future index, so overwriting loses nothing.
+4. Alternative framing: a sliding-window `Set` of the last `k` elements (add `nums[i]`, evict `nums[i - k]`) — same time, memory bounded by `k`.
+
+**Complexity.** O(n) time / O(min(n, k)) space with the window set, O(n) with the map.
+
+### Longest Consecutive Sequence ★
+
+**Problem.** Given an unsorted array, return the length of the longest run of consecutive integers (values, not positions). Required: O(n) time — so no sorting.
+
+**Example.**
+
+    [100,4,200,1,3,2] → 4   (the run 1,2,3,4)
+    []                → 0
+
+**Steps.**
+1. Pour everything into a `HashSet<Integer>` — deduplicates and gives O(1) membership.
+2. For each value `n` in the set, check `set.contains(n - 1)`. If present, `n` is mid-run: **skip it**.
+3. If `n` starts a run, walk upward — `while (set.contains(n + len)) len++` — and fold `len` into the best.
+4. The guard is the linearity proof: each run is walked exactly once, from its unique start, so total inner-loop work across all starts is O(n).
+
+**Complexity.** O(n) time / O(n) space — sorting would be O(n log n) and is explicitly off the table.
+
+## Interview follow-ups
+
+- After **Two Sum**: "The array is sorted — can you beat O(n) space?" (converging pointers, O(1) space — that's Two Sum II from the previous concept.) "Return *all* pairs, no duplicates?" (sort + two pointers with duplicate skipping.)
+- After **Group Anagrams**: "Strings are millions of characters?" (26-count signature key — O(k) per string instead of O(k log k).)
+- After **Valid Anagram**: "Unicode input?" (a `HashMap` already handles it; a fixed 26-slot array does not — say so out loud.)
+- After **Happy Number**: "O(1) space?" (Floyd's tortoise and hare on the step function.)
+- After **Longest Consecutive Sequence**: "Why is this O(n) with a nested while loop?" (amortization: every element is visited at most twice — the run-start guard prevents re-walks.)
 
 ## The task
 
-Implement three methods in `Solution`:
+Four hash-map classics. Each must run in the stated time; `HashMap`/`HashSet` operations count as O(1).
+
+### `isAnagram(String s, String t)`
+
+Return `true` if `t` is an anagram of `s`: both strings contain exactly the same characters with the same multiplicities, just possibly reordered. Comparison is case-sensitive and every character counts (no filtering). O(n) time — don't sort.
 
 ```java
-// Returns indices [i, j] such that nums[i] + nums[j] == target.
-// Exactly one solution exists; i != j.
-// [2,7,11,15], target=9 -> [0,1]
-public static int[] twoSum(int[] nums, int target)
-
-// Groups words that are anagrams of each other into sublists.
-// Order of groups and elements within groups does not matter.
-// ["eat","tea","tan","ate","nat","bat"] -> [["eat","tea","ate"],["tan","nat"],["bat"]]
-public static List<List<String>> groupAnagrams(String[] words)
-
-// Returns the length of the longest consecutive sequence of integers.
-// Input may be unsorted; O(n) required.
-// [100,4,200,1,3,2] -> 4 (sequence: 1,2,3,4)
-// [0,3,7,2,5,8,4,6,0,1] -> 9
-public static int longestConsecutiveSequence(int[] nums)
+Solution.isAnagram("anagram", "nagaram"); // true
+Solution.isAnagram("rat", "car");         // false
+Solution.isAnagram("ab", "a");            // false (different lengths)
+Solution.isAnagram("", "");               // true
 ```
+
+Edge cases: strings of different lengths (always `false`), empty strings (`true`), same character set with different multiplicities (`"aacc"` vs `"ccac"` → `false`).
+
+### `groupAnagrams(String[] strs)`
+
+Given an array of strings, return a `List<List<String>>` where each inner list holds all strings from `strs` that are anagrams of each other. Every input string appears in exactly one group. The order of the groups and the order of strings within a group don't matter. Duplicate strings are distinct entries and all land in the same group.
+
+```java
+Solution.groupAnagrams(new String[]{"eat", "tea", "tan", "ate", "nat", "bat"});
+// [["eat","tea","ate"], ["tan","nat"], ["bat"]]  (any order)
+
+Solution.groupAnagrams(new String[]{""});   // [[""]]
+Solution.groupAnagrams(new String[]{"a"});  // [["a"]]
+```
+
+Edge cases: empty input array (`[]`), single string, empty strings grouping together, duplicate strings (`["ab", "ba", "ab"]` → one group of three), strings with no anagram partner (singleton groups).
+
+### `twoSum(int[] nums, int target)`
+
+Given an unsorted array `nums` and an integer `target`, return the **0-based indexes** `{i, j}` with `i < j` of the two distinct positions whose values sum exactly to `target`. Exactly one solution exists for every input you'll receive; the same position may not be used twice (two equal *values* at different positions are fine). O(n) time — one pass with a map; sorting would lose the indexes.
+
+```java
+Solution.twoSum(new int[]{2, 7, 11, 15}, 9); // [0, 1]
+Solution.twoSum(new int[]{3, 2, 4}, 6);      // [1, 2]
+Solution.twoSum(new int[]{3, 3}, 6);         // [0, 1]
+```
+
+Edge cases: duplicate values forming the pair, negative numbers, `target` of 0, the pair sitting at the two ends of the array.
+
+### `longestConsecutive(int[] nums)`
+
+Return the length of the longest run of consecutive integer *values* present in `nums` (positions don't matter). The array is unsorted and may contain duplicates. Must run in O(n) time — sorting is not allowed; use a `HashSet` and only count upward from values that start a run.
+
+```java
+Solution.longestConsecutive(new int[]{100, 4, 200, 1, 3, 2});          // 4  (1,2,3,4)
+Solution.longestConsecutive(new int[]{0, 3, 7, 2, 5, 8, 4, 6, 0, 1});  // 9  (0..8)
+Solution.longestConsecutive(new int[]{});                              // 0
+```
+
+Edge cases: empty array (`0`), single element (`1`), duplicates inside a run (they don't lengthen it), negative values, runs crossing zero (`[-2, -1, 0, 1]` → 4), no consecutive values at all (`[10, 20, 30]` → 1).
