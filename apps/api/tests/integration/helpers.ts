@@ -25,6 +25,13 @@ export async function loadEnv() {
     });
   }
 
+  // Every seedLearner() call writes real rows into whatever DATABASE_URL
+  // points at — there's no separate integration DB. close() deletes them
+  // all so repeated INTEGRATION=true runs don't pollute the dev database
+  // (User/Track have no cascade relations to each other by design; delete
+  // order below respects the FK graph).
+  const created: Array<{ userId: string; trackId: string }> = [];
+
   /**
    * Seeds a learner enrolled in a fresh track through the shipping
    * createEnrollment mutation (first concept available, rest locked).
@@ -66,6 +73,7 @@ export async function loadEnv() {
     }
 
     const enrollment = await caller(user.id).enrollments.createEnrollment({ trackId: track.id });
+    created.push({ userId: user.id, trackId: track.id });
     return { user, track, concepts, enrollment };
   }
 
@@ -93,6 +101,17 @@ export async function loadEnv() {
   }
 
   async function close() {
+    for (const { userId, trackId } of created) {
+      // Enrollment cascades ConceptState/MasteryEvent/Submission/
+      // CapstoneSessions(+StepCompletion); everything else has no cascade
+      // and must be deleted in FK order.
+      await prisma.enrollment.deleteMany({ where: { userId, trackId } });
+      await prisma.credential.deleteMany({ where: { userId } });
+      await prisma.exercise.deleteMany({ where: { concept: { trackId } } });
+      await prisma.concept.deleteMany({ where: { trackId } });
+      await prisma.track.delete({ where: { id: trackId } }).catch(() => {});
+      await prisma.user.delete({ where: { id: userId } }).catch(() => {});
+    }
     await prisma.$disconnect();
     redis.disconnect();
   }
