@@ -10,7 +10,8 @@
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "verify-content": "tsx scripts/verify-content.ts"
   },
   "dependencies": {
     "bullmq": "^5.0.0",
@@ -19,7 +20,8 @@
     "pino": "^9.3.0",
     "pino-http": "^10.2.0",
     "prom-client": "^15.1.0",
-    "@fluent/execution-contract": "workspace:*"
+    "@fluent/execution-contract": "workspace:*",
+    "@fluent/content-config": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

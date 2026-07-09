@@ -29,6 +29,7 @@ export interface ContentStore {
   readonly root: string;
   getLessonStub(contentPath: string, language: string): string;
   getTestoutStub(contentPath: string, language: string): string;
+  getExemplar(contentPath: string, language: string): string;
   getInstructions(contentPath: string): string;
   getTaskPrompt(contentPath: string): string;
   getLessonTestFiles(contentPath: string, language: string): string[];
@@ -81,6 +82,10 @@ export function createContentStore(root: string = DEFAULT_ROOT): ContentStore {
 
     getTestoutStub(contentPath, language) {
       return findStub(abs(contentPath), "testout_stub.", language);
+    },
+
+    getExemplar(contentPath, language) {
+      return findStub(abs(contentPath), "exemplar.", language);
     },
 
     getInstructions(contentPath) {

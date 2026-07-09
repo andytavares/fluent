@@ -148,6 +148,9 @@ importers:
 
   apps/sandbox:
     dependencies:
+      '@fluent/content-config':
+        specifier: workspace:*
+        version: link:../../packages/content-config
       '@fluent/execution-contract':
         specifier: workspace:*
         version: link:../../packages/execution-contract

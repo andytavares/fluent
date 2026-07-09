@@ -82,6 +82,14 @@ describe("ContentStore stubs and instructions", () => {
     expect(store.getTestoutStub(conceptPath, "go")).toBe("package main // testout stub");
   });
 
+  it("reads the exemplar for the track language", () => {
+    expect(store.getExemplar(conceptPath, "go")).toBe("package main // exemplar");
+  });
+
+  it("returns empty string when the exemplar is missing", () => {
+    expect(store.getExemplar("content/tracks/go/concepts/99-nope", "go")).toBe("");
+  });
+
   it("reads instructions.md", () => {
     expect(store.getInstructions(conceptPath)).toBe(INSTRUCTIONS);
   });
