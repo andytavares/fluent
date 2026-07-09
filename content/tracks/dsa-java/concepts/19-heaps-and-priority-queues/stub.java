@@ -1,45 +1,60 @@
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.List;
 import java.util.PriorityQueue;
 
 class Solution {
 
-    // ListNode is defined in SolutionTest.java — use it freely here.
-
-    static class MinHeap {
-        private final ArrayList<Integer> data = new ArrayList<>();
-
-        public void push(int val) {
-            // TODO
-        }
-
-        public int pop() {
-            // TODO
-            return 0;
-        }
-
-        public int peek() {
-            // TODO
-            return 0;
-        }
+    /**
+     * Returns the k-th largest element of nums (duplicates count separately).
+     */
+    public static int findKthLargest(int[] nums, int k) {
+        // TODO: min-heap of the k largest — offer each num, poll when size() > k;
+        // the head is the answer
+        return 0;
     }
 
-    public static int[] kLargestElements(int[] nums, int k) {
-        // TODO
-        return new int[k];
+    /**
+     * Returns the k pairs {u, v} (u from nums1, v from nums2) with the smallest
+     * sums, ordered by sum ascending. Fewer than k pairs exist -> return all.
+     */
+    public static List<int[]> kSmallestPairs(int[] nums1, int[] nums2, int k) {
+        // TODO: heap of {i, j} index pairs compared by nums1[i] + nums2[j];
+        // seed (i, 0) for the first min(k, nums1.length) rows, then poll and
+        // offer only the row successor (i, j + 1)
+        return new ArrayList<>();
     }
 
-    public static ListNode mergeKSortedLists(ListNode[] lists) {
-        // TODO
-        return null;
+    /**
+     * Streaming median over two heaps: a max-heap `low` (smaller half) and a
+     * min-heap `high` (larger half); low may hold at most one extra element.
+     */
+    static class MedianFinder {
+
+        public MedianFinder() {
+            // TODO: low = new PriorityQueue<>(Comparator.reverseOrder());
+            // high = new PriorityQueue<>();
+        }
+
+        public void addNum(int num) {
+            // TODO: offer into low when empty or num <= low.peek(), else into high;
+            // then rebalance — low may exceed high by at most one, high never leads
+        }
+
+        public double findMedian() {
+            // TODO: odd count -> low.peek(); even -> (low.peek() + high.peek()) / 2.0
+            return 0;
+        }
     }
 
     public static void main(String[] args) {
-        var heap = new MinHeap();
-        heap.push(3); heap.push(1); heap.push(4); heap.push(1);
-        System.out.println(heap.peek()); // 1
-        System.out.println(heap.pop());  // 1
-        System.out.println(java.util.Arrays.toString(
-            kLargestElements(new int[]{3,2,1,5,6,4}, 2))); // [5,6] or [6,5]
+        System.out.println(findKthLargest(new int[]{3, 2, 1, 5, 6, 4}, 2)); // 5
+
+        System.out.println(kSmallestPairs(new int[]{1, 7, 11}, new int[]{2, 4, 6}, 3));
+
+        MedianFinder mf = new MedianFinder();
+        mf.addNum(1); mf.addNum(2);
+        System.out.println(mf.findMedian()); // 1.5
+        mf.addNum(3);
+        System.out.println(mf.findMedian()); // 2.0
     }
 }
