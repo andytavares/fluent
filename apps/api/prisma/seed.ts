@@ -28,6 +28,13 @@ async function seedTrack({ dir, config: trackConfig }: TrackEntry) {
     return;
   }
 
+  // Shift existing positions out of the way first: curriculum renumbering
+  // would otherwise collide with unique(trackId, position) mid-upsert.
+  await prisma.concept.updateMany({
+    where: { trackId: track.id },
+    data: { position: { increment: 1000 } },
+  });
+
   for (const { contentPath, config: cfg } of concepts) {
     const concept = await prisma.concept.upsert({
       where: { trackId_slug: { trackId: track.id, slug: cfg.slug } },
@@ -65,6 +72,18 @@ async function seedTrack({ dir, config: trackConfig }: TrackEntry) {
     if (content.getLessonTestFiles(contentPath, trackConfig.language).length === 0) {
       console.warn(`  ⚠ MISSING TEST FILE: ${trackConfig.slug}/${cfg.slug} (language: ${trackConfig.language})`);
     }
+  }
+
+  // Concepts still in the DB but no longer in content keep their shifted
+  // (>1000) position and would clash with learner-facing ordering — surface
+  // them loudly; removing them is a manual decision (learner state may
+  // reference them).
+  const orphans = await prisma.concept.findMany({
+    where: { trackId: track.id, slug: { notIn: concepts.map((c) => c.config.slug) } },
+    select: { slug: true },
+  });
+  for (const orphan of orphans) {
+    console.warn(`  ⚠ ORPHANED CONCEPT (in DB, not in content): ${track.slug}/${orphan.slug}`);
   }
 
   console.log(`✓ Track "${track.slug}" — ${concepts.length} concepts`);

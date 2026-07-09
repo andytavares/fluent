@@ -37,6 +37,7 @@ test("firstEven: no even",          () => assert.strictEqual(firstEven([1,3,5]),
 test("firstEven: first is even",    () => assert.strictEqual(firstEven([2,3,4]),       2));
 test("firstEven: even in middle",   () => assert.strictEqual(firstEven([1,3,4,6]),     4));
 test("firstEven: negative even",    () => assert.strictEqual(firstEven([-2,1,3]),     -2));
+test("firstEven: zero is even",     () => assert.strictEqual(firstEven([1,0,2]),        0));
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed > 0) process.exit(1);

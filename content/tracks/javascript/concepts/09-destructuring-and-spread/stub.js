@@ -38,7 +38,9 @@ function pluck(arr, key) {
 
 module.exports = { head, tail, unzip, mergeWithDefaults, sumRest, pluck };
 
-// Quick demo
-const [first, ...rest] = [1, 2, 3, 4];
-console.log(first, rest);
-console.log(mergeWithDefaults({ color: "red", size: "M" }, { color: "blue" }));
+// Quick smoke-check — run with: node stub.js
+if (require.main === module) {
+  const [first, ...rest] = [1, 2, 3, 4];
+  console.log(first, rest);
+  console.log(mergeWithDefaults({ color: "red", size: "M" }, { color: "blue" }));
+}

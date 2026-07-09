@@ -13,6 +13,7 @@ test("safeParseInt: zero",        () => assert.strictEqual(safeParseInt("0"),   
 test("safeParseInt: float string",() => assert.strictEqual(safeParseInt("3.5"), null));
 test("safeParseInt: letters",     () => assert.strictEqual(safeParseInt("abc"), null));
 test("safeParseInt: empty",       () => assert.strictEqual(safeParseInt(""),    null));
+test("safeParseInt: whitespace-only", () => assert.strictEqual(safeParseInt("   "), null));
 test("safeParseInt: mixed",       () => assert.strictEqual(safeParseInt("12x"), null));
 
 const ok = safeJsonParse('{"a":1}');
@@ -35,6 +36,12 @@ test("retry: succeeds on 3rd attempt", () => {
   assert.strictEqual(retry(succeedOn3rd, 5), "success");
 });
 test("retry: call count is 3", () => assert.strictEqual(calls, 3));
+
+test("retry: first-try success calls fn exactly once", () => {
+  let count = 0;
+  assert.strictEqual(retry(() => { count++; return "instant"; }, 5), "instant");
+  assert.strictEqual(count, 1);
+});
 
 test("retry: throws when all fail", () => {
   assert.throws(() => retry(() => { throw new Error("always fails"); }, 3), /always fails/);
