@@ -1,0 +1,199 @@
+content/tracks/dsa-java/concepts/10-tree-bfs/stub.java
+  s_beb7708abc1117::t_8d1529b4bb6fa2 6-18,20,22-23,27,29-30,34,36-37,40-46
+content/tracks/dsa-java/concepts/11-binary-search-trees/testout_stub.java
+  s_beb7708abc1117::t_397a39d589962e 1-26
+content/tracks/dsa-java/concepts/12-graphs-bfs-dfs/SolutionTest.java
+  s_beb7708abc1117::t_ea973d7b01f967 1,3,13-22,25,27-31,33-39,41-45,47-79,81-98,101-105,107-118
+  s_beb7708abc1117::t_c1119b917cbf7f 80
+content/tracks/dsa-java/concepts/09-tree-dfs/exemplar.java
+  s_beb7708abc1117::t_ce2c0b569e35a9 3-16,18-19,25-52,54-56,59-64
+content/tracks/dsa-java/concepts/13-graph-bfs/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-java/concepts/16-divide-and-conquer/testout_stub.java
+  s_beb7708abc1117::t_c5c1cc1ce3223a 1-36
+content/tracks/dsa-java/concepts/14-tries/testout_test.java
+  s_beb7708abc1117::t_28bf1615927089 1-215
+content/tracks/dsa-java/concepts/14-tries/SolutionTest.java
+  s_beb7708abc1117::t_d1004b8500b556 11-13,15-18,20-23,25-29,31-33,36-39,41-43,48-50,55,58-60,62-65,67-70,72-89,91-110,112-157
+  s_beb7708abc1117::t_4282a57ca6af3b 10
+  s_beb7708abc1117::t_3cffcb9130d144 14
+  s_beb7708abc1117::t_ac6d3ab4086be2 19
+  s_beb7708abc1117::t_ddd8774294b573 24
+  s_beb7708abc1117::t_9702ea828aa4ba 30
+  s_beb7708abc1117::t_5a6fdb8f5cf136 34-35
+  s_beb7708abc1117::t_a643d2d41fbc47 40
+  s_beb7708abc1117::t_5f9b89174806d6 44-47
+  s_beb7708abc1117::t_cbd1aaa2d06eab 51-54
+  s_beb7708abc1117::t_551eaf81232202 57
+  s_beb7708abc1117::t_8f7b206767edef 61
+  s_beb7708abc1117::t_0ad4326bc01534 66
+  s_beb7708abc1117::t_f3641d5573240e 71
+content/tracks/dsa-java/concepts/13-graph-bfs/testout_stub.java
+  s_beb7708abc1117::t_ab0a0fd181af1e 1-12
+content/tracks/dsa-java/concepts/11-binary-search-trees/instructions.md
+  s_beb7708abc1117::t_e6123b799c5952 1,5,9,11,13-21,23-24,26-27,29,32,34,36,39-44,48,50,53-62,66,68,70-74,78,82-124,126,128-149,153-154,158-159,161-163,167,170-181,183,185-191,193-229
+content/tracks/dsa-java/concepts/14-tries/stub.java
+  s_beb7708abc1117::t_f17d4e6681077f 3,7,10,12-13,16-17,19-20,24,26,31-52,56-71
+content/tracks/dsa-java/concepts/11-binary-search-trees/stub.java
+  s_beb7708abc1117::t_7164341b3e1734 3-17,19-24,27-28,30-31,35-47
+content/tracks/dsa-java/concepts/14-tries/testout_stub.java
+  s_beb7708abc1117::t_b8bcef5d8db1e2 1-15
+content/tracks/dsa-java/concepts/09-tree-dfs/stub.java
+  s_beb7708abc1117::t_3190b7f9ec76a4 3-16,18,20,24-27,31-34,37-51
+content/tracks/dsa-java/concepts/12-graphs-bfs-dfs/exemplar.java
+  s_beb7708abc1117::t_fd60f064fd4a45 5,9-16,18-19,21-37,44-54,57-60,62-69,72-74,77,79-82,85,90-93,95-105
+  s_042089e495faa1::t_bbbb7bff70508a 3
+content/tracks/dsa-java/concepts/10-tree-bfs/testout_test.java
+  s_beb7708abc1117::t_faa46d465d33a9 1-164
+tools/content-linter/src/lint-all.ts
+  s_beb7708abc1117::t_fa5271874e6e44 1-25
+content/tracks/dsa-java/concepts/09-tree-dfs/instructions.md
+  s_beb7708abc1117::t_b571607260c40e 1,5,9,11-40,49,51,53,56,58-60,64,66,68,71-76,80,82,84,86,88-93,95,99,103-235,237-242,244-355,359-360,364-365,367-369,373-377,380-387,389,391-407,409-423
+content/tracks/dsa-java/concepts/13-graph-bfs/stub.java
+  s_beb7708abc1117::t_f4da01e8598e95 1-36
+content/tracks/dsa-java/concepts/09-tree-dfs/testout_stub.java
+  s_beb7708abc1117::t_f3ec7bc61cc9fb 1-31
+content/tracks/dsa-java/concepts/14-tries/instructions.md
+  s_beb7708abc1117::t_8f81cb2fea488f 18,24,32,36,39-40,43-45,48-56,58,62-64,66,68,70-76,78,80-82,86-113,115,117-166,170-179,182-189,191-210,212-213
+  s_beb7708abc1117::t_b2f1c1588ed3b7 15-17
+  s_beb7708abc1117::t_fcf6ed2eb5333f 25-27
+  s_ef76b714e9a944::t_03e81e5705d4f7 1,5,9,11,14,20,22,28-30
+content/tracks/dsa-java/concepts/13-graph-bfs/instructions.md
+  s_beb7708abc1117::t_ea9f5769439f33 1-188
+content/tracks/dsa-java/concepts/10-tree-bfs/instructions.md
+  s_beb7708abc1117::t_e7f7adc1a29777 5,9,11,22,27,36,38-51,54-57,60,62,64-68,70,72,74,76,78-82,84,86,88,90-103,105,107,109-156,160-161,165-166,168-170,174,177-188,190,192-195,197-226
+content/tracks/dsa-java/concepts/12-graphs-bfs-dfs/stub.java
+  s_beb7708abc1117::t_4ef9ceb2ff4dac 3,7-8,10-12,16-22,25-31,36-39,41-51
+  s_ef76b714e9a944::t_c604803c7e262a 1
+content/tracks/dsa-java/concepts/15-backtracking/exemplar.java
+  s_beb7708abc1117::t_b259eec5fd5032 4,8-18,22-31,35-38,40-42,46-48,51-57,61-65,67-68,70-93,97-110,115-125
+content/tracks/dsa-java/concepts/09-tree-dfs/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-java/concepts/15-backtracking/testout_test.java
+  s_beb7708abc1117::t_5cfe1d9eec99b0 1-183
+content/tracks/dsa-java/concepts/16-divide-and-conquer/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-java/concepts/12-graphs-bfs-dfs/testout_stub.java
+  s_beb7708abc1117::t_8d93f00c60407b 1-18
+content/tracks/dsa-java/concepts/15-backtracking/testout_stub.java
+  s_beb7708abc1117::t_ed791809aa7151 1-21
+content/tracks/dsa-java/concepts/16-divide-and-conquer/testout_test.java
+  s_beb7708abc1117::t_262c5b8ac67ecb 1-240
+content/tracks/dsa-java/concepts/13-graph-bfs/testout_test.java
+  s_beb7708abc1117::t_c61c8a8ba3871e 1-106
+content/tracks/dsa-java/concepts/16-divide-and-conquer/stub.java
+  s_beb7708abc1117::t_2a5bd8a2800657 1-65
+content/tracks/dsa-java/concepts/09-tree-dfs/SolutionTest.java
+  s_beb7708abc1117::t_e017fd93f3f84b 1-5,14-37,39,45-47,53-57,61-62,67-76,78-94,96-118,120-137
+  s_beb7708abc1117::t_196ce7690e9e46 42-44,48-52,58-59
+content/tracks/dsa-java/concepts/11-binary-search-trees/testout_test.java
+  s_beb7708abc1117::t_7a699a8d7693bf 1-134
+content/tracks/dsa-java/concepts/11-binary-search-trees/exemplar.java
+  s_beb7708abc1117::t_479a60d611998b 2,6-20,22-30,33-38,41-44,46-56,58,61-74,77-81
+content/tracks/dsa-java/concepts/10-tree-bfs/SolutionTest.java
+  s_beb7708abc1117::t_60de007e3ed9c1 1,3,13-19,21-36,43-46,48-51,53-61,64-67,69-76,79-82,84-94
+content/tracks/dsa-java/concepts/10-tree-bfs/exemplar.java
+  s_beb7708abc1117::t_f7bb1b33afb42a 7-19,21-23,37,45-48,60-61,68-71,82,85-86,89-90,95-101
+content/tracks/dsa-java/concepts/10-tree-bfs/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-java/concepts/11-binary-search-trees/SolutionTest.java
+  s_beb7708abc1117::t_eedff31b8789b6 1-3,12-35,37,41-53,55-67,69-85
+content/tracks/dsa-java/concepts/12-graphs-bfs-dfs/instructions.md
+  s_beb7708abc1117::t_1737b756229859 13-15,18-32,38,40,42,44,46,48,51-61,63-66,69,73,75,77-81,85,89-148,150,152-206,210-214,217-231,233-267
+  s_beb7708abc1117::t_23ab0307d15025 11-12
+  s_9fd17e45d9dcfd::t_3b402f0c92124c 1,5,9
+content/tracks/dsa-java/concepts/15-backtracking/SolutionTest.java
+  s_beb7708abc1117::t_004f0a40c9370a 1-2,4,14-24,26-31,33-58,60-76,78,81-97,99-120
+  s_beb7708abc1117::t_27fc7f4732f561 77
+content/tracks/dsa-java/concepts/10-tree-bfs/testout_stub.java
+  s_beb7708abc1117::t_36f1be3e2f64db 1-29
+content/tracks/dsa-java/concepts/11-binary-search-trees/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-java/concepts/15-backtracking/instructions.md
+  s_beb7708abc1117::t_72f66cb0933401 11,30,33-38,43-45,47,50-56,61,63,66-67,69-71,76,78,80,82,84,86,88-99,103-184,186,188-251,255-295,298-300,302-303
+  s_beb7708abc1117::t_5edae066cc6943 5,9,12-23,26-28
+content/tracks/dsa-java/concepts/15-backtracking/stub.java
+  s_beb7708abc1117::t_44bd5318b3f0f4 26-28,30-40,45-55
+  s_e80716847a8561::t_97842562c9bcaa 6-14,18-22
+content/tracks/dsa-java/concepts/14-tries/exemplar.java
+  s_beb7708abc1117::t_b097116560eff6 9-10,15,26-27,33,38,50-53,55,57-86,91-97,99-106
+  s_bcf58dfd3e3f70::t_996c28941c7781 3-7
+content/tracks/dsa-java/concepts/13-graph-bfs/exemplar.java
+  s_beb7708abc1117::t_e90856f748f77d 10-19,37,45,47,71,79,81
+  s_beb7708abc1117::t_c46fdb6b8c6571 1-9,20-36,38-44,46,48-70,72-78,80,82-96
+content/tracks/dsa-java/concepts/16-divide-and-conquer/instructions.md
+  s_beb7708abc1117::t_ce26eb9757ba73 1-245
+content/tracks/dsa-java/concepts/16-divide-and-conquer/exemplar.java
+  s_beb7708abc1117::t_3b8228b82805f3 1-107
+content/tracks/dsa-java/concepts/09-tree-dfs/testout_test.java
+  s_beb7708abc1117::t_41d2ab4c4df6c1 1-39,42-44,50-54,57-201
+  s_beb7708abc1117::t_ea3780af89bf48 40-41,45-49,55-56
+content/tracks/dsa-java/concepts/13-graph-bfs/SolutionTest.java
+  s_beb7708abc1117::t_0bf85f841e086c 1-51
+content/tracks/dsa-java/concepts/12-graphs-bfs-dfs/testout_test.java
+  s_beb7708abc1117::t_662ab27dc00be8 1-168
+content/tracks/dsa-java/concepts/16-divide-and-conquer/SolutionTest.java
+  s_beb7708abc1117::t_e7b932b7997dc1 1-171
+content/tracks/dsa-java/concepts/12-graphs-bfs-dfs/config.json
+  s_beb7708abc1117::t_440657b239b727 1
+content/tracks/dsa-java/concepts/14-tries/config.json
+  s_beb7708abc1117::t_3328064b4cb215 1
+content/tracks/dsa-java/concepts/15-backtracking/config.json
+  s_beb7708abc1117::t_88338d328184dc 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "8d54e2e40f7977fe88b60aa67ac2f59a58242b58",
+  "prompts": {},
+  "sessions": {
+    "s_042089e495faa1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a77a889582a8be926",
+        "model": "unknown"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_9fd17e45d9dcfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-ae9ab56d49c54bfd5",
+        "model": "unknown"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_bcf58dfd3e3f70": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a414766e89388723d",
+        "model": "unknown"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_e80716847a8561": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a19f313f3a8fc7d9c",
+        "model": "unknown"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_ef76b714e9a944": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a3d14e096f654cefe",
+        "model": "unknown"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
