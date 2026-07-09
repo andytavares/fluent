@@ -11,13 +11,17 @@ function makeMockDb() {
       }),
     },
     enrollment: {
+      // Serves both the credential's own lookup and LearnerProgressService's
+      // progress query (which needs the state/event/session collections).
       findUniqueOrThrow: vi.fn().mockResolvedValue({
         id: "enr1",
         completedAt: new Date("2025-01-01"),
         user: { name: "Alice" },
+        conceptStates: [],
+        capstoneSessions: [],
         masteryEvents: [
-          { achievedVia: "test_out" },
-          { achievedVia: "lesson" },
+          { achievedVia: "test_out", lessonAvgTimeMs: null },
+          { achievedVia: "lesson", lessonAvgTimeMs: null },
         ],
       }),
     },
