@@ -18,6 +18,20 @@ for (const track of store.listTracks()) {
       console.error(`✗ ${track.config.slug}/${concept.config.slug} ${e.code}: ${e.message}`);
       errors++;
     }
+
+    // Folder name is `NN-slug`; config must agree — a drifted position
+    // collides with unique(trackId, position) at seed time.
+    const folder = concept.dir.split("/").at(-1)!;
+    const folderPos = parseInt(folder.split("-")[0]!, 10);
+    const folderSlug = folder.split("-").slice(1).join("-");
+    if (concept.config.position !== folderPos) {
+      console.error(`✗ ${track.config.slug}/${folder} E010: config position ${concept.config.position} != folder number ${folderPos}`);
+      errors++;
+    }
+    if (concept.config.slug !== folderSlug) {
+      console.error(`✗ ${track.config.slug}/${folder} E011: config slug ${concept.config.slug} != folder slug ${folderSlug}`);
+      errors++;
+    }
   }
 }
 

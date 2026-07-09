@@ -30,9 +30,16 @@ async function seedTrack({ dir, config: trackConfig }: TrackEntry) {
 
   // Shift existing positions out of the way first: curriculum renumbering
   // would otherwise collide with unique(trackId, position) mid-upsert.
+  // Shifting by max(position)+1 keeps every shifted value above every
+  // pre-shift value, so the row-by-row update can never collide — a
+  // constant shift breaks on the second run once orphans sit high.
+  const maxPos = await prisma.concept.aggregate({
+    where: { trackId: track.id },
+    _max: { position: true },
+  });
   await prisma.concept.updateMany({
     where: { trackId: track.id },
-    data: { position: { increment: 1000 } },
+    data: { position: { increment: (maxPos._max.position ?? 0) + 1 } },
   });
 
   for (const { contentPath, config: cfg } of concepts) {
