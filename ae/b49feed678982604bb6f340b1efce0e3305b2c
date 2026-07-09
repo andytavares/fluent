@@ -1,0 +1,65 @@
+content/tracks/elixir/concepts/08-enum-and-streams/instructions.md
+  s_beb7708abc1117::t_0c7413abdd99c8 64-69,72-88,90-109
+content/tracks/elixir/concepts/08-enum-and-streams/enum_and_streams_test.exs
+  s_beb7708abc1117::t_83c30e1b6cd51a 1
+content/tracks/elixir/concepts/10-macros/exemplar.ex
+  s_beb7708abc1117::t_bd9e1d0869b775 32-36,46
+content/tracks/elixir/concepts/07-genserver/instructions.md
+  s_beb7708abc1117::t_d0a73a90fd091b 69-74,77-92,94-113
+content/tracks/elixir/concepts/04-maps-and-structs/instructions.md
+  s_beb7708abc1117::t_fd78016745486e 80-85,88,96-132
+content/tracks/elixir/concepts/10-macros/instructions.md
+  s_beb7708abc1117::t_b8f7e377507657 79-84,87,89,91-94,96-105,107-120
+content/tracks/elixir/concepts/09-protocols/exemplar.ex
+  s_beb7708abc1117::t_c39438000cf9df 6,11,20,25,34
+content/tracks/elixir/concepts/09-protocols/stub.ex
+  s_beb7708abc1117::t_520ce11cdd687b 6,15-16,23,27-28,39-40,47,51-52
+content/tracks/elixir/concepts/05-processes/processes_test.exs
+  s_beb7708abc1117::t_83c30e1b6cd51a 1
+content/tracks/elixir/concepts/01-modules-and-functions/modules_and_functions_test.exs
+  s_beb7708abc1117::t_83c30e1b6cd51a 1
+content/tracks/elixir/concepts/03-lists-and-recursion/lists_and_recursion_test.exs
+  s_beb7708abc1117::t_83c30e1b6cd51a 1
+content/tracks/elixir/concepts/10-macros/macros_test.exs
+  s_beb7708abc1117::t_3504166eb79eb3 1,3-9,90
+content/tracks/elixir/concepts/09-protocols/protocols_test.exs
+  s_beb7708abc1117::t_a34c0b240d35af 1,36-37,39-40,42-46
+content/tracks/elixir/concepts/02-pattern-matching/instructions.md
+  s_beb7708abc1117::t_a5517d3d447ce4 75-80,83-85,87-117
+content/tracks/elixir/concepts/01-modules-and-functions/instructions.md
+  s_beb7708abc1117::t_0d08f63675d78e 79-84,87-89,91-120
+content/tracks/elixir/concepts/02-pattern-matching/pattern_matching_test.exs
+  s_beb7708abc1117::t_83c30e1b6cd51a 1
+content/tracks/elixir/concepts/03-lists-and-recursion/instructions.md
+  s_beb7708abc1117::t_12436856055eb5 73-78,81-97,99-117
+content/tracks/elixir/concepts/09-protocols/instructions.md
+  s_beb7708abc1117::t_c6956dbb3fdc33 5,85-90,93,96-97,101-123,125-129
+content/tracks/elixir/concepts/06-error-handling/instructions.md
+  s_beb7708abc1117::t_d5e2b9a7544059 78-83,86-88,90-122
+content/tracks/elixir/concepts/10-macros/stub.ex
+  s_beb7708abc1117::t_229dc64c3df504 31-35,45
+content/tracks/elixir/concepts/05-processes/instructions.md
+  s_beb7708abc1117::t_10b49c180a4b81 76-81,84-98,100-102,104,106-111
+content/tracks/elixir/concepts/07-genserver/genserver_test.exs
+  s_beb7708abc1117::t_83c30e1b6cd51a 1
+content/tracks/elixir/concepts/04-maps-and-structs/maps_and_structs_test.exs
+  s_beb7708abc1117::t_83c30e1b6cd51a 1
+content/tracks/elixir/concepts/06-error-handling/error_handling_test.exs
+  s_beb7708abc1117::t_83c30e1b6cd51a 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "aeb49feed678982604bb6f340b1efce0e3305b2c",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
