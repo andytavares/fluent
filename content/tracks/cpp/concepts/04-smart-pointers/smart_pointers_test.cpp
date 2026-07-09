@@ -6,11 +6,6 @@
 #include <vector>
 #include <string>
 
-struct Node;
-std::unique_ptr<Node> build_list(const std::vector<int>& values);
-int list_sum(const Node* head);
-int list_length(const Node* head);
-
 static int passed = 0, failed = 0;
 
 void check(const std::string& name, bool condition) {

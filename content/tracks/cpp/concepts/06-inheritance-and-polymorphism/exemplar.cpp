@@ -1,4 +1,4 @@
-// Demo: g++ -std=c++17 -DDEMO exemplar.cpp && ./a.out
+// Demo: g++ -std=c++17 exemplar.cpp && ./a.out
 #include <cmath>
 #include <string>
 #include <vector>
@@ -46,7 +46,6 @@ std::string largestName(const std::vector<Shape*>& shapes) {
     return best->name();
 }
 
-#ifdef DEMO
 #include <iostream>
 int main() {
     Circle    c(3.0);
@@ -56,4 +55,3 @@ int main() {
     std::cout << "largestName: " << largestName(v) << "\n";
     return 0;
 }
-#endif

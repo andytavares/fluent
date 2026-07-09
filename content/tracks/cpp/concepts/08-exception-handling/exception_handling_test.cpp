@@ -1,21 +1,10 @@
-// Compile: g++ -std=c++17 -o test exception_handling_test.cpp && ./test
+// Test runner — concatenated after stub.cpp (with main() stripped) into one
+// translation unit.
+// Build: g++ -std=c++17 -o test stub.cpp exception_handling_test.cpp && ./test
 #include <stdexcept>
 #include <string>
 #include <functional>
 #include <cstdio>
-
-class ValueError : public std::runtime_error {
-public:
-    explicit ValueError(const std::string& message, int code = 0)
-        : std::runtime_error(message), code_(code) {}
-    int code() const { return code_; }
-private:
-    int code_;
-};
-
-int parse_positive_int(const std::string& s);
-double safe_divide(double a, double b);
-std::string exception_message(std::function<void()> fn);
 
 static int passed = 0, failed = 0;
 #define CHECK(name, cond) \
@@ -29,6 +18,16 @@ static bool throws_value_error(std::function<void()> fn) {
 }
 
 int main() {
+    // ValueError itself
+    {
+        ValueError e("bad input");
+        CHECK("ValueError: what()", std::string(e.what()) == "bad input");
+        CHECK("ValueError: default code is 0", e.code() == 0);
+        ValueError coded("nope", 42);
+        CHECK("ValueError: custom code", coded.code() == 42);
+        CHECK("ValueError: is a std::runtime_error", dynamic_cast<const std::runtime_error*>(&e) != nullptr);
+    }
+
     // parse_positive_int
     CHECK("parse_positive_int: 42", parse_positive_int("42") == 42);
     CHECK("parse_positive_int: 1",  parse_positive_int("1")  == 1);
@@ -36,10 +35,12 @@ int main() {
     CHECK("parse_positive_int: throws on 0",         throws_value_error([] { parse_positive_int("0"); }));
     CHECK("parse_positive_int: throws on negative",  throws_value_error([] { parse_positive_int("-5"); }));
     CHECK("parse_positive_int: throws on float str", throws_value_error([] { parse_positive_int("3.14"); }));
+    CHECK("parse_positive_int: throws on trailing junk", throws_value_error([] { parse_positive_int("42abc"); }));
 
     // safe_divide
     CHECK("safe_divide: 10/2 = 5", safe_divide(10, 2) == 5.0);
     CHECK("safe_divide: throws on zero", throws_value_error([] { safe_divide(1, 0); }));
+    CHECK("safe_divide: negative operands ok", safe_divide(-10, 2) == -5.0);
 
     // exception_message
     CHECK("exception_message: no throw returns empty",

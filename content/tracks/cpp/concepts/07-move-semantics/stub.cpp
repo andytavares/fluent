@@ -50,9 +50,9 @@ Buffer merge(Buffer a, Buffer b) {
     return Buffer(0);
 }
 
+#include <cstdio>
 int main() {
     Buffer b(4);
-    b[0] = 1.0;
-    b[1] = 2.0;
+    std::printf("size: %zu\n", b.size());
     return 0;
 }

@@ -1,7 +1,6 @@
 #include <stdexcept>
 #include <string>
 #include <functional>
-#include <stdexcept>
 
 class ValueError : public std::runtime_error {
 public:

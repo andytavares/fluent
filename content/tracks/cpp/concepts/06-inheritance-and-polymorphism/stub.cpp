@@ -1,4 +1,4 @@
-// Demo: g++ -std=c++17 -DDEMO stub.cpp && ./a.out
+// Demo: g++ -std=c++17 stub.cpp && ./a.out
 #include <cmath>
 #include <string>
 #include <vector>
@@ -13,16 +13,42 @@ public:
 
 class Circle : public Shape {
 public:
-    // TODO: constructor(double radius)
-    // TODO: double area() const override
-    // TODO: std::string name() const override
+    // TODO: constructor(double radius) — store radius in radius_
+    explicit Circle(double radius) {
+    }
+
+    // TODO: double area() const override — return M_PI * radius_ * radius_
+    double area() const {
+        return 0.0;
+    }
+
+    // TODO: std::string name() const override — return "Circle"
+    std::string name() const {
+        return "";
+    }
+
+private:
+    double radius_ = 0.0;
 };
 
 class Rectangle : public Shape {
 public:
-    // TODO: constructor(double w, double h)
-    // TODO: double area() const override
-    // TODO: std::string name() const override
+    // TODO: constructor(double w, double h) — store both in w_ and h_
+    Rectangle(double w, double h) {
+    }
+
+    // TODO: double area() const override — return w_ * h_
+    double area() const {
+        return 0.0;
+    }
+
+    // TODO: std::string name() const override — return "Rectangle"
+    std::string name() const {
+        return "";
+    }
+
+private:
+    double w_ = 0.0, h_ = 0.0;
 };
 
 // Returns the sum of area() for every shape in the vector.
@@ -38,7 +64,6 @@ std::string largestName(const std::vector<Shape*>& shapes) {
     return "";
 }
 
-#ifdef DEMO
 #include <iostream>
 int main() {
     Circle    c(3.0);
@@ -48,4 +73,3 @@ int main() {
     std::cout << "largestName: " << largestName(v) << "\n";
     return 0;
 }
-#endif

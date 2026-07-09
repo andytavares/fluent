@@ -2,17 +2,19 @@
 #include <string>
 #include <functional>
 
-// ValueError is a runtime exception with an HTTP-style numeric code.
+// ValueError is a runtime exception with an optional HTTP-style numeric code.
 class ValueError : public std::runtime_error {
 public:
-    explicit ValueError(const std::string& message) : std::runtime_error(message) {
+    explicit ValueError(const std::string& message, int code = 0) : std::runtime_error(message) {
         // TODO: store code
     }
-    // TODO: add constructor that accepts code
     int code() const {
         // TODO
         return 0;
     }
+
+private:
+    // TODO: add a member to hold the code
 };
 
 // parse_positive_int parses s as a positive integer.
