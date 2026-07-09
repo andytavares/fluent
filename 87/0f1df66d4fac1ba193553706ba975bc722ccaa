@@ -1,0 +1,22 @@
+apps/capstone-runner/src/k8s.ts
+  s_beb7708abc1117::t_bf56cb78ff18ba 1-88
+apps/capstone-runner/tests/unit/k8s.test.ts
+  s_beb7708abc1117::t_4fbfea2697f72c 1-15,17-125
+  s_beb7708abc1117::t_164262a046e28b 16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "870f1df66d4fac1ba193553706ba975bc722ccaa",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
