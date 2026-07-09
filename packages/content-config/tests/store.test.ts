@@ -58,6 +58,22 @@ beforeAll(async () => {
     JSON.stringify({ slug: "rust", title: "Rust", description: "Soon", language: "rust", status: "coming_soon" }),
   );
 
+  // Capstone steps 1 through 11, to exercise the numeric-vs-lexicographic sort
+  // bug (folder "step-10"/"step-11" sort before "step-2" as strings).
+  const capstoneDir = join(root, "content/capstone/go-crud-api");
+  for (let n = 1; n <= 11; n++) {
+    const stepDir = join(capstoneDir, `step-${n}`);
+    await mkdir(stepDir, { recursive: true });
+    await writeFile(
+      join(stepDir, "config.json"),
+      JSON.stringify({ step_number: n, title: `Step ${n} title`, description: `Step ${n} description` }),
+    );
+    // Leave instructions.md missing for step 1 to exercise the empty-instructions case.
+    if (n !== 1) {
+      await writeFile(join(stepDir, "instructions.md"), `Instructions for step ${n}`);
+    }
+  }
+
   store = createContentStore(root);
 });
 
@@ -138,6 +154,32 @@ describe("ContentStore track/concept listing", () => {
   it("returns [] for a track with no concepts dir", () => {
     const rust = store.listTracks().find((t) => t.config.slug === "rust")!;
     expect(store.listConcepts(rust.dir)).toEqual([]);
+  });
+});
+
+describe("ContentStore capstone steps", () => {
+  it("returns steps ordered numerically by step_number, not lexicographically by folder name", () => {
+    const steps = store.getCapstoneSteps("go-crud-api");
+    expect(steps.map((s) => s.stepNumber)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+  });
+
+  it("maps title, description, and instructions fields correctly", () => {
+    const steps = store.getCapstoneSteps("go-crud-api");
+    const step5 = steps.find((s) => s.stepNumber === 5)!;
+    expect(step5.title).toBe("Step 5 title");
+    expect(step5.description).toBe("Step 5 description");
+    expect(step5.instructions).toBe("Instructions for step 5");
+    expect(step5.dir).toBe(join(root, "content/capstone/go-crud-api/step-5"));
+  });
+
+  it("returns empty string for instructions when instructions.md is missing", () => {
+    const steps = store.getCapstoneSteps("go-crud-api");
+    const step1 = steps.find((s) => s.stepNumber === 1)!;
+    expect(step1.instructions).toBe("");
+  });
+
+  it("returns [] for a capstone slug that does not exist", () => {
+    expect(store.getCapstoneSteps("nonexistent-capstone")).toEqual([]);
   });
 });
 

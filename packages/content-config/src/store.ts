@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve, relative } from "node:path";
 import { LANG_EXT, TEST_FILE_PATTERNS } from "./lang.js";
-import { conceptConfigSchema, trackConfigSchema } from "./schema.js";
+import { capstoneStepConfigSchema, conceptConfigSchema, trackConfigSchema } from "./schema.js";
 import { extractTaskPrompt } from "./task-prompt.js";
 import type { ConceptConfig, TrackConfig } from "./schema.js";
 
@@ -25,6 +25,15 @@ export interface ConceptEntry {
   config: ConceptConfig;
 }
 
+export interface CapstoneStepEntry {
+  stepNumber: number;
+  title: string;
+  description: string;
+  instructions: string;
+  /** Absolute path to the step directory */
+  dir: string;
+}
+
 export interface ContentStore {
   readonly root: string;
   getLessonStub(contentPath: string, language: string): string;
@@ -36,6 +45,7 @@ export interface ContentStore {
   getTestoutTestFiles(contentPath: string, language: string): string[];
   listTracks(): TrackEntry[];
   listConcepts(trackDir: string): ConceptEntry[];
+  getCapstoneSteps(capstoneSlug: string): CapstoneStepEntry[];
 }
 
 function listFiles(dir: string): string[] {
@@ -129,6 +139,29 @@ export function createContentStore(root: string = DEFAULT_ROOT): ContentStore {
           dir,
           contentPath: relative(root, dir),
           config: conceptConfigSchema.parse(JSON.parse(readFileSync(join(dir, "config.json"), "utf8"))),
+        }));
+    },
+
+    getCapstoneSteps(capstoneSlug) {
+      const capstoneDir = join(root, "content/capstone", capstoneSlug);
+      return listFiles(capstoneDir)
+        .filter((name) => /^step-\d+$/.test(name))
+        .map((name) => join(capstoneDir, name))
+        .filter((dir) => existsSync(join(dir, "config.json")))
+        .map((dir) => ({
+          dir,
+          config: capstoneStepConfigSchema.parse(JSON.parse(readFileSync(join(dir, "config.json"), "utf8"))),
+          instructions: readFileOrEmpty(join(dir, "instructions.md")),
+        }))
+        // Numeric, not lexicographic: folder names like step-10 sort before
+        // step-2 as strings — sort by the parsed step_number instead.
+        .sort((a, b) => a.config.step_number - b.config.step_number)
+        .map(({ dir, config, instructions }) => ({
+          stepNumber: config.step_number,
+          title: config.title,
+          description: config.description,
+          instructions,
+          dir,
         }));
     },
   };

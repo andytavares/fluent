@@ -1,1 +1,2 @@
--- Seed fixtures for this step
+-- No database or existing data needed for this step — /health is a pure
+-- smoke test with no persistence involved.

@@ -22,5 +22,12 @@ export const trackConfigSchema = z.object({
   status: z.enum(["coming_soon", "draft", "published"]).default("draft"),
 });
 
+export const capstoneStepConfigSchema = z.object({
+  step_number: z.number().int().positive(),
+  title: z.string().min(1),
+  description: z.string(),
+});
+
 export type ConceptConfig = z.infer<typeof conceptConfigSchema>;
 export type TrackConfig = z.infer<typeof trackConfigSchema>;
+export type CapstoneStepConfig = z.infer<typeof capstoneStepConfigSchema>;
