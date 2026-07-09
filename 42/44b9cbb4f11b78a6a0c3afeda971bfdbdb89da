@@ -1,0 +1,62 @@
+content/tracks/dsa-javascript/concepts/22-dynamic-programming-1d/instructions.md
+  s_beb7708abc1117::t_31f2ad03989417 5-274
+  s_beb7708abc1117::t_386daef51f6bc8 2-4
+  s_18c502843bce5c::t_3413f844f8990b 1
+content/tracks/dsa-javascript/concepts/23-dynamic-programming-2d/dynamic_programming_2d_test.js
+  s_beb7708abc1117::t_daec6f283c3dcb 1-171
+content/tracks/dsa-javascript/concepts/23-dynamic-programming-2d/testout_stub.js
+  s_beb7708abc1117::t_954c121e1fd424 1-48
+content/tracks/dsa-javascript/concepts/22-dynamic-programming-1d/testout_stub.js
+  s_beb7708abc1117::t_06492dcb8e96f3 1-43
+content/tracks/dsa-javascript/concepts/23-dynamic-programming-2d/testout_test.js
+  s_beb7708abc1117::t_087d5b76dcf931 1-208
+content/tracks/dsa-javascript/concepts/22-dynamic-programming-1d/stub.js
+  s_beb7708abc1117::t_8063ac95f05590 3-68
+  s_beb7708abc1117::t_69a6a0d20a10ce 1-2
+  s_beb7708abc1117::t_58f1b07bf53c4c 69-70
+content/tracks/dsa-javascript/concepts/22-dynamic-programming-1d/exemplar.js
+  s_beb7708abc1117::t_2333c9355f7c5c 3-124
+  s_beb7708abc1117::t_8a1de39fe15437 1-2
+  s_beb7708abc1117::t_9228839fc0595f 125-126
+content/tracks/dsa-javascript/concepts/23-dynamic-programming-2d/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-javascript/concepts/22-dynamic-programming-1d/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-javascript/concepts/22-dynamic-programming-1d/dynamic_programming_1d_test.js
+  s_beb7708abc1117::t_d17e6510a6e6db 1-136
+content/tracks/dsa-javascript/concepts/23-dynamic-programming-2d/exemplar.js
+  s_beb7708abc1117::t_a8f585d79e0034 3-144
+  s_beb7708abc1117::t_fe1428c811e176 1-2,145-146
+content/tracks/dsa-javascript/concepts/23-dynamic-programming-2d/instructions.md
+  s_beb7708abc1117::t_cb540abbd62920 1-338
+content/tracks/dsa-javascript/concepts/23-dynamic-programming-2d/stub.js
+  s_beb7708abc1117::t_8251ce753e2d11 3-74
+  s_beb7708abc1117::t_d1cc9a076f3055 1-2
+  s_beb7708abc1117::t_9582f87ca17849 75-76
+content/tracks/dsa-javascript/concepts/22-dynamic-programming-1d/testout_test.js
+  s_beb7708abc1117::t_30968665ca5bc5 1-155
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "4244b9cbb4f11b78a6a0c3afeda971bfdbdb89da",
+  "prompts": {},
+  "sessions": {
+    "s_18c502843bce5c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a90c5b3233962ad77",
+        "model": "unknown"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
