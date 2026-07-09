@@ -21,3 +21,6 @@ export { ContinueBuildingCard } from "./components/ContinueBuildingCard";
 export { MasteryTable } from "./components/MasteryTable";
 export { TracePanel } from "./components/TracePanel";
 export { AlgorithmVisualizer } from "./components/AlgorithmVisualizer";
+export { Tabs } from "./components/Tabs";
+export { VerificationChecklist } from "./components/VerificationChecklist";
+export { SqlResultsGrid } from "./components/SqlResultsGrid";
