@@ -85,15 +85,50 @@ If you can express the dependency through a reference (e.g., `subnet_id = aws_su
 
 The difference from CloudFormation: Terraform's implicit graph is usually smarter, so `depends_on` is needed far less often than CF's `DependsOn`.
 
+## Watch out
+
+- **`local.x`, never `locals.x`.** The block keyword is plural (`locals { ... }`) but the reference is always singular (`local.name_prefix`). Writing `locals.name_prefix` is a reference to an undeclared resource, not a typo Terraform silently fixes.
+- **Locals can reference other locals**, including ones defined earlier in the same block — `is_prod = local.environment == "production"` works fine as long as `environment` is a local too. There's no forward-reference restriction based on file order, only genuine circular dependencies fail.
+- **`depends_on` takes a list of resource/module *references*, not strings.** `depends_on = ["aws_iam_role_policy_attachment.app_basic"]` (quoted) is wrong — it must be `depends_on = [aws_iam_role_policy_attachment.app_basic]`, an actual expression.
+- **Reach for `depends_on` last.** If the dependency can be expressed by referencing an attribute (`role = aws_iam_role.app.arn`), that reference alone is enough to order the graph correctly — you don't also need `depends_on` for the same relationship. Use `depends_on` only for dependencies with no attribute to reference, like IAM eventual consistency.
+
 ## The task
 
-Write a Terraform configuration that:
+You're wiring a Lambda function to an IAM role, where the role's policy attachment must complete before the function is created — a dependency that exists in AWS reality but isn't expressed through any attribute reference.
 
-1. Declares `variable "project"` (string, default `"myapp"`) and `variable "environment"` (string, default `"production"`).
-2. Declares a `locals` block with:
-   - `name_prefix = "${var.project}-${var.environment}"`
-   - `is_prod` as a boolean: `true` when `var.environment == "production"`
-   - `common_tags` as a map with at least `Project` and `Environment` keys using the variables.
-3. Declares an `aws_iam_role` resource named `"app"` using `local.name_prefix` in its `name` and `local.common_tags` in `tags`. (Use a placeholder `assume_role_policy = "{}"` for the policy JSON.)
-4. Declares an `aws_iam_role_policy_attachment` resource named `"app_basic"` that references `aws_iam_role.app.name`.
-5. Declares an `aws_lambda_function` resource named `"app"` that uses `depends_on = [aws_iam_role_policy_attachment.app_basic]` and references `aws_iam_role.app.arn` for `role`.
+```hcl
+variable "project" {
+  # type = string, default = "myapp"
+}
+
+variable "environment" {
+  # type = string, default = "production"
+}
+
+locals {
+  name_prefix = "..."  # combines project + environment
+  is_prod     = ...    # true when environment is "production"
+  common_tags = {}     # Project and Environment keys
+}
+
+resource "aws_iam_role" "app" {
+  # name (from name_prefix), assume_role_policy = "{}", tags (from common_tags)
+}
+
+resource "aws_iam_role_policy_attachment" "app_basic" {
+  # role (a reference to aws_iam_role.app), policy_arn
+}
+
+resource "aws_lambda_function" "app" {
+  function_name = "${local.name_prefix}-handler"
+  # role (a reference to aws_iam_role.app's arn), depends_on
+}
+```
+
+Fill it in so that:
+
+1. `variable "project"` (string, default `"myapp"`) and `variable "environment"` (string, default `"production"`) are declared.
+2. `locals.name_prefix = "${var.project}-${var.environment}"`, `locals.is_prod` is `true` exactly when `var.environment == "production"`, and `locals.common_tags` is a map with at least `Project` and `Environment` keys sourced from the variables.
+3. `resource "aws_iam_role" "app"` sets `name = local.name_prefix`, `assume_role_policy = "{}"` (a placeholder — real configs use `data.aws_iam_policy_document`), and `tags = local.common_tags`.
+4. `resource "aws_iam_role_policy_attachment" "app_basic"` sets `role = aws_iam_role.app.name` and a `policy_arn` (any ARN string, e.g. `"arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"`).
+5. `resource "aws_lambda_function" "app"` sets `role = aws_iam_role.app.arn` and `depends_on = [aws_iam_role_policy_attachment.app_basic]` — this is the explicit dependency, since nothing in the Lambda resource references the attachment's attributes directly.

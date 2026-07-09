@@ -109,19 +109,46 @@ Option 2 gives you independent blast radius, independent state locking, and the 
 
 Pulumi stacks and Terraform workspaces are the same concept. The ergonomics differ: Pulumi stacks are more first-class in the CLI; Terraform workspaces are tacked on and not supported in every backend.
 
+## Watch out
+
+- **`terraform.workspace` is a top-level expression, not `var.workspace` or `local.workspace`.** There's no variable to declare for it — it's built into the language, always available, and always reflects whichever workspace is currently selected.
+- **The default workspace is literally named `"default"`,** not `""` or `"prod"`. If you never run `terraform workspace new`, every apply happens in `"default"` — check for that name explicitly if your logic needs to special-case "no workspace selected yet."
+- **Overusing `terraform.workspace == "production"` conditionals is the anti-pattern this concept warns about.** Once you're threading three or more such checks through a config, you likely want separate root modules (Option 2 above) instead of packing every environment's differences into `if`-like expressions.
+- **Workspaces share the exact same `.tf` files.** If staging and production ever need genuinely different resources (not just different sizes/tags), workspaces can't express that — a resource block either exists for every workspace or none of them.
+
 ## The task
 
-Write a Terraform configuration that uses `terraform.workspace` to drive environment-specific behavior:
+You're writing a config that adapts its behavior to whichever workspace it's applied in — sizing an instance, naming resources, and tagging them all based on `terraform.workspace`.
 
-1. A `locals` block with:
-   - `environment = terraform.workspace`
-   - `is_prod` that is `true` when workspace is `"production"`
-   - `instance_type` — `"t3.large"` for production, `"t3.micro"` otherwise
-   - `name_prefix = "myapp-${terraform.workspace}"`
-2. An `aws_instance` resource named `"app"` using:
-   - `instance_type = local.instance_type`
-   - `ami = "ami-0c55b159cbfafe1f0"`
-   - Tags: `Environment = local.environment` and `Name = "${local.name_prefix}-app"`
-3. An `aws_s3_bucket` resource named `"state_backup"` with `bucket = "${local.name_prefix}-state-backup"` and a tag `Environment = local.environment`.
-4. An `output "environment"` that outputs `local.environment`.
-5. An `output "instance_type"` that outputs `local.instance_type`.
+```hcl
+locals {
+  environment   = ...  # terraform.workspace
+  is_prod       = ...  # true when workspace is "production"
+  instance_type = ...  # "t3.large" in production, "t3.micro" otherwise
+  name_prefix   = "..." # e.g. "myapp-<workspace>"
+}
+
+resource "aws_instance" "app" {
+  # ami, instance_type (from locals), tags (Environment, Name)
+}
+
+resource "aws_s3_bucket" "state_backup" {
+  # bucket (from name_prefix), tags (Environment)
+}
+
+output "environment" {
+  # value
+}
+
+output "instance_type" {
+  # value
+}
+```
+
+Fill it in so that:
+
+1. `locals.environment = terraform.workspace`, `locals.is_prod` is `true` exactly when `terraform.workspace == "production"`, `locals.instance_type` is `"t3.large"` in production and `"t3.micro"` otherwise, and `locals.name_prefix = "myapp-${terraform.workspace}"`.
+2. `resource "aws_instance" "app"` sets `instance_type = local.instance_type`, `ami = "ami-0c55b159cbfafe1f0"`, and tags `Environment = local.environment` and `Name = "${local.name_prefix}-app"`.
+3. `resource "aws_s3_bucket" "state_backup"` sets `bucket = "${local.name_prefix}-state-backup"` and a tag `Environment = local.environment`.
+4. `output "environment"` has `value = local.environment`.
+5. `output "instance_type"` has `value = local.instance_type`.

@@ -99,15 +99,55 @@ output "vpc_id" {
 
 Terraform's module registry (`registry.terraform.io`) is the largest catalog of vetted, community-maintained infra patterns. Most teams start there before writing modules from scratch.
 
+## Watch out
+
+- **`module` blocks have one label, not two.** `module "network" { ... }` — unlike `resource`/`data`, there's no separate "type" label; the module's identity comes entirely from its `source`.
+- **`version` is only valid (and only meaningful) for registry sources.** A local path (`./modules/vpc`) has no version — it's whatever's on disk. Adding `version` to a local module source is a no-op at best, an error in some Terraform versions.
+- **You must `terraform init` after adding or changing a module block** — Terraform downloads/copies the module source into `.terraform/modules/` during init, not during plan.
+- **A module's outputs must be declared inside the module itself** to be readable from the caller. `module.network.vpc_id` only resolves if `modules/vpc/outputs.tf` has `output "vpc_id" { ... }` — the caller can't reach into the module's resources directly.
+
 ## The task
 
-Write a Terraform root module configuration that:
+You're writing a root module that composes two VPCs: one from a local module your team maintains, one from the public Terraform Registry.
 
-1. Calls a local module at `./modules/vpc` named `"network"`, passing:
-   - `cidr_block = "10.0.0.0/16"`
-   - `environment = var.environment`
-   - `project     = var.project`
-2. Calls the registry module `"terraform-aws-modules/vpc/aws"` named `"managed_vpc"` at version `"~> 5.0"`, passing `name = "managed"` and `cidr = "10.1.0.0/16"`.
-3. Declares `variable "environment"` (string, default `"staging"`) and `variable "project"` (string, default `"myapp"`).
-4. Declares an `output "vpc_id"` that outputs `module.network.vpc_id`.
-5. Declares an `output "managed_vpc_id"` that outputs `module.managed_vpc.vpc_id`.
+```hcl
+variable "environment" {
+  # type = string, default = "staging"
+}
+
+variable "project" {
+  # type = string, default = "myapp"
+}
+
+module "network" {
+  source = "..." # local path
+
+  cidr_block  = "..."
+  environment = ...
+  project     = ...
+}
+
+module "managed_vpc" {
+  source  = "..." # registry source
+  version = "..."
+
+  name = "managed"
+  cidr = "..."
+}
+
+output "vpc_id" {
+  # value from module.network
+}
+
+output "managed_vpc_id" {
+  # value from module.managed_vpc
+}
+```
+
+Fill it in so that:
+
+1. `module "network"` has `source = "./modules/vpc"` and passes `cidr_block = "10.0.0.0/16"`, `environment = var.environment`, `project = var.project`.
+2. `module "managed_vpc"` has `source = "terraform-aws-modules/vpc/aws"`, `version = "~> 5.0"`, and passes `name = "managed"`, `cidr = "10.1.0.0/16"`.
+3. `variable "environment"` (string, default `"staging"`) and `variable "project"` (string, default `"myapp"`) are declared.
+4. `output "vpc_id"` has `value = module.network.vpc_id`.
+5. `output "managed_vpc_id"` has `value = module.managed_vpc.vpc_id`.

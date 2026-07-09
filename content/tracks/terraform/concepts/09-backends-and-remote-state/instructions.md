@@ -96,18 +96,43 @@ The consuming module needs read access to the state bucket but doesn't need to k
 
 `terraform_remote_state` is more flexible than CF exports: it works cross-account, cross-region, and can share any output, not just CF export values.
 
+## Watch out
+
+- **A `backend` block can't reference variables, locals, or resources.** It's evaluated before the rest of the configuration graph exists, so `bucket = var.state_bucket` is invalid — backend values must be literals (or supplied out-of-band via `-backend-config`).
+- **`data.terraform_remote_state.<name>.outputs.<key>`** — note the `.outputs.` segment. Forgetting it (`data.terraform_remote_state.network.public_subnet_id`) is the most common mistake; the remote state's outputs are nested one level deeper than a normal data source's attributes.
+- **Reading a remote state only exposes its declared `output` blocks**, nothing else. If the network stack never outputs `public_subnet_id`, no amount of correct syntax on the consumer side will make it appear.
+- **`encrypt = true` and a lock table are not optional in any team setting.** Skipping `dynamodb_table` means two concurrent `apply` runs can corrupt the same state file with no warning.
+
 ## The task
 
-Write a Terraform configuration that:
+You're configuring a root module that stores its own state in S3 and reads another team's state (the network layer) to wire an EC2 instance into an existing subnet.
 
-1. Declares a `terraform {}` block with a `backend "s3"` configured for:
-   - `bucket = "my-tf-state-prod"`
-   - `key    = "app/terraform.tfstate"`
-   - `region = "us-east-1"`
-   - `encrypt = true`
-   - `dynamodb_table = "terraform-state-lock"`
-2. Declares a `data "terraform_remote_state" "network"` block that reads from the same S3 backend at key `"network/terraform.tfstate"`.
-3. Declares an `aws_instance` resource named `"app"` that:
-   - Uses `instance_type = "t3.micro"` and `ami = "ami-0c55b159cbfafe1f0"`
-   - Sets `subnet_id = data.terraform_remote_state.network.outputs.public_subnet_id`
-4. Declares an `output "instance_id"` that outputs `aws_instance.app.id`.
+```hcl
+terraform {
+  backend "s3" {
+    # bucket, key, region, encrypt, dynamodb_table
+  }
+}
+
+data "terraform_remote_state" "network" {
+  backend = "..."
+  config = {
+    # bucket, key, region — same backend, different key
+  }
+}
+
+resource "aws_instance" "app" {
+  # ami, instance_type, subnet_id (from the remote state's outputs)
+}
+
+output "instance_id" {
+  # value
+}
+```
+
+Fill it in so that:
+
+1. `terraform { backend "s3" { ... } }` sets `bucket = "my-tf-state-prod"`, `key = "app/terraform.tfstate"`, `region = "us-east-1"`, `encrypt = true`, `dynamodb_table = "terraform-state-lock"`.
+2. `data "terraform_remote_state" "network"` sets `backend = "s3"` and a `config` map with `bucket = "my-tf-state-prod"`, `key = "network/terraform.tfstate"`, `region = "us-east-1"` — the same bucket/region as this module's own backend, but a different `key` (a different state file, for the network layer).
+3. `resource "aws_instance" "app"` sets `ami = "ami-0c55b159cbfafe1f0"`, `instance_type = "t3.micro"`, and `subnet_id = data.terraform_remote_state.network.outputs.public_subnet_id`.
+4. `output "instance_id"` has `value = aws_instance.app.id`.

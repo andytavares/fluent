@@ -38,6 +38,7 @@ check "validation error_message set"     grep -q 'error_message' "$FILE"
 # variable "db_password"
 check "variable db_password declared"    grep -q 'variable "db_password"' "$FILE"
 check "db_password sensitive = true"     grep -q 'sensitive.*=.*true' "$FILE"
+check "db_password has no default"       bash -c '! awk "/variable \"db_password\"/,/^}/" "'"$FILE"'" | grep -q "default"'
 
 # outputs
 check "output region declared"           grep -q 'output "region"' "$FILE"

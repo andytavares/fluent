@@ -100,18 +100,61 @@ Default to `for_each` for anything keyed by a name or ID. Use `count` only when 
 
 Terraform's `for_each` is more stable than `count` for the same reason database rows have primary keys instead of sequence numbers.
 
+## Watch out
+
+- **`for_each` requires a `set(string)` or `map`, never a `list`.** Passing a `list(string)` variable straight to `for_each` is a plan-time error — wrap it in `toset()` first (or restructure it as a map if you need keys and values that differ).
+- **Inside a `for_each` block, `each.key` and `each.value` — not `count.index`.** Inside a `count` block, `count.index` — not `each.key`. Mixing the two vocabularies up is the single most common error when converting one to the other.
+- **For a `set(string)`, `each.key == each.value`** (both are the string itself). For a `map`, they differ: `each.key` is the map key, `each.value` is the value at that key. Know which one you're iterating before reaching for `each.value`.
+- **`count.index` is a plain 0-based integer**, with no guaranteed stable identity — removing `aws_eip.nat[0]` shifts every later resource's index down by one, which Terraform treats as destroying and recreating them. This is exactly the "count churn" problem the Key concepts section describes.
+
 ## The task
 
-Write a Terraform configuration that:
+You're provisioning three kinds of repeated resources that each call for a different multiplicity strategy: subnets keyed by name, instances keyed by environment, and interchangeable Elastic IPs.
 
-1. Declares a `variable "subnet_names"` of type `set(string)` with default `toset(["public", "private", "data"])`.
-2. Declares a `variable "environments"` of type `map(string)` with default mapping `staging` to `"t3.micro"` and `production` to `"t3.large"`.
-3. Uses `for_each` on `var.subnet_names` to create `aws_subnet` resources named `"app"` with:
-   - `cidr_block` using `each.key` in the string (any pattern is fine)
-   - `vpc_id = "vpc-placeholder"`
-   - A tag `Name = each.key`.
-4. Uses `for_each` on `var.environments` to create `aws_instance` resources named `"env"` with:
-   - `instance_type = each.value`
-   - `ami = "ami-placeholder"`
-   - A tag `Name = each.key`.
-5. Uses `count = 2` to create `aws_eip` resources named `"nat"` with a tag `Index = count.index`.
+```hcl
+variable "subnet_names" {
+  # type = set(string), default = toset([...])
+}
+
+variable "environments" {
+  # type = map(string), default = { ... }
+}
+
+resource "aws_subnet" "app" {
+  for_each = ...  # var.subnet_names
+
+  vpc_id     = "vpc-placeholder"
+  cidr_block = "..." # uses each.key
+
+  tags = {
+    Name = ... # each.key
+  }
+}
+
+resource "aws_instance" "env" {
+  for_each = ...  # var.environments
+
+  ami           = "ami-placeholder"
+  instance_type = ... # each.value
+
+  tags = {
+    Name = ... # each.key
+  }
+}
+
+resource "aws_eip" "nat" {
+  count = ... # 2
+
+  tags = {
+    Index = ... # count.index
+  }
+}
+```
+
+Fill it in so that:
+
+1. `variable "subnet_names"` has `type = set(string)` and default `toset(["public", "private", "data"])`.
+2. `variable "environments"` has `type = map(string)` and a default mapping `staging` to `"t3.micro"` and `production` to `"t3.large"`.
+3. `resource "aws_subnet" "app"` uses `for_each = var.subnet_names`, sets `vpc_id = "vpc-placeholder"`, a `cidr_block` that incorporates `each.key` somehow (any pattern that's valid HCL is fine — the point is using the key, not a specific CIDR), and a tag `Name = each.key`.
+4. `resource "aws_instance" "env"` uses `for_each = var.environments`, sets `ami = "ami-placeholder"`, `instance_type = each.value`, and a tag `Name = each.key`.
+5. `resource "aws_eip" "nat"` uses `count = 2` and a tag `Index = count.index`.
