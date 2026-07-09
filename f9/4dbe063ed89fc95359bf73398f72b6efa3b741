@@ -1,0 +1,177 @@
+content/tracks/dsa-python/concepts/11-binary-search-trees/stub.py
+  s_beb7708abc1117::t_3c6128d336d733 1-6,10,16-20,23-26,30-45,49
+content/tracks/dsa-python/concepts/12-graphs-bfs-dfs/stub.py
+  s_beb7708abc1117::t_0acbf7818094fd 35-44,48
+  s_beb7708abc1117::t_0c691206d1644b 32-34
+  s_027266d8bf6411::t_0645e9540859e3 1,4-9,13-27,31
+content/tracks/dsa-python/concepts/12-graphs-bfs-dfs/instructions.md
+  s_beb7708abc1117::t_d993ef911a1e70 15,18-20,22-30,33,35,37,39,41-43,48-53,55-56,58-64,67,69,71-75,77,79-85,87,89-146,148-149,151-155,157,159,161-196,200-247,249-252,255
+  s_beb7708abc1117::t_c053b652ea8aac 13-14
+  s_027266d8bf6411::t_447798184938e8 1,5,9,11
+content/tracks/dsa-python/concepts/11-binary-search-trees/exemplar.py
+  s_beb7708abc1117::t_234e6e210dfe6f 1-6,10,16-67,70,72-89
+content/tracks/dsa-python/concepts/10-tree-bfs/instructions.md
+  s_beb7708abc1117::t_6d39a6e16f842e 5,9,11,16-18,21,23,25,28-30,33-34,36-37,45,49-60,62,66-68,70,72,74-79,81,83,85,87-96,98,100,102,104,106-153,157-158,160-181,183,185,187-204,207
+content/tracks/dsa-python/concepts/16-divide-and-conquer/exemplar.py
+  s_beb7708abc1117::t_63ad32385b122e 1-132
+content/tracks/dsa-python/concepts/11-binary-search-trees/instructions.md
+  s_beb7708abc1117::t_3a5a3d069e787d 1,5,9,11,13-21,24-31,34-38,41-53,56,58,61-69,72,74,76-80,82,84-89,91,93,95,97-125,127,129,131,133-135,137-150,154-171,173,175-179,181,183-213,216
+content/tracks/dsa-python/concepts/13-graph-bfs/graph-bfs_test.py
+  s_beb7708abc1117::t_51c7582d76dc2f 1-70
+content/tracks/dsa-python/concepts/12-graphs-bfs-dfs/testout_test.py
+  s_beb7708abc1117::t_c6337ee49b25a5 1-201
+content/tracks/dsa-python/concepts/14-tries/tries_test.py
+  s_beb7708abc1117::t_19e4ff60c6a9e3 25-27,34-36,43-44,52-55,62,65-274
+  s_beb7708abc1117::t_f2888f50a56d2c 22-24
+  s_beb7708abc1117::t_fef00285ee6dd6 28-33
+  s_beb7708abc1117::t_0b26dbee4f00a7 37-42
+  s_beb7708abc1117::t_95483740b82ad6 45-47,49-51
+  s_beb7708abc1117::t_7e588e64dc66db 56-61
+  s_beb7708abc1117::t_f0c44d91734591 63-64
+  s_027266d8bf6411::t_73e0e0c0ce5222 2,8,10-11,14-15,19-21,48
+content/tracks/dsa-python/concepts/13-graph-bfs/instructions.md
+  s_beb7708abc1117::t_b20444d6815c44 1-175
+content/tracks/dsa-python/concepts/12-graphs-bfs-dfs/testout_stub.py
+  s_beb7708abc1117::t_4068915ab3ff2f 1-10
+content/tracks/dsa-python/concepts/14-tries/stub.py
+  s_beb7708abc1117::t_20789af3039d4b 1-3,5-7,11,14-17,20-23,26-28,31-32,35-37,39-54,62-74
+content/tracks/dsa-python/concepts/15-backtracking/stub.py
+  s_beb7708abc1117::t_e5d5cc10956b7f 27,31-35,39-52,54
+  s_beb7708abc1117::t_e61c048fbbca71 1-18,22-26
+content/tracks/dsa-python/concepts/15-backtracking/testout_test.py
+  s_beb7708abc1117::t_1c042c7aa3688f 1-188
+content/tracks/dsa-python/concepts/13-graph-bfs/testout_stub.py
+  s_beb7708abc1117::t_dcb465b3e3f7d2 1-6
+content/tracks/dsa-python/concepts/13-graph-bfs/testout_test.py
+  s_beb7708abc1117::t_95eac34f490413 1-130
+content/tracks/dsa-python/concepts/10-tree-bfs/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-python/concepts/10-tree-bfs/stub.py
+  s_beb7708abc1117::t_904a52e0712e0e 1-4,8,14-17,21-24,28-31,35-42,46
+content/tracks/dsa-python/concepts/09-tree-dfs/testout_stub.py
+  s_beb7708abc1117::t_0e5ee4381160c3 1-25
+content/tracks/dsa-python/concepts/11-binary-search-trees/testout_stub.py
+  s_beb7708abc1117::t_e8a3bfca5d4d63 1-23
+content/tracks/dsa-python/concepts/16-divide-and-conquer/testout_stub.py
+  s_beb7708abc1117::t_4ecb5682932295 1-23
+content/tracks/dsa-python/concepts/09-tree-dfs/tree-dfs_test.py
+  s_beb7708abc1117::t_449ac0c43ded81 2-3,9,11-12,15-16,20-24,26-142
+content/tracks/dsa-python/concepts/09-tree-dfs/exemplar.py
+  s_beb7708abc1117::t_72eb3933eab9bc 1-4,8,14-19,25-34,36-41,43-44,46-48,51-54,57-85
+content/tracks/dsa-python/concepts/16-divide-and-conquer/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-python/concepts/13-graph-bfs/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-python/concepts/13-graph-bfs/exemplar.py
+  s_beb7708abc1117::t_564163ae89251d 1-77
+content/tracks/dsa-python/concepts/10-tree-bfs/tree-bfs_test.py
+  s_beb7708abc1117::t_37c474424e9ce1 2-3,9,11-12,15-16,20-86
+content/tracks/dsa-python/concepts/14-tries/exemplar.py
+  s_beb7708abc1117::t_b4f9da1304dffc 1-3,5-7,11,14-16,18,20,22,24-25,29,31-46,48-49,51,53,55-94
+content/tracks/dsa-python/concepts/11-binary-search-trees/testout_test.py
+  s_beb7708abc1117::t_4f99728818dec2 1-155
+content/tracks/dsa-python/concepts/15-backtracking/instructions.md
+  s_beb7708abc1117::t_5a163f9c6c70f9 26-28,31-36,39-43,46-57,60-62,65-72,75,77,79,81,83,85,87-92,94,98-182,184-185,187-192,194,196-247,251-256,258-275,277,279-296,299
+  s_beb7708abc1117::t_a401a4da389422 24-25
+  s_ef76b714e9a944::t_9a9eb505966bc2 5,9,12-14,16-21
+content/tracks/dsa-python/concepts/10-tree-bfs/testout_test.py
+  s_beb7708abc1117::t_932d0238792293 1-164
+content/tracks/dsa-python/concepts/16-divide-and-conquer/divide-and-conquer_test.py
+  s_beb7708abc1117::t_1d1dc3813580dd 1-227
+content/tracks/dsa-python/concepts/09-tree-dfs/testout_test.py
+  s_beb7708abc1117::t_9bbfcc2614a81c 5-6
+  s_beb7708abc1117::t_256a36c14cc5ae 1-4,7-206
+content/tracks/dsa-python/concepts/10-tree-bfs/exemplar.py
+  s_beb7708abc1117::t_ef338957fa4274 1-5,10,16-23,26-27,29-30,42-48,51-52,57,66-71,74-75,79,92-103
+content/tracks/dsa-python/concepts/11-binary-search-trees/binary-search-trees_test.py
+  s_beb7708abc1117::t_b5ecdf9ea3cddb 2-3,9,11-12,15-16,20-93
+content/tracks/dsa-python/concepts/16-divide-and-conquer/instructions.md
+  s_beb7708abc1117::t_fe84eb5ef54b4c 1-246
+content/tracks/dsa-python/concepts/16-divide-and-conquer/stub.py
+  s_beb7708abc1117::t_388c12545fa46a 1-81
+content/tracks/dsa-python/concepts/15-backtracking/testout_stub.py
+  s_beb7708abc1117::t_9ecfebe3ad56c9 1-14
+content/tracks/dsa-python/concepts/10-tree-bfs/testout_stub.py
+  s_beb7708abc1117::t_2e377c1ef82e62 1-21
+content/tracks/dsa-python/concepts/16-divide-and-conquer/testout_test.py
+  s_beb7708abc1117::t_4e55d0e00de6a4 1-293
+content/tracks/dsa-python/concepts/14-tries/instructions.md
+  s_beb7708abc1117::t_bd9c0a30aa0fc2 11,15-17,20-22,25-31,34,37-39,41-42,45-57,59-65,69-73,75,77,79-84,86,88-104,106,108,110,112-114,116-159,163-173,175-181,184-193,195-203,206
+  s_beb7708abc1117::t_97c43220962a79 9-10
+  s_027266d8bf6411::t_26ef0e70ce4806 1,5
+content/tracks/dsa-python/concepts/09-tree-dfs/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-python/concepts/11-binary-search-trees/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-python/concepts/13-graph-bfs/stub.py
+  s_beb7708abc1117::t_d43fffb7c94228 1-35
+content/tracks/dsa-python/concepts/09-tree-dfs/stub.py
+  s_beb7708abc1117::t_bfe997cf42fbeb 1-4,8,14-16,20-23,27-30,34-48,52
+content/tracks/dsa-python/concepts/14-tries/testout_test.py
+  s_beb7708abc1117::t_057c31adc95593 1-343
+content/tracks/dsa-python/concepts/15-backtracking/exemplar.py
+  s_beb7708abc1117::t_4f37093f56f501 13,16,20-21,25,29-35,37-39,41-48,50,54-62,64,66-89,91-96,98-115
+  s_beb7708abc1117::t_6c5241383aac0b 10-12
+  s_beb7708abc1117::t_8b456581edd30d 14-15
+  s_beb7708abc1117::t_367a8d96f2c4e0 17-19
+  s_beb7708abc1117::t_d2f48eb7909a06 22-24
+  s_027266d8bf6411::t_11c792a6c32ebc 1-9
+content/tracks/dsa-python/concepts/12-graphs-bfs-dfs/exemplar.py
+  s_beb7708abc1117::t_6a0b5218a7f47c 70-76,78-80,82-83,85-87
+  s_027266d8bf6411::t_3ed8034274fb67 1,3,5,8-18,21-33,36-53,55-56,58-67
+content/tracks/dsa-python/concepts/15-backtracking/backtracking_test.py
+  s_beb7708abc1117::t_e532f3cc78d72f 55,78-130
+  s_beb7708abc1117::t_e173598fbc8497 52-54
+  s_beb7708abc1117::t_82d8fd32fc5034 56-57
+  s_beb7708abc1117::t_352b008e98f5c2 75-77
+  s_027266d8bf6411::t_da2db721964f32 2,8,10-11,14-15,19-20,23-24,27-28,31-40,43-46,49,60,62-74
+content/tracks/dsa-python/concepts/14-tries/testout_stub.py
+  s_beb7708abc1117::t_3bf8fe44335612 1-23
+content/tracks/dsa-python/concepts/12-graphs-bfs-dfs/graphs-bfs-dfs_test.py
+  s_beb7708abc1117::t_0f52f4d6a2ddc0 29,47,56,63-135
+  s_beb7708abc1117::t_ca2bd81959f4b3 26-28
+  s_beb7708abc1117::t_1aca273745f366 30-32,44-46
+  s_beb7708abc1117::t_a4e644e3f5758c 48-50,53-55
+  s_beb7708abc1117::t_7f001a39c1790b 57-62
+  s_027266d8bf6411::t_6d8240f2db7090 2,8,10-11,14-15,19-25,33-43,51-52
+content/tracks/dsa-python/concepts/09-tree-dfs/instructions.md
+  s_beb7708abc1117::t_9ec1c741e6283b 1,5,9-12,15,19-25,28,30,32,35,41-45,48,52-54,57-59,61,64-71,74,76,78,80,82-87,89,91,93-99,101,103-234,236,238,240,242-243,245-345,349-350,352-368,370,372,374-405,408
+content/tracks/dsa-python/concepts/12-graphs-bfs-dfs/config.json
+  s_beb7708abc1117::t_0ee3fbbf1a1dc4 1
+content/tracks/dsa-python/concepts/14-tries/config.json
+  s_beb7708abc1117::t_fbca704abeb3ff 1
+content/tracks/dsa-python/concepts/15-backtracking/config.json
+  s_beb7708abc1117::t_f8c39b4b78fc70 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "f94dbe063ed89fc95359bf73398f72b6efa3b741",
+  "prompts": {},
+  "sessions": {
+    "s_027266d8bf6411": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-ad349102ad7f906f8",
+        "model": "unknown"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_ef76b714e9a944": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a3d14e096f654cefe",
+        "model": "unknown"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
