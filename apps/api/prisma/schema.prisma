@@ -99,12 +99,9 @@ model Concept {
   lessonAvgTimeMs Int?
   hasTestout      Boolean  @default(false)
   status          ConceptStatus @default(wip)
-  prereqConceptId String?  @db.Uuid
   createdAt       DateTime @default(now())
 
   track           Track    @relation(fields: [trackId], references: [id])
-  prereq          Concept? @relation("ConceptPrereq", fields: [prereqConceptId], references: [id])
-  dependents      Concept[] @relation("ConceptPrereq")
   exercises       Exercise[]
   conceptStates   ConceptState[]
   submissions     Submission[]
@@ -151,6 +148,7 @@ model Enrollment {
   conceptStates ConceptState[]
   masteryEvents MasteryEvent[]
   capstoneSessions CapstoneSessions[]
+  submissions   Submission[]
 
   @@unique([userId, trackId])
   @@map("enrollments")
@@ -166,7 +164,7 @@ model ConceptState {
   masteredAt   DateTime?
   updatedAt    DateTime     @updatedAt
 
-  enrollment   Enrollment   @relation(fields: [enrollmentId], references: [id])
+  enrollment   Enrollment   @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
   concept      Concept      @relation(fields: [conceptId], references: [id])
 
   @@unique([enrollmentId, conceptId])
@@ -216,8 +214,10 @@ model Submission {
   user        User     @relation(fields: [userId], references: [id])
   concept     Concept  @relation(fields: [conceptId], references: [id])
   exercise    Exercise? @relation(fields: [exerciseId], references: [id])
+  enrollment  Enrollment? @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
 
   @@index([userId, conceptId, createdAt(sort: Desc)])
+  @@index([enrollmentId])
   @@map("submissions")
 }
 
@@ -230,7 +230,7 @@ model MasteryEvent {
   lessonAvgTimeMs Int?
   createdAt       DateTime    @default(now())
 
-  enrollment      Enrollment  @relation(fields: [enrollmentId], references: [id])
+  enrollment      Enrollment  @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
   concept         Concept     @relation(fields: [conceptId], references: [id])
   user            User        @relation(fields: [userId], references: [id])
 
@@ -251,7 +251,7 @@ model CapstoneSessions {
   startedAt            DateTime @default(now())
   completedAt          DateTime?
 
-  enrollment           Enrollment @relation(fields: [enrollmentId], references: [id])
+  enrollment           Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
   stepCompletions      CapstoneStepCompletion[]
 
   @@map("capstone_sessions")
@@ -264,7 +264,7 @@ model CapstoneStepCompletion {
   completedAt        DateTime @default(now())
   verificationResult Json
 
-  session            CapstoneSessions @relation(fields: [sessionId], references: [id])
+  session            CapstoneSessions @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@unique([sessionId, stepNumber])
   @@map("capstone_step_completions")

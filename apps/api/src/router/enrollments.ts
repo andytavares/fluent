@@ -43,20 +43,9 @@ export const enrollmentsRouter = router({
       });
       if (!existing) return null;
 
-      // Wipe all progress data for this enrollment
-      const trackConcepts = await ctx.db.concept.findMany({
-        where: { trackId: input.trackId },
-        select: { id: true },
-      });
-      const conceptIds = trackConcepts.map((c: { id: string }) => c.id);
-
-      await ctx.db.capstoneStepCompletion.deleteMany({
-        where: { session: { enrollmentId: existing.id } },
-      });
-      await ctx.db.capstoneSessions.deleteMany({ where: { enrollmentId: existing.id } });
-      await ctx.db.conceptState.deleteMany({ where: { enrollmentId: existing.id } });
-      await ctx.db.masteryEvent.deleteMany({ where: { enrollmentId: existing.id } });
-      await ctx.db.submission.deleteMany({ where: { userId, conceptId: { in: conceptIds } } });
+      // All progress data (concept states, mastery events, submissions,
+      // capstone sessions + step completions) cascades from the enrollment —
+      // declared once in schema.prisma via onDelete: Cascade.
       await ctx.db.enrollment.delete({ where: { id: existing.id } });
 
       return { reset: true };

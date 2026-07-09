@@ -3,13 +3,15 @@ import { z } from "zod";
 // Single source of truth for content config.json shapes.
 // Used by the API seed, the manifest builder, and the content linter.
 
+// Concept sequencing is linear by `position` — there is deliberately no
+// prereq field here; a prerequisite graph was removed as dead (no reader
+// or writer ever existed).
 export const conceptConfigSchema = z.object({
   slug: z.string().min(1),
   title: z.string().min(1),
   position: z.number().int().positive(),
   has_testout: z.boolean().default(false),
   status: z.enum(["wip", "published"]).default("wip"),
-  prereq_slug: z.string().optional(),
 });
 
 export const trackConfigSchema = z.object({
