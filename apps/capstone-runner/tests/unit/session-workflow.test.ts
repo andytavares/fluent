@@ -30,7 +30,8 @@ afterAll(async () => {
 
 function makeActivities(verifyPassed = true) {
   return {
-    provision: vi.fn(async () => undefined),
+    provision: vi.fn(async () => ({ jobName: "capstone-job", encryptedConn: "iv:tag:cipher" })),
+    recordProvisioned: vi.fn(async () => undefined),
     verify: vi.fn(async () => ({ passed: verifyPassed, http_tests: [] })),
     teardown: vi.fn(async () => undefined),
     recordStepCompletion: vi.fn(async () => undefined),
@@ -60,12 +61,17 @@ async function runSession(
 }
 
 describe("capstoneSessionWorkflow", () => {
-  it("provisions, then tears down after the 30-minute inactivity timeout", async () => {
+  it("provisions, persists the provision output, then tears down after the 30-minute inactivity timeout", async () => {
     const activities = makeActivities();
 
     await runSession(activities);
 
     expect(activities.provision).toHaveBeenCalledWith({ sessionId: "sess-1" });
+    expect(activities.recordProvisioned).toHaveBeenCalledWith({
+      sessionId: "sess-1",
+      jobName: "capstone-job",
+      encryptedConn: "iv:tag:cipher",
+    });
     expect(activities.teardown).toHaveBeenCalledWith({ sessionId: "sess-1" });
     expect(activities.verify).not.toHaveBeenCalled();
   }, 120_000);
@@ -77,9 +83,7 @@ describe("capstoneSessionWorkflow", () => {
       await handle.signal(VERIFY_STEP_SIGNAL, 2);
     });
 
-    expect(activities.verify).toHaveBeenCalledWith(
-      expect.objectContaining({ sessionId: "sess-1", stepNumber: 2 }),
-    );
+    expect(activities.verify).toHaveBeenCalledWith({ sessionId: "sess-1", stepNumber: 2 });
     expect(activities.recordStepCompletion).toHaveBeenCalledWith(
       expect.objectContaining({ sessionId: "sess-1", stepNumber: 2 }),
     );

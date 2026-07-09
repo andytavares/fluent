@@ -8,6 +8,7 @@ export function useCapstoneSession(enrollmentId: string) {
   const [startError, setStartError] = useState<string | null>(null);
 
   const createSession = trpc.capstone.createSession.useMutation();
+  const verifyStepMutation = trpc.capstone.verifyStep.useMutation();
   const getStatus = trpc.capstone.getSessionStatus.useQuery(
     { sessionId: sessionId ?? "" },
     { enabled: !!sessionId, refetchInterval: 3000 },
@@ -23,10 +24,24 @@ export function useCapstoneSession(enrollmentId: string) {
     }
   }, [enrollmentId, createSession]);
 
+  // Fire-and-poll: the workflow verifies asynchronously and records the step
+  // completion; the 3s status poll picks it up.
+  const verifyStep = useCallback(
+    async (stepNumber: number) => {
+      if (!sessionId) return;
+      await verifyStepMutation.mutateAsync({ sessionId, stepNumber });
+    },
+    [sessionId, verifyStepMutation],
+  );
+
   const dbStatus = (() => {
-    if (!getStatus.data) return "provisioning" as const;
-    if (getStatus.data.dbConnectionEncrypted) return "connected" as const;
-    if (getStatus.data.completedAt) return "expired" as const;
+    const session = getStatus.data;
+    if (!session) return "provisioning" as const;
+    if (session.completedAt) return "expired" as const;
+    if (session.dbExpiresAt && new Date(session.dbExpiresAt).getTime() < Date.now()) {
+      return "expired" as const;
+    }
+    if (session.dbConnectionEncrypted) return "connected" as const;
     return "provisioning" as const;
   })();
 
@@ -37,5 +52,7 @@ export function useCapstoneSession(enrollmentId: string) {
     start,
     isStarting: createSession.isPending,
     startError,
+    verifyStep,
+    isVerifying: verifyStepMutation.isPending,
   };
 }

@@ -4,6 +4,9 @@
 
 export const CAPSTONE_TASK_QUEUE = "capstone-sessions";
 
+/** A session (and its provisioned DB) lapses after this much inactivity. */
+export const CAPSTONE_INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000;
+
 /** Workflow type name registered by the worker and started by the API. */
 export const CAPSTONE_WORKFLOW_TYPE = "capstoneSessionWorkflow";
 

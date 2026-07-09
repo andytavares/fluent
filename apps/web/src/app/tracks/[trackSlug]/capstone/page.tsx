@@ -4,8 +4,8 @@ import { useParams } from "next/navigation";
 import { trpc } from "@/lib/trpc/client";
 import { useCapstoneSession } from "@/hooks/use-capstone-session";
 import { CapstoneStepList, DatabaseStatusPanel, CodeEditor, OutputPane } from "@fluent/ui";
-import { useState } from "react";
-import { useSubmission } from "@/hooks/use-submission";
+import { useState, useCallback } from "react";
+import { consumeExecutionStream } from "@/lib/execution-stream";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -119,22 +119,52 @@ Return:
   },
 ];
 
+type RunState = "idle" | "running" | "complete" | "error";
+interface OutputLine {
+  type: "stdout" | "stderr";
+  data: string;
+}
+
 export default function CapstonePage() {
   const { trackSlug } = useParams<{ trackSlug: string }>();
   const [code, setCode] = useState("package main\n\n// Build your Go CRUD API here\n");
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
+  const [runState, setRunState] = useState<RunState>("idle");
+  const [lines, setLines] = useState<OutputLine[]>([]);
+  const [exitCode, setExitCode] = useState<number | undefined>();
+  const [runtimeMs, setRuntimeMs] = useState<number | undefined>();
 
   const enrollmentsQuery = trpc.enrollments.listEnrollments.useQuery();
   const enrollment = enrollmentsQuery.data?.find((e) => e.track.slug === trackSlug);
 
-  const { sessionId, session, dbStatus, start, isStarting, startError } = useCapstoneSession(
-    enrollment?.id ?? "",
-  );
+  const { sessionId, session, dbStatus, start, isStarting, startError, verifyStep, isVerifying } =
+    useCapstoneSession(enrollment?.id ?? "");
 
-  const { state: runState, lines, exitCode, runtimeMs, submit } = useSubmission({
-    conceptId: "",
-    enrollmentId: enrollment?.id ?? "",
-  });
+  const runSandbox = trpc.submissions.runSandbox.useMutation();
+
+  // Scratch-run the learner's code (capstone verification is separate: the
+  // Verify button signals the workflow, which runs the step's verify.sh).
+  const run = useCallback(async () => {
+    setRunState("running");
+    setLines([]);
+    setExitCode(undefined);
+    setRuntimeMs(undefined);
+    try {
+      const { streamToken } = await runSandbox.mutateAsync({ code, language: "go" });
+      consumeExecutionStream(streamToken, {
+        onStdout: (data) => setLines((prev) => [...prev, { type: "stdout", data }]),
+        onStderr: (data) => setLines((prev) => [...prev, { type: "stderr", data }]),
+        onResult: (result) => {
+          setExitCode(result.exit_code);
+          setRuntimeMs(result.runtime_ms);
+          setRunState("complete");
+        },
+        onError: () => setRunState("error"),
+      });
+    } catch {
+      setRunState("error");
+    }
+  }, [code, runSandbox]);
 
   const steps = STEP_DEFS.map((def) => ({
     stepNumber: def.stepNumber,
@@ -201,13 +231,24 @@ export default function CapstonePage() {
                 <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">
                   Step {selectedDef.stepNumber} — {selectedDef.title}
                 </h2>
-                <button
-                  onClick={() => setSelectedStep(null)}
-                  className="shrink-0 text-xs text-[var(--color-text-disabled)] hover:text-[var(--color-text-secondary)] transition-colors"
-                  aria-label="Close instructions"
-                >
-                  ✕ close
-                </button>
+                <div className="flex shrink-0 items-center gap-3">
+                  {sessionId && (
+                    <button
+                      onClick={() => void verifyStep(selectedDef.stepNumber)}
+                      disabled={isVerifying || dbStatus !== "connected"}
+                      className="rounded-lg bg-[var(--color-interactive-primary)] px-3 py-1.5 text-xs font-medium text-[var(--color-interactive-primary-text)] disabled:opacity-50"
+                    >
+                      {isVerifying ? "Verifying…" : `Verify step ${selectedDef.stepNumber}`}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setSelectedStep(null)}
+                    className="text-xs text-[var(--color-text-disabled)] hover:text-[var(--color-text-secondary)] transition-colors"
+                    aria-label="Close instructions"
+                  >
+                    ✕ close
+                  </button>
+                </div>
               </div>
               <div className="prose prose-sm prose-invert max-w-none text-[var(--color-text-secondary)] [&_code]:rounded [&_code]:bg-[var(--color-surface-overlay)] [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-xs [&_pre]:rounded-lg [&_pre]:bg-[var(--color-surface-overlay)] [&_pre]:p-3 [&_pre_code]:bg-transparent [&_pre_code]:p-0">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedDef.instructions}</ReactMarkdown>
@@ -220,13 +261,13 @@ export default function CapstonePage() {
             <CodeEditor
               value={code}
               onChange={setCode}
-              onRun={() => void submit(code, false)}
+              onRun={() => void run()}
             />
             <OutputPane
-              state={runState === "idle" ? "idle" : runState === "streaming" ? "streaming" : runState === "complete" ? "complete" : "error"}
+              state={runState === "idle" ? "idle" : runState === "running" ? "streaming" : runState === "complete" ? "complete" : "error"}
               lines={lines}
-              {...(exitCode !== null && exitCode !== undefined ? { exitCode } : {})}
-              {...(runtimeMs !== null && runtimeMs !== undefined ? { runtimeMs } : {})}
+              {...(exitCode !== undefined ? { exitCode } : {})}
+              {...(runtimeMs !== undefined ? { runtimeMs } : {})}
             />
           </div>
         </div>

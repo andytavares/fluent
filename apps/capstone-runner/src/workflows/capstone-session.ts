@@ -4,11 +4,13 @@ import {
   defineSignal,
   condition,
 } from "@temporalio/workflow";
-import { LEARNER_ACTIVE_SIGNAL, VERIFY_STEP_SIGNAL } from "@fluent/capstone-contract";
+import {
+  LEARNER_ACTIVE_SIGNAL,
+  VERIFY_STEP_SIGNAL,
+  CAPSTONE_INACTIVITY_TIMEOUT_MS,
+} from "@fluent/capstone-contract";
 import type { CapstoneSessionInput } from "@fluent/capstone-contract";
 import type { createActivities } from "../activities/index.js";
-
-const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 
 type Activities = ReturnType<typeof createActivities>;
 
@@ -33,8 +35,11 @@ export async function capstoneSessionWorkflow({ sessionId }: CapstoneSessionInpu
     learnerActive = true;
   });
 
-  // Provision the K8s Job + Postgres sidecar
-  await activities.provision({ sessionId });
+  // Provision the K8s Job + Postgres sidecar, then persist its identity and
+  // encrypted connection string on the session row — the UI derives its
+  // "connected" status from that write.
+  const provisioned = await activities.provision({ sessionId });
+  await activities.recordProvisioned({ sessionId, ...provisioned });
 
   // Run until inactivity timeout
   while (true) {
@@ -44,18 +49,18 @@ export async function capstoneSessionWorkflow({ sessionId }: CapstoneSessionInpu
     // inactivity timeout elapses (it never rejects).
     const active = await condition(
       () => learnerActive || verifyQueue.length > 0,
-      INACTIVITY_TIMEOUT_MS,
+      CAPSTONE_INACTIVITY_TIMEOUT_MS,
     );
 
     if (!active) {
       break;
     }
 
-    // Process any pending verification requests
+    // Process any pending verification requests; the verifier resolves the
+    // step's verify.sh from authored content (content/capstone/…).
     while (verifyQueue.length > 0) {
       const stepNumber = verifyQueue.shift()!;
-      const verifyScriptPath = `/verify/step${stepNumber}.sh`;
-      const result = await activities.verify({ sessionId, stepNumber, verifyScriptPath });
+      const result = await activities.verify({ sessionId, stepNumber });
       if (result.passed) {
         await activities.recordStepCompletion({ sessionId, stepNumber, verificationResult: result });
       }
