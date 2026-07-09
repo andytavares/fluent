@@ -1,0 +1,23 @@
+apps/api/tests/integration/helpers.ts
+  s_beb7708abc1117::t_557bb5cd775d67 2
+  s_beb7708abc1117::t_beafaf2ebf480d 104-116,129-130
+  s_beb7708abc1117::t_6552b65799f9fe 120-123,125
+packages/content-config/src/store.ts
+  s_beb7708abc1117::t_f414d19b978ee3 122-125
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "7c38139130863abcafb64c97230ff0215dc7a9e6",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
