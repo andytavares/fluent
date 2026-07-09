@@ -1,34 +1,48 @@
-from collections import defaultdict, deque
+# Run: python3 stub.py
 
 
-def num_islands(grid: list[list[str]]) -> int:
-    """Count the number of islands ('1' groups) in the grid.
-    '0' is water. You may modify the grid in place."""
-    # TODO: for each unvisited '1', DFS to mark connected '1's as visited, then increment count
+def num_islands(grid):
+    """Return the number of islands: maximal groups of "1" cells connected
+    horizontally or vertically. The grid may be mutated."""
+    # TODO: scan every cell; each fresh "1" is a new island -- flood fill from
+    # it (explicit stack, 4 directions), sinking reached "1"s to "0".
+    # Bounds-check neighbors, and compare against the STRING "1"
     return 0
 
 
-def can_finish(num_courses: int, prerequisites: list[list[int]]) -> bool:
-    """Return True if all courses can be finished (no circular dependency).
-    prerequisites[i] = [a, b] means b must be taken before a."""
-    # TODO: build adjacency list; three-color DFS (0=unvisited,1=visiting,2=done);
-    #       return False if a visiting node is encountered (back edge = cycle)
+def clone_graph(graph):
+    """Return a deep copy of an undirected graph given as an adjacency dict.
+    No reference may be shared with the input -- not the outer dict, not
+    any neighbor list."""
+    # TODO: one fresh container per level -- a new outer dict, and a new
+    # list for every node's neighbors (a shallow copy still shares lists)
+    return {}
+
+
+def can_finish(num_courses, prerequisites):
+    """Return True if all courses can be taken -- i.e. the prerequisite
+    graph has no cycle."""
+    # TODO: Kahn's algorithm -- adjacency b -> a plus indegree per course;
+    # queue indegree-0 courses, peel and decrement dependents; finished
+    # course count == num_courses means acyclic
     return False
 
 
-def word_ladder_length(begin_word: str, end_word: str, word_list: list[str]) -> int:
-    """Return the length of the shortest transformation sequence from begin_word to
-    end_word. Each step changes exactly one letter; every word must be in word_list.
-    Return 0 if no sequence exists."""
-    # TODO: BFS from begin_word; for each word, try all single-character substitutions;
-    #       if new_word is in word_set and unvisited, enqueue it; return length+1 on end_word
-    return 0
+def main():
+    print(num_islands([
+        ["1", "1", "0", "0", "0"],
+        ["1", "1", "0", "0", "0"],
+        ["0", "0", "1", "0", "0"],
+        ["0", "0", "0", "1", "1"],
+    ]))  # 3
+
+    graph = {"1": ["2", "4"], "2": ["1", "3"], "3": ["2", "4"], "4": ["1", "3"]}
+    clone = clone_graph(graph)
+    print(clone, clone is not graph and clone["1"] is not graph["1"])
+
+    print(can_finish(2, [(1, 0)]))  # True
+    print(can_finish(2, [(1, 0), (0, 1)]))  # False
 
 
 if __name__ == "__main__":
-    grid = [["1","1","0"],["1","1","0"],["0","0","1"]]
-    print(num_islands(grid))                                              # 2
-    print(can_finish(2, [[1, 0]]))                                        # True
-    print(can_finish(2, [[1, 0], [0, 1]]))                               # False
-    print(word_ladder_length("hit", "cog", ["hot","dot","dog","lot","log","cog"]))  # 5
-    print(word_ladder_length("hit", "cog", ["hot","dot","dog","lot","log"]))        # 0
+    main()

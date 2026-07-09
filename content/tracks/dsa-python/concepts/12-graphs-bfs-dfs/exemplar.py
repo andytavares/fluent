@@ -1,67 +1,87 @@
-from collections import defaultdict, deque
+# Run: python3 exemplar.py
+
+from collections import deque
+
+DIRS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
 
-def num_islands(grid: list[list[str]]) -> int:
-    """Count the number of islands ('1' groups) in the grid."""
-    if not grid:
-        return 0
-    rows, cols = len(grid), len(grid[0])
-    islands = 0
-
-    def dfs(r: int, c: int) -> None:
-        if r < 0 or r >= rows or c < 0 or c >= cols or grid[r][c] != "1":
-            return
-        grid[r][c] = "0"          # mark visited
-        dfs(r + 1, c); dfs(r - 1, c)
-        dfs(r, c + 1); dfs(r, c - 1)
-
+def num_islands(grid):
+    """Scan every cell; each fresh "1" starts a new island, and an iterative
+    flood fill sinks the whole island to "0" so it is never recounted. Cells
+    are marked when pushed (not when popped) so nothing enters the stack
+    twice. The explicit stack keeps snake-shaped islands from overflowing
+    Python's recursion limit.
+    O(rows * cols) time, O(rows * cols) worst-case stack.
+    """
+    rows = len(grid)
+    cols = len(grid[0])
+    count = 0
     for r in range(rows):
         for c in range(cols):
-            if grid[r][c] == "1":
-                dfs(r, c)
-                islands += 1
-    return islands
+            if grid[r][c] != "1":
+                continue
+            count += 1
+            stack = [(r, c)]
+            grid[r][c] = "0"
+            while stack:
+                cr, cc = stack.pop()
+                for dr, dc in DIRS:
+                    nr, nc = cr + dr, cc + dc
+                    if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == "1":
+                        grid[nr][nc] = "0"
+                        stack.append((nr, nc))
+    return count
 
 
-def can_finish(num_courses: int, prerequisites: list[list[int]]) -> bool:
-    """Return True if all courses can be finished (no cycle in prerequisite graph)."""
-    graph: dict[int, list[int]] = defaultdict(list)
+def clone_graph(graph):
+    """Deep copy of an adjacency dict: one fresh container per level -- a new
+    outer dict and a new list per node. A shallow copy of the outer dict
+    would still share the neighbor lists, so mutating the clone would
+    corrupt the original.
+    O(V + E) time and space.
+    """
+    return {node: list(neighbors) for node, neighbors in graph.items()}
+
+
+def can_finish(num_courses, prerequisites):
+    """Kahn's topological sort: a course enters the queue exactly when its
+    last prerequisite is taken. Courses on a cycle never reach indegree 0,
+    so the graph is acyclic iff every course gets processed.
+    O(V + E) time and space.
+    """
+    adj = [[] for _ in range(num_courses)]
+    indegree = [0] * num_courses
     for course, prereq in prerequisites:
-        graph[prereq].append(course)
+        adj[prereq].append(course)  # edge prereq -> course
+        indegree[course] += 1
 
-    state = [0] * num_courses    # 0=unvisited, 1=visiting, 2=done
-
-    def dfs(node: int) -> bool:
-        if state[node] == 1:
-            return False          # back edge: cycle detected
-        if state[node] == 2:
-            return True           # already fully processed
-        state[node] = 1
-        for neighbor in graph[node]:
-            if not dfs(neighbor):
-                return False
-        state[node] = 2
-        return True
-
-    return all(dfs(c) for c in range(num_courses))
-
-
-def word_ladder_length(begin_word: str, end_word: str, word_list: list[str]) -> int:
-    """Return the shortest transformation sequence length; 0 if impossible."""
-    word_set = set(word_list)
-    if end_word not in word_set:
-        return 0
-    queue: deque[tuple[str, int]] = deque([(begin_word, 1)])
-    visited: set[str] = {begin_word}
-
+    queue = deque(i for i in range(num_courses) if indegree[i] == 0)
+    processed = 0
     while queue:
-        word, length = queue.popleft()
-        for i in range(len(word)):
-            for ch in "abcdefghijklmnopqrstuvwxyz":
-                new_word = word[:i] + ch + word[i + 1:]
-                if new_word == end_word:
-                    return length + 1
-                if new_word in word_set and new_word not in visited:
-                    visited.add(new_word)
-                    queue.append((new_word, length + 1))
-    return 0
+        course = queue.popleft()
+        processed += 1
+        for nxt in adj[course]:
+            indegree[nxt] -= 1
+            if indegree[nxt] == 0:
+                queue.append(nxt)
+    return processed == num_courses
+
+
+def main():
+    print(num_islands([
+        ["1", "1", "0", "0", "0"],
+        ["1", "1", "0", "0", "0"],
+        ["0", "0", "1", "0", "0"],
+        ["0", "0", "0", "1", "1"],
+    ]))  # 3
+
+    graph = {"1": ["2", "4"], "2": ["1", "3"], "3": ["2", "4"], "4": ["1", "3"]}
+    clone = clone_graph(graph)
+    print(clone, clone is not graph and clone["1"] is not graph["1"])
+
+    print(can_finish(2, [(1, 0)]))  # True
+    print(can_finish(2, [(1, 0), (0, 1)]))  # False
+
+
+if __name__ == "__main__":
+    main()

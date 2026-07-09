@@ -1,64 +1,145 @@
 import sys
-from stub import TreeNode, max_depth, has_path_sum, lowest_common_ancestor, _build
+from collections import deque
+from stub import TreeNode, max_depth, is_same_tree, invert_tree, has_path_sum
 
 passed = 0
 failed = 0
 
 
-def test(name: str, condition: bool, detail: str = "") -> None:
+def test(name, fn):
     global passed, failed
-    if condition:
+    try:
+        fn()
         print(f"  PASS: {name}")
         passed += 1
-    else:
-        msg = f" — {detail}" if detail else ""
-        print(f"  FAIL: {name}{msg}")
+    except Exception as e:
+        print(f"  FAIL: {name} — {e}")
         failed += 1
 
 
-def find_node(root: "TreeNode | None", val: int) -> "TreeNode | None":
-    if root is None:
+# Helpers: nodes are TreeNode(val, left, right), None children.
+# build_tree takes a level-order list where None marks an absent child
+# (children of absent nodes are omitted).
+def build_tree(values):
+    if len(values) == 0 or values[0] is None:
         return None
-    if root.val == val:
-        return root
-    return find_node(root.left, val) or find_node(root.right, val)
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]
+            i += 1
+            if v is not None:
+                node.left = TreeNode(v)
+                queue.append(node.left)
+        if i < len(values):
+            v = values[i]
+            i += 1
+            if v is not None:
+                node.right = TreeNode(v)
+                queue.append(node.right)
+    return root
 
 
-# max_depth
-test("depth: balanced h=3", max_depth(_build([3, 9, 20, None, None, 15, 7])) == 3)
-test("depth: empty tree", max_depth(None) == 0)
-test("depth: single node", max_depth(TreeNode(1)) == 1)
-test("depth: two nodes", max_depth(_build([1, 2])) == 2)
-test("depth: full 3 levels", max_depth(_build([1, 2, 3, 4, 5, 6, 7])) == 3)
+# Level-order serialization with trailing Nones trimmed — the inverse of build_tree.
+def tree_to_list(root):
+    if root is None:
+        return []
+    out = []
+    queue = deque([root])
+    while queue:
+        node = queue.popleft()
+        if node is None:
+            out.append(None)
+            continue
+        out.append(node.val)
+        queue.append(node.left)
+        queue.append(node.right)
+    while out and out[-1] is None:
+        out.pop()
+    return out
 
-# has_path_sum
-test("pathsum: 5->4->11->2=22 exists", has_path_sum(_build([5, 4, 8, 11, None, 13, 4, 7, 2]), 22) is True)
-test("pathsum: no path to 5", has_path_sum(_build([1, 2, 3]), 5) is False)
-test("pathsum: empty tree", has_path_sum(None, 0) is False)
-test("pathsum: single node matches", has_path_sum(TreeNode(7), 7) is True)
-test("pathsum: single node no match", has_path_sum(TreeNode(7), 1) is False)
-test("pathsum: negative values", has_path_sum(_build([-3, 1, -2]), -5) is True)
 
-# lowest_common_ancestor
-# Tree: [3,5,1,6,2,0,8,null,null,7,4]
-root = _build([3, 5, 1, 6, 2, 0, 8, None, None, 7, 4])
-p5 = find_node(root, 5)
-p1 = find_node(root, 1)
-p4 = find_node(root, 4)
-p6 = find_node(root, 6)
-p3 = find_node(root, 3)
+def assert_eq(actual, expected):
+    assert actual == expected, f"expected {expected!r}, got {actual!r}"
 
-lca = lowest_common_ancestor(root, p5, p1)
-test("lca: 5,1 -> 3", lca is not None and lca.val == 3, f"got {lca.val if lca else None}")
 
-lca = lowest_common_ancestor(root, p5, p4)
-test("lca: 5,4 -> 5 (5 is ancestor)", lca is not None and lca.val == 5, f"got {lca.val if lca else None}")
+# -- max_depth --
+test("max_depth: classic tree", lambda: assert_eq(
+    max_depth(build_tree([3, 9, 20, None, None, 15, 7])), 3))
+test("max_depth: empty tree", lambda: assert_eq(max_depth(None), 0))
+test("max_depth: single node", lambda: assert_eq(max_depth(build_tree([1])), 1))
+test("max_depth: right-skewed chain", lambda: assert_eq(
+    max_depth(build_tree([1, None, 2, None, 3])), 3))
+test("max_depth: left-skewed chain", lambda: assert_eq(
+    max_depth(build_tree([1, 2, None, 3, None, 4])), 4))
+test("max_depth: deeper branch on one side", lambda: assert_eq(
+    max_depth(build_tree([1, 2, 2, 3, None, None, 3, 4])), 4))
 
-lca = lowest_common_ancestor(root, p6, p4)
-test("lca: 6,4 -> 5", lca is not None and lca.val == 5, f"got {lca.val if lca else None}")
+# -- is_same_tree --
+test("is_same_tree: identical trees", lambda: assert_eq(
+    is_same_tree(build_tree([1, 2, 3]), build_tree([1, 2, 3])), True))
+test("is_same_tree: mirrored shape, same values", lambda: assert_eq(
+    is_same_tree(build_tree([1, 2]), build_tree([1, None, 2])), False))
+test("is_same_tree: same shape, swapped values", lambda: assert_eq(
+    is_same_tree(build_tree([1, 2, 1]), build_tree([1, 1, 2])), False))
+test("is_same_tree: both empty", lambda: assert_eq(is_same_tree(None, None), True))
 
-lca = lowest_common_ancestor(root, p3, p1)
-test("lca: root,1 -> root", lca is not None and lca.val == 3, f"got {lca.val if lca else None}")
+
+def _one_empty():
+    assert_eq(is_same_tree(build_tree([1]), None), False)
+    assert_eq(is_same_tree(None, build_tree([1])), False)
+
+
+test("is_same_tree: one empty", _one_empty)
+test("is_same_tree: equal multi-level trees", lambda: assert_eq(
+    is_same_tree(build_tree([5, 4, 8, 11, None, 13, 4]), build_tree([5, 4, 8, 11, None, 13, 4])), True))
+test("is_same_tree: differ at a deep leaf", lambda: assert_eq(
+    is_same_tree(build_tree([5, 4, 8, 11, None, 13, 4]), build_tree([5, 4, 8, 11, None, 13, 99])), False))
+
+# -- invert_tree --
+test("invert_tree: classic full tree", lambda: assert_eq(
+    tree_to_list(invert_tree(build_tree([4, 2, 7, 1, 3, 6, 9]))), [4, 7, 2, 9, 6, 3, 1]))
+test("invert_tree: empty tree", lambda: assert_eq(invert_tree(None), None))
+test("invert_tree: single node", lambda: assert_eq(
+    tree_to_list(invert_tree(build_tree([1]))), [1]))
+test("invert_tree: three nodes", lambda: assert_eq(
+    tree_to_list(invert_tree(build_tree([2, 1, 3]))), [2, 3, 1]))
+test("invert_tree: lone left child moves right", lambda: assert_eq(
+    tree_to_list(invert_tree(build_tree([1, 2]))), [1, None, 2]))
+test("invert_tree: lone right child moves left", lambda: assert_eq(
+    tree_to_list(invert_tree(build_tree([1, None, 2]))), [1, 2]))
+
+
+def _mutates_in_place():
+    root = build_tree([4, 2, 7])
+    result = invert_tree(root)
+    assert result is root, "expected the same object, not a copy"
+    assert_eq(tree_to_list(root), [4, 7, 2])
+
+
+test("invert_tree: mutates in place and returns the same root", _mutates_in_place)
+
+# -- has_path_sum --
+test("has_path_sum: classic tree, target 22", lambda: assert_eq(
+    has_path_sum(build_tree([5, 4, 8, 11, None, 13, 4, 7, 2, None, None, None, 1]), 22), True))
+test("has_path_sum: no path hits the target", lambda: assert_eq(
+    has_path_sum(build_tree([1, 2, 3]), 5), False))
+test("has_path_sum: empty tree, target 0", lambda: assert_eq(has_path_sum(None, 0), False))
+test("has_path_sum: partial path does not count (1 is not a leaf)", lambda: assert_eq(
+    has_path_sum(build_tree([1, 2]), 1), False))
+test("has_path_sum: path through a one-child node", lambda: assert_eq(
+    has_path_sum(build_tree([1, 2]), 3), True))
+test("has_path_sum: single node equals target", lambda: assert_eq(
+    has_path_sum(build_tree([1]), 1), True))
+test("has_path_sum: single node misses target", lambda: assert_eq(
+    has_path_sum(build_tree([1]), 0), False))
+test("has_path_sum: negative values reach a negative target", lambda: assert_eq(
+    has_path_sum(build_tree([1, -2, -3, 1, 3, -2, None, -1]), -1), True))
+test("has_path_sum: all-negative chain", lambda: assert_eq(
+    has_path_sum(build_tree([-2, None, -3]), -5), True))
 
 print(f"\n{passed} passed, {failed} failed")
 if failed > 0:

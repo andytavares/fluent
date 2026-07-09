@@ -1,40 +1,57 @@
+# Run: python3 stub.py
+
+
 class TrieNode:
-    def __init__(self) -> None:
-        self.children: dict[str, "TrieNode"] = {}
-        self.is_end: bool = False
+    def __init__(self):
+        self.children = {}   # char -> TrieNode
+        self.is_end = False
 
 
 class Trie:
-    """Prefix tree supporting insert, exact search, and prefix search."""
-
-    def __init__(self) -> None:
+    def __init__(self):
         self.root = TrieNode()
 
-    def insert(self, word: str) -> None:
-        """Insert word into the trie."""
-        # TODO: walk characters; create TrieNode if missing; mark is_end at last node
+    def insert(self, word):
+        """Store word in the trie."""
+        # TODO: walk from the root, creating child nodes on demand;
+        # set is_end = True on the final node
         pass
 
-    def search(self, word: str) -> bool:
-        """Return True if word exists exactly in the trie."""
-        # TODO: walk characters; return False if any missing; return node.is_end
+    def search(self, word):
+        """Return True if the exact word was previously inserted."""
+        # TODO: follow existing children only; False if a char is missing
+        # OR the final node's is_end is False
         return False
 
-    def starts_with(self, prefix: str) -> bool:
-        """Return True if any inserted word starts with prefix."""
-        # TODO: walk characters; return False if any missing; return True at end
+    def starts_with(self, prefix):
+        """Return True if any inserted word begins with prefix."""
+        # TODO: same walk as search, but no is_end check
+        return False
+
+    # Tip: factor the walk into a _traverse(s) helper that returns
+    # the reached node or None.
+
+
+class WordDictionary:
+    def __init__(self):
+        self.root = TrieNode()
+
+    def add_word(self, word):
+        """Store a word (lowercase letters, no dots)."""
+        # TODO: identical to Trie.insert
+        pass
+
+    def search(self, pattern):
+        """Return True if any stored word matches pattern, where "." matches
+        exactly one arbitrary letter. Pattern and word lengths must match."""
+        # TODO: recursive dfs(node, i) over the pattern index --
+        # base case i == len(pattern) -> node.is_end;
+        # literal char -> descend into that child (False if missing);
+        # "." -> try every child, True if ANY branch matches the rest
         return False
 
 
-def search_suggestions(products: list[str], search_word: str) -> list[list[str]]:
-    """For each prefix of search_word, return up to 3 lexicographically smallest
-    product names that share that prefix."""
-    # TODO: build a Trie from sorted products; for each prefix, DFS to collect
-    #       up to 3 results; if a prefix has no match, pad remaining with []
-    return []
-
-
-if __name__ == "__main__":
+def main():
     t = Trie()
     t.insert("apple")
     print(t.search("apple"))     # True
@@ -42,6 +59,16 @@ if __name__ == "__main__":
     print(t.starts_with("app"))  # True
     t.insert("app")
     print(t.search("app"))       # True
-    r = search_suggestions(["mobile","mouse","moneypot","monitor","mousepad"], "mouse")
-    for row in r:
-        print(row)
+
+    d = WordDictionary()
+    d.add_word("bad")
+    d.add_word("dad")
+    d.add_word("mad")
+    print(d.search("pad"))  # False
+    print(d.search("bad"))  # True
+    print(d.search(".ad"))  # True
+    print(d.search("b..")) # True
+
+
+if __name__ == "__main__":
+    main()

@@ -1,62 +1,52 @@
-from __future__ import annotations
+# Run: python3 stub.py
+#
+# Every tree node is a TreeNode(val, left, right); missing children are
+# None. An empty tree is None.
 
 
 class TreeNode:
-    def __init__(
-        self,
-        val: int = 0,
-        left: TreeNode | None = None,
-        right: TreeNode | None = None,
-    ) -> None:
+    def __init__(self, val=0, left=None, right=None):
         self.val = val
         self.left = left
         self.right = right
 
 
-def max_depth(root: TreeNode | None) -> int:
-    """Return the maximum depth (number of nodes along the longest root-to-leaf path)."""
-    # TODO: base case None -> 0; recursive: 1 + max(depth(left), depth(right))
+def max_depth(root):
+    """Return the number of nodes on the longest root-to-leaf path."""
+    # TODO: bottom-up — None is 0; otherwise 1 + max of the children's depths
     return 0
 
 
-def has_path_sum(root: TreeNode | None, target: int) -> bool:
-    """Return True if any root-to-leaf path sums to target."""
-    # TODO: check leaf; recurse with target - root.val; return False for None
+def is_same_tree(p, q):
+    """Return True if p and q are structurally identical with equal values."""
+    # TODO: lockstep — both None true; one None false; compare vals,
+    # then recurse on (p.left, q.left) and (p.right, q.right)
     return False
 
 
-def lowest_common_ancestor(
-    root: TreeNode | None, p: TreeNode, q: TreeNode
-) -> TreeNode | None:
-    """Return the lowest common ancestor of p and q in the binary tree."""
-    # TODO: if root is None/p/q return root; recurse left and right;
-    #       if both non-None return root; else return whichever is non-None
+def invert_tree(root):
+    """Mirror the tree in place (swap every node's children). Return the root."""
+    # TODO: swap root.left and root.right (tuple assignment), recurse into
+    # both, return root
     return None
 
 
-def _build(vals: list[int | None]) -> TreeNode | None:
-    """Build a tree from level-order list (None = missing node)."""
-    if not vals or vals[0] is None:
-        return None
-    root = TreeNode(vals[0])  # type: ignore[arg-type]
-    from collections import deque
-    queue: deque[TreeNode] = deque([root])
-    i = 1
-    while queue and i < len(vals):
-        node = queue.popleft()
-        if i < len(vals) and vals[i] is not None:
-            node.left = TreeNode(vals[i])  # type: ignore[arg-type]
-            queue.append(node.left)
-        i += 1
-        if i < len(vals) and vals[i] is not None:
-            node.right = TreeNode(vals[i])  # type: ignore[arg-type]
-            queue.append(node.right)
-        i += 1
-    return root
+def has_path_sum(root, target_sum):
+    """Return True if some root-to-leaf path sums exactly to target_sum."""
+    # TODO: top-down — None is False; at a leaf (no children) compare
+    # target_sum == root.val; otherwise recurse with target_sum - root.val
+    return False
+
+
+def main():
+    def node(val, left=None, right=None):
+        return TreeNode(val, left, right)
+
+    t = node(3, node(9), node(20, node(15), node(7)))
+    print(max_depth(t))  # 3
+    print(is_same_tree(node(1, node(2), node(3)), node(1, node(2), node(3))))  # True
+    print(has_path_sum(node(1, node(2), node(3)), 4))  # True (1 -> 3)
 
 
 if __name__ == "__main__":
-    root = _build([3, 9, 20, None, None, 15, 7])
-    print(max_depth(root))          # 3
-    root2 = _build([5, 4, 8, 11, None, 13, 4, 7, 2])
-    print(has_path_sum(root2, 22))  # True
+    main()
