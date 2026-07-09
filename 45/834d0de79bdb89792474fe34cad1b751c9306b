@@ -1,0 +1,172 @@
+content/tracks/dsa-java/concepts/22-dynamic-programming-1d/SolutionTest.java
+  s_beb7708abc1117::t_ae6d21b18c7bd4 1-2,12-18,21-45,48-72
+content/tracks/dsa-java/concepts/21-math/SolutionTest.java
+  s_beb7708abc1117::t_937688ffbf21c9 14-21
+  s_beb7708abc1117::t_f8e2d1c289f3b5 60
+  s_beb7708abc1117::t_09ba0021b7ab62 1-13,22-59,61-92
+content/tracks/dsa-java/concepts/23-dynamic-programming-2d/SolutionTest.java
+  s_beb7708abc1117::t_67dd77b305ba9f 9-16,18-106
+content/tracks/dsa-java/concepts/20-bit-manipulation/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-java/concepts/17-kadane/testout_stub.java
+  s_beb7708abc1117::t_2a1c76fdc06f76 1-13
+content/tracks/dsa-java/concepts/21-math/testout_test.java
+  s_beb7708abc1117::t_73c89efb508050 1-136
+content/tracks/dsa-java/concepts/20-bit-manipulation/stub.java
+  s_beb7708abc1117::t_18adf7ada568f6 1-48
+content/tracks/dsa-java/concepts/21-math/stub.java
+  s_beb7708abc1117::t_0cae4fa6bdf31e 1-50
+content/tracks/dsa-java/concepts/19-heaps-and-priority-queues/SolutionTest.java
+  s_beb7708abc1117::t_d110db5a0efdf0 20,94-103
+  s_beb7708abc1117::t_96e4da73d24cc5 17-19
+  s_beb7708abc1117::t_bb5143363e50f3 21
+  s_beb7708abc1117::t_a30a4a769dd9f4 91-93
+  s_027266d8bf6411::t_fb7fe412cf89c8 1,11-16,24-26,30-90
+content/tracks/dsa-java/concepts/20-bit-manipulation/SolutionTest.java
+  s_beb7708abc1117::t_9e21ed5f379e08 1-76
+content/tracks/dsa-java/concepts/19-heaps-and-priority-queues/instructions.md
+  s_beb7708abc1117::t_3ccb53a82c2684 13,16-20,23,25,28-34,37,39,42-45,47,50-54,56,58,60,62-66,70-72,76-124,126-127,129-162,166-171,173-176,179-183,186-194,196,198-212,214-215
+  s_beb7708abc1117::t_a8af8667b97011 11-12
+  s_101901275c8f72::t_525afee5238e49 1,5,9
+content/tracks/dsa-java/concepts/18-binary-search/testout_test.java
+  s_beb7708abc1117::t_7cb873e6dd5159 16-86,108,129-130,153-154,177-178
+  s_beb7708abc1117::t_f020ea1dfba517 1-15,87-107,109-128,131-152,155-176,179-183
+content/tracks/dsa-java/concepts/21-math/exemplar.java
+  s_beb7708abc1117::t_0a999a0ff51d38 1-92
+content/tracks/dsa-java/concepts/17-kadane/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-java/concepts/23-dynamic-programming-2d/stub.java
+  s_beb7708abc1117::t_505d04e9b07a3a 3,6,13,15,22,24-45,50-54
+  s_beb7708abc1117::t_fe8ae981ed7784 4-5,7-9,14,16-18,23
+content/tracks/dsa-java/concepts/23-dynamic-programming-2d/testout_test.java
+  s_beb7708abc1117::t_b46e6f31a364e9 1-163
+content/tracks/dsa-java/concepts/17-kadane/exemplar.java
+  s_beb7708abc1117::t_a190a23a3fe032 1-54
+content/tracks/dsa-java/concepts/19-heaps-and-priority-queues/testout_stub.java
+  s_beb7708abc1117::t_76fa26fc5cb420 1-28
+content/tracks/dsa-java/concepts/18-binary-search/stub.java
+  s_beb7708abc1117::t_3225a280b4c0ab 3,6,13,16,23,26-40,44-48
+  s_beb7708abc1117::t_7871c2f1274550 4-5
+  s_beb7708abc1117::t_f5c9fc08b77608 7-9
+  s_beb7708abc1117::t_0e3449746ba38c 14-15
+  s_beb7708abc1117::t_fb70dcd5eb5d06 17-19
+  s_beb7708abc1117::t_f9a40fca3ecf33 24-25
+  s_042089e495faa1::t_37c080e3305345 10
+content/tracks/dsa-java/concepts/23-dynamic-programming-2d/instructions.md
+  s_beb7708abc1117::t_3f36e0c98ebc31 50-52,54,57,60-62,64-70,72,74,76,78-83,85,87,89-198,200,202,204-270,274-303,306-309,311-342
+  s_101901275c8f72::t_4aa086ffa5f245 1,5,9,11-14,16,18,21-31,35,37,40-46
+content/tracks/dsa-java/concepts/22-dynamic-programming-1d/testout_test.java
+  s_beb7708abc1117::t_e50e17199ff3ff 1-103
+content/tracks/dsa-java/concepts/19-heaps-and-priority-queues/exemplar.java
+  s_beb7708abc1117::t_827029582cdf03 20-21,23-32,34-39,41-45,47-48,50-59,61-65,67-72,76-78,83-91
+  s_beb7708abc1117::t_08960a3d72f65a 17-19
+  s_042089e495faa1::t_219e855fc4c156 2-3,8-16
+content/tracks/dsa-java/concepts/21-math/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-java/concepts/17-kadane/SolutionTest.java
+  s_beb7708abc1117::t_1f21f7ba3b3836 1-53
+content/tracks/dsa-java/concepts/23-dynamic-programming-2d/exemplar.java
+  s_beb7708abc1117::t_310c61c59e9f5b 3,7-8,19,22,26-27,33,41-56,59-81,83-84,86-87,89-113,116,118,122-126
+  s_beb7708abc1117::t_b029977baadbfd 4-6,9-16,23-25,28-32,34-37
+content/tracks/dsa-java/concepts/20-bit-manipulation/testout_test.java
+  s_beb7708abc1117::t_0d030aea44f892 58
+  s_beb7708abc1117::t_6bc66494c060a3 1-57,59-167
+content/tracks/dsa-java/concepts/18-binary-search/SolutionTest.java
+  s_beb7708abc1117::t_e4ec0303c8dd74 9-16,18-55,57-77,79-99
+content/tracks/dsa-java/concepts/18-binary-search/instructions.md
+  s_beb7708abc1117::t_dce84ab2aa002e 11-13,23,26,28,30,33-34,36-37,39,42-46,48,51-56,60,62,64-74,76,78-83,87,89,94-172,174,176-229,233-237,240-244,246-288
+  s_beb7708abc1117::t_0b7d97e98e1e16 5,9-10
+content/tracks/dsa-java/concepts/17-kadane/stub.java
+  s_beb7708abc1117::t_7d631564ed6ed5 1-33
+content/tracks/dsa-java/concepts/20-bit-manipulation/testout_stub.java
+  s_beb7708abc1117::t_d709e1283fb9dd 1-21
+content/tracks/dsa-java/concepts/22-dynamic-programming-1d/instructions.md
+  s_beb7708abc1117::t_f4cbdcce03acc0 13-27,30-33,42,44,47-52,54,57,59,62-67,70,73,75-81,83,85,87,89-94,96,98-173,175,177,179-212,216-220,223-226,228-279
+  s_beb7708abc1117::t_7197f0eac7beb5 11-12
+  s_101901275c8f72::t_5cb1ef412e5876 5,9
+content/tracks/dsa-java/concepts/22-dynamic-programming-1d/exemplar.java
+  s_beb7708abc1117::t_560b5387d2ce56 7,10-11,23-27,29-32,39-67,70,72,74,80-105,107-111
+  s_beb7708abc1117::t_66aee1b15b5be2 8-9
+  s_beb7708abc1117::t_8158e05f4ae3ff 12-14
+  s_101901275c8f72::t_717685c2a71b2b 1-3,15
+content/tracks/dsa-java/concepts/23-dynamic-programming-2d/testout_stub.java
+  s_beb7708abc1117::t_b956262206dcd3 1-25
+content/tracks/dsa-java/concepts/18-binary-search/exemplar.java
+  s_beb7708abc1117::t_bbc45bc55fb343 3,7-8,14-17,22,26-27,30,32,36-37,42-46,51-57,59,61-76,78-91,95-99
+  s_beb7708abc1117::t_a3c22e0407b274 4-6,9-11,13,19,23-25,28-29,31,33-35,38-39,41
+content/tracks/dsa-java/concepts/17-kadane/testout_test.java
+  s_beb7708abc1117::t_4104992bdc0042 1-111
+content/tracks/dsa-java/concepts/19-heaps-and-priority-queues/stub.java
+  s_beb7708abc1117::t_d30cec5e546573 50,52,54-58
+  s_beb7708abc1117::t_0ffa48923af424 49
+  s_027266d8bf6411::t_0c2ca416d35b32 2,7-25,27-31,33-35,38-40,43-44
+content/tracks/dsa-java/concepts/22-dynamic-programming-1d/testout_stub.java
+  s_beb7708abc1117::t_339d6b88ef2cf9 1-27
+content/tracks/dsa-java/concepts/18-binary-search/testout_stub.java
+  s_beb7708abc1117::t_12d2aea8934f6f 1-21
+content/tracks/dsa-java/concepts/21-math/instructions.md
+  s_beb7708abc1117::t_31fd5593439d6c 1-306
+content/tracks/dsa-java/concepts/22-dynamic-programming-1d/stub.java
+  s_beb7708abc1117::t_7f8a1df5ccdcd3 5,7,14-16,18-19,23-35,37-49,53-57
+  s_beb7708abc1117::t_95702fd975c6af 6
+  s_beb7708abc1117::t_9249ef3213ada4 8-10
+  s_101901275c8f72::t_4629b43644d2ba 1
+content/tracks/dsa-java/concepts/19-heaps-and-priority-queues/testout_test.java
+  s_beb7708abc1117::t_59fd3c711b279a 1-166
+content/tracks/dsa-java/concepts/20-bit-manipulation/exemplar.java
+  s_beb7708abc1117::t_13e5579989aee3 1-74
+content/tracks/dsa-java/concepts/17-kadane/instructions.md
+  s_beb7708abc1117::t_54258c5746028c 1-154
+content/tracks/dsa-java/concepts/21-math/testout_stub.java
+  s_beb7708abc1117::t_a792732f49ce68 1-21
+content/tracks/dsa-java/concepts/20-bit-manipulation/instructions.md
+  s_beb7708abc1117::t_9a54b67b0a62e4 1-243
+content/tracks/dsa-java/concepts/18-binary-search/config.json
+  s_beb7708abc1117::t_4086ac0985ef5a 1
+content/tracks/dsa-java/concepts/19-heaps-and-priority-queues/config.json
+  s_beb7708abc1117::t_8b094cc4badaed 1
+content/tracks/dsa-java/concepts/22-dynamic-programming-1d/config.json
+  s_beb7708abc1117::t_63ac0526730359 1
+content/tracks/dsa-java/concepts/23-dynamic-programming-2d/config.json
+  s_beb7708abc1117::t_0f84c67fb75549 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "45834d0de79bdb89792474fe34cad1b751c9306b",
+  "prompts": {},
+  "sessions": {
+    "s_027266d8bf6411": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-ad349102ad7f906f8",
+        "model": "unknown"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_042089e495faa1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a77a889582a8be926",
+        "model": "unknown"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_101901275c8f72": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-aaf3204d67b5336fb",
+        "model": "unknown"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
