@@ -2,7 +2,7 @@
 
 ## What you'll learn
 
-The Unix file utilities — `find`, `xargs`, `stat`, `chmod`, `cp`, `rsync` — and how to compose them safely in scripts. The key skill is knowing when to use `-exec` vs `xargs` and how to handle filenames with spaces.
+You've been redirecting and piping data between commands; now you'll operate on the filesystem itself. The Unix file utilities — `find`, `xargs`, `stat`, `chmod`, `cp`, `rsync` — and how to compose them safely in scripts. The key skill is knowing when to use `-exec` vs `xargs` and how to handle filenames with spaces (the same word-splitting hazard from earlier lessons, now applied to paths).
 
 ## Key concepts
 
@@ -60,6 +60,13 @@ rsync -av --delete src/ dest/            # mirror: delete files not in src
 rsync -av src/ user@host:/remote/path/  # remote sync over SSH
 ```
 
+## Watch out
+
+- `find . -name "*.log" | xargs rm` breaks on filenames containing spaces or newlines — each line gets word-split by `xargs`'s default delimiter. Pair `find -print0` with `xargs -0` whenever filenames aren't guaranteed to be simple.
+- `find ... -exec cmd {} \;` runs `cmd` once **per file** (slow for large trees); `find ... -exec cmd {} +` batches many files into fewer invocations, much closer to how `xargs` behaves. They are not interchangeable if `cmd` behaves differently when given multiple arguments (e.g. `echo` vs `rm`).
+- `mkdir somedir` fails if `somedir` already exists or if a parent is missing; `mkdir -p` does neither — silently succeeds if the directory is already there and creates missing parents. Reach for `-p` by default in scripts.
+- `stat`'s format flags differ between GNU (Linux, `-c`) and BSD (macOS, `-f`) — a `stat -c "%s" file` script that works in CI may fail on a contributor's Mac. Check with `[[ -s file ]]` for "non-empty" instead of parsing `stat` output when you only need a boolean.
+
 ## vs other languages
 
 | Task | Python | Bash |
@@ -74,10 +81,31 @@ rsync -av src/ user@host:/remote/path/  # remote sync over SSH
 
 ## The task
 
-Implement three functions:
+You're writing three functions built on `find`, `chmod`, and `mkdir`.
 
-**`find_by_extension dir ext`** — echoes all files under `dir` with the given extension (without dot), one per line, sorted. Use `find`.
+**`find_by_extension dir ext`** — echoes all **regular files** under `dir` (recursively) whose name ends in `.<ext>` (`ext` has no leading dot), one path per line, sorted. Use `find ... | sort`.
 
-**`make_executable dir`** — makes all `.sh` files under `dir` executable (`chmod +x`). Use `find -exec` or `find ... | xargs`.
+```bash
+# dir contains a.sh, b.sh, c.txt, d.sh
+find_by_extension "$dir" "sh"
+# .../a.sh
+# .../b.sh
+# .../d.sh
 
-**`ensure_dir path`** — creates the directory at `path` (and any parents) if it doesn't exist, then echoes `created` if it was created or `exists` if it was already there.
+find_by_extension "$dir" "txt"
+# .../c.txt
+```
+
+**`make_executable dir`** — makes every `.sh` file under `dir` (recursively) executable (`chmod +x`); files with other extensions are left untouched. Use `find -exec ... +` (batched) rather than one `chmod` call per file.
+
+```bash
+make_executable "$dir"   # every *.sh under $dir gains the execute bit; *.txt is unaffected
+```
+
+**`ensure_dir path`** — creates the directory at `path`, including any missing parent directories, if it doesn't already exist. Echoes `created` if it made the directory, or `exists` if the directory was already there. Never errors if called twice in a row on the same path.
+
+```bash
+ensure_dir "/tmp/work/nested"   # created  — didn't exist, now does (parents included)
+ensure_dir "/tmp/work/nested"   # exists   — second call finds it already there
+ensure_dir "/tmp"               # exists   — pre-existing directory
+```

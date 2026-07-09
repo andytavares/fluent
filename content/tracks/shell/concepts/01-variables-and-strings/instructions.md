@@ -63,6 +63,13 @@ ${var#prefix}      # strip shortest prefix match
 ${var%suffix}      # strip shortest suffix match
 ```
 
+## Watch out
+
+- **Unquoted expansion is the #1 shell bug.** `path=/tmp/my dir; ls $path` word-splits into `ls /tmp/my dir` — two arguments. Always write `"$path"`. The same applies to `"$@"` vs bare `$@` in function bodies.
+- `${var}` vs `$var`: `$var` alone stops at the first character that can't be part of an identifier, so `echo "$names"` is fine, but `echo "$names_backup"` silently looks up a variable named `names_backup`, not `names` followed by literal text. Use `${names}_backup` whenever a variable is followed by more identifier characters.
+- Arithmetic vs string context: `count="3" + "4"` does **not** add — that's still a string assignment (and a syntax error here). Arithmetic requires `$(( ))`: `count=$(( 3 + 4 ))`.
+- `${var:-default}` does **not** assign `default` back to `var` — only `${var:=default}` does. Mixing these up means the "default" silently doesn't stick for later reads of the same variable.
+
 ## vs other languages
 
 | Concept | Other languages | Bash |
@@ -75,10 +82,28 @@ ${var%suffix}      # strip shortest suffix match
 
 ## The task
 
-Implement three functions:
+You're writing three small string-handling functions. Each takes its arguments positionally (`$1`, `$2`, ...) and prints its result with `echo`.
 
-**`greet name`** — echoes `Hello, <name>!`
+**`greet name`** — echoes `Hello, <name>!`.
 
-**`describe_file path`** — echoes `File: <basename> (ext: <extension>)`. Given `/tmp/report.txt`, print `File: report.txt (ext: txt)`. Use parameter expansion — no external commands.
+```bash
+greet "Alice"        # Hello, Alice!
+greet "Bob Smith"    # Hello, Bob Smith!
+greet ""             # Hello, !
+```
 
-**`repeat_word word n`** — echoes `word` repeated `n` times on a single space-separated line. `repeat_word hi 3` → `hi hi hi`.
+**`describe_file path`** — echoes `File: <basename> (ext: <extension>)`. Use parameter expansion only (`${var##pattern}` / `${var%%pattern}`) — no `basename`/`dirname` commands.
+
+```bash
+describe_file "/tmp/report.txt"          # File: report.txt (ext: txt)
+describe_file "/home/user/scripts/deploy.sh"  # File: deploy.sh (ext: sh)
+describe_file "/var/backup/archive.tar.gz"    # File: archive.tar.gz (ext: gz)
+```
+
+**`repeat_word word n`** — echoes `word` repeated `n` times on a single space-separated line.
+
+```bash
+repeat_word "hi" 3   # hi hi hi
+repeat_word "go" 1   # go
+repeat_word "go" 0   # (empty line — n=0 means no repetitions)
+```

@@ -39,7 +39,6 @@ int collatz_steps(int n) {
     return 0;
 }
 
-#ifndef TESTING
 int main(void) {
     printf("count_digits(0)    = %d\n", count_digits(0));     /* 1 */
     printf("count_digits(100)  = %d\n", count_digits(100));   /* 3 */
@@ -53,4 +52,3 @@ int main(void) {
     printf("collatz_steps(6)   = %d\n", collatz_steps(6));     /* 8 */
     return 0;
 }
-#endif

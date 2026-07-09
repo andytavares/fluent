@@ -2,7 +2,7 @@
 
 ## What you'll learn
 
-Bash functions look like functions in other languages but behave differently in three important ways: arguments are positional (not named), return values are exit codes (not data), and all variables are global unless explicitly declared `local`.
+You've been writing loops and conditionals inline; functions let you package that logic and reuse it. Bash functions look like functions in other languages but behave differently in three important ways: arguments are positional (not named), return values are exit codes (not data), and all variables are global unless explicitly declared `local`.
 
 ## Key concepts
 
@@ -91,6 +91,13 @@ factorial() {
 }
 ```
 
+## Watch out
+
+- Forgetting `local` leaks variables into the caller's scope — and worse, into any function further up the call stack, since Bash scope is dynamic, not lexical. A loop variable named `i` in a helper function can silently clobber an `i` the caller is using for something else.
+- `return` only sets the exit code (0–255); `return 300` wraps around to `44` (`300 % 256`). If you need to hand back a number bigger than 255, or any non-numeric data, `echo` it and capture with `$()` — never rely on `return` for data.
+- Calling a function before it's defined fails — Bash reads scripts top to bottom, unlike languages with function hoisting. Define functions before the code that calls them (or before the `main`-style block at the bottom).
+- Passing an unquoted argument through several layers of `$1`/`$@` is how word-splitting bugs sneak into "working" functions. Quote every expansion you forward: `other_func "$1"`, not `other_func $1`.
+
 ## vs other languages
 
 | Concept | Most languages | Bash |
@@ -105,10 +112,33 @@ The most impactful habit to build: always `local` every variable in a function. 
 
 ## The task
 
-Implement three functions:
+You're writing three functions that exercise positional arguments, `shift`, and calling a function by name.
 
 **`max a b`** — echoes the larger of two integers.
 
-**`join_by separator [words...]`** — echoes all remaining arguments joined by `separator`. Example: `join_by , a b c` → `a,b,c`. Use `shift` to consume the separator first.
+```bash
+max 9 3     # 9
+max 3 9     # 9
+max 5 5     # 5   — ties return either (equal)
+max -3 0    # 0
+```
 
-**`repeat_func func n`** — calls the named function `n` times, passing the iteration number (1-based) as its argument. Example: `repeat_func echo 3` prints `1`, `2`, `3` on separate lines. Use `"$func"` to call it dynamically.
+**`join_by separator [words...]`** — echoes all arguments after the first, joined by `separator`. Use `shift` to consume the separator first, then iterate over the rest.
+
+```bash
+join_by , a b c     # a,b,c
+join_by - x y z     # x-y-z
+join_by , solo      # solo          — one word, no separator inserted
+join_by ,           # (empty line)  — no words at all
+```
+
+**`repeat_func func n`** — calls the function named `func` (a string) `n` times, passing the iteration number (1-based) as its single argument. Call it dynamically with `"$func" "$i"`.
+
+```bash
+repeat_func echo 3
+# 1
+# 2
+# 3
+
+repeat_func echo 0   # (nothing printed — loop body never runs)
+```

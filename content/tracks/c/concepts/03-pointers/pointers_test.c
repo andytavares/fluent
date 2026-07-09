@@ -1,6 +1,6 @@
 /*
  * Build: gcc -o test stub.c pointers_test.c && ./test
- * (Guard main() in stub.c with #ifndef TESTING.)
+ * (The lesson harness strips main() from stub.c before linking.)
  */
 #include <stdio.h>
 #include <string.h>
@@ -55,6 +55,10 @@ int main(void) {
     int single[] = {42};
     reverse_array(single, 1);
     CHECK_INT("reverse single element", 42, single[0]);
+
+    int empty[] = {7};
+    reverse_array(empty, 0);
+    CHECK_INT("reverse n=0 is a no-op", 7, empty[0]);
 
     printf("\n%d passed, %d failed\n", passed, failed);
     return failed > 0 ? 1 : 0;

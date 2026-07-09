@@ -2,7 +2,7 @@
 
 ## What you'll learn
 
-How Bash starts, tracks, and communicates with processes: background jobs, signals, subshells, and the `exec` system call. These are the tools for writing daemons, parallel scripts, and reliable cleanup handlers.
+Lesson 9's `trap ... EXIT` was a preview of signal handling in a single process; this lesson covers managing multiple processes at once. How Bash starts, tracks, and communicates with processes: background jobs, signals, subshells, and the `exec` system call. These are the tools for writing daemons, parallel scripts, and reliable cleanup handlers.
 
 ## Key concepts
 
@@ -82,6 +82,13 @@ nohup long_running_script.sh > output.log 2>&1 &
 disown $!     # detach from shell's job table (Bash-specific)
 ```
 
+## Watch out
+
+- `$!` captures the PID of the **most recently backgrounded** process — if you background several commands in a loop without saving each PID immediately (`pids+=($!)`), you'll only ever have the last one.
+- `wait` with no argument waits for all background jobs but discards their individual exit codes — it returns the exit status of the *last* one to finish. To detect which jobs failed, `wait` each PID separately and track the results yourself.
+- `kill $pid` only sends a signal — it doesn't guarantee the process has actually exited by the time `kill` returns. Follow with `wait $pid` (or poll `kill -0 $pid`) if you need to know the process is really gone before continuing.
+- A `trap` set inside `()` or `$()` (a subshell) does not affect the parent shell's traps — this is normally what you want for scoped cleanup, but it also means a trap you install inside a function meant to run in the *current* shell (no subshell) will still be active after the function returns unless you reset it.
+
 ## vs other languages
 
 | Concept | Python | Bash |
@@ -97,10 +104,25 @@ The key difference from Python's `subprocess`: Bash background jobs share the sa
 
 ## The task
 
-Implement three functions:
+You're writing three functions that manage background jobs, timeouts, and cleanup traps.
 
-**`run_parallel [commands...]`** — runs each argument as a shell command in the background, waits for all to finish, and echoes `all done` if all succeeded or `N failed` (where N is the count) if any failed. Each command is a single string passed to `eval`.
+**`run_parallel [commands...]`** — runs each argument as a shell command string (via `eval`) in the background, waits for all of them to finish, and echoes `all done` if every command succeeded, or `<N> failed` (where `N` is the count of non-zero exits) if any failed.
 
-**`with_timeout seconds cmd`** — runs `cmd` (as a string via `eval`) and kills it if it hasn't finished within `seconds` seconds. Echoes `ok` if the command finished in time, `timeout` if it was killed.
+```bash
+run_parallel "true" "true" "true"     # all done
+run_parallel "true" "false" "false"   # 2 failed
+run_parallel "exit 0"                 # all done   — a single command still counts
+```
 
-**`install_trap`** — installs an EXIT trap that echoes `cleanup ran` to stdout, then immediately exits the subshell (use a subshell with `bash -c` so the trap fires and the rest of the script isn't affected). Echoes whatever the subshell printed.
+**`with_timeout seconds cmd`** — runs `cmd` (a command string, via `eval`) and kills it if it hasn't finished within `seconds` seconds. Echoes `ok` if the command finished in time, `timeout` if it had to be killed.
+
+```bash
+with_timeout 5 "true"        # ok        — finishes immediately, well under 5s
+with_timeout 1 "sleep 10"    # timeout   — killed after 1s, never reaches completion
+```
+
+**`install_trap`** — runs a subshell (`bash -c '...'`) that installs an `EXIT` trap printing `cleanup ran`, then exits normally so the trap fires. Echoes whatever the subshell printed to stdout.
+
+```bash
+install_trap   # cleanup ran
+```

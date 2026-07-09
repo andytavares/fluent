@@ -2,7 +2,7 @@
 
 ## What you'll learn
 
-Bash's I/O model: every process has three standard file descriptors (stdin=0, stdout=1, stderr=2), and you can wire them together or point them at files without changing the programs themselves.
+Lesson 6's `grep`/`sed`/`awk` pipeline (`cmd1 | cmd2 | cmd3`) was your first taste of pipes; this lesson covers the full I/O model behind it. Bash gives every process three standard file descriptors (stdin=0, stdout=1, stderr=2), and you can wire them together or point them at files without changing the programs themselves.
 
 ## Key concepts
 
@@ -85,6 +85,13 @@ while IFS= read -r line; do ((count++)); done < <(cat file)
 echo $count   # correct
 ```
 
+## Watch out
+
+- `$?` only reflects the **last** command in a pipeline. `false | true` exits 0 — the failure is invisible unless you check `${PIPESTATUS[@]}` or set `pipefail`.
+- `command1 | while read line; do count=$((count+1)); done; echo $count` almost always prints the value from **before** the loop, because the `while` runs in a subshell when its stdin comes from a pipe — variables it sets don't survive past the pipe. Use process substitution (`< <(command1)`) instead of a pipe when the loop body needs to affect the calling shell's state.
+- Redirection order matters: `command 2>&1 > file` sends stderr to wherever stdout was pointing *before* the redirect (usually the terminal), not to `file`. Write `command > file 2>&1` — redirect stdout first, then point stderr at stdout's new target.
+- Bare here-docs (`<<EOF`) expand variables and command substitutions inside the body; quoting the delimiter (`<<'EOF'`) disables all expansion, which is what you want for literal text like example scripts or SQL containing `$`.
+
 ## vs other languages
 
 | Concept | Other languages | Bash |
@@ -97,10 +104,29 @@ echo $count   # correct
 
 ## The task
 
-Implement three functions:
+You're writing three functions that compose pipelines and handle stream redirection.
 
-**`count_matching pattern file`** — echoes the number of lines in `file` matching `pattern`. Do not use `grep -c` directly — pipe `grep` output to `wc -l`.
+**`count_matching pattern file`** — echoes the number of lines in `file` matching `pattern`. Do not use `grep -c` directly — pipe `grep` output to `wc -l` (and trim `wc -l`'s leading whitespace before echoing).
 
-**`merge_streams cmd`** — runs the given command string (via `eval`), captures both stdout and stderr merged together, and echoes the combined output. Use `&>` or `2>&1` redirection with command substitution.
+```bash
+# file contains: error: disk full / info: ok / error: timeout / warn: slow
+count_matching "error" "$file"    # 2
+count_matching "info"  "$file"    # 1
+count_matching "fatal" "$file"    # 0   — no match is not an error, just a count of 0
+```
 
-**`top_n_words n`** — reads stdin, splits into words, and echoes the `n` most frequent words with their counts, in descending order. Format: `<count> <word>` per line. Use a pipeline of `tr`, `sort`, `uniq -c`, `sort -rn`, `head`.
+**`merge_streams cmd`** — runs `cmd` (a command string, via `eval`), captures both stdout and stderr **merged into one stream**, and echoes the combined output. Use `2>&1` redirection with command substitution: `output=$(eval "$cmd" 2>&1)`.
+
+```bash
+merge_streams "echo hello; echo world >&2"
+# hello
+# world
+```
+
+**`top_n_words n`** — reads stdin, splits it into (lowercased) words, and echoes the `n` most frequent words with their counts, most frequent first. Format each line as `<count> <word>`. Build it as a pipeline: split non-letters into newlines (`tr`), lowercase (`tr`), `sort`, `uniq -c`, `sort -rn`, `head -n`.
+
+```bash
+echo "the cat sat on the mat the cat" | top_n_words 2
+# 3 the
+# 2 cat
+```

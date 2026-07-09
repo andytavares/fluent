@@ -47,10 +47,31 @@ int sum(const int *arr, int n) {
 
 **vs other languages:** Most languages hide pointers behind references, smart pointers, or garbage collection. In C, you manage them directly — power and responsibility in equal measure. A NULL pointer dereference crashes your program; there is no NullPointerException with a stack trace.
 
+## Watch out
+
+- Dereferencing `NULL` (or any pointer that hasn't been set) is undefined behavior — usually a segfault, but the compiler is not required to catch it, and in some cases will silently miscompile around it.
+- A pointer to a local variable becomes **dangling** the instant the function that owns it returns — never return `&local_var` from a function.
+- `arr[i]` and `*(arr + i)` are exactly the same operation in C; pointer arithmetic *is* array indexing. Walking `n` elements from `arr` means valid indices are `0` through `n - 1` — `arr[n]` is one past the end and out of bounds.
+- None of the functions below own their input: `swap`, `sum_array`, and `reverse_array` all operate on caller-allocated memory. No allocation, no `free` — the caller's array/variables outlive the call unchanged in size.
+
 ## The task
 
-Implement three functions:
+You're given caller-owned memory (stack arrays and local variables) to read or mutate through pointers — none of these functions allocate anything.
 
-- `void swap(int *a, int *b)` — swap the values at the two addresses
-- `int sum_array(const int *arr, int n)` — return the sum of n integers starting at arr
-- `void reverse_array(int *arr, int n)` — reverse arr in-place
+- `void swap(int *a, int *b)` — swap the values at the two addresses; `a` and `b` are non-NULL pointers to existing `int`s
+- `int sum_array(const int *arr, int n)` — return the sum of the `n` integers starting at `arr` (a `const` pointer: the array is read but never modified); if `n == 0`, return `0`
+- `void reverse_array(int *arr, int n)` — reverse the `n` elements of `arr` in place; if `n == 0` or `n == 1`, leave `arr` unchanged
+
+```c
+int x = 3, y = 7;
+swap(&x, &y);              // x == 7, y == 3
+
+int nums[] = {1, 2, 3, 4, 5};
+sum_array(nums, 5);         // 15
+sum_array(nums, 0);         // 0  — no elements to sum
+
+reverse_array(nums, 5);     // nums becomes {5, 4, 3, 2, 1}
+
+int single[] = {42};
+reverse_array(single, 1);   // single unchanged: {42}
+```
