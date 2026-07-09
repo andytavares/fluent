@@ -1,0 +1,47 @@
+apps/api/src/queue/queues.ts
+  s_beb7708abc1117::t_da381530b10ab8 2,11-12
+apps/web/src/app/visualizer/sandbox/page.tsx
+  s_beb7708abc1117::t_3b4aa2a642be35 375-384
+  s_beb7708abc1117::t_283f83512888e4 5,7
+packages/ui/src/components/TracePanel.tsx
+  s_beb7708abc1117::t_cde97850c3161f 4,6
+apps/sandbox/src/streamer/sse-streamer.ts
+  s_beb7708abc1117::t_8db3509eb07b55 2-7,11-15
+packages/execution-contract/src/index.ts
+  s_beb7708abc1117::t_d4bbce6ac11317 9-40
+apps/sandbox/src/executor/docker-runner.ts
+  s_beb7708abc1117::t_645d90f27fa4b6 7-10,15
+packages/ui/package.json
+  s_beb7708abc1117::t_924f5ab5d89353 43-44
+apps/web/tsconfig.tsbuildinfo
+  s_beb7708abc1117::t_924f5ab5d89353 1
+apps/web/next.config.mjs
+  s_beb7708abc1117::t_924f5ab5d89353 3
+apps/web/src/hooks/use-submission.ts
+  s_beb7708abc1117::t_53e5bc5c9294e1 4,6,19,70-86
+apps/sandbox/src/executor/polyglot-runner.ts
+  s_beb7708abc1117::t_d3ae37f09a0602 48-51
+  s_beb7708abc1117::t_fbe5665701a14d 9
+apps/web/package.json
+  s_beb7708abc1117::t_924f5ab5d89353 32-33
+apps/web/src/lib/execution-stream.ts
+  s_beb7708abc1117::t_1e52f53fd9ba64 1-55
+pnpm-lock.yaml
+  s_beb7708abc1117::t_6ec9046be365cf 194-196,306-308
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "f557d10c5e5f6b4d358845e9d92f9395d01ff120",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
