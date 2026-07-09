@@ -11,6 +11,40 @@ const logger = pino({ base: { service: "capstone-runner" } });
 
 const NAMESPACE = process.env["K8S_NAMESPACE"] ?? "capstone-sessions";
 const DB_IMAGE = process.env["POSTGRES_SIDECAR_IMAGE"] ?? "postgres:16-alpine";
+const APP_IMAGE = process.env["CAPSTONE_APP_IMAGE"] ?? "golang:1.21-alpine";
+
+// Polls /code/.deployed for mtime changes and (re)starts `go run main.go` on
+// each change, capturing combined stdout+stderr to /code/out.log (truncated
+// on each restart so stale errors don't linger). The deploy HTTP endpoint
+// (a parallel workstream) writes /code/main.go then touches /code/.deployed
+// to trigger a restart.
+//
+// Learner server contract: the learner's Go server MUST listen on port 8080
+// (fixed, no configurability for v1) and read DATABASE_URL from its
+// environment to connect to Postgres.
+const APP_RUN_LOOP_SCRIPT = `
+apk add --no-cache curl >/dev/null 2>&1
+mkdir -p /code
+cat > /code/go.mod <<'EOF'
+module solution
+
+go 1.21
+EOF
+touch /code/main.go /code/.deployed
+LAST=0
+PID=
+while true; do
+  MTIME=$(stat -c %Y /code/.deployed 2>/dev/null || echo 0)
+  if [ "$MTIME" != "$LAST" ]; then
+    LAST="$MTIME"
+    if [ -n "$PID" ]; then kill "$PID" 2>/dev/null; fi
+    : > /code/out.log
+    (cd /code && go run main.go >> /code/out.log 2>&1) &
+    PID=$!
+  fi
+  sleep 1
+done
+`;
 
 function encryptConnString(plaintext: string): string {
   const keyHex = process.env["CAPSTONE_ENCRYPTION_KEY"]!;
@@ -47,6 +81,7 @@ export async function provision({ sessionId }: { sessionId: string }) {
     spec: {
       ttlSecondsAfterFinished: 600,
       template: {
+        metadata: { labels: { sessionId } },
         spec: {
           restartPolicy: "Never",
           containers: [
@@ -58,6 +93,12 @@ export async function provision({ sessionId }: { sessionId: string }) {
                 { name: "POSTGRES_DB", value: "capstone" },
               ],
               ports: [{ containerPort: 5432 }],
+            },
+            {
+              name: "app",
+              image: APP_IMAGE,
+              env: [{ name: "DATABASE_URL", value: `postgresql://postgres:${dbPassword}@localhost:5432/capstone` }],
+              command: ["sh", "-c", APP_RUN_LOOP_SCRIPT],
             },
           ],
         },
