@@ -18,7 +18,8 @@ mod solution {
         for h in handles {
             h.join().unwrap();
         }
-        *counter.lock().unwrap()
+        let result = *counter.lock().unwrap();
+        result
     }
 
     pub fn parallel_double(items: Vec<i32>) -> Vec<i32> {

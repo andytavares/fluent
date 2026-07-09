@@ -82,12 +82,18 @@ struct Point { x: f64, y: f64 }
 
 Go's structural interfaces are convenient but mean any type satisfying the method set accidentally implements the interface. Rust requires an explicit `impl Trait for Type` — accidental implementation is impossible.
 
+## Watch out
+
+- A caller can only invoke a trait's methods on a value if the trait itself is **in scope** (`use` it) — this is true even when the type visibly has the method via autocomplete in your editor. Forgetting to `use` the trait produces a confusing "method not found" error that looks like the impl is missing, when it's really a scope problem.
+- `trait Area { ... }` must be declared `pub` to be usable from outside its module, same as any other item — the trait keyword doesn't get any special default visibility.
+- Default methods (like `describe`) run with `self.area()` dispatched dynamically per-type even though the default body itself is written once on the trait.
+
 ## The task
 
 Define a trait `Area` and implement it for two types:
 
 ```rust
-trait Area {
+pub trait Area {
     fn area(&self) -> f64;
     // Default: return a description string "shape with area X.XX"
     fn describe(&self) -> String { ... }
@@ -101,4 +107,17 @@ struct Triangle { pub base: f64, pub height: f64 }
 
 // Accept any type implementing Area and return its describe() string.
 fn print_area(shape: &impl Area) -> String
+```
+
+```rust
+let c = Circle { radius: 3.0 };
+c.area();                    // 28.274333882308138  (π * 9)
+print_area(&c);               // "shape with area 28.27"
+
+let t = Triangle { base: 10.0, height: 2.0 };
+t.area();                    // 10.0
+print_area(&t);               // "shape with area 10.00"
+
+let zero = Circle { radius: 0.0 };
+zero.area();                  // 0.0
 ```

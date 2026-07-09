@@ -64,12 +64,18 @@ let slice: &str = &owned[0..3];         // slice of owned String
 
 C++ RAII gets you automatic destructors, but nothing prevents you from using a moved-from object. Rust makes that a compile error.
 
+## Watch out
+
+- Passing a `String` (or any non-`Copy` type) by value to a function **moves** it — the caller loses access unless the function hands it back. If you only need to read the value, take a reference (`&String` or, better, `&str`) instead of taking ownership.
+- `.clone()` is a real heap allocation, not free. Reach for it when you genuinely need an independent copy; don't sprinkle it to silence the borrow checker without understanding why it's complaining.
+- Returning a value out of a function moves it to the caller — this is why `append_world` can take `s: String` and hand back a new `String` without needing `.clone()`: ownership transfers out, nothing is duplicated.
+
 ## The task
 
 Implement three functions that exercise ownership and cloning:
 
 ```rust
-// Takes ownership of a String and returns its length.
+// Takes ownership of a String and returns its length (byte length).
 fn string_length(s: String) -> usize
 
 // Takes ownership of a String, appends " world", and returns the new String.
@@ -78,4 +84,16 @@ fn append_world(s: String) -> String
 // Clones the input string and returns the clone with "!" appended.
 // The original must still be usable by the caller — do NOT consume it.
 fn exclaim(s: &String) -> String
+```
+
+```rust
+string_length(String::from("hello")); // 5
+string_length(String::from(""));      // 0
+
+append_world(String::from("hello"));  // "hello world"
+append_world(String::from(""));       // " world"
+
+let original = String::from("hey");
+exclaim(&original);  // "hey!"
+original;             // still "hey" — exclaim did not consume it
 ```

@@ -83,6 +83,12 @@ fn parse_positive(s: &str) -> Result<u32, String> {
 
 Go's nil and Java's null are runtime phenomena. Rust's `Option` is a compile-time type — you cannot accidentally dereference `None` without the compiler forcing you to handle it.
 
+## Watch out
+
+- Fields and methods are private to the module by default — mark methods you want callers to invoke with `pub fn`, not just the struct itself with `pub struct`. `pub struct Rectangle` alone does not make `Rectangle::new` callable from outside the module; each associated function/method needs its own `pub`.
+- Struct-literal syntax `Rectangle { width, height }` only works where the fields are visible. Prefer an associated `new` function as the public constructor and keep fields private — that's the idiomatic encapsulation boundary in Rust.
+- `enum` variant data is positional for tuple variants (`Circle(f64)`) and named for struct variants (`Triangle { base, height }`) — matching syntax must follow whichever form the variant was declared with.
+
 ## The task
 
 Implement a `Rectangle` struct and a `Shape` enum:
@@ -95,13 +101,13 @@ struct Rectangle {
 
 impl Rectangle {
     // Constructor
-    fn new(width: f64, height: f64) -> Self
+    pub fn new(width: f64, height: f64) -> Self
 
     // Return width * height
-    fn area(&self) -> f64
+    pub fn area(&self) -> f64
 
     // Return true if width == height
-    fn is_square(&self) -> bool
+    pub fn is_square(&self) -> bool
 }
 
 enum Shape {
@@ -110,5 +116,19 @@ enum Shape {
 }
 
 // Return the area of any Shape.
+// Circle area = π * r² (use std::f64::consts::PI); Rect area delegates to Rectangle::area.
 fn shape_area(shape: &Shape) -> f64
+```
+
+```rust
+let r = Rectangle::new(4.0, 5.0);
+r.area();                          // 20.0
+r.is_square();                     // false
+
+let sq = Rectangle::new(3.0, 3.0);
+sq.is_square();                    // true
+
+shape_area(&Shape::Circle(1.0));           // π ≈ 3.14159...
+shape_area(&Shape::Circle(0.0));           // 0.0
+shape_area(&Shape::Rect(Rectangle::new(3.0, 4.0))); // 12.0
 ```

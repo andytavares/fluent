@@ -102,6 +102,12 @@ while let Some(top) = stack.pop() {
 
 Go's `switch` does not bind, does not destructure, and has no exhaustiveness check. You simulate pattern matching there with a chain of type assertions.
 
+## Watch out
+
+- Adding a variant to an enum later will make every `match` on it fail to compile until you handle the new variant (unless there's a `_` catch-all) — this is a feature: the compiler finds every call site that needs updating.
+- A `_` catch-all silences exhaustiveness checking for *future* variants too. Prefer listing every variant explicitly when the set is closed and small (like `Command` here); reserve `_` for truly open-ended ranges (like an integer range's default case).
+- `match cmd { ... }` on `&Command` binds by reference inside the arms automatically (via match ergonomics) — you get `x: &i32`-like bindings without writing `ref` yourself, which trips up people coming from older Rust tutorials or languages with explicit ref/deref patterns.
+
 ## The task
 
 Implement three functions:
@@ -114,13 +120,30 @@ enum Command {
     ChangeColor(u8, u8, u8),
 }
 
-// Describe the command as a String.
-// "quit", "move to (x, y)", "write: <text>", "color: (#RRGGBB hex)"
+// Describe the command as a String:
+//   Quit                    -> "quit"
+//   Move { x, y }           -> "move to (x, y)"
+//   Write(text)             -> "write: <text>"
+//   ChangeColor(r, g, b)    -> "color: (#RRGGBB)" — uppercase hex, 2 digits each
 fn describe_command(cmd: &Command) -> String
 
-// Return Some(n) if n is in 1..=100, None otherwise.
+// Return Some(n) if n is in 1..=100 inclusive, None otherwise.
 fn clamp_option(n: i32) -> Option<i32>
 
 // Given Option<i32>, return the value doubled, or -1 if None.
 fn double_or_minus_one(opt: Option<i32>) -> i32
+```
+
+```rust
+describe_command(&Command::Quit);                          // "quit"
+describe_command(&Command::Move { x: 3, y: -1 });           // "move to (3, -1)"
+describe_command(&Command::Write(String::from("hi")));      // "write: hi"
+describe_command(&Command::ChangeColor(255, 128, 0));       // "color: (#FF8000)"
+
+clamp_option(50);   // Some(50)
+clamp_option(0);    // None — below the range
+clamp_option(101);  // None — above the range
+
+double_or_minus_one(Some(7)); // 14
+double_or_minus_one(None);    // -1
 ```

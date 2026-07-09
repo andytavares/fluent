@@ -69,6 +69,12 @@ println!("{}", primes[2]); // 5
 
 Rust does not allow uninitialized variables. The compiler tracks initialization through all branches and rejects code that might read before write — no runtime cost, no undefined behavior.
 
+## Watch out
+
+- Integer overflow panics in debug builds and silently wraps in release builds (`--release`). Don't rely on either behavior; use `checked_add`/`wrapping_add`/`saturating_add` when overflow is a real possibility.
+- Array length is part of the type: `[i32; 5]` and `[i32; 6]` are different, incompatible types. A function taking `[i32; 5]` cannot be called with a 6-element array — you'd need a slice (`&[i32]`) for variable length.
+- `let x = 5; let x = "hello";` compiles — shadowing lets a name change type entirely. This is easy to confuse with mutation, but every shadowed `x` is a distinct binding; a closure captured before the shadow still sees the old one.
+
 ## The task
 
 Implement three functions:
@@ -85,3 +91,18 @@ fn rectangle_area(width: f64, height: f64) -> f64
 ```
 
 Also declare a `const` named `LANGUAGE` with value `"Rust"`.
+
+```rust
+sum_array([1, 2, 3, 4, 5]);   // 15
+sum_array([0, 0, 0, 0, 0]);   // 0
+sum_array([-1, -2, -3, -4, -5]); // -15
+
+min_max(3, 7);   // (3, 7)
+min_max(9, 2);   // (2, 9)
+min_max(5, 5);   // (5, 5)
+
+rectangle_area(4.0, 5.5);  // 22.0
+rectangle_area(0.0, 10.0); // 0.0
+
+LANGUAGE; // "Rust"
+```

@@ -73,6 +73,12 @@ fn first_word(s: &str) -> &str {
 
 In C++ you can hold a `const&` and a non-const reference to the same data simultaneously. Rust forbids this entirely. That's the trade-off that eliminates iterator invalidation bugs.
 
+## Watch out
+
+- Prefer `&str` over `&String` in function signatures. `&String` only accepts an actual `String`'s reference; `&str` accepts that too (via deref coercion) *and* string literals, so it's strictly more flexible for a parameter type.
+- You cannot hold a `&mut T` and any `&T` to the same data at the same time — not "at the same time" as in simultaneously read, but for any overlapping span in the code, even if you never actually use both. The compiler tracks the reference's last use, not its lexical scope, but two references whose live ranges overlap and where one is mutable will not compile.
+- Indexing a slice out of bounds (`slice[10]` on a 3-element slice) panics at runtime — it is not a compile-time check. Use `.get(i)` (returns `Option<&T>`) when the index isn't guaranteed to be in range.
+
 ## The task
 
 Implement three functions:
@@ -84,6 +90,18 @@ fn first(slice: &[i32]) -> i32
 // Append a suffix to the string in place (takes &mut String).
 fn append(s: &mut String, suffix: &str)
 
-// Return the length of a string slice without taking ownership.
+// Return the length (byte length) of a string slice without taking ownership.
 fn str_len(s: &str) -> usize
+```
+
+```rust
+first(&[10, 20, 30]); // 10
+first(&[]);            // 0
+
+let mut greeting = String::from("hello");
+append(&mut greeting, " world");
+greeting; // "hello world"
+
+str_len("Rust");  // 4
+str_len("");      // 0
 ```

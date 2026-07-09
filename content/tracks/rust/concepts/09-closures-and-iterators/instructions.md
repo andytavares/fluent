@@ -76,21 +76,43 @@ let zipped: Vec<(i32, i32)> = a.iter().zip(b.iter()).map(|(&x, &y)| (x, y)).coll
 
 JavaScript's `Array.prototype.map` creates a new array immediately. Rust's `.map()` creates an iterator — the actual work happens only when consumed. Chaining ten adapters still allocates only the final output.
 
+## Watch out
+
+- An iterator adapter chain that's never consumed does nothing at all — not even a compiler warning by default in some cases (`#[must_use]` on `Iterator` catches most of them, but it's easy to forget the final `.collect()`/`.sum()`/`.for_each()`).
+- `.iter()` yields `&T` (borrowed elements); `.into_iter()` on an owned `Vec<T>` yields owned `T` and consumes the vector. Mixing them up is the single most common iterator-chain compile error for newcomers — watch for `&&i32` types when you double-borrow (`filter(|&&n| ...)` on `.iter()`).
+- `fold`'s accumulator type is inferred from the initial value you pass — `fold(1, ...)` for a product must start at `1`, not `0`, or every result collapses to `0`.
+
 ## The task
 
 Implement four functions using iterators and closures:
 
 ```rust
-// Return a Vec of squares of all even numbers in the input slice.
+// Return a Vec of squares of all even numbers in the input slice, preserving order.
 fn even_squares(nums: &[i32]) -> Vec<i32>
 
-// Return the product of all elements (fold). Return 1 for empty slice.
+// Return the product of all elements via fold. Return 1 for an empty slice.
 fn product(nums: &[i32]) -> i32
 
-// Given a Vec of Strings, return only those whose length > min_len, uppercased.
+// Given an owned Vec of Strings, return only those whose length > min_len,
+// uppercased, preserving relative order.
 fn long_words_upper(words: Vec<String>, min_len: usize) -> Vec<String>
 
 // Zip two slices into a Vec of their element-wise sums.
-// If slices differ in length, stop at the shorter one.
+// If the slices differ in length, stop at the shorter one (standard zip semantics).
 fn zip_sum(a: &[i32], b: &[i32]) -> Vec<i32>
+```
+
+```rust
+even_squares(&[1, 2, 3, 4, 5, 6]); // [4, 16, 36]
+even_squares(&[1, 3, 5]);          // []  — no evens
+
+product(&[1, 2, 3, 4, 5]); // 120
+product(&[]);               // 1   — identity for empty input
+product(&[3, 0, 7]);        // 0
+
+let words = vec!["hi", "hello", "rust", "a"].into_iter().map(String::from).collect();
+long_words_upper(words, 3); // ["HELLO", "RUST"]
+
+zip_sum(&[1, 2, 3], &[10, 20, 30]); // [11, 22, 33]
+zip_sum(&[1, 2], &[10, 20, 30]);    // [11, 22]  — b's extra element dropped
 ```

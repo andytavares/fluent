@@ -1,4 +1,4 @@
-trait Area {
+pub trait Area {
     fn area(&self) -> f64;
 
     fn describe(&self) -> String {

@@ -17,7 +17,8 @@ fn parallel_sum(n: u32) -> i32 {
         h.join().unwrap();
     }
 
-    *counter.lock().unwrap()
+    let result = *counter.lock().unwrap();
+    result
 }
 
 fn parallel_double(items: Vec<i32>) -> Vec<i32> {
