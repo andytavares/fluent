@@ -1,3 +1,6 @@
+import java.util.ArrayDeque;
+import java.util.Queue;
+
 public class SolutionTest {
     static int passed = 0, failed = 0;
 
@@ -6,78 +9,80 @@ public class SolutionTest {
         else           { System.out.println("  FAIL: " + name); failed++; }
     }
 
-    static class TreeNode {
-        int val;
-        TreeNode left, right;
-        TreeNode(int val) { this.val = val; }
-        TreeNode(int val, TreeNode left, TreeNode right) {
-            this.val = val; this.left = left; this.right = right;
+    // Builds a tree from a level-order array; null marks an absent child
+    // (children of absent nodes are omitted).
+    static Solution.TreeNode buildTree(Integer[] values) {
+        if (values.length == 0 || values[0] == null) return null;
+        Solution.TreeNode root = new Solution.TreeNode(values[0]);
+        Queue<Solution.TreeNode> queue = new ArrayDeque<>();
+        queue.offer(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            Solution.TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) {
+                    node.left = new Solution.TreeNode(v);
+                    queue.offer(node.left);
+                }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) {
+                    node.right = new Solution.TreeNode(v);
+                    queue.offer(node.right);
+                }
+            }
         }
-    }
-
-    //       5
-    //      / \
-    //     3   7
-    //    / \ / \
-    //   2  4 6  8
-    static TreeNode validBST() {
-        return new TreeNode(5,
-            new TreeNode(3, new TreeNode(2), new TreeNode(4)),
-            new TreeNode(7, new TreeNode(6), new TreeNode(8)));
-    }
-
-    // Collect inorder values to verify a BST is structurally correct
-    static java.util.List<Integer> inorder(TreeNode root) {
-        var result = new java.util.ArrayList<Integer>();
-        java.util.Deque<TreeNode> stack = new java.util.ArrayDeque<>();
-        TreeNode curr = root;
-        while (curr != null || !stack.isEmpty()) {
-            while (curr != null) { stack.push(curr); curr = curr.left; }
-            curr = stack.pop(); result.add(curr.val); curr = curr.right;
-        }
-        return result;
+        return root;
     }
 
     public static void main(String[] args) {
+        // getMinimumDifference
+        check("getMinimumDifference: classic example",
+              Solution.getMinimumDifference(buildTree(new Integer[]{4, 2, 6, 1, 3})) == 1);
+        check("getMinimumDifference: closest pair deep on the right",
+              Solution.getMinimumDifference(buildTree(new Integer[]{1, 0, 48, null, null, 12, 49})) == 1);
+        check("getMinimumDifference: exactly two nodes",
+              Solution.getMinimumDifference(buildTree(new Integer[]{1, null, 5})) == 4);
+        check("getMinimumDifference: negative values",
+              Solution.getMinimumDifference(buildTree(new Integer[]{0, -3})) == 3);
+        check("getMinimumDifference: evenly spaced values",
+              Solution.getMinimumDifference(buildTree(new Integer[]{10, 5, 15})) == 5);
+        check("getMinimumDifference: closest pair crosses subtrees",
+              Solution.getMinimumDifference(buildTree(new Integer[]{5, 3, 8, 1, 4})) == 1);
+
+        // kthSmallest
+        check("kthSmallest: k = 1 returns the minimum",
+              Solution.kthSmallest(buildTree(new Integer[]{3, 1, 4, null, 2}), 1) == 1);
+        check("kthSmallest: middle k",
+              Solution.kthSmallest(buildTree(new Integer[]{5, 3, 6, 2, 4, null, null, 1}), 3) == 3);
+        check("kthSmallest: k = node count returns the maximum",
+              Solution.kthSmallest(buildTree(new Integer[]{4, 2, 6, 1, 3}), 5) == 6);
+        check("kthSmallest: single-node tree",
+              Solution.kthSmallest(buildTree(new Integer[]{7}), 1) == 7);
+        check("kthSmallest: left-skewed chain",
+              Solution.kthSmallest(buildTree(new Integer[]{3, 2, null, 1}), 2) == 2);
+        check("kthSmallest: right-skewed chain",
+              Solution.kthSmallest(buildTree(new Integer[]{1, null, 2, null, 3}), 3) == 3);
+
         // isValidBST
-        check("validBST: correct tree -> true",    Solution.isValidBST(validBST()));
-        check("validBST: null -> true",             Solution.isValidBST(null));
-        check("validBST: single node -> true",      Solution.isValidBST(new TreeNode(1)));
-        check("validBST: [5,1,4] -> false",
-              !Solution.isValidBST(new TreeNode(5, new TreeNode(1), new TreeNode(4))));
-        check("validBST: deep violation [5,3,7] with 3.right=7 -> false",
-              !Solution.isValidBST(new TreeNode(5,
-                  new TreeNode(3, null, new TreeNode(7)), new TreeNode(7))));
-        check("validBST: Integer.MAX_VALUE node -> true",
-              Solution.isValidBST(new TreeNode(Integer.MAX_VALUE)));
-        check("validBST: Integer.MIN_VALUE node -> true",
-              Solution.isValidBST(new TreeNode(Integer.MIN_VALUE)));
-
-        // kthSmallest — inorder of validBST() is [2,3,4,5,6,7,8]
-        check("kth: k=1 -> 2", Solution.kthSmallest(validBST(), 1) == 2);
-        check("kth: k=3 -> 4", Solution.kthSmallest(validBST(), 3) == 4);
-        check("kth: k=4 -> 5", Solution.kthSmallest(validBST(), 4) == 5);
-        check("kth: k=7 -> 8", Solution.kthSmallest(validBST(), 7) == 8);
-        check("kth: single node k=1 -> 42",
-              Solution.kthSmallest(new TreeNode(42), 1) == 42);
-
-        // buildBSTFromPreorder
-        // Preorder [8,5,1,7,10,12] should give inorder [1,5,7,8,10,12]
-        TreeNode bst1 = Solution.buildBSTFromPreorder(new int[]{8,5,1,7,10,12});
-        check("buildBST: root is 8", bst1 != null && bst1.val == 8);
-        check("buildBST: inorder is sorted",
-              inorder(bst1).equals(java.util.List.of(1,5,7,8,10,12)));
-
-        TreeNode bst2 = Solution.buildBSTFromPreorder(new int[]{1,3});
-        check("buildBST: [1,3] -> root=1, right=3",
-              bst2 != null && bst2.val == 1 && bst2.right != null && bst2.right.val == 3);
-
-        TreeNode bst3 = Solution.buildBSTFromPreorder(new int[]{5});
-        check("buildBST: single -> root=5, no children",
-              bst3 != null && bst3.val == 5 && bst3.left == null && bst3.right == null);
-
-        // Verify BST property of built tree
-        check("buildBST: isValidBST on result", Solution.isValidBST(bst1));
+        check("isValidBST: simple valid tree",
+              Solution.isValidBST(buildTree(new Integer[]{2, 1, 3})));
+        check("isValidBST: classic invalid tree",
+              !Solution.isValidBST(buildTree(new Integer[]{5, 1, 4, null, null, 3, 6})));
+        check("isValidBST: violation against an ancestor, not the parent",
+              !Solution.isValidBST(buildTree(new Integer[]{5, 4, 6, null, null, 3, 7})));
+        check("isValidBST: value in right subtree smaller than the root",
+              !Solution.isValidBST(buildTree(new Integer[]{10, 5, 15, null, null, 6, 20})));
+        check("isValidBST: empty tree is valid", Solution.isValidBST(null));
+        check("isValidBST: single node is valid", Solution.isValidBST(buildTree(new Integer[]{1})));
+        check("isValidBST: duplicate child is invalid",
+              !Solution.isValidBST(buildTree(new Integer[]{2, 2})));
+        check("isValidBST: larger valid tree",
+              Solution.isValidBST(buildTree(new Integer[]{8, 4, 12, 2, 6, 10, 14})));
+        check("isValidBST: single node at the 32-bit integer maximum",
+              Solution.isValidBST(buildTree(new Integer[]{2147483647})));
 
         System.out.printf("%n%d passed, %d failed%n", passed, failed);
         if (failed > 0) System.exit(1);

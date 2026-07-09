@@ -1,157 +1,213 @@
-# Tries
+# Trie
 
 ## What you'll learn
 
-How a prefix tree gives O(L) insert and prefix-lookup (independent of word count), and how to apply it to the search-suggestions problem — an exact replica of the Amazon/Google autocomplete question.
+Building on the tree-DFS recursion from Binary Tree and the key-lookup habits from Hash Maps, this concept covers the trie (prefix tree): a character-per-edge tree that makes insert, exact search, and prefix search all O(m) in the word length — independent of how many words are stored. You'll implement the classic `Trie`, extend it with a `.` wildcard (which turns lookup into a small backtracking search), and see how a trie turns the brute-force Word Search II grid problem tractable.
 
 ## Key concepts
 
-### The Trie data structure
+A trie stores a set of strings as a tree where each edge is one character. Every root-to-node path spells a prefix; nodes flagged `isEnd` mark where a complete word ends. All words sharing a prefix share that prefix's path — that sharing is the whole data structure.
 
-Each node holds an array of 26 children (one per lowercase letter) and an `isEnd` flag.
+### The node
 
 ```java
-static class Trie {
-    private static class TrieNode {
-        TrieNode[] children = new TrieNode[26];
-        boolean isEnd = false;
-    }
-
-    private final TrieNode root = new TrieNode();
-
-    public void insert(String word) {
-        TrieNode node = root;
-        for (char c : word.toCharArray()) {
-            int idx = c - 'a';
-            if (node.children[idx] == null) node.children[idx] = new TrieNode();
-            node = node.children[idx];
-        }
-        node.isEnd = true;
-    }
-
-    public boolean search(String word) {
-        TrieNode node = traverse(word);
-        return node != null && node.isEnd;
-    }
-
-    public boolean startsWith(String prefix) {
-        return traverse(prefix) != null;
-    }
-
-    private TrieNode traverse(String s) {
-        TrieNode node = root;
-        for (char c : s.toCharArray()) {
-            int idx = c - 'a';
-            if (node.children[idx] == null) return null;
-            node = node.children[idx];
-        }
-        return node;
-    }
+private static class TrieNode {
+    TrieNode[] children = new TrieNode[26]; // index = c - 'a'
+    boolean isEnd = false;                  // a stored word ends exactly here
 }
 ```
 
-### Search Suggestions
+A fixed-size `TrieNode[26]` array is idiomatic Java for lowercase `a`–`z` words — index with `c - 'a'` instead of a `Map<Character, TrieNode>`, which avoids boxing and hashing entirely.
 
-For each prefix of `searchWord`, return the 3 lexicographically smallest products from `products` that start with that prefix. Sort products first; then for each prefix, scan from the sorted position to collect at most 3 matches.
+### Insert, search, startsWith — one traversal, three verdicts
 
 ```java
-public static List<List<String>> searchSuggestions(String[] products, String searchWord) {
-    Arrays.sort(products);
-    var result = new ArrayList<List<String>>();
-
-    // Build a trie for prefix navigation
-    var trie = new Trie();
-    for (String p : products) trie.insert(p);
-
-    // Alternatively: binary search on sorted array (simpler, same complexity)
-    for (int i = 1; i <= searchWord.length(); i++) {
-        String prefix = searchWord.substring(0, i);
-        var matches = new ArrayList<String>();
-        collectWords(trie.root, new StringBuilder(prefix), matches);
-        // The DFS below starts from the prefix node, not root
-        result.add(matches);
+public void insert(String word) {
+    TrieNode node = root;
+    for (char c : word.toCharArray()) {
+        int idx = c - 'a';
+        if (node.children[idx] == null) node.children[idx] = new TrieNode();
+        node = node.children[idx];
     }
-    return result;
+    node.isEnd = true;
 }
 ```
 
-In practice, the sorted-array binary search approach is cleaner and equally correct:
+`search` and `startsWith` walk the same path without creating nodes. The only difference: `search` demands the final node has `isEnd == true`; `startsWith` just demands the path exists. Factor the walk into a `traverse(String)` helper that returns the reached node or `null`.
 
 ```java
-public static List<List<String>> searchSuggestions(String[] products, String searchWord) {
-    Arrays.sort(products);
-    var result = new ArrayList<List<String>>();
-    int lo = 0, hi = products.length - 1;
+public boolean search(String word)       { TrieNode n = traverse(word);   return n != null && n.isEnd; }
+public boolean startsWith(String prefix) { return traverse(prefix) != null; }
+```
 
-    for (int i = 0; i < searchWord.length(); i++) {
-        char c = searchWord.charAt(i);
-        // Advance lo until products[lo] has prefix match at position i
-        while (lo <= hi && (products[lo].length() <= i || products[lo].charAt(i) < c)) lo++;
-        // Retreat hi until products[hi] has prefix match at position i
-        while (lo <= hi && (products[hi].length() <= i || products[hi].charAt(i) > c)) hi--;
+### Wildcard lookup — a fork in the walk
 
-        var matches = new ArrayList<String>();
-        for (int j = lo; j <= Math.min(lo + 2, hi); j++) matches.add(products[j]);
-        result.add(matches);
+Add a `.` character that matches any single letter and the walk stops being a straight line: at a `.` you must try **every** child and succeed if any branch matches the rest of the pattern. That's a depth-first search over the trie, indexed by pattern position:
+
+```java
+private boolean dfs(TrieNode node, String pattern, int i) {
+    if (i == pattern.length()) return node.isEnd;
+    char ch = pattern.charAt(i);
+    if (ch != '.') {
+        int idx = ch - 'a';
+        return node.children[idx] != null && dfs(node.children[idx], pattern, i + 1);
     }
-    return result;
+    for (TrieNode child : node.children) {
+        if (child != null && dfs(child, pattern, i + 1)) return true;
+    }
+    return false;
 }
 ```
 
-## Time and space complexity
+A pattern of all dots degrades to visiting every node at that depth — worst case O(26^d) for `d` dots — but concrete characters prune hard, which is why this is fast in practice.
 
-| Operation | Time | Space | Why |
-|-----------|------|-------|-----|
-| `Trie.insert` | O(L) | O(L) per word | One node per character, shared for common prefixes |
-| `Trie.search` | O(L) | O(1) | Walk L nodes |
-| `Trie.startsWith` | O(L) | O(1) | Same walk |
-| `searchSuggestions` | O(n log n + S·n) | O(n·L) | n = products, S = searchWord length |
+### Trie + grid DFS — searching for many words at once
 
-## Common variations this pattern solves
+Word Search II asks: which of `words` can be traced through adjacent cells of a letter grid? Searching the grid once *per word* repeats the same cell walks over and over. Instead, put all the words in one trie and walk the grid and the trie **together**: from each cell, only descend into a neighbor if the trie has a child for that letter. One grid DFS now matches every word simultaneously, and dead prefixes are pruned the moment the trie has no matching child.
 
-1. **Word Search II** — build trie from words; DFS grid using trie to prune early
-2. **Replace Words** — find shortest root in trie for each word in sentence
-3. **Design Search Autocomplete System** — trie with frequency counts; DFS for top-k
-4. **Longest Word in Dictionary** — BFS/DFS trie; longest word where all prefixes exist
+### Complexity of the flagship problems
 
-## vs HashMap
+| Operation | Time | Space |
+|-----------|------|-------|
+| `Trie.insert(word)` | O(m) | O(m) new nodes worst case |
+| `Trie.search(word)` / `startsWith(prefix)` | O(m) | O(1) |
+| `WordDictionary.addWord(word)` | O(m) | O(m) |
+| `WordDictionary.search(pattern)` | O(m) no dots; O(26^d · m) worst case with `d` dots | O(m) recursion |
+| Word Search II | O(Σ word lengths) build + O(rows · cols · 3^(L-1)) DFS | O(Σ word lengths) |
 
-`HashSet.contains(word)` is O(L) for search, same as a trie. But `startsWith` on a HashSet requires scanning all words — O(n·L). The trie answers prefix queries in O(L) regardless of word count. That's the fundamental reason to choose a trie.
+`m` = word/pattern length, `L` = longest word.
+
+## vs other languages
+
+JavaScript's idiomatic trie node uses a plain object (`{}`) as the children map, keyed by whatever character shows up — no fixed alphabet assumption needed. Java's array-indexed `TrieNode[26]` is faster (no hashing, no boxing) but commits to a known alphabet size up front; if the input could include uppercase letters or Unicode, fall back to `Map<Character, TrieNode>` (or `HashMap<Character, TrieNode>`), trading the array's speed for flexibility — the traversal logic is otherwise identical.
 
 ## Watch out
 
-- **`char - 'a'` maps 'a'→0, 'z'→25**: this only works for lowercase ASCII. For mixed case or Unicode, use `HashMap<Character, TrieNode>` as the children container.
-- **`isEnd` vs presence in children**: a word is fully stored only when `isEnd == true` at its last character node. A node can exist (prefix exists) without `isEnd` (full word not inserted).
-- **`TrieNode[]` children default to null**: no initialization loop needed. `new TrieNode[26]` fills all 26 slots with `null` automatically.
-- **searchSuggestions: prefix boundaries**: when no word in the range matches the next character, `lo > hi`. The result is an empty list for that prefix — not an error.
+- **`search` vs `startsWith`**: forgetting the `isEnd` check makes `search` behave like `startsWith` — `search("app")` must be `false` after only `insert("apple")`.
+- **Wildcard `.` must OR over all children.** Returning the result of the first child (instead of continuing when it fails) is the classic bug: `search(".ad")` with words `bad`/`dad`/`mad` has to try `b`, and keep going if a branch dies.
+- **A dot at the last position still needs `isEnd`.** The base case is `i == pattern.length() → node.isEnd`, not `true` — otherwise `"b.."` would match a stored `"badge"` prefix.
+- **Length must match exactly**: `"b..."` does not match `"bad"`. The base case handles this automatically if you only succeed at `i == pattern.length()`.
+- **`c - 'a'` assumes lowercase input.** A stray uppercase letter or digit produces a negative or out-of-range array index and an `ArrayIndexOutOfBoundsException` — validate input assumptions or switch to a `Map` if the alphabet isn't guaranteed.
+- **Word Search II bookkeeping**: mark a cell before recursing and restore it after (`board[r][c] = '#'` then put the letter back), and null out a word at its end node once found so it isn't reported twice.
 
-## FAANG follow-up questions
+## Problem walkthroughs
 
-> "What's the space complexity if all words share a common prefix?" — O(L_max + n · unique_suffix_length). Best case: all words share the full prefix except the last character — nearly O(total_characters).
->
-> "How would you implement autocomplete with frequency ranking (most popular first)?" — Store a `PriorityQueue<String>` at each trie node (or run a DFS and sort). Common in system design questions.
->
-> "Can you handle wildcards (`.` matches any character) in search?" — Walk all 26 children when the pattern character is `.`. O(26^wildcards · L) in the worst case.
->
-> "What's the tradeoff between trie and sorted array + binary search for searchSuggestions?" — Trie: O(S·n) after O(n·L) build, supports true prefix API. Sorted array: O(n log n) sort + O(S·log n) binary search; no prefix API but simpler code. Both acceptable in interviews.
+### Implement Trie (Prefix Tree) ★
+
+**Problem.** Build a `Trie` class over lowercase words with three operations: `insert(word)` stores a word; `search(word)` returns whether that exact word was stored; `startsWith(prefix)` returns whether any stored word begins with `prefix`.
+
+**Example.**
+
+    insert("apple"); search("apple") → true; search("app") → false;
+    startsWith("app") → true; insert("app"); search("app") → true
+
+**Steps.**
+1. Root is an empty `TrieNode` (all children `null`, `isEnd = false`).
+2. `insert`: walk character by character from the root, creating a child node whenever one is missing; set `isEnd = true` on the final node.
+3. Write `traverse(str)`: follow existing children only; return `null` the moment a character has no child, otherwise the final node.
+4. `search(word)` = `traverse(word)` reached a node **and** that node's `isEnd` is true. `startsWith(prefix)` = `traverse(prefix)` reached a node, period.
+5. The invariant: a node exists exactly when some inserted word passes through that prefix, and `isEnd` is true exactly when some inserted word ends there.
+
+**Complexity.** O(m) time per operation / O(m) new nodes per insert worst case — no dependence on the number of stored words.
+
+### Design Add and Search Words Data Structure ★
+
+**Problem.** Build a `WordDictionary` class: `addWord(word)` stores a lowercase word; `search(pattern)` returns whether any stored word matches `pattern`, where `.` in the pattern matches exactly one arbitrary letter and every other character must match literally. The whole pattern must match a whole word (same length).
+
+**Example.**
+
+    addWord("bad"); addWord("dad"); addWord("mad")
+    search("pad") → false;  search("bad") → true
+    search(".ad") → true;   search("b..") → true
+
+**Steps.**
+1. Reuse the trie node and `addWord` = `Trie.insert`.
+2. `search` is a recursive DFS `dfs(node, i)` over pattern index `i`.
+3. Base case: `i == pattern.length()` → return `node.isEnd` (full pattern consumed exactly at a word end).
+4. Literal character: descend into `children[ch - 'a']` if it exists, else return `false`.
+5. Dot: loop over all children; return `true` as soon as any branch matches the remaining pattern; `false` if none do.
+6. Recursing by index (not by slicing the string) keeps each frame O(1).
+
+**Complexity.** O(m) time for dot-free patterns; worst case O(26^d · m) with `d` dots / O(m) recursion depth.
+
+### Word Search II
+
+**Problem.** Given an `m × n` grid of letters and a list `words`, return every word that can be formed by tracing adjacent cells (up/down/left/right), using each cell at most once per word.
+
+**Example.**
+
+    board = [['o','a','a','n'],
+             ['e','t','a','e'],
+             ['i','h','k','r'],
+             ['i','f','l','v']]
+    words = ["oath","pea","eat","rain"] → ["oath","eat"]
+
+**Steps.**
+1. Build a trie of all `words`; at each word's final node store the full word (`node.word = word`) instead of a boolean — the DFS can then emit results without tracking the path.
+2. From every cell, start a DFS carrying the current trie node. Only recurse into a neighbor when the trie node has a child for that neighbor's letter — this is the pruning that makes multi-word search cheap.
+3. On entering a cell whose trie node has `node.word`, add it to the results and set `node.word = null` so the same word is never reported twice.
+4. Mark the cell in place before recursing (`board[r][c] = '#'`) and restore it after — the `#` can never match a trie child, so revisits are impossible.
+5. Optional but effective: after exploring a child, drop it from its parent if it ended up with no children and no word — the trie shrinks as words are found, pruning future DFS.
+
+**Complexity.** O(Σ word lengths) to build the trie + O(m · n · 3^(L-1)) for the DFS (`L` = longest word; 3 because you never go back the way you came) / O(Σ word lengths) space.
+
+## Interview follow-ups
+
+After Implement Trie:
+- "Implement `delete(word)`." — clear `isEnd` at the final node, then walk back up removing nodes that have no children and no `isEnd` (keep a parent stack, or recurse).
+- "Count words with a given prefix in O(m)?" — store a `passCount` on every node, incremented on insert; the answer is the count at the prefix node.
+- "Trie vs hash set?" — a set answers exact membership in O(m) too, but can't answer prefix queries at all; the trie also shares storage between words with common prefixes.
+
+After Add and Search Words:
+- "What's the worst-case pattern?" — all dots: it visits every node at depth `m`. Mitigation: store words also by length so length filtering happens first.
+- "Support `*` (zero or more characters)?" — the DFS gains a branching case that either consumes the star or consumes one trie edge — essentially wildcard matching over the trie.
+
+After Word Search II:
+- "Why a trie instead of running Word Search once per word?" — per-word search repeats identical grid walks for shared prefixes; the trie walks each shared prefix once and prunes dead branches immediately.
 
 ## The task
 
-Implement `Trie` as a static inner class and `searchSuggestions` as a static method in `Solution`:
+Two dictionary data structures built on the same prefix-tree core, as nested static classes inside `Solution`. Words and patterns are non-empty lowercase `a`–`z` strings (patterns may also contain `.`).
+
+### `Trie` class
+
+Implement a prefix tree with exactly this interface:
+
+- `new Trie()` — creates an empty trie.
+- `insert(String word)` — stores `word`. Inserting the same word twice is harmless.
+- `search(String word)` — returns `true` if `word` was previously inserted, `false` otherwise. A prefix of an inserted word does **not** count.
+- `startsWith(String prefix)` — returns `true` if at least one inserted word begins with `prefix` (an inserted word counts as a prefix of itself).
 
 ```java
-static class Trie {
-    public Trie()
-    public void insert(String word)           // insert word (lowercase letters only)
-    public boolean search(String word)        // true if exact word exists
-    public boolean startsWith(String prefix)  // true if any word starts with prefix
-}
-
-// For each prefix of searchWord (length 1 to searchWord.length()),
-// returns the 3 lexicographically smallest products starting with that prefix.
-// products contains no duplicates; all lowercase.
-// products=["mobile","mouse","moneypot","monitor","mousepad"], searchWord="mouse"
-// -> [["mobile","moneypot","monitor"],["mobile","moneypot","monitor"],
-//     ["mouse","mousepad"],["mouse","mousepad"],["mouse","mousepad"]]
-public static List<List<String>> searchSuggestions(String[] products, String searchWord)
+Solution.Trie t = new Solution.Trie();
+t.insert("apple");
+t.search("apple");   // true
+t.search("app");     // false — "app" itself was never inserted
+t.startsWith("app"); // true  — "apple" begins with "app"
+t.insert("app");
+t.search("app");     // true
 ```
+
+Edge cases: searching an empty trie (`false`), a query longer than every stored word (`search("catfish")` after `insert("cat")` → `false`, and `startsWith("catfish")` → `false`), multiple words sharing a prefix, single-character words.
+
+### `WordDictionary` class
+
+Implement a dictionary supporting wildcard lookup with exactly this interface:
+
+- `new WordDictionary()` — creates an empty dictionary.
+- `addWord(String word)` — stores `word` (lowercase letters only, no dots).
+- `search(String pattern)` — returns `true` if any stored word matches `pattern`. In the pattern, `.` matches exactly one arbitrary letter; every other character matches only itself. The match must cover the **whole** word — pattern and word must have the same length.
+
+```java
+Solution.WordDictionary d = new Solution.WordDictionary();
+d.addWord("bad");
+d.addWord("dad");
+d.addWord("mad");
+d.search("pad");  // false — no stored word matches
+d.search("bad");  // true  — exact match
+d.search(".ad");  // true  — "bad", "dad", and "mad" all match
+d.search("b..");  // true  — "bad" matches
+d.search("b...")  // false — no stored 4-letter word
+```
+
+Edge cases: searching before any `addWord` (`false`), a pattern of all dots (`"..."` matches any stored 3-letter word), a dot in the **last** position (`"ba."` must still land on a complete word, not just a prefix), a pattern shorter or longer than every stored word (`false`), literal search with no dots behaving like exact lookup.
