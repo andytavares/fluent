@@ -34,13 +34,14 @@ export function useCapstoneSession(enrollmentId: string) {
     [sessionId, verifyStepMutation],
   );
 
+  // completedAt is authoritative for expiry: teardown closes the session row
+  // when the workflow ends. Client-side math against dbExpiresAt would lie —
+  // the workflow's inactivity window resets on every signal, the timestamp
+  // doesn't.
   const dbStatus = (() => {
     const session = getStatus.data;
     if (!session) return "provisioning" as const;
     if (session.completedAt) return "expired" as const;
-    if (session.dbExpiresAt && new Date(session.dbExpiresAt).getTime() < Date.now()) {
-      return "expired" as const;
-    }
     if (session.dbConnectionEncrypted) return "connected" as const;
     return "provisioning" as const;
   })();

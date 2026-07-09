@@ -4,8 +4,8 @@ import { useParams } from "next/navigation";
 import { trpc } from "@/lib/trpc/client";
 import { useCapstoneSession } from "@/hooks/use-capstone-session";
 import { CapstoneStepList, DatabaseStatusPanel, CodeEditor, OutputPane } from "@fluent/ui";
-import { useState, useCallback } from "react";
-import { consumeExecutionStream } from "@/lib/execution-stream";
+import { useState } from "react";
+import { useSandboxRun } from "@/hooks/use-sandbox-run";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -119,20 +119,10 @@ Return:
   },
 ];
 
-type RunState = "idle" | "running" | "complete" | "error";
-interface OutputLine {
-  type: "stdout" | "stderr";
-  data: string;
-}
-
 export default function CapstonePage() {
   const { trackSlug } = useParams<{ trackSlug: string }>();
   const [code, setCode] = useState("package main\n\n// Build your Go CRUD API here\n");
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
-  const [runState, setRunState] = useState<RunState>("idle");
-  const [lines, setLines] = useState<OutputLine[]>([]);
-  const [exitCode, setExitCode] = useState<number | undefined>();
-  const [runtimeMs, setRuntimeMs] = useState<number | undefined>();
 
   const enrollmentsQuery = trpc.enrollments.listEnrollments.useQuery();
   const enrollment = enrollmentsQuery.data?.find((e) => e.track.slug === trackSlug);
@@ -140,31 +130,9 @@ export default function CapstonePage() {
   const { sessionId, session, dbStatus, start, isStarting, startError, verifyStep, isVerifying } =
     useCapstoneSession(enrollment?.id ?? "");
 
-  const runSandbox = trpc.submissions.runSandbox.useMutation();
-
   // Scratch-run the learner's code (capstone verification is separate: the
   // Verify button signals the workflow, which runs the step's verify.sh).
-  const run = useCallback(async () => {
-    setRunState("running");
-    setLines([]);
-    setExitCode(undefined);
-    setRuntimeMs(undefined);
-    try {
-      const { streamToken } = await runSandbox.mutateAsync({ code, language: "go" });
-      consumeExecutionStream(streamToken, {
-        onStdout: (data) => setLines((prev) => [...prev, { type: "stdout", data }]),
-        onStderr: (data) => setLines((prev) => [...prev, { type: "stderr", data }]),
-        onResult: (result) => {
-          setExitCode(result.exit_code);
-          setRuntimeMs(result.runtime_ms);
-          setRunState("complete");
-        },
-        onError: () => setRunState("error"),
-      });
-    } catch {
-      setRunState("error");
-    }
-  }, [code, runSandbox]);
+  const { runState, lines, exitCode, runtimeMs, run } = useSandboxRun("go");
 
   const steps = STEP_DEFS.map((def) => ({
     stepNumber: def.stepNumber,
@@ -261,10 +229,10 @@ export default function CapstonePage() {
             <CodeEditor
               value={code}
               onChange={setCode}
-              onRun={() => void run()}
+              onRun={() => void run(code)}
             />
             <OutputPane
-              state={runState === "idle" ? "idle" : runState === "running" ? "streaming" : runState === "complete" ? "complete" : "error"}
+              state={runState}
               lines={lines}
               {...(exitCode !== undefined ? { exitCode } : {})}
               {...(runtimeMs !== undefined ? { runtimeMs } : {})}

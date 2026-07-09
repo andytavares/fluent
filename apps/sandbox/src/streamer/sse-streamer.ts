@@ -3,16 +3,14 @@ import {
   resultStreamKey,
   flattenStreamFields,
   streamMaxWaitMs,
-  DEFAULT_EXECUTION_TIMEOUT_MS,
+  executionTimeoutMs,
 } from "@fluent/execution-contract";
 import { redis } from "../db/redis.js";
 
 const STREAM_POLL_INTERVAL_MS = 200;
 // Derived from the execution ceiling × retry attempts — the stream must
 // outlive the worker's full retry envelope, not race it.
-const STREAM_MAX_WAIT_MS = streamMaxWaitMs(
-  parseInt(process.env["EXECUTION_TIMEOUT_MS"] ?? String(DEFAULT_EXECUTION_TIMEOUT_MS), 10),
-);
+const STREAM_MAX_WAIT_MS = streamMaxWaitMs(executionTimeoutMs(process.env["EXECUTION_TIMEOUT_MS"]));
 
 export async function streamExecutionResult(
   jobId: string,

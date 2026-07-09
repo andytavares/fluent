@@ -1,11 +1,11 @@
 import { PrismaClient, Prisma } from "@prisma/client";
-import { CAPSTONE_INACTIVITY_TIMEOUT_MS } from "@fluent/capstone-contract";
+import { CAPSTONE_INACTIVITY_TIMEOUT_MS, capstoneJobName } from "@fluent/capstone-contract";
 import pino from "pino";
 
 const logger = pino({ base: { service: "capstone-runner" } });
 const prisma = new PrismaClient();
 
-type SessionDb = Pick<PrismaClient, "capstoneSessions" | "capstoneStepCompletion">;
+type SessionDb = Pick<PrismaClient, "capstoneSessions" | "capstoneStepCompletion" | "$transaction">;
 
 // Internal seams (…With variants take the db) — the exported activities bind
 // the process-wide client; tests exercise the same logic with a mock.
@@ -46,18 +46,20 @@ export async function recordStepCompletionWith(
   const start = Date.now();
 
   const resultJson = verificationResult as unknown as Prisma.InputJsonValue;
-  await db.capstoneStepCompletion.upsert({
-    where: { sessionId_stepNumber: { sessionId, stepNumber } },
-    update: { verificationResult: resultJson, completedAt: new Date() },
-    create: { sessionId, stepNumber, verificationResult: resultJson },
-  });
-
-  // Advance the session pointer — but never backwards (re-verifying an
-  // earlier step must not regress progress).
-  await db.capstoneSessions.updateMany({
-    where: { id: sessionId, currentStep: { lte: stepNumber } },
-    data: { currentStep: stepNumber + 1, lastActiveAt: new Date() },
-  });
+  // One transaction: the completion row and the session pointer advance
+  // (forward-only — re-verifying an earlier step must not regress progress)
+  // land together or not at all.
+  await db.$transaction([
+    db.capstoneStepCompletion.upsert({
+      where: { sessionId_stepNumber: { sessionId, stepNumber } },
+      update: { verificationResult: resultJson, completedAt: new Date() },
+      create: { sessionId, stepNumber, verificationResult: resultJson },
+    }),
+    db.capstoneSessions.updateMany({
+      where: { id: sessionId, currentStep: { lte: stepNumber } },
+      data: { currentStep: stepNumber + 1, lastActiveAt: new Date() },
+    }),
+  ]);
 
   logger.info({
     event: "step_completion",
@@ -111,7 +113,7 @@ export async function teardown({ sessionId }: { sessionId: string }) {
     kc.loadFromDefault();
     const batchApi = kc.makeApiClient(BatchV1Api);
     const NAMESPACE = process.env["K8S_NAMESPACE"] ?? "capstone-sessions";
-    const jobName = `capstone-${sessionId}`;
+    const jobName = capstoneJobName(sessionId);
 
     await batchApi.deleteNamespacedJob(jobName, NAMESPACE);
 

@@ -1,4 +1,5 @@
 import * as k8s from "@kubernetes/client-node";
+import { capstoneJobName } from "@fluent/capstone-contract";
 import { createCipheriv, randomBytes } from "node:crypto";
 import pino from "pino";
 
@@ -36,7 +37,7 @@ export async function provision({ sessionId }: { sessionId: string }) {
     logger.info({ event: "namespace_created", namespace: NAMESPACE });
   }
 
-  const jobName = `capstone-${sessionId}`;
+  const jobName = capstoneJobName(sessionId);
   const dbPassword = randomBytes(16).toString("hex");
 
   const job: k8s.V1Job = {

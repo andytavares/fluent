@@ -6,8 +6,9 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { accessSync } from "node:fs";
-import { DEFAULT_EXECUTION_TIMEOUT_MS } from "@fluent/execution-contract";
-import type { ExecutionResult, TraceFrame } from "./docker-runner.js";
+import { executionTimeoutMs } from "@fluent/execution-contract";
+import type { TraceFrame } from "@fluent/execution-contract";
+import type { ExecutionResult } from "./docker-runner.js";
 
 const TRACE_PREFIX = "__TRACE__:";
 
@@ -45,10 +46,7 @@ function withTrace(result: ExecutionResult): ExecutionResult {
 }
 
 const execFileAsync = promisify(execFile);
-const TIMEOUT_MS = parseInt(
-  process.env["EXECUTION_TIMEOUT_MS"] ?? String(DEFAULT_EXECUTION_TIMEOUT_MS),
-  10,
-);
+const TIMEOUT_MS = executionTimeoutMs(process.env["EXECUTION_TIMEOUT_MS"]);
 
 // Find the tsx binary shipped with this monorepo
 // This file lives at apps/sandbox/src/executor/ — go 4 levels up to get repo root

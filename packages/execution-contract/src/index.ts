@@ -16,6 +16,15 @@ export const EXECUTION_ATTEMPTS = 3;
 export const EXECUTION_BACKOFF_MS = 1000;
 
 /**
+ * Parses the EXECUTION_TIMEOUT_MS override, guarded against garbage. Callers
+ * pass the raw env value — this module stays browser-safe (no process).
+ */
+export function executionTimeoutMs(env: string | undefined): number {
+  const parsed = parseInt(env ?? "", 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_EXECUTION_TIMEOUT_MS;
+}
+
+/**
  * Max wall-clock a stream consumer should wait for a result: the full retry
  * envelope (attempts × ceiling + exponential backoff) plus scheduling margin.
  */

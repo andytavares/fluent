@@ -39,34 +39,40 @@ export async function capstoneSessionWorkflow({ sessionId }: CapstoneSessionInpu
   // encrypted connection string on the session row — the UI derives its
   // "connected" status from that write.
   const provisioned = await activities.provision({ sessionId });
-  await activities.recordProvisioned({ sessionId, ...provisioned });
 
-  // Run until inactivity timeout
-  while (true) {
-    learnerActive = false;
+  // Once real infrastructure exists, teardown must run no matter how the
+  // session ends — normal inactivity lapse or a failing activity — or the
+  // K8s Job (and its Postgres sidecar) leaks.
+  try {
+    await activities.recordProvisioned({ sessionId, ...provisioned });
 
-    // condition() resolves true when learner activity arrives, false when the
-    // inactivity timeout elapses (it never rejects).
-    const active = await condition(
-      () => learnerActive || verifyQueue.length > 0,
-      CAPSTONE_INACTIVITY_TIMEOUT_MS,
-    );
+    // Run until inactivity timeout
+    while (true) {
+      learnerActive = false;
 
-    if (!active) {
-      break;
-    }
+      // condition() resolves true when learner activity arrives, false when
+      // the inactivity timeout elapses (it never rejects).
+      const active = await condition(
+        () => learnerActive || verifyQueue.length > 0,
+        CAPSTONE_INACTIVITY_TIMEOUT_MS,
+      );
 
-    // Process any pending verification requests; the verifier resolves the
-    // step's verify.sh from authored content (content/capstone/…).
-    while (verifyQueue.length > 0) {
-      const stepNumber = verifyQueue.shift()!;
-      const result = await activities.verify({ sessionId, stepNumber });
-      if (result.passed) {
-        await activities.recordStepCompletion({ sessionId, stepNumber, verificationResult: result });
+      if (!active) {
+        break;
+      }
+
+      // Process any pending verification requests; the verifier resolves the
+      // step's verify.sh from authored content (content/capstone/…).
+      while (verifyQueue.length > 0) {
+        const stepNumber = verifyQueue.shift()!;
+        const result = await activities.verify({ sessionId, stepNumber });
+        if (result.passed) {
+          await activities.recordStepCompletion({ sessionId, stepNumber, verificationResult: result });
+        }
       }
     }
+  } finally {
+    // Teardown the K8s Job and close the session row
+    await activities.teardown({ sessionId });
   }
-
-  // Teardown the K8s Job
-  await activities.teardown({ sessionId });
 }

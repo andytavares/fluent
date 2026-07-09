@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import type { TraceFrame } from "@fluent/execution-contract";
 import { trpc } from "@/lib/trpc/client";
 import { consumeExecutionStream } from "@/lib/execution-stream";
@@ -15,8 +15,6 @@ interface OutputLine {
   runtime_ms?: number;
   timed_out?: boolean;
 }
-
-export type { TraceFrame };
 
 export interface CompletionMeta {
   isSuite: boolean;
@@ -45,9 +43,13 @@ export function useSubmission({ conceptId, enrollmentId, language = "go", onComp
 
   const createSubmission = trpc.submissions.createSubmission.useMutation();
   const doCompleteSubmission = trpc.submissions.completeSubmission.useMutation();
+  const closeStreamRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => () => closeStreamRef.current?.(), []);
 
   const submit = useCallback(
     async (code: string, isSuite = false, kind: SubmissionKind = "lesson") => {
+      closeStreamRef.current?.();
       setState("submitting");
       setLines([]);
       setExitCode(undefined);
@@ -67,7 +69,7 @@ export function useSubmission({ conceptId, enrollmentId, language = "go", onComp
 
         setState("streaming");
 
-        consumeExecutionStream(streamToken, {
+        closeStreamRef.current = consumeExecutionStream(streamToken, {
           onStdout: (data) => setLines((prev) => [...prev, { type: "stdout", data }]),
           onStderr: (data) => setLines((prev) => [...prev, { type: "stderr", data }]),
           onTrace: (frames) => setTraceFrames(frames),

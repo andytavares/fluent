@@ -23,3 +23,8 @@ export type CapstoneSessionWorkflow = (input: CapstoneSessionInput) => Promise<v
 export function capstoneWorkflowId(sessionId: string): string {
   return `capstone-session-${sessionId}`;
 }
+
+/** Name of the K8s Job provisioned for a session — created and deleted by different activities. */
+export function capstoneJobName(sessionId: string): string {
+  return `capstone-${sessionId}`;
+}

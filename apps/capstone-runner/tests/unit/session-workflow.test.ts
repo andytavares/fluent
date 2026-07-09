@@ -101,6 +101,17 @@ describe("capstoneSessionWorkflow", () => {
     expect(activities.recordStepCompletion).not.toHaveBeenCalled();
   }, 120_000);
 
+  it("tears down even when persisting the provision output fails — no orphaned K8s job", async () => {
+    const activities = makeActivities();
+    activities.recordProvisioned.mockRejectedValue(new Error("db down"));
+
+    await expect(runSession(activities)).rejects.toThrow();
+
+    // provision succeeded, so infrastructure exists — teardown must still run
+    expect(activities.provision).toHaveBeenCalled();
+    expect(activities.teardown).toHaveBeenCalledWith({ sessionId: "sess-1" });
+  }, 120_000);
+
   it("learner-active keeps the session alive until the window lapses again", async () => {
     const activities = makeActivities();
 

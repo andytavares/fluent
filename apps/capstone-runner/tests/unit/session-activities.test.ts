@@ -15,6 +15,7 @@ function makeMockDb() {
     capstoneStepCompletion: {
       upsert: vi.fn().mockResolvedValue({}),
     },
+    $transaction: vi.fn(async (ops: unknown[]) => Promise.all(ops as Promise<unknown>[])),
   };
 }
 
@@ -43,7 +44,7 @@ describe("recordProvisioned", () => {
 });
 
 describe("recordStepCompletion", () => {
-  it("upserts the completion and advances currentStep past the verified step", async () => {
+  it("upserts the completion and advances currentStep past the verified step, atomically", async () => {
     const db = makeMockDb();
 
     await recordStepCompletionWith(db as never, {
@@ -52,6 +53,7 @@ describe("recordStepCompletion", () => {
       verificationResult: { passed: true, http_tests: [] },
     });
 
+    expect(db.$transaction).toHaveBeenCalledOnce();
     expect(db.capstoneStepCompletion.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { sessionId_stepNumber: { sessionId: "s1", stepNumber: 3 } },
