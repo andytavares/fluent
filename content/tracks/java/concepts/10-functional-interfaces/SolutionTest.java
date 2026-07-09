@@ -30,7 +30,7 @@ public class SolutionTest {
         check("byLengthThenAlpha: alpha tie-break", cmp.compare("apple", "mango") < 0);
         List<String> sorted = new ArrayList<>(List.of("banana", "apple", "hi", "ok", "cherry"));
         sorted.sort(cmp);
-        check("byLengthThenAlpha: full sort", sorted.equals(List.of("hi", "ok", "apple", "mango", "banana")));
+        check("byLengthThenAlpha: full sort", sorted.equals(List.of("hi", "ok", "apple", "banana", "cherry")));
 
         // longerThan
         Predicate<String> gt3 = Solution.longerThan(3);

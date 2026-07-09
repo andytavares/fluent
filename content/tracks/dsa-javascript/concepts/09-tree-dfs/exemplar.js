@@ -1,82 +1,78 @@
 // Run: node exemplar.js
-
-class TreeNode {
-  constructor(val, left = null, right = null) {
-    this.val = val;
-    this.left = left;
-    this.right = right;
-  }
-}
+//
+// Every tree node is a plain object { val, left, right }; missing children
+// are null. An empty tree is null.
 
 /**
- * Returns the maximum depth of the binary tree.
- * Post-order: compute subtree depths first, then take max + 1 at root.
+ * Returns the number of nodes on the longest root-to-leaf path.
+ * Bottom-up: each call answers for its whole subtree; null anchors at 0.
  * O(n) time, O(h) space.
- * @param {TreeNode|null} root
+ * @param {{val: number, left: object|null, right: object|null}|null} root
  * @returns {number}
  */
 function maxDepth(root) {
-  if (!root) return 0;
+  if (root === null) return 0;
   return 1 + Math.max(maxDepth(root.left), maxDepth(root.right));
 }
 
 /**
- * Returns true if any root-to-leaf path sums to target.
- * Pre-order: subtract node value as we descend; check at leaves.
- * O(n) time, O(h) space.
- * @param {TreeNode|null} root
- * @param {number} target
+ * Returns true if p and q are structurally identical with equal values.
+ * Lockstep recursion on a pair of nodes; the null combinations come first,
+ * and && short-circuits on the first mismatch.
+ * O(min(m, n)) time, O(h) space.
+ * @param {object|null} p
+ * @param {object|null} q
  * @returns {boolean}
  */
-function hasPathSum(root, target) {
-  if (!root) return false;
-  if (!root.left && !root.right) return root.val === target; // leaf
-  const remaining = target - root.val;
-  return hasPathSum(root.left, remaining) || hasPathSum(root.right, remaining);
+function isSameTree(p, q) {
+  if (p === null && q === null) return true;
+  if (p === null || q === null) return false;
+  return p.val === q.val
+    && isSameTree(p.left, q.left)
+    && isSameTree(p.right, q.right);
 }
 
 /**
- * Returns the lowest common ancestor of nodes p and q in the binary tree.
- *
- * Post-order: recurse left and right first. Return logic:
- *   - If root is null, p, or q: return root (base case / found one target)
- *   - If both left and right returned non-null: root is the LCA (p and q split)
- *   - Otherwise: return whichever side is non-null (both targets are in that subtree)
- *
+ * Mirrors the tree in place (swaps every node's children). Returns the root.
+ * One swap per node; destructuring avoids the lost-subtree bug.
  * O(n) time, O(h) space.
- * @param {TreeNode|null} root
- * @param {TreeNode} p
- * @param {TreeNode} q
- * @returns {TreeNode|null}
+ * @param {object|null} root
+ * @returns {object|null}
  */
-function lowestCommonAncestor(root, p, q) {
-  if (!root || root === p || root === q) return root;
-  const left  = lowestCommonAncestor(root.left, p, q);
-  const right = lowestCommonAncestor(root.right, p, q);
-  if (left && right) return root; // p in left subtree, q in right subtree
-  return left ?? right;           // both in the same subtree
+function invertTree(root) {
+  if (root === null) return null;
+  [root.left, root.right] = [root.right, root.left];
+  invertTree(root.left);
+  invertTree(root.right);
+  return root;
 }
 
-module.exports = { TreeNode, maxDepth, hasPathSum, lowestCommonAncestor };
+/**
+ * Returns true if some root-to-leaf path sums exactly to targetSum.
+ * Top-down: subtract while descending; decide only at a real leaf.
+ * The null case doubles as "an empty tree has no paths".
+ * O(n) time, O(h) space.
+ * @param {object|null} root
+ * @param {number} targetSum
+ * @returns {boolean}
+ */
+function hasPathSum(root, targetSum) {
+  if (root === null) return false;
+  if (root.left === null && root.right === null) return targetSum === root.val;
+  return hasPathSum(root.left, targetSum - root.val)
+    || hasPathSum(root.right, targetSum - root.val);
+}
+
+module.exports = { maxDepth, isSameTree, invertTree, hasPathSum };
 
 function main() {
-  const tree = new TreeNode(3,
-    new TreeNode(9),
-    new TreeNode(20, new TreeNode(15), new TreeNode(7))
-  );
-  console.log(maxDepth(tree)); // 3
-  console.log(hasPathSum(tree, 38)); // true (3+20+15)
+  const node = (val, left = null, right = null) => ({ val, left, right });
 
-  //       3
-  //      / \
-  //     5   1
-  //    / \ / \
-  //   6  2 0  8
-  const n5 = new TreeNode(5, new TreeNode(6), new TreeNode(2));
-  const n1 = new TreeNode(1, new TreeNode(0), new TreeNode(8));
-  const root = new TreeNode(3, n5, n1);
-  console.log(lowestCommonAncestor(root, n5, n1).val); // 3
-  console.log(lowestCommonAncestor(root, n5, new TreeNode(6, null, null)).val); // 5 -- not found edge; test with actual node ref
+  const t = node(3, node(9), node(20, node(15), node(7)));
+  console.log(maxDepth(t)); // 3
+  console.log(isSameTree(node(1, node(2), node(3)), node(1, node(2), node(3)))); // true
+  console.log(JSON.stringify(invertTree(node(2, node(1), node(3))))); // 2 with left 3, right 1
+  console.log(hasPathSum(node(1, node(2), node(3)), 4)); // true (1 → 3)
 }
 
 main();
