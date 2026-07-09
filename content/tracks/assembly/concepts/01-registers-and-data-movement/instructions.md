@@ -62,18 +62,23 @@ In C, `int x = 0;` compiles to `xor eax, eax`. In Go or Java the runtime may zer
 
 The 32-bit zero-extension rule is x86-64-specific. There is no equivalent in any high-level language; it exists because AMD chose backward-compatibility with 32-bit x86 when extending the ISA to 64 bits.
 
+## Watch out
+
+- Writing a 16- or 8-bit sub-register (`ax`, `al`) leaves the upper bits of the full 64-bit register untouched — if you expect a clean value in `rax` afterward, write `eax` (or `rax`) instead.
+- `xor eax, eax` sets flags (ZF=1, SF=0, CF=0, OF=0) as a side effect of the XOR — if you were relying on flags from an earlier `cmp`, this instruction clobbers them.
+- `rbx` is normally callee-saved (lesson 5 covers this in full) — a real procedure that touches `rbx` must `push`/`pop` it before returning. This exercise's test inspects registers immediately after `call`, before any caller code resumes, so it deliberately lets you set `rbx` directly without saving it. Don't take this as license to skip callee-saved discipline in later lessons.
+
 ## The task
 
-Implement the procedure `set_registers`:
+Implement the procedure `set_registers`, which takes no arguments and returns nothing:
 
 ```nasm
 ; void set_registers(void)
-; Sets: rax = 1, rbx = 2, rcx = 3, rdx = 0 (using xor), rsi = 100
-; The test reads these register values immediately after call returns.
-; Callee-saved registers (rbx) must be preserved by you if you use them —
-; for this exercise the test will check values before rbp/rsp are touched.
+; Sets: rax = 1, rbx = 2, rcx = 3, rdx = 0, rsi = 100
 set_registers:
     ; TODO
 ```
 
-The procedure takes no arguments and returns nothing via rax. The test runner will inspect register state immediately after `set_registers` returns.
+Register contract: on return, `rax`, `rbx`, `rcx`, `rdx`, `rsi` must hold the exact values above. `rdx` should be zeroed with `xor edx, edx` (the idiomatic form) — the test only checks the value, not which instruction produced it. Any register not listed (`rdi`, `r8`–`r15`) may be left in any state; the test does not inspect them.
+
+The test runner poisons all five registers with a sentinel value before calling `set_registers`, then reads each one immediately after it returns — so a no-op `ret` fails every check.

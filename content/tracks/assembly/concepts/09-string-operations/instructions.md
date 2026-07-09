@@ -95,22 +95,40 @@ strcpy_impl:
 
 In Go, `len(s)` for a `string` is O(1) because the length is stored alongside the pointer. The assembly equivalent would be passing `n` as a separate argument — which is exactly what Go does internally.
 
+## Watch out
+
+- Forgetting `cld` before `movsb`/`scasb`/`stosb`/`lodsb` leaves `DF` in whatever state a previous `std` left it — the instructions then walk backward through memory instead of forward, corrupting unrelated data.
+- `repne scasb` decrements `rcx` on every byte scanned. Starting `rcx` too small makes the scan give up ("not found") before reaching the terminator, even on a valid string — seeding it with `UINT64_MAX` (via `not rcx` after zeroing) sidesteps this for any realistic string length.
+- `rep`-prefixed string instructions have a fixed per-instruction setup cost that makes them slower than a manual byte loop for very short strings, despite being "the fast path" for large ones — real `memcpy`/`strlen` implementations dispatch on size and use SIMD for large buffers.
+- `lodsb`/`stosb` only touch `al` — the upper 56 bits of `rax` are left exactly as they were, which is harmless here but will surface stale data if you later treat `rax` as a full 64-bit value without re-zeroing it.
+
 ## The task
 
-Implement `my_strlen` and `my_strcpy`:
+Implement `my_strlen` and `my_strcpy` for null-terminated byte strings:
 
 ```nasm
 ; int64_t my_strlen(const char *s)
 ; rdi = null-terminated string
-; Returns length in rax (not counting the null terminator)
+; Returns the length in rax, not counting the null terminator
 my_strlen:
     ; TODO
 
 ; void my_strcpy(char *dst, const char *src)
 ; rdi = dst, rsi = src
-; Copies src to dst including null terminator
+; Copies src to dst, including the null terminator. Returns nothing (void).
 my_strcpy:
     ; TODO
+```
+
+Register contract: for `my_strlen`, `rdi` is the input pointer (caller-saved, clobber freely) and the length is returned in `rax`. For `my_strcpy`, `rdi` and `rsi` are both inputs; the caller's copies of these pointers are not preserved across the call — `dst` and `src` themselves are left pointing one past the copied null terminator if you use `lodsb`/`stosb`, which is fine since nothing reads them afterward.
+
+```nasm
+my_strlen("Hello");            // 5
+my_strlen("");                 // 0   — empty string
+my_strlen("Hello, World!");    // 13
+
+char buf[64];
+my_strcpy(buf, "Hello");       // buf == "Hello\0", buf[5] == 0
 ```
 
 You may use the `repne scasb` pattern for `my_strlen` and `lodsb`/`stosb` for `my_strcpy`, or implement them as explicit loops.

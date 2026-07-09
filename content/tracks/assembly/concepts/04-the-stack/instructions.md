@@ -79,16 +79,36 @@ Every function call in C, Go, Rust, and Java creates a stack frame. The language
 
 Go's goroutines use segmented/copyable stacks, which means Go's stack pointer can move. The hardware stack mechanics are the same; the runtime wraps them.
 
+## Watch out
+
+- Every `push` must be matched by a `pop` (or an equivalent `add rsp, N`) before `ret`. One unbalanced `push` shifts `rsp` so that `ret` pops the wrong 8 bytes as a return address — the CPU jumps to garbage instead of returning to the caller.
+- `push`/`pop` always move a full 8 bytes on x86-64, regardless of which register name you use — there's no `push eax` equivalent that moves 4.
+- 16-byte alignment must hold at every `call`, not just at function entry. Pushing an odd number of registers before calling out breaks alignment for that call even if your own frame was set up correctly.
+- Once you `sub rsp, N` to reserve locals, reading `[rbp-8]` before that `sub` executes reads stack memory that isn't yours yet (it may belong to whatever the CPU last used at that address).
+
 ## The task
 
-Implement `swap_via_stack` which uses the stack (not a third register) to swap two values:
+Implement `swap_via_stack`, which swaps the values at two memory addresses using the stack as temporary storage — no spare general-purpose register may hold the temp value:
 
 ```nasm
 ; void swap_via_stack(int64_t *a, int64_t *b)
 ; rdi = pointer to a, rsi = pointer to b
-; Swaps *a and *b using push/pop — no extra registers for the temp
+; Swaps *a and *b using push/pop. Returns nothing (void).
 swap_via_stack:
     ; TODO: set up a proper stack frame, then use push/pop to swap *a and *b
+```
+
+Register contract: `rdi` and `rsi` are input pointers (caller-saved — clobber freely once dereferenced). On return, `rsp` must be exactly what it was at entry (after the standard `push rbp` / `mov rbp, rsp` prologue is undone) — an unbalanced stack is a test failure even if the swapped values happen to be correct.
+
+```nasm
+int64_t a = 10, b = 20;
+swap_via_stack(&a, &b);   // a == 20, b == 10
+
+int64_t x = -1, y = 99;
+swap_via_stack(&x, &y);   // x == 99, y == -1
+
+int64_t p = 42, q = 42;
+swap_via_stack(&p, &q);   // p == 42, q == 42 — equal values swap to the same result
 ```
 
 The test verifies both the swap result and that `rsp` is properly restored on return.

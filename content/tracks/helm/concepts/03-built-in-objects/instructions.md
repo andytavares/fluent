@@ -70,6 +70,13 @@ annotations:
 
 Raw Kubernetes manifests have no equivalent to these objects — you'd have to inject them with `envsubst`, `sed`, or CI pipeline variables. Kustomize lets you set a namespace via `namespace:` in `kustomization.yaml`, but it doesn't give templates access to the release name, revision, or cluster capabilities. Helm's built-in objects are what make the same chart safely installable multiple times in the same namespace.
 
+## Watch out
+
+- **Built-in objects are capitalized; values are not.** `.Release.Name` (capital R, capital N) vs `.Values.replicaCount` (capital V, lowercase everything after). Mixing these up (`.release.name`) fails silently — Go templates treat an unknown lowercase field as a nil, rendering blank rather than erroring loudly.
+- **`.Release.Namespace` is not always what you expect.** If an operator runs `helm install myapp ./chart` with no `-n` flag, `.Release.Namespace` is whatever `--namespace` defaults to for their kubeconfig context (often `default`), not necessarily the namespace the chart author intended. Don't hardcode assumptions about namespace in templates — always reference `.Release.Namespace`.
+- **`.Capabilities` reflects the *target* cluster, not your local Helm client version.** `.Capabilities.KubeVersion` is populated by querying the cluster Helm is connecting to — it's unavailable (and `.Capabilities.APIVersions` is empty) when running `helm template` offline without `--kube-version` / `--api-versions` flags to fake it.
+- **`.Template.Name` includes the chart's own directory prefix** (e.g. `webapp/templates/configmap.yaml`), not just the filename — useful for debugging annotations across subcharts where multiple templates could share a filename.
+
 ## The task
 
 Write a `templates/configmap.yaml` that:
@@ -83,3 +90,24 @@ Write a `templates/configmap.yaml` that:
 - Adds an annotation `meta.helm.sh/template: {{ .Template.Name }}`
 - In `data`, sets `install_mode` to `"install"` if `.Release.IsInstall` is true, otherwise `"upgrade"`
 - In `data`, sets `kube_version` to `{{ .Capabilities.KubeVersion.GitVersion }}`
+
+For example, on a **first install** (`helm install myapp ./webapp -n staging`) of a chart with `Chart.yaml` containing `name: webapp`, `version: 1.4.0`, `appVersion: "2.3.1"`, against a cluster running Kubernetes `v1.28.4`, the rendered ConfigMap looks like:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myapp-config
+  namespace: staging
+  labels:
+    app.kubernetes.io/name: webapp
+    app.kubernetes.io/version: "2.3.1"
+    helm.sh/chart: webapp-1.4.0
+  annotations:
+    meta.helm.sh/template: webapp/templates/configmap.yaml
+data:
+  install_mode: "install"
+  kube_version: v1.28.4
+```
+
+Running `helm upgrade` against that same release (where `.Release.IsInstall` is now `false`) must render `install_mode: "upgrade"` instead, with every other field unchanged.

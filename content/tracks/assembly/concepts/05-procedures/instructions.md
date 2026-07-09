@@ -82,16 +82,35 @@ In C, Go, Java, and Rust the compiler manages all of this. When GCC compiles a C
 
 Windows x64 uses a different ABI: first four args in `rcx, rdx, r8, r9` with a mandatory 32-byte shadow space. Assembly that works on Linux will not work on Windows without changes.
 
+## Watch out
+
+- Caller-saved registers (`rax`, `rcx`, `rdx`, `rsi`, `rdi`, `r8`–`r11`) can be overwritten by **any** call, including one you make yourself into a function pointer whose implementation you don't control. If you need a value after a `call`, it must be in a callee-saved register or on the stack beforehand — not left in `rdi`/`rsi`/`rax`.
+- Whichever callee-saved register you `push` at entry, you must `pop` in the exact reverse order before `ret` — popping out of order silently swaps register contents with no error from the assembler.
+- `rsp` must stay 16-byte aligned across every `call`, including nested ones. An odd number of unbalanced `push`es before a `call` can crash *inside* the callee if it uses SSE instructions, far from where the misalignment was introduced.
+- `call reg` (an indirect call through a register) is exactly as valid as `call label` — don't assume function pointers require special syntax.
+
 ## The task
 
-Implement `apply_twice`, which calls a provided function pointer twice, passing the result of the first call as the argument to the second:
+Implement `apply_twice`, which calls a provided function pointer twice, passing the result of the first call as the argument to the second — i.e., it computes `fn(fn(x))`:
 
 ```nasm
 ; int64_t apply_twice(int64_t (*fn)(int64_t), int64_t x)
 ; rdi = function pointer, rsi = x
-; Returns fn(fn(x))
+; Returns fn(fn(x)) in rax
 apply_twice:
     ; TODO
+```
+
+Register contract: `rdi` holds a callable address, `rsi` holds `x`. Both are caller-saved, so a call through `fn` may destroy them — you must preserve the function pointer across the first call yourself, using a callee-saved register (`rbx`, `r12`–`r15`) that you `push` at entry and `pop` before `ret`.
+
+```nasm
+int64_t double_val(int64_t x) { return x * 2; }
+apply_twice(double_val, 3);   // double_val(double_val(3)) = double_val(6) = 12
+apply_twice(double_val, 1);   // 4
+apply_twice(double_val, 0);   // 0
+
+int64_t inc2(int64_t x) { return x + 2; }
+apply_twice(inc2, 10);        // inc2(inc2(10)) = inc2(12) = 14
 ```
 
 The function pointer is a callable address in `rdi`. You'll need to save `rdi` (caller-saved) across the first `call` using a callee-saved register.

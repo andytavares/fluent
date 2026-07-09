@@ -95,6 +95,13 @@ helm upgrade --install myapp ./chart \
 
 The `lookup` function makes Helm "stateful" in a way that Kustomize explicitly avoids — Kustomize is designed to be a pure function of inputs. The tradeoff: `helm template` (offline rendering) and `helm upgrade --dry-run` behave differently from the real upgrade when `lookup` is used, which can hide bugs until live deployment.
 
+## Watch out
+
+- **`NOTES.txt` is templated but never validated as YAML** — it's plain text, so a template error inside it (an unclosed `{{ if }}`) fails the whole release the same as any other template, but a *logic* mistake (wrong indentation, confusing wording) won't be caught by any linter. Test it by eyeballing `helm install --dry-run --debug`.
+- **`values.schema.json` validates the *merged* values, after all `-f` files and `--set` flags are applied** — not just the chart's own `values.yaml`. An operator's override that violates the schema fails at install time with a clear JSON Schema error message, before any template renders.
+- **Fields absent from `values.schema.json`'s `properties` are allowed by default** — JSON Schema doesn't reject unknown properties unless you add `"additionalProperties": false`. Omitting a field from the schema doesn't validate it; it just means the schema stays silent about it.
+- **`lookup` returns an empty map (not `nil`) when nothing is found**, so `{{- if $existingSecret }}` correctly treats "not found" as falsy — but `{{ $existingSecret.data }}` on a genuinely-not-found lookup panics with a nil pointer, because there's no `.data` key on an empty map's zero value the way you might expect. Always gate access behind the `if`, never assume the lookup succeeded.
+
 ## The task
 
 Write two files:
@@ -109,3 +116,21 @@ Write two files:
 - `image.pullPolicy` (if present) must be one of `"Always"`, `"IfNotPresent"`, or `"Never"`
 - `service.type` (if present) must be one of `"ClusterIP"`, `"NodePort"`, `"LoadBalancer"`
 - `service.port` (if present) is an integer between 1 and 65535
+
+For a release named `myapp` in namespace `staging`, chart `appVersion: "2.3.1"`, with `values.yaml` setting `service.type: ClusterIP` and `service.port: 8080`, `helm install myapp ./webapp -n staging` prints `NOTES.txt` rendered as:
+
+```
+webapp 2.3.1 has been deployed successfully.
+
+  Release:   myapp
+  Namespace: staging
+  Version:   2.3.1
+
+Access the application via port-forward:
+  kubectl port-forward --namespace staging svc/myapp-webapp 8080:8080
+  echo "Visit http://127.0.0.1:8080"
+```
+
+If `service.type` were `LoadBalancer` instead, the block below the version info must show the `kubectl get svc -w` command instead, with no `port-forward` line.
+
+Separately, `values.schema.json` must reject (at `helm install` / `helm template` time, before any manifest renders) values like `replicaCount: 0`, `image: {}` (missing `repository`), `image.pullPolicy: "Sometimes"`, or `service.port: 70000` — and accept anything within the documented bounds.

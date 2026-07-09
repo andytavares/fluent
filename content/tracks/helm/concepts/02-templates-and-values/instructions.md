@@ -65,6 +65,13 @@ Helm templates are Go's `text/template`, not Jinja2, not ERB, not Mustache. The 
 
 The Sprig library (bundled with Helm) adds ~70 functions on top of Go's built-in template functions. When something seems like it should work but doesn't, check whether you need a Sprig function rather than a raw Go template expression.
 
+## Watch out
+
+- **A missing key does not error — it renders as `<no value>` or an empty string.** `{{ .Values.image.tag }}` with no `tag` key produces `image: myregistry/app:` — a manifest the API server will likely reject, but Helm itself renders it "successfully." Always pair values that might be absent with `| default ...` or `required "message" ...`.
+- **Nested missing maps panic, not just render empty.** `{{ .Values.image.repository }}` fails at render time with `nil pointer evaluating interface {}.repository` if `.Values.image` itself doesn't exist (rather than existing with no `repository` key). This is different from a missing *leaf* value — the map itself has to exist. Always give every nested object at least an empty placeholder in `values.yaml` (e.g. `image: {}`) so template code can safely reach one level deeper.
+- **`default` treats zero values as "unset."** `{{ .Values.replicaCount | default 1 }}` returns `1` if an operator explicitly sets `replicaCount: 0` — because `0` is falsy in Go templates, same as `""` and `false`. If you need to distinguish "explicitly zero" from "not set," check with `{{- if hasKey .Values "replicaCount" }}` instead.
+- **Quote anything that could be misread as a non-string.** `tag: 1.20` in `values.yaml` is parsed as a YAML float and becomes `1.2` — silently dropping the trailing zero. Quote version-like values in `values.yaml` itself (`tag: "1.20"`), and pipe template output through `| quote` when the source might not already be a string.
+
 ## The task
 
 Write a `templates/deployment.yaml` that:
@@ -75,3 +82,37 @@ Write a `templates/deployment.yaml` that:
 - Sets the container image as `{{ .Values.image.repository }}:{{ .Values.image.tag | default "latest" }}`
 - Sets `imagePullPolicy` from `.Values.image.pullPolicy` with a default of `"IfNotPresent"`
 - Sets `containerPort` from `.Values.service.port` with a default of `80`
+
+For example, given this `values.yaml`:
+
+```yaml
+replicaCount: 3
+image:
+  repository: myregistry/app
+  tag: "2.1.0"
+  pullPolicy: Always
+service:
+  port: 8080
+```
+
+and a release installed as `helm install myrelease ./webapp`, the rendered manifest should contain:
+
+```yaml
+metadata:
+  name: myrelease-webapp
+  labels:
+    app.kubernetes.io/name: webapp
+    app.kubernetes.io/instance: myrelease
+spec:
+  replicas: 3
+  ...
+      containers:
+        - name: webapp
+          image: myregistry/app:2.1.0
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+```
+
+But if `image.tag`, `image.pullPolicy`, and `service.port` are all omitted from `values.yaml`, the same template must still render valid YAML using the stated defaults (`"latest"`, `"IfNotPresent"`, `80`) instead of leaving those fields blank.

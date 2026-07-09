@@ -76,20 +76,37 @@ In C, `printf("hello\n")` ultimately calls `write(1, ...)` through the C runtime
 
 Go's runtime also issues `syscall` instructions, but wraps them in goroutine-scheduler-aware wrappers so the scheduler can park goroutines during blocking calls. The raw kernel interface is the same.
 
+## Watch out
+
+- Syscall argument 4 goes in `r10`, **not** `rcx` — the kernel's `syscall`/`sysret` mechanism uses `rcx` to hold the return address and `r11` to hold RFLAGS, so both are clobbered unconditionally by every `syscall` instruction. Never assume `rcx` or `r11` survive a syscall.
+- `write` can return fewer bytes than requested (a "short write"), even for small buffers, if the destination is a pipe under backpressure. Production code loops, calling `write` again with the remaining bytes, until everything is sent. This lesson's `print_message` does a single `write` call and does not need to handle that — but real code must.
+- `exit` (60) terminates only the calling thread; in a single-threaded program that looks identical to `exit_group` (231), but multi-threaded programs must use `exit_group` or other threads keep running.
+- The kernel truncates the exit status to its low 8 bits — `exit_with_code(256)` and `exit_with_code(0)` are indistinguishable to a shell checking `$?`.
+
 ## The task
 
-Implement `print_message` which writes a null-terminated string to stdout using the write syscall, then implement `exit_with_code` which calls exit:
+Implement `print_message`, which writes a buffer to stdout using the `write` syscall directly (no libc), and `exit_with_code`, which terminates the process via the `exit` syscall:
 
 ```nasm
 ; void print_message(const char *msg, int64_t len)
-; rdi = pointer to string, rsi = byte count
-; Writes msg to stdout (fd=1) via syscall write(1)
+; rdi = pointer to bytes to write, rsi = byte count
+; Writes exactly `len` bytes from msg to stdout (fd=1) via syscall write(1)
 print_message:
     ; TODO
 
 ; void exit_with_code(int64_t code)
 ; rdi = exit status code
-; Calls syscall exit(60)
+; Calls syscall exit(60) with the given status. Never returns.
 exit_with_code:
     ; TODO
 ```
+
+Register contract for `print_message`: `rdi` and `rsi` are inputs; both are caller-saved so you may load them into the syscall argument registers (`rdi`=fd, `rsi`=buf, `rdx`=count) directly — just be careful about the order you move them, since the syscall's `rdi` (fd) and `rsi` (buf) don't line up with the incoming argument registers of the same name. The syscall clobbers `rax`, `rcx`, and `r11`; the procedure returns nothing (void).
+
+```nasm
+print_message("hello", 5);   // writes exactly the 5 bytes "hello" to fd 1
+print_message("X", 1);       // writes exactly 1 byte
+print_message(ptr, 0);       // a zero-length write is valid and writes nothing
+```
+
+`exit_with_code` takes the status in `rdi` and never returns — the syscall replaces the running process.
