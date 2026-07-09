@@ -1,0 +1,35 @@
+apps/sandbox/package.json
+  s_beb7708abc1117::t_07fe0b7d39d9ab 13-14,23-24
+content/DSA-CURRICULUM.md
+  s_beb7708abc1117::t_61fb0b2698b089 28,30-32,34-35,37,42,45-46,74-78
+  s_beb7708abc1117::t_acca6e5505e841 1-27,29,33,36,38-41,43-44,47-73
+packages/content-config/tests/store.test.ts
+  s_beb7708abc1117::t_28fdaf9dd37e64 85-92
+content/AUTHORING.md
+  s_beb7708abc1117::t_82f1c9a609f742 1-86
+apps/sandbox/scripts/verify-content.ts
+  s_beb7708abc1117::t_ca8d4b2a2b3eb0 1-6,9-14,19-88,92-132
+  s_beb7708abc1117::t_6c76f07f572432 89-91
+  s_beb7708abc1117::t_82e7ee3651a6b7 7-8,15-18
+packages/content-config/src/store.ts
+  s_beb7708abc1117::t_042a8a27a32f8d 32
+  s_beb7708abc1117::t_da1ce10d84c7f7 87-90
+pnpm-lock.yaml
+  s_beb7708abc1117::t_40ba14d82d6e40 151-153
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "c1438f2ab7ae4f8fb316fe9093aab66af2bab805",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
