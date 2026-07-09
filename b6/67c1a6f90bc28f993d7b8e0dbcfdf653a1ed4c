@@ -1,0 +1,33 @@
+content/tracks/dsa-typescript/concepts/12-graphs-bfs-dfs/config.json
+  s_beb7708abc1117::t_f3e61556ca9c75 1
+content/tracks/dsa-typescript/concepts/15-backtracking/config.json
+  s_beb7708abc1117::t_f3e61556ca9c75 1
+content/tracks/dsa-typescript/concepts/03-sliding-window/config.json
+  s_beb7708abc1117::t_f3e61556ca9c75 1
+tools/content-linter/src/lint-all.ts
+  s_beb7708abc1117::t_76181bd73ce98a 21-34
+content/tracks/dsa-typescript/concepts/07-stacks/config.json
+  s_beb7708abc1117::t_f3e61556ca9c75 1
+content/tracks/dsa-typescript/concepts/14-tries/config.json
+  s_beb7708abc1117::t_f3e61556ca9c75 1
+content/tracks/dsa-typescript/concepts/02-two-pointers/config.json
+  s_beb7708abc1117::t_f3e61556ca9c75 1
+apps/api/prisma/seed.ts
+  s_beb7708abc1117::t_29b64786df4a08 33-39,42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "b667c1a6f90bc28f993d7b8e0dbcfdf653a1ed4c",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
