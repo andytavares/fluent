@@ -1,0 +1,53 @@
+apps/capstone-runner/src/activities/verifier.ts
+  s_beb7708abc1117::t_04c38927d8db5d 3-4,10-17,31-41,43
+apps/capstone-runner/tests/unit/session-workflow.test.ts
+  s_beb7708abc1117::t_69e93803432e7f 33-34
+  s_beb7708abc1117::t_6c27da1c1eef11 64,70-74
+  s_beb7708abc1117::t_0723ee4b402731 86
+packages/capstone-contract/src/index.ts
+  s_beb7708abc1117::t_79b98eb013697a 7-9
+apps/web/tsconfig.tsbuildinfo
+  s_beb7708abc1117::t_6ea4e52982381b 1
+apps/capstone-runner/src/activities/session.ts
+  s_beb7708abc1117::t_6e84020eaa26c4 73-76
+  s_beb7708abc1117::t_570cebe364b12c 99-107,125
+  s_beb7708abc1117::t_3c2f477708dc70 2,8,10-11,13-31,34-45,49,55-61,71-72,77-98,116,127
+  s_beb7708abc1117::t_1b79924c281973 108-110,113-115
+  s_beb7708abc1117::t_180ec9fdf95ba2 117-119,122-124
+  s_beb7708abc1117::t_31ebb39ce39738 126
+  s_beb7708abc1117::t_ab9e5195ec0866 111-112,120-121
+apps/web/src/hooks/use-capstone-session.ts
+  s_beb7708abc1117::t_5a116ccfdd9f16 11,27-36,38-44,55-56
+apps/web/src/app/tracks/[trackSlug]/capstone/page.tsx
+  s_beb7708abc1117::t_a6b02cd3ae5e01 264,267,269-270
+  s_beb7708abc1117::t_7b68340197b752 7-8
+  s_beb7708abc1117::t_2ef28b6f0319ad 234-251
+  s_beb7708abc1117::t_81db4557d12cb8 122-127,132-135,140-167
+apps/capstone-runner/tests/unit/session-activities.test.ts
+  s_beb7708abc1117::t_5173e356a4bd04 1-83
+apps/capstone-runner/tests/unit/verifier.test.ts
+  s_beb7708abc1117::t_d97d5c77cb30c1 2,5,7-9,11,13-16,22,26-32,37-38,43,50-51,56,62,64,71,73,79-80,87-88,92-95,97-99
+apps/capstone-runner/src/workflows/capstone-session.ts
+  s_beb7708abc1117::t_3c7d0b50a2a716 59-60,63
+  s_beb7708abc1117::t_2053c334af5e96 7-11
+  s_beb7708abc1117::t_ce5e49375f37df 38-42
+  s_beb7708abc1117::t_b42196109d8895 52
+apps/capstone-runner/src/activities/index.ts
+  s_beb7708abc1117::t_67f5bf86ab04a0 3,5,8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "9481d92ca84149d28a7ced0acf67d58c2317ee59",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
