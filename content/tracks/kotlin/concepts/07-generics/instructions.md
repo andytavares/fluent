@@ -80,6 +80,12 @@ filterByType<String>(mixed)   // ["hello", "world"]
 
 Declaration-site variance is the bigger mental shift for Java developers. Instead of writing `List<? extends Animal>` everywhere you pass a list, you declare `interface List<out E>` once and it just works.
 
+## Watch out
+
+- `reified` type parameters only exist on functions also marked `inline` — the compiler needs to paste the function body (and thus the concrete type) at each call site. A non-`inline` generic function can never inspect its own `T` at runtime.
+- `out T` means `T` can only appear in "out" (return) positions in the class's public API — put it in an `in` position (e.g. a function parameter of type `T`) and the compiler rejects the declaration.
+- A type bound (`<T : Comparable<T>>`) restricts what callers can pass — it does not, by itself, make `T` comparable *to another type*; both operands of `<`/`>` must be the same `T`.
+
 ## The task
 
 Implement the following in `stub.kt`:

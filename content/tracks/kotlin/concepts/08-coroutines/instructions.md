@@ -2,100 +2,121 @@
 
 ## What you'll learn
 
-Kotlin coroutines are the language's answer to async programming. They run concurrent code sequentially-looking — no callbacks, no `Promise` chains, no thread pools in your business logic.
+"Coroutines" in Kotlin usually means the `kotlinx.coroutines` library (`suspend`, `launch`, `async`) — but that machinery is built on a simpler, language-level feature: **suspendable functions that yield values one at a time**, available in the standard library with no external dependency. This lesson teaches that foundation — coroutine fundamentals via the `sequence { }` builder — which is what `kotlinx.coroutines` itself compiles down to. Understanding it tells you what "suspend" actually means before you add a library on top.
 
 ## Key concepts
 
-**`suspend` functions**
+**A `sequence { }` builder pauses and resumes a block of code**
 
-A `suspend` function can pause execution without blocking a thread. It can only be called from another `suspend` function or from a coroutine builder:
-
-```kotlin
-suspend fun fetchUser(id: Int): User {
-    delay(100)   // suspends, not blocks
-    return User(id, "Ada")
-}
-```
-
-`delay` is the coroutine equivalent of `Thread.sleep` — it suspends the current coroutine and frees the thread to do other work.
-
-**Coroutine builders**
-
-| Builder | Returns | Use case |
-|---------|---------|----------|
-| `runBlocking` | T | Bridge between blocking and suspending code (tests, `main`) |
-| `launch` | `Job` | Fire-and-forget coroutine |
-| `async` | `Deferred<T>` | Concurrent computation, call `.await()` for the result |
+`sequence { ... }` returns a `Sequence<T>` whose body runs lazily, one step at a time, driven by whoever consumes it:
 
 ```kotlin
-import kotlinx.coroutines.*
-
-fun main() = runBlocking {
-    val job = launch {
-        delay(1000)
-        println("done after 1s")
+val naturals = sequence {
+    var n = 1
+    while (true) {
+        yield(n)   // suspends here — hands control back to the consumer
+        n++        // resumes here on the next request
     }
-    job.join()   // wait for the launched coroutine
 }
+
+naturals.take(5).toList()   // [1, 2, 3, 4, 5]
 ```
 
-**`async`/`await` for concurrent work**
+`yield` is doing the same conceptual job `suspend`/`await` does in `kotlinx.coroutines`: it pauses execution at that exact point and returns control to the caller, resuming from the same spot (with the same local variables) the next time a value is requested. This is why the block above can hold an infinite loop — nothing runs until you ask for a value, and only as many steps run as you actually consume.
+
+**`yield` vs `yieldAll`**
 
 ```kotlin
-fun main() = runBlocking {
-    val a = async { fetchA() }   // starts immediately
-    val b = async { fetchB() }   // starts immediately, runs concurrently
-    println(a.await() + b.await())   // waits for both
+val letters = sequence {
+    yield("a")
+    yieldAll(listOf("b", "c"))   // yields each element in turn
+    yield("d")
 }
+
+letters.toList()   // [a, b, c, d]
 ```
 
-Without `async`, sequential calls would run one after the other. With `async`, they overlap.
+**Laziness is the whole point**
 
-**`CoroutineScope` and structured concurrency**
-
-Every coroutine runs inside a scope. Child coroutines are automatically cancelled when their parent scope is cancelled. This prevents coroutine leaks — the structured concurrency guarantee:
+Each element is computed only when requested. Side effects (like a `println`) prove the order of execution:
 
 ```kotlin
-coroutineScope {   // creates a scope that waits for all children
-    launch { task1() }
-    launch { task2() }
-}   // resumes only after both tasks complete
+val traced = sequence {
+    println("computing 1")
+    yield(1)
+    println("computing 2")
+    yield(2)
+}
+
+val iter = traced.iterator()
+iter.next()   // prints "computing 1", returns 1
+iter.next()   // prints "computing 2", returns 2
 ```
 
-**Dispatchers**
+Nothing prints until `next()` is called — contrast with `listOf(...)` or `map`/`filter` on a `List`, which compute everything eagerly up front.
 
-Dispatchers control which thread(s) a coroutine runs on:
+**Building pipelines lazily**
 
-| Dispatcher | Threads | Use for |
-|-----------|---------|---------|
-| `Dispatchers.Default` | CPU-count threads | CPU-intensive work |
-| `Dispatchers.IO` | Elastic pool (64+) | Blocking I/O |
-| `Dispatchers.Main` | Main/UI thread | Android UI updates |
-| `Dispatchers.Unconfined` | Caller thread | Testing / special cases |
+`map`, `filter`, and `take` on a `Sequence` are themselves lazy — chaining them builds a pipeline that only pulls as many source elements as needed:
 
 ```kotlin
-withContext(Dispatchers.IO) {
-    readFileFromDisk()   // runs on IO thread pool
+val result = sequence {
+    var n = 1
+    while (true) { yield(n); n++ }
 }
+    .filter { it % 3 == 0 }
+    .map { it * it }
+    .take(3)
+    .toList()
+
+// result = [9, 36, 81] — computed from just enough of the infinite source
 ```
 
-## vs other languages
+**Generators that carry state between yields**
 
-| Language | Async model | Keyword |
-|----------|------------|---------|
-| JavaScript | Event loop, `Promise` | `async`/`await` |
-| Swift | `async`/`await` (Swift 5.5+) | `async`/`await` |
-| Go | Goroutines + channels | `go` keyword |
-| Java | `CompletableFuture`, `ExecutorService` | None built-in |
+Because the block is a normal function body, you can maintain arbitrary local state across suspensions — this is how you write generator-style algorithms (Fibonacci, tree traversal, pagination) without manually threading an index:
 
-Go's goroutines are conceptually similar but lack structured cancellation. JavaScript's async/await is syntactically closest but single-threaded. Kotlin's `async`/`await` can run on multiple threads and the scope model makes cancellation automatic.
+```kotlin
+val fibonacci = sequence {
+    var a = 0
+    var b = 1
+    while (true) {
+        yield(a)
+        val next = a + b
+        a = b
+        b = next
+    }
+}
 
-**Note:** Coroutines require the `kotlinx-coroutines-core` library. Add `implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")` to your Gradle build.
+fibonacci.take(6).toList()   // [0, 1, 1, 2, 3, 5]
+```
+
+## Watch out
+
+- `sequence { }` bodies are **restricted suspend functions** — you can only call `yield`/`yieldAll` from directly inside the builder (or a helper explicitly written to accept that scope), not from an arbitrary callback or a different thread. This is a single-threaded, synchronous laziness tool, not a concurrency primitive.
+- Forgetting `take`/another terminal limit on an infinite sequence (like `naturals` above) will hang forever if you call `.toList()` on it directly.
+- A `Sequence` can only be iterated correctly for something that supports being computed repeatedly from scratch, or once, depending on the builder — recomputing a `sequence { println(...) }` from the start re-runs its side effects. If you need to reuse computed values, convert once with `.toList()` and reuse the list.
+- This is deliberately **not** `kotlinx.coroutines`. Real multithreaded suspension (`launch`, `async`, dispatchers) requires that separate library and its own runtime; nothing here starts a background thread.
 
 ## The task
 
-The tasks here use `runBlocking` to bridge blocking test code with coroutines. Implement the following in `stub.kt`:
+Implement the following top-level functions in `stub.kt`, all built on the `sequence { }` / `yield` machinery above — no external libraries.
 
-- `suspend fun retry(times: Int, block: suspend () -> String): String` — calls `block` up to `times` times. Returns the first successful result. If `block` throws on every attempt, rethrow the last exception.
-- `suspend fun fetchAll(ids: List<Int>, fetch: suspend (Int) -> String): List<String>` — fetches all IDs concurrently using `async` and returns results in the same order as `ids`.
-- `suspend fun withTimeout(ms: Long, block: suspend () -> String): String?` — runs `block` and returns its result. Returns `null` if `block` takes longer than `ms` milliseconds. Use `kotlinx.coroutines.withTimeoutOrNull`.
+- `fun fibonacciSequence(): Sequence<Long>` — an infinite lazy sequence of Fibonacci numbers starting `0, 1, 1, 2, 3, 5, ...`.
+- `fun <T> pairwise(seq: Sequence<T>): Sequence<Pair<T, T>>` — given a sequence `[a, b, c, d]`, lazily yields consecutive pairs `[(a, b), (b, c), (c, d)]`. An input with fewer than 2 elements yields nothing.
+- `fun countdown(from: Int): Sequence<Int>` — lazily yields `from, from - 1, ..., 1, 0` and then stops (finite — must terminate on its own, not rely on `take`).
+- `fun <T> interleave(a: Sequence<T>, b: Sequence<T>): Sequence<T>` — lazily yields elements alternating from `a` and `b` (`a[0], b[0], a[1], b[1], ...`). When one sequence runs out, yields the remainder of the other.
+
+```kotlin
+fibonacciSequence().take(6).toList()                     // [0, 1, 1, 2, 3, 5]
+
+pairwise(sequenceOf(1, 2, 3, 4)).toList()                // [(1, 2), (2, 3), (3, 4)]
+pairwise(sequenceOf(1)).toList()                          // []
+pairwise(sequenceOf<Int>()).toList()                      // []
+
+countdown(3).toList()                                     // [3, 2, 1, 0]
+countdown(0).toList()                                      // [0]
+
+interleave(sequenceOf(1, 3, 5), sequenceOf(2, 4)).toList() // [1, 2, 3, 4, 5]
+interleave(sequenceOf<Int>(), sequenceOf(1, 2)).toList()   // [1, 2]
+```

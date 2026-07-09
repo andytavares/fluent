@@ -1,4 +1,4 @@
-require_relative "exemplar"
+require_relative "stub"
 
 $passed = 0
 $failed = 0

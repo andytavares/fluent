@@ -100,23 +100,41 @@ Force evaluation with `to_a`, `first(n)`, or `force`.
 
 The `<=>` (spaceship) operator is Ruby-specific. It returns `-1`, `0`, or `1` and is what `sort` calls. Implement it on your own class with `include Comparable` to get `<`, `>`, `<=`, `>=`, `between?`, and `clamp` for free.
 
+## Watch out
+
+- `sort_by { |x| key }` is **not guaranteed stable** in general, but calling it twice on the same input with a deterministic key gives deterministic output — when you need a tie-break, put it explicitly in the key (`[-freq, word]`) rather than relying on original order.
+- `(1..Float::INFINITY).select { }` with no `.lazy` will hang forever — `select`/`map`/`sort_by` on a non-lazy enumerator always try to consume the whole sequence before returning anything. `.lazy` must come **before** the chain of operations, and you still need `.first(n)` or `.force` at the end to pull results out.
+- `Hash.new(0)` is the right default for counting occurrences (`h[word] += 1` works even the first time), but remember it's still `nil` for `.fetch` — `each_with_object`/`Hash.new(0)` only affects `[]` reads.
+- `min_by`/`max_by` return `nil` on an empty collection rather than raising — always check for that if the input might be empty.
+
 ## The task
 
+Implement three functions built on `Enumerable` methods (`each_with_object`, `sort_by`, `lazy`).
+
+**`top_n_words(text, n)`** — splits `text` on whitespace, counts occurrences of each word, and returns the `n` most frequent words as an `Array` of strings. Ties are broken alphabetically (ascending). If `text` has fewer than `n` distinct words, returns all of them.
+
 ```ruby
-def top_n_words(text, n)
-  # Split text on whitespace, count occurrences of each word,
-  # return the n most frequent words as an Array of strings,
-  # sorted by frequency descending (ties broken alphabetically ascending).
-end
+top_n_words("the cat sat on the mat the cat", 2)  # => ["the", "cat"]
+top_n_words("the cat sat on the mat the cat", 1)  # => ["the"]
+top_n_words("a b a b c", 2)                       # => ["a", "b"]  — tie broken alphabetically
+top_n_words("", 3)                                # => []
+top_n_words("hello", 5)                           # => ["hello"]  — fewer words than n
+```
 
-def running_total(nums)
-  # Return an Array where each element is the cumulative sum up to that index.
-  # E.g. [1, 2, 3] => [1, 3, 6]
-end
+**`running_total(nums)`** — returns an `Array` the same length as `nums`, where each element is the cumulative sum of all elements up to and including that index.
 
-def first_n_multiples(base, n)
-  # Using a lazy enumerator over an infinite range,
-  # return the first n positive multiples of base.
-  # E.g. first_n_multiples(3, 4) => [3, 6, 9, 12]
-end
+```ruby
+running_total([1, 2, 3, 4, 5])  # => [1, 3, 6, 10, 15]
+running_total([5])              # => [5]
+running_total([])               # => []
+running_total([1, -1, 3])       # => [1, 0, 3]
+```
+
+**`first_n_multiples(base, n)`** — using a **lazy enumerator** over an infinite range, returns the first `n` positive multiples of `base` as an `Array`.
+
+```ruby
+first_n_multiples(3, 5)  # => [3, 6, 9, 12, 15]
+first_n_multiples(7, 3)  # => [7, 14, 21]
+first_n_multiples(10, 1) # => [10]
+first_n_multiples(4, 0)  # => []
 ```

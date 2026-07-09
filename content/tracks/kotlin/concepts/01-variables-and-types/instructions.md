@@ -78,6 +78,12 @@ val z: Double = x.toDouble()
 
 The key Kotlin distinction: **nullability is part of the type system and checked at compile time**. You cannot pass a `String?` where a `String` is required without handling the null case first.
 
+## Watch out
+
+- `val` prevents *reassignment*, not mutation — `val list = mutableListOf(1, 2)` still lets you `list.add(3)`. Only the binding itself is fixed.
+- There's no implicit widening: `val x: Long = 5` (an `Int` literal) is a compile error — you need `5L` or `5.toLong()`. This trips up engineers coming from Java/C/Go, where `int` silently promotes to `long`.
+- `isNullOrBlank()` treats a whitespace-only string the same as an empty one; `isEmpty()` does not. Pick the right check for the "no meaningful content" case.
+
 ## The task
 
 Implement the following top-level functions in `stub.kt`:

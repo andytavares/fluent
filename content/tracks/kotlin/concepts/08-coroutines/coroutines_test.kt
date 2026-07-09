@@ -1,5 +1,3 @@
-import kotlinx.coroutines.*
-
 var passed = 0
 var failed = 0
 
@@ -19,75 +17,59 @@ fun assertEquals(expected: Any?, actual: Any?, msg: String = "") {
 }
 
 fun main() {
-    println("retry")
-    test("succeeds on first try") {
-        val result = runBlocking { retry(3) { "ok" } }
-        assertEquals("ok", result)
+    println("fibonacciSequence")
+    test("first 6") {
+        assertEquals(listOf(0L, 1L, 1L, 2L, 3L, 5L), fibonacciSequence().take(6).toList())
     }
-    test("succeeds after failures") {
-        var attempts = 0
-        val result = runBlocking {
-            retry(3) {
-                attempts++
-                if (attempts < 3) throw Exception("not yet") else "done"
-            }
-        }
-        assertEquals("done", result)
-        assertEquals(3, attempts)
+    test("first 1") {
+        assertEquals(listOf(0L), fibonacciSequence().take(1).toList())
     }
-    test("rethrows after exhausting attempts") {
-        var threw = false
-        try {
-            runBlocking { retry(2) { throw Exception("always fails") } }
-        } catch (e: Exception) {
-            threw = true
-            assertEquals("always fails", e.message)
-        }
-        if (!threw) throw Exception("expected exception to be thrown")
+    test("first 10") {
+        assertEquals(listOf(0L, 1L, 1L, 2L, 3L, 5L, 8L, 13L, 21L, 34L), fibonacciSequence().take(10).toList())
     }
-    test("single attempt success") {
-        val result = runBlocking { retry(1) { "one shot" } }
-        assertEquals("one shot", result)
+    test("is lazy — infinite source doesn't hang when bounded") {
+        val result = fibonacciSequence().filter { it % 2 == 0L }.take(3).toList()
+        assertEquals(listOf(0L, 2L, 8L), result)
     }
 
-    println("fetchAll")
-    test("preserves order") {
-        val result = runBlocking {
-            fetchAll(listOf(3, 1, 2)) { id -> "item-$id" }
-        }
-        assertEquals(listOf("item-3", "item-1", "item-2"), result)
+    println("pairwise")
+    test("basic") {
+        assertEquals(listOf(1 to 2, 2 to 3, 3 to 4), pairwise(sequenceOf(1, 2, 3, 4)).toList())
     }
-    test("empty list") {
-        val result = runBlocking { fetchAll(emptyList()) { "x" } }
-        assertEquals(emptyList<String>(), result)
+    test("single element yields nothing") {
+        assertEquals(emptyList<Pair<Int, Int>>(), pairwise(sequenceOf(1)).toList())
     }
-    test("single item") {
-        val result = runBlocking { fetchAll(listOf(7)) { id -> "id=$id" } }
-        assertEquals(listOf("id=7"), result)
+    test("empty yields nothing") {
+        assertEquals(emptyList<Pair<Int, Int>>(), pairwise(sequenceOf<Int>()).toList())
     }
-    test("runs concurrently") {
-        val start = System.currentTimeMillis()
-        runBlocking {
-            fetchAll(listOf(1, 2, 3)) { delay(100); "done" }
-        }
-        val elapsed = System.currentTimeMillis() - start
-        // If sequential, would take ~300ms; concurrent should be ~100ms
-        if (elapsed > 250) throw Exception("fetchAll appears sequential (took ${elapsed}ms, expected ~100ms)")
+    test("two elements yields one pair") {
+        assertEquals(listOf("a" to "b"), pairwise(sequenceOf("a", "b")).toList())
     }
 
-    println("withTimeout")
-    test("returns result when fast") {
-        val result = runBlocking { withTimeout(1000) { "fast" } }
-        assertEquals("fast", result)
+    println("countdown")
+    test("from 3") { assertEquals(listOf(3, 2, 1, 0), countdown(3).toList()) }
+    test("from 0") { assertEquals(listOf(0), countdown(0).toList()) }
+    test("from 1") { assertEquals(listOf(1, 0), countdown(1).toList()) }
+    test("terminates without take") {
+        // If countdown relied on an infinite loop, toList() here would hang the test.
+        assertEquals(listOf(5, 4, 3, 2, 1, 0), countdown(5).toList())
     }
-    test("returns null when slow") {
-        val result = runBlocking {
-            withTimeout(50) {
-                delay(200)
-                "too slow"
-            }
-        }
-        assertEquals(null, result)
+
+    println("interleave")
+    test("equal lengths") {
+        assertEquals(listOf(1, 2, 3, 4, 5, 6), interleave(sequenceOf(1, 3, 5), sequenceOf(2, 4, 6)).toList())
+    }
+    test("a longer than b") {
+        assertEquals(listOf(1, 2, 3, 4, 5), interleave(sequenceOf(1, 3, 5), sequenceOf(2, 4)).toList())
+    }
+    test("b longer than a") {
+        assertEquals(listOf(1, 2, 4), interleave(sequenceOf(1), sequenceOf(2, 4)).toList())
+    }
+    test("a empty") {
+        assertEquals(listOf(1, 2), interleave(sequenceOf<Int>(), sequenceOf(1, 2)).toList())
+    }
+    test("both empty") {
+        assertEquals(emptyList<Int>(), interleave(sequenceOf<Int>(), sequenceOf<Int>()).toList())
     }
 
     println("\n$passed passed, $failed failed")
