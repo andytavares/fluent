@@ -9,6 +9,8 @@ export function useCapstoneSession(enrollmentId: string) {
 
   const createSession = trpc.capstone.createSession.useMutation();
   const verifyStepMutation = trpc.capstone.verifyStep.useMutation();
+  const deployCodeMutation = trpc.capstone.deployCode.useMutation();
+  const runQueryMutation = trpc.capstone.runQuery.useMutation();
   const getStatus = trpc.capstone.getSessionStatus.useQuery(
     { sessionId: sessionId ?? "" },
     { enabled: !!sessionId, refetchInterval: 3000 },
@@ -34,6 +36,24 @@ export function useCapstoneSession(enrollmentId: string) {
     [sessionId, verifyStepMutation],
   );
 
+  // Synchronous: writes the learner's code into their pod and restarts their
+  // server, returning whatever it printed (including compile errors).
+  const deployCode = useCallback(
+    async (code: string) => {
+      if (!sessionId) return null;
+      return deployCodeMutation.mutateAsync({ sessionId, code });
+    },
+    [sessionId, deployCodeMutation],
+  );
+
+  const runQuery = useCallback(
+    async (sql: string) => {
+      if (!sessionId) return null;
+      return runQueryMutation.mutateAsync({ sessionId, sql });
+    },
+    [sessionId, runQueryMutation],
+  );
+
   // completedAt is authoritative for expiry: teardown closes the session row
   // when the workflow ends. Client-side math against dbExpiresAt would lie —
   // the workflow's inactivity window resets on every signal, the timestamp
@@ -55,5 +75,9 @@ export function useCapstoneSession(enrollmentId: string) {
     startError,
     verifyStep,
     isVerifying: verifyStepMutation.isPending,
+    deployCode,
+    isDeploying: deployCodeMutation.isPending,
+    runQuery,
+    isRunningQuery: runQueryMutation.isPending,
   };
 }

@@ -3,138 +3,61 @@
 import { useParams } from "next/navigation";
 import { trpc } from "@/lib/trpc/client";
 import { useCapstoneSession } from "@/hooks/use-capstone-session";
-import { CapstoneStepList, DatabaseStatusPanel, CodeEditor, OutputPane } from "@fluent/ui";
+import {
+  CapstoneStepList,
+  DatabaseStatusPanel,
+  CodeEditor,
+  Tabs,
+  VerificationChecklist,
+  SqlResultsGrid,
+} from "@fluent/ui";
 import { useState } from "react";
-import { useSandboxRun } from "@/hooks/use-sandbox-run";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-interface StepDef {
-  stepNumber: number;
-  title: string;
-  instructions: string;
+interface HttpTestResult {
+  method: string;
+  path: string;
+  status: number;
+  passed: boolean;
+  response_body?: unknown;
 }
 
-const STEP_DEFS: StepDef[] = [
-  {
-    stepNumber: 1,
-    title: "Health endpoint",
-    instructions: `## Step 1 — GET /health
-
-Make a handler at \`GET /health\` that returns a JSON response:
-
-\`\`\`json
-{ "status": "ok" }
-\`\`\`
-
-The test will hit this endpoint and assert status 200 with that exact body.
-
-**Tips**
-- Use \`encoding/json\` or your framework's JSON helper.
-- No database needed yet — this is a smoke test for your server setup.`,
-  },
-  {
-    stepNumber: 2,
-    title: "POST /users",
-    instructions: `## Step 2 — POST /users
-
-Create a user and persist it in the database. Accept JSON:
-
-\`\`\`json
-{ "name": "Alice", "email": "alice@example.com" }
-\`\`\`
-
-Return **201 Created** with the inserted row including its generated \`id\` and \`created_at\` fields.
-
-**Tips**
-- Validate that both \`name\` and \`email\` are present; return 400 if missing.
-- Use the \`DATABASE_URL\` env var to connect (it's already set in your session).
-- Suggested table: \`CREATE TABLE users (id SERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, created_at TIMESTAMPTZ DEFAULT NOW())\`.`,
-  },
-  {
-    stepNumber: 3,
-    title: "GET /users/:id",
-    instructions: `## Step 3 — GET /users/:id
-
-Fetch a single user by their integer \`id\`.
-
-- Return **200** with the user object if found.
-- Return **404** with \`{ "error": "not found" }\` if the id doesn't exist.
-
-**Tips**
-- Parse the path param as an integer; return 400 for non-numeric ids.
-- Reuse the DB connection pool you created in Step 2.`,
-  },
-  {
-    stepNumber: 4,
-    title: "PUT /users/:id",
-    instructions: `## Step 4 — PUT /users/:id
-
-Update an existing user's \`name\` and/or \`email\`.
-
-Accept a partial body (only send fields that should change). Return the updated record on **200**, or **404** if the user doesn't exist.
-
-**Tips**
-- Build the UPDATE statement dynamically based on which fields are present.
-- Return the full updated row, not just the fields that changed.`,
-  },
-  {
-    stepNumber: 5,
-    title: "DELETE /users/:id",
-    instructions: `## Step 5 — DELETE /users/:id
-
-Delete a user by id.
-
-- Return **204 No Content** on success.
-- Return **404** if the user doesn't exist.
-
-**Tips**
-- Check the number of rows affected; if 0, the id wasn't found.
-- A 204 response must have an empty body.`,
-  },
-  {
-    stepNumber: 6,
-    title: "GET /users (paginated)",
-    instructions: `## Step 6 — GET /users with pagination
-
-List all users with cursor-based or offset pagination via query params:
-
-- \`?page=1&limit=10\` (default: page 1, limit 10, max limit 100)
-
-Return:
-
-\`\`\`json
-{
-  "users": [...],
-  "total": 42,
-  "page": 1,
-  "limit": 10
-}
-\`\`\`
-
-**Tips**
-- Use \`OFFSET (page - 1) * limit\` and a separate \`COUNT(*)\` query for total.
-- Clamp limit to 100 max to prevent abuse.
-- Order by \`created_at DESC\` so newest users appear first.`,
-  },
-];
+const DEFAULT_STUB = "package main\n\n// Build your Go CRUD API here.\n// Listen on :8080 and read DATABASE_URL from your environment.\n";
 
 export default function CapstonePage() {
   const { trackSlug } = useParams<{ trackSlug: string }>();
-  const [code, setCode] = useState("package main\n\n// Build your Go CRUD API here\n");
+  const [code, setCode] = useState(DEFAULT_STUB);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<"code" | "database">("code");
+  const [compileLog, setCompileLog] = useState<string | null>(null);
+  const [sql, setSql] = useState("SELECT * FROM users;");
+  const [queryResult, setQueryResult] = useState<
+    { kind: "rows"; columns: string[]; rows: string[][] } | { kind: "message"; message: string } | { kind: "error"; message: string } | null
+  >(null);
 
   const enrollmentsQuery = trpc.enrollments.listEnrollments.useQuery();
   const enrollment = enrollmentsQuery.data?.find((e) => e.track.slug === trackSlug);
 
-  const { sessionId, session, dbStatus, start, isStarting, startError, verifyStep, isVerifying } =
-    useCapstoneSession(enrollment?.id ?? "");
+  const stepsQuery = trpc.capstone.getSteps.useQuery({ trackSlug });
+  const stepDefs = stepsQuery.data ?? [];
 
-  // Scratch-run the learner's code (capstone verification is separate: the
-  // Verify button signals the workflow, which runs the step's verify.sh).
-  const { runState, lines, exitCode, runtimeMs, run } = useSandboxRun("go");
+  const {
+    sessionId,
+    session,
+    dbStatus,
+    start,
+    isStarting,
+    startError,
+    verifyStep,
+    isVerifying,
+    deployCode,
+    isDeploying,
+    runQuery,
+    isRunningQuery,
+  } = useCapstoneSession(enrollment?.id ?? "");
 
-  const steps = STEP_DEFS.map((def) => ({
+  const steps = stepDefs.map((def) => ({
     stepNumber: def.stepNumber,
     title: def.title,
     status: (
@@ -146,10 +69,32 @@ export default function CapstonePage() {
     ) as "locked" | "current" | "completed",
   }));
 
-  const selectedDef = STEP_DEFS.find((d) => d.stepNumber === selectedStep) ?? null;
+  const selectedDef = stepDefs.find((d) => d.stepNumber === selectedStep) ?? null;
+
+  // The workflow only records a completion (with its real http_tests) when a
+  // step PASSES — a failed verify writes nothing, so there's no per-check
+  // detail to show for a step that's still "current". This is real data,
+  // not synthesized: once the 3s status poll picks up a completed step, its
+  // stored verificationResult is exactly what verify.sh produced.
+  const selectedCompletion = session?.stepCompletions?.find(
+    (sc: { stepNumber: number }) => sc.stepNumber === selectedStep,
+  ) as { verificationResult?: { http_tests?: HttpTestResult[] } } | undefined;
+  const verificationResults = selectedCompletion?.verificationResult?.http_tests ?? null;
 
   function handleStepClick(stepNumber: number) {
     setSelectedStep((prev) => (prev === stepNumber ? null : stepNumber));
+  }
+
+  async function handleDeploy() {
+    setCompileLog(null);
+    const result = await deployCode(code);
+    if (result) setCompileLog(result.compileLog || "(no output)");
+  }
+
+  async function handleRunQuery() {
+    setQueryResult(null);
+    const result = await runQuery(sql);
+    if (result) setQueryResult(result);
   }
 
   return (
@@ -161,7 +106,7 @@ export default function CapstonePage() {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
+        {/* Sidebar: the ticket board */}
         <aside className="w-72 shrink-0 overflow-auto border-r border-[var(--color-border-subtle)] p-5 flex flex-col gap-4">
           <DatabaseStatusPanel
             status={dbStatus}
@@ -183,7 +128,7 @@ export default function CapstonePage() {
           ) : (
             <CapstoneStepList
               steps={steps}
-              totalSteps={6}
+              totalSteps={stepDefs.length}
               selectedStep={selectedStep}
               onStepClick={handleStepClick}
             />
@@ -192,9 +137,9 @@ export default function CapstonePage() {
 
         {/* Main content */}
         <div className="flex flex-1 flex-col overflow-hidden">
-          {/* Step instructions panel (shown when a step is selected) */}
+          {/* Ticket detail panel (shown when a step is selected) */}
           {selectedDef && (
-            <div className="shrink-0 overflow-auto border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)] p-5 max-h-64">
+            <div className="shrink-0 overflow-auto border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)] p-5 max-h-80">
               <div className="flex items-start justify-between gap-4 mb-3">
                 <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">
                   Step {selectedDef.stepNumber} — {selectedDef.title}
@@ -221,26 +166,71 @@ export default function CapstonePage() {
               <div className="prose prose-sm prose-invert max-w-none text-[var(--color-text-secondary)] [&_code]:rounded [&_code]:bg-[var(--color-surface-overlay)] [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-xs [&_pre]:rounded-lg [&_pre]:bg-[var(--color-surface-overlay)] [&_pre]:p-3 [&_pre_code]:bg-transparent [&_pre_code]:p-0">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedDef.instructions}</ReactMarkdown>
               </div>
+              <div className="mt-3">
+                <VerificationChecklist results={verificationResults} isVerifying={isVerifying} />
+              </div>
             </div>
           )}
 
-          {/* Editor + output */}
-          <div className="flex flex-1 flex-col gap-4 overflow-auto p-6">
-            <CodeEditor
-              value={code}
-              onChange={setCode}
-              onRun={() => void run(code)}
-            />
-            <OutputPane
-              state={runState}
-              lines={lines}
-              {...(exitCode !== undefined ? { exitCode } : {})}
-              {...(runtimeMs !== undefined ? { runtimeMs } : {})}
-            />
+          {/* Code / Database workspace */}
+          <div className="flex flex-1 flex-col overflow-hidden p-6">
+            <Tabs
+              tabs={[
+                { id: "code", label: "Code" },
+                { id: "database", label: "Database" },
+              ]}
+              activeTab={activeTab}
+              onTabChange={(id) => setActiveTab(id as "code" | "database")}
+            >
+              {activeTab === "code" ? (
+                <div className="flex flex-1 flex-col gap-4 overflow-auto p-4">
+                  <CodeEditor value={code} onChange={setCode} onRun={() => void handleDeploy()} />
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => void handleDeploy()}
+                      disabled={isDeploying || !sessionId || dbStatus !== "connected"}
+                      className="rounded-lg bg-[var(--color-interactive-secondary)] px-4 py-2 text-sm font-medium text-[var(--color-interactive-secondary-text)] border border-[var(--color-border-default)] disabled:opacity-50"
+                    >
+                      {isDeploying ? "Deploying…" : "Deploy"}
+                    </button>
+                    <p className="text-xs text-[var(--color-text-secondary)]">
+                      Deploys your code to your session's live server (port 8080), replacing whatever was running before.
+                    </p>
+                  </div>
+                  {compileLog !== null && (
+                    <pre className="flex-1 overflow-auto rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-raised)] p-3 text-xs font-mono text-[var(--color-text-primary)] whitespace-pre-wrap">
+                      {compileLog || "(no output)"}
+                    </pre>
+                  )}
+                </div>
+              ) : (
+                <div className="flex flex-1 flex-col gap-3 overflow-auto p-4">
+                  <p className="text-xs text-[var(--color-text-secondary)]">
+                    Run any SQL against your session's own isolated database.
+                  </p>
+                  <textarea
+                    value={sql}
+                    onChange={(e) => setSql(e.target.value)}
+                    rows={4}
+                    spellCheck={false}
+                    className="w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-raised)] p-3 font-mono text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-interactive-primary)]"
+                  />
+                  <div>
+                    <button
+                      onClick={() => void handleRunQuery()}
+                      disabled={isRunningQuery || !sessionId || dbStatus !== "connected"}
+                      className="rounded-lg bg-[var(--color-interactive-primary)] px-4 py-2 text-sm font-medium text-[var(--color-interactive-primary-text)] disabled:opacity-50"
+                    >
+                      {isRunningQuery ? "Running…" : "Run query"}
+                    </button>
+                  </div>
+                  <SqlResultsGrid result={queryResult} isRunning={isRunningQuery} />
+                </div>
+              )}
+            </Tabs>
           </div>
         </div>
       </div>
     </main>
   );
 }
-

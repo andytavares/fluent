@@ -3,9 +3,16 @@ import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "./trpc.js";
 import { startCapstoneWorkflow, signalLearnerActive, signalVerifyStep } from "../temporal/capstone-client.js";
 import { CapstonePrereqService } from "../service/capstone-prereq.js";
+import { createContentStore } from "@fluent/content-config";
 import type { PrismaClient } from "@prisma/client";
 
 const CAPSTONE_RUNNER_URL = process.env["CAPSTONE_RUNNER_URL"] ?? "http://localhost:3004";
+const content = createContentStore();
+
+// Every capstone track has exactly one project for v1 (go-crud-api); this
+// mirrors ADR-005's per-language track slug pattern closely enough that a
+// second track's capstone can follow the same convention when it exists.
+const CAPSTONE_SLUG_BY_TRACK: Record<string, string> = { go: "go-crud-api" };
 
 /** Loads the session and throws FORBIDDEN if it doesn't belong to this user (same pattern as submissions.getSubmission). */
 async function ownedSession(db: PrismaClient, sessionId: string, userId: string) {
@@ -17,6 +24,14 @@ async function ownedSession(db: PrismaClient, sessionId: string, userId: string)
 }
 
 export const capstoneRouter = router({
+  getSteps: protectedProcedure
+    .input(z.object({ trackSlug: z.string() }))
+    .query(({ input }) => {
+      const capstoneSlug = CAPSTONE_SLUG_BY_TRACK[input.trackSlug];
+      if (!capstoneSlug) return [];
+      return content.getCapstoneSteps(capstoneSlug);
+    }),
+
   getCapstone: protectedProcedure
     .input(z.object({ trackSlug: z.string() }))
     .query(async ({ ctx, input }) => {
