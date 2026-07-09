@@ -70,12 +70,48 @@ Enum.sum([1, 2, 3])                        # => 6
 
 The immutability is the critical point. `list = [0 | list]` does not modify `list` — it creates a new list that shares the tail with the old one. No copies of `tail` are made. This is why prepend is cheap and append is not.
 
+## Watch out
+
+- `list ++ [x]` inside a loop is the classic anti-pattern: each append copies the whole left-hand list, turning an O(n) operation into an accidental O(n²) one. Prepend and reverse once at the end instead.
+- Naive (non-accumulator) recursion like `1 + my_length(tail)` builds up a chain of pending additions on the call stack — for very large lists this can blow the stack. The accumulator pattern avoids this because the recursive call is the last operation (tail call).
+- An accumulator built by prepending (`[head | acc]`) comes out **reversed** relative to the input — that's why `my_reverse` and `my_map` typically end with one final `Enum.reverse/1` (or a second accumulator pass).
+
 ## The task
 
-Implement these functions in the `ListUtils` module without using `Enum` (except where noted):
+Implement these functions in the `ListUtils` module without using `Enum` (except where noted).
 
-1. `my_length(list)` — returns the number of elements using tail-recursive accumulator.
-2. `my_sum(list)` — returns the sum of all elements, tail-recursive.
-3. `my_reverse(list)` — reverses a list without `Enum.reverse`, tail-recursive.
-4. `my_map(list, fun)` — applies `fun` to every element, returns new list. Hint: build the result in reverse then reverse it once, or use the naive head-recursive version (both are acceptable here).
-5. `flatten(list)` — flattens one level of nesting: `[[1,2],[3,4]]` → `[1,2,3,4]`. You may use `Enum.concat/1` or `++`.
+**`my_length(list)`** — returns the number of elements, using a tail-recursive accumulator.
+
+```elixir
+ListUtils.my_length([])          # => 0
+ListUtils.my_length([1, 2, 3])   # => 3
+```
+
+**`my_sum(list)`** — returns the sum of all elements, tail-recursive.
+
+```elixir
+ListUtils.my_sum([])           # => 0
+ListUtils.my_sum([1, 2, 3, 4]) # => 10
+```
+
+**`my_reverse(list)`** — reverses a list without calling `Enum.reverse`, tail-recursive.
+
+```elixir
+ListUtils.my_reverse([])        # => []
+ListUtils.my_reverse([1, 2, 3]) # => [3, 2, 1]
+```
+
+**`my_map(list, fun)`** — applies `fun` to every element and returns a new list in the original order. Hint: build the result in reverse then reverse it once, or use the naive head-recursive version — both are acceptable here.
+
+```elixir
+ListUtils.my_map([], & &1)                     # => []
+ListUtils.my_map([1, 2, 3], fn x -> x * 2 end) # => [2, 4, 6]
+```
+
+**`flatten(list)`** — flattens one level of nesting. You may use `Enum.concat/1` or `++` for this one.
+
+```elixir
+ListUtils.flatten([[1, 2], [3, 4]])   # => [1, 2, 3, 4]
+ListUtils.flatten([])                 # => []
+ListUtils.flatten([[1], [], [2, 3]])  # => [1, 2, 3]
+```

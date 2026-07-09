@@ -73,12 +73,39 @@ In production you rarely use raw `spawn` — OTP's `GenServer` (concept 07) hand
 
 The key difference from Go channels: an Elixir `receive` selects by pattern, not by channel. A process has one mailbox; messages pile up and are pattern-matched in arrival order. A message that doesn't match any clause stays in the mailbox.
 
+## Watch out
+
+- A process that isn't looping (i.e. doesn't call itself again after handling a message) exits after its function body returns — it can only ever receive one message. The echo server below must recurse to stay alive across multiple `ask/2` calls.
+- `receive ... after` only fires the timeout if **no message ever arrives** — if the target process is dead, `send/2` still succeeds silently (sending to a dead PID is a no-op, not an error), so you rely on the `after` clause, not a `send` failure, to detect this.
+- Calling `ask/2` twice in a row against the same PID works only if the server loops back into `receive` after each reply — a one-shot `receive` handles the first message and then the process exits, leaving the second `ask/2` to time out.
+
 ## The task
 
-Implement these functions in the `Messenger` module:
+Implement these functions in the `Messenger` module — a minimal request/reply "echo" service built directly on `spawn`/`send`/`receive`.
 
-1. `echo_server()` — spawns a process that loops, waiting for `{:echo, sender, msg}` messages and replies with `{:echo_reply, msg}`. The loop continues until the process receives `:stop`. Returns the PID of the spawned process.
+**`echo_server()`** — spawns a process that loops, waiting for `{:echo, sender, msg}` messages; for each one it sends `{:echo_reply, msg}` back to `sender` and loops again. The loop ends when the process receives the atom `:stop`. Returns the PID of the spawned process.
 
-2. `ask(pid, msg)` — sends `{:echo, self(), msg}` to `pid`, then blocks with `receive` until a `{:echo_reply, reply}` arrives (timeout 1000 ms). Returns the reply string, or `{:error, :timeout}`.
+```elixir
+pid = Messenger.echo_server()
+is_pid(pid)  # => true
+```
 
-3. `stop(pid)` — sends `:stop` to `pid`.
+**`ask(pid, msg)`** — sends `{:echo, self(), msg}` to `pid`, then blocks in `receive` until a matching `{:echo_reply, reply}` arrives, with a 1000 ms timeout. Returns `reply` on success, or `{:error, :timeout}` if nothing arrives in time (e.g. because `pid` is no longer running).
+
+```elixir
+pid = Messenger.echo_server()
+Messenger.ask(pid, "hello")  # => "hello"
+Messenger.ask(pid, "again")  # => "again"  — same process, called twice
+
+Messenger.stop(pid)
+Messenger.ask(pid, "hello")  # => {:error, :timeout}  — server has exited
+```
+
+**`stop(pid)`** — sends `:stop` to `pid`, causing its receive loop to end (and the process to exit) on its next iteration.
+
+```elixir
+pid = Messenger.echo_server()
+Messenger.stop(pid)
+Process.sleep(10)
+Process.alive?(pid)  # => false
+```

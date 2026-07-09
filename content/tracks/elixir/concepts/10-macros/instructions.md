@@ -76,14 +76,45 @@ Bad macro use case: anything that can be a function. The Elixir community maxim 
 
 The closest analogy is Lisp macros — both operate on the language's own data representation of code. The difference from C preprocessor macros is total: Elixir macros are type-aware, hygienic, and operate on the parsed AST rather than raw text.
 
+## Watch out
+
+- A module cannot `import` (or `require` and call qualified) its **own** macros in the same top-level compile unit as the `defmodule` that defines them — Elixir needs the module fully compiled first. This is why demo/usage code that calls `debug`/`repeat` right after defining `MyMacros` in the same file must live in a separate compilation pass (for example wrapped in `Code.eval_string/1`) — a real, easy-to-hit footgun, not a hypothetical one.
+- `unquote(expr)` splices the caller's AST into your `quote` block *unevaluated* — if you evaluate `expr` twice inside the macro body (e.g. once to log it, once to return it) the caller's code runs twice, which is wrong for anything with a side effect. Bind it to a variable inside `quote` once, then reuse the variable.
+- `n` in `repeat(n, do: block)` must be a literal integer known at compile time — `List.duplicate/2` runs while *expanding* the macro, not at runtime, so a runtime-only value for `n` (e.g. a variable holding user input) won't work here.
+
 ## The task
 
-Implement two macros in the `MyMacros` module:
+Implement two macros and one regular function in the `MyMacros` module.
 
-1. `debug(expr)` — a macro that evaluates `expr`, prints `"DEBUG: <source code> => <value>"` to stdout, and returns the value. For example, `debug(1 + 2)` should print `"DEBUG: 1 + 2 => 3"` and return `3`. Use `Macro.to_string/1` to get the source text.
+**`debug(expr)`** — a macro that evaluates `expr`, prints `"DEBUG: <source code> => <value>"` to stdout, and returns the value. Use `Macro.to_string/1` (called on the macro's *unevaluated* AST argument, at expansion time) to render the source text.
 
-2. `repeat(n, do: block)` — a macro that generates code equivalent to calling `block` `n` times (where `n` is a compile-time integer literal). It should expand to a sequence of `block` expressions — not a loop at runtime.
+```elixir
+debug(1 + 2)
+# prints: DEBUG: 1 + 2 => 3
+# returns: 3
 
-Also implement a regular function (not a macro):
+debug("foo" <> "bar")
+# prints: DEBUG: "foo" <> "bar" => "foobar"
+# returns: "foobar"
+```
 
-3. `measure(fun)` — takes a zero-arity anonymous function, calls it, and returns `{result, microseconds}` where `microseconds` is the wall-clock time taken. Use `:timer.tc/1`.
+**`repeat(n, do: block)`** — a macro that expands to code equivalent to calling `block` `n` times in sequence — `n` is a compile-time integer literal, and the expansion is a fixed sequence of statements, not a runtime loop.
+
+```elixir
+repeat(3, do: IO.puts("hello"))
+# prints "hello" three times — equivalent to writing IO.puts("hello") three times in a row
+
+repeat(0, do: IO.puts("hello"))
+# prints nothing — expands to zero statements
+```
+
+**`measure(fun)`** — a regular function (not a macro) that takes a zero-arity anonymous function, calls it, and returns `{result, microseconds}` where `microseconds` is the wall-clock time the call took. Use `:timer.tc/1`.
+
+```elixir
+{result, us} = measure(fn -> 99 end)
+result  # => 99
+is_integer(us) and us >= 0  # => true
+
+{_, us} = measure(fn -> :timer.sleep(1) end)
+us >= 1000  # => true — at least 1000 microseconds for a 1ms sleep
+```

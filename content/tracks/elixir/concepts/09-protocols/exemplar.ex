@@ -3,12 +3,12 @@ defprotocol Serializable do
   def serialize(value)
 
   @doc "Returns the byte size of the serialized form."
-  def byte_size(value)
+  def byte_length(value)
 end
 
 defimpl Serializable, for: Integer do
   def serialize(n), do: "int:#{n}"
-  def byte_size(n), do: byte_size(serialize(n))
+  def byte_length(n), do: byte_size(serialize(n))
 end
 
 defimpl Serializable, for: Float do
@@ -17,12 +17,12 @@ defimpl Serializable, for: Float do
     "float:#{formatted}"
   end
 
-  def byte_size(n), do: byte_size(serialize(n))
+  def byte_length(n), do: byte_size(serialize(n))
 end
 
 defimpl Serializable, for: BitString do
   def serialize(s), do: "str:#{s}"
-  def byte_size(s), do: byte_size(serialize(s))
+  def byte_length(s), do: byte_size(serialize(s))
 end
 
 defimpl Serializable, for: List do
@@ -31,7 +31,7 @@ defimpl Serializable, for: List do
     "list:[#{items}]"
   end
 
-  def byte_size(list), do: byte_size(serialize(list))
+  def byte_length(list), do: byte_size(serialize(list))
 end
 
 IO.inspect(Serializable.serialize(42))

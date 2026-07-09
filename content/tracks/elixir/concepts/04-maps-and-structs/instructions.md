@@ -77,9 +77,15 @@ Coming from Go: Elixir structs are closer to Go structs in that unknown fields a
 
 Coming from Python/JS: the immutable update `%{map | key: val}` looks like mutation but creates a new map. The original is unchanged.
 
+## Watch out
+
+- `%{item | quantity: new_qty}` raises `KeyError` if `quantity` isn't already a key on `item` — it's an update, not an insert. Use `Map.put/3` (or set the field in `%Item{}` at construction) for new keys.
+- `restock`/`apply_discount`/etc. all **return a new struct** — they never mutate the argument. If a test still sees the old value on the original variable after calling one of these, that's expected: rebind the return value to see the change.
+- `Enum.find/2` (used for `find_by_name`) returns `nil`, not `{:error, ...}`, when nothing matches — Elixir's convention here is a plain nullable return, not a tagged tuple.
+
 ## The task
 
-Implement these functions in the `Inventory` module:
+Implement these functions in the `Inventory` module, which manages `%Item{}` structs:
 
 ```elixir
 defmodule Item do
@@ -87,8 +93,40 @@ defmodule Item do
 end
 ```
 
-1. `new_item(name, price, quantity)` — returns a `%Item{}` struct.
-2. `total_value(item)` — returns `price * quantity`.
-3. `restock(item, amount)` — returns a new `%Item{}` with `quantity` increased by `amount`.
-4. `apply_discount(item, percent)` — returns a new `%Item{}` with `price` reduced by `percent` percent (e.g., 10 means 10% off).
-5. `find_by_name(items, name)` — given a list of `%Item{}` structs, returns the first one with a matching name, or `nil` if not found.
+**`new_item(name, price, quantity)`** — returns a populated `%Item{}` struct.
+
+```elixir
+Inventory.new_item("Apple", 1.50, 100)
+# => %Item{name: "Apple", price: 1.50, quantity: 100}
+```
+
+**`total_value(item)`** — returns `item.price * item.quantity`.
+
+```elixir
+apple = Inventory.new_item("Apple", 1.50, 100)
+Inventory.total_value(apple)  # => 150.0
+Inventory.total_value(Inventory.new_item("X", 5.0, 0))  # => 0.0
+```
+
+**`restock(item, amount)`** — returns a **new** `%Item{}` with `quantity` increased by `amount`; all other fields unchanged. The original `item` is untouched.
+
+```elixir
+Inventory.restock(apple, 50).quantity  # => 150
+apple.quantity                          # => 100  — original unchanged
+```
+
+**`apply_discount(item, percent)`** — returns a new `%Item{}` with `price` reduced by `percent` percent (e.g. `10` means 10% off).
+
+```elixir
+Inventory.apply_discount(apple, 10).price  # => 1.35
+Inventory.apply_discount(apple, 0).price   # => 1.50  — no change
+```
+
+**`find_by_name(items, name)`** — given a list of `%Item{}` structs, returns the first one whose `name` matches, or `nil` if none do.
+
+```elixir
+banana = Inventory.new_item("Banana", 0.75, 200)
+Inventory.find_by_name([apple, banana], "Banana")  # => %Item{name: "Banana", ...}
+Inventory.find_by_name([apple, banana], "Orange")  # => nil
+Inventory.find_by_name([], "Apple")                # => nil
+```

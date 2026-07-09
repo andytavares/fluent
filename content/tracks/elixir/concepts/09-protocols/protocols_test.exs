@@ -1,4 +1,4 @@
-Code.require_file("exemplar.ex", __DIR__)
+Code.require_file("stub.ex", __DIR__)
 
 defmodule ProtocolsTest do
   defp run do
@@ -33,14 +33,17 @@ defmodule ProtocolsTest do
       check("serialize mixed list", fn ->
         Serializable.serialize([1, "a"]) == "list:[int:1,str:a]"
       end),
-      check("byte_size integer", fn ->
-        Serializable.byte_size(42) == byte_size("int:42")
+      check("byte_length integer", fn ->
+        Serializable.byte_length(42) == byte_size("int:42")
       end),
-      check("byte_size string", fn ->
-        Serializable.byte_size("hello") == byte_size("str:hello")
+      check("byte_length string", fn ->
+        Serializable.byte_length("hello") == byte_size("str:hello")
       end),
-      check("byte_size list", fn ->
-        Serializable.byte_size([1, 2]) == byte_size("list:[int:1,int:2]")
+      check("byte_length list", fn ->
+        Serializable.byte_length([1, 2]) == byte_size("list:[int:1,int:2]")
+      end),
+      check("byte_length float", fn ->
+        Serializable.byte_length(1.0) == byte_size("float:1.00")
       end)
     ]
 
