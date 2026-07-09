@@ -1,0 +1,41 @@
+content/tracks/terraform/concepts/04-expressions-and-functions/instructions.md
+  s_beb7708abc1117::t_6b8554f770ae45 100-106,109-147
+content/tracks/terraform/concepts/06-count-and-for-each/instructions.md
+  s_beb7708abc1117::t_ee15b75f45a11f 103-109,112-160
+content/tracks/terraform/concepts/07-modules/instructions.md
+  s_beb7708abc1117::t_1030354479d921 102-108,111-147,149-153
+content/tracks/terraform/concepts/06-count-and-for-each/count-and-for-each_test.sh
+  s_beb7708abc1117::t_776c5797f53ff2 38
+content/tracks/terraform/concepts/08-state-management/instructions.md
+  s_beb7708abc1117::t_95b159f62ae331 91-97,100-124,126-130
+content/tracks/terraform/concepts/02-variables-and-outputs/instructions.md
+  s_beb7708abc1117::t_b0ed93931b5a18 78-84,87-111,113-117
+content/tracks/terraform/concepts/01-providers-and-resources/instructions.md
+  s_beb7708abc1117::t_8b39c8ad677420 82-88,91-111,113-116
+content/tracks/terraform/concepts/02-variables-and-outputs/variables-and-outputs_test.sh
+  s_beb7708abc1117::t_53a794f746adbf 41
+content/tracks/terraform/concepts/10-workspaces-and-environments/instructions.md
+  s_beb7708abc1117::t_2a7200a45a397b 112-118,121-154
+content/tracks/terraform/concepts/05-locals-and-depends-on/instructions.md
+  s_beb7708abc1117::t_74b9c91d6b5ada 88-94,97-128,130-134
+content/tracks/terraform/concepts/09-backends-and-remote-state/instructions.md
+  s_beb7708abc1117::t_097e8022abe95e 99-105,108-138
+content/tracks/terraform/concepts/03-data-sources/instructions.md
+  s_beb7708abc1117::t_3ecdb666f0f94a 89-95,98-124,126-129
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a222e8c1c6ef748737308cef8efaddd27b31a711",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
