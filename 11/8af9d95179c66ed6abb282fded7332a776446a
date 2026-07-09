@@ -1,0 +1,29 @@
+apps/api/src/router/enrollments.ts
+  s_beb7708abc1117::t_709bdefd4b25aa 46-48
+apps/api/tests/integration/enrollment-reset.test.ts
+  s_beb7708abc1117::t_7daf5dd6778a4c 1-52
+packages/content-config/src/schema.ts
+  s_beb7708abc1117::t_49a3810eb47116 6-8
+apps/api/prisma/migrations/20260709001919_cascade_deletes_drop_prereq/migration.sql
+  s_beb7708abc1117::t_1e8856e07eac52 1-41
+apps/api/prisma/schema.prisma
+  s_beb7708abc1117::t_b44be6c272f9e3 151
+  s_beb7708abc1117::t_fc6b6425852398 217,220
+  s_beb7708abc1117::t_fbc7e394816946 167,233,254,267
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "118af9d95179c66ed6abb282fded7332a776446a",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
