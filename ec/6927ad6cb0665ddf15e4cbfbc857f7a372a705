@@ -1,0 +1,270 @@
+content/tracks/dsa-javascript/concepts/03-sliding-window/stub.js
+  s_beb7708abc1117::t_c64caa15a41bd1 4-47
+  s_beb7708abc1117::t_3c09135cd42575 1-3
+  s_beb7708abc1117::t_0ad7c6c6f44305 48-50
+content/tracks/dsa-javascript/concepts/08-linked-list-patterns/testout_stub.js
+  s_beb7708abc1117::t_a01a60a9f8bd16 1-40
+content/tracks/dsa-javascript/concepts/21-math/exemplar.js
+  s_beb7708abc1117::t_c86cf3a2877110 1-100
+content/tracks/dsa-javascript/concepts/18-binary-search/exemplar.js
+  s_beb7708abc1117::t_4c7bb6653aa97c 3-119
+  s_beb7708abc1117::t_4375d50d73a586 1-2
+  s_beb7708abc1117::t_78f6dc4b1ecf2c 120-121
+content/tracks/dsa-javascript/concepts/20-bit-manipulation/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-javascript/concepts/06-intervals/stub.js
+  s_beb7708abc1117::t_80796c1899718d 1-51
+content/tracks/dsa-javascript/concepts/14-tries/testout_test.js
+  s_beb7708abc1117::t_4bab6921bd156b 1-103,105,107-109,111-118,121-229
+  s_beb7708abc1117::t_df75cd4bbea22a 104,106,110,119-120
+content/tracks/dsa-javascript/concepts/03-sliding-window/testout_stub.js
+  s_beb7708abc1117::t_f6a0000688e0a6 1-27
+content/tracks/dsa-javascript/concepts/10-tree-bfs/testout_stub.js
+  s_beb7708abc1117::t_4994a5d1415a3d 1-28
+content/tracks/dsa-javascript/concepts/07-stacks/instructions.md
+  s_beb7708abc1117::t_338bdc87ff511f 1-240
+content/tracks/dsa-javascript/concepts/04-matrix/instructions.md
+  s_beb7708abc1117::t_fa208a9390533b 1-252
+content/tracks/dsa-javascript/concepts/18-binary-search/testout_test.js
+  s_beb7708abc1117::t_fb682d070272f6 1-200
+content/tracks/dsa-javascript/concepts/09-tree-dfs/tree_dfs_test.js
+  s_beb7708abc1117::t_b02b4075b14bd6 1-172
+content/tracks/dsa-javascript/concepts/20-bit-manipulation/stub.js
+  s_beb7708abc1117::t_b5c64782d346bd 1-61
+content/tracks/dsa-javascript/concepts/19-heaps-and-priority-queues/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-javascript/concepts/07-stacks/exemplar.js
+  s_beb7708abc1117::t_8f5c57341b39ab 4-100
+  s_beb7708abc1117::t_d493da019125cf 1-3
+  s_beb7708abc1117::t_c23f7664072813 101-103
+content/tracks/java/concepts/05-optional/instructions.md
+  s_beb7708abc1117::t_5289c6463ba00e 5,22,41-42,45-51,55-61,63-78
+content/tracks/dsa-javascript/concepts/08-linked-list-patterns/stub.js
+  s_beb7708abc1117::t_da0fceae22a52b 2-4,6-14,18-22,24-26,31-34,36-39,43-47,49-51,55,58-75
+content/tracks/dsa-javascript/concepts/06-intervals/instructions.md
+  s_beb7708abc1117::t_d4835523514f3a 1-212
+content/tracks/dsa-javascript/concepts/04-matrix/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-javascript/concepts/07-stacks/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-javascript/concepts/04-matrix/exemplar.js
+  s_beb7708abc1117::t_1e91e5481276e7 1-107
+content/tracks/dsa-javascript/concepts/21-math/math_test.js
+  s_beb7708abc1117::t_b801c7093e0a52 1-154
+content/tracks/dsa-javascript/concepts/10-tree-bfs/exemplar.js
+  s_beb7708abc1117::t_65f776d4786a63 2-4,7-12,19-21,23-24,35-37,39,46-51,60-62,64,71,73-74,76-77,88-92,95-98
+content/tracks/dsa-javascript/concepts/19-heaps-and-priority-queues/instructions.md
+  s_beb7708abc1117::t_d93a0e69996d8d 1-260
+content/tracks/java/concepts/06-inheritance-and-polymorphism/instructions.md
+  s_beb7708abc1117::t_be3d0196c8cad5 5,33,59-64,67-77,79-94
+content/tracks/dsa-javascript/concepts/21-math/testout_stub.js
+  s_beb7708abc1117::t_7367b6928a12b2 1-34
+content/tracks/dsa-javascript/concepts/04-matrix/stub.js
+  s_beb7708abc1117::t_ce181d5e61da2f 1-59
+content/tracks/dsa-javascript/concepts/03-sliding-window/exemplar.js
+  s_beb7708abc1117::t_c157c48cb46ba7 4-101
+  s_beb7708abc1117::t_c98b7c55af2f8d 1-3
+  s_beb7708abc1117::t_b3c620149660bf 102-104
+content/tracks/java/concepts/02-interfaces/SolutionTest.java
+  s_beb7708abc1117::t_38a99724ec9e0f 27-28
+content/tracks/dsa-javascript/concepts/21-math/instructions.md
+  s_beb7708abc1117::t_4e917cf9b5a726 1-299
+content/tracks/dsa-javascript/concepts/18-binary-search/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-javascript/concepts/20-bit-manipulation/testout_stub.js
+  s_beb7708abc1117::t_5292c9cb4e85cd 1-35
+content/tracks/dsa-javascript/concepts/18-binary-search/stub.js
+  s_beb7708abc1117::t_441493ea893434 3-62
+  s_beb7708abc1117::t_0a6a7950b4e00b 1-2
+  s_beb7708abc1117::t_b659646ad22af0 63-64
+content/tracks/dsa-javascript/concepts/10-tree-bfs/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-javascript/concepts/20-bit-manipulation/exemplar.js
+  s_beb7708abc1117::t_e0c9a921f20f99 1-84
+content/tracks/java/concepts/09-concurrency/instructions.md
+  s_beb7708abc1117::t_2168102767d58c 59-65,69-75,77-93
+  s_beb7708abc1117::t_66150bd38c0a85 5
+content/tracks/dsa-javascript/concepts/19-heaps-and-priority-queues/stub.js
+  s_beb7708abc1117::t_f0f21af7036d92 3-105
+  s_beb7708abc1117::t_70ca328068bf44 1-2
+  s_beb7708abc1117::t_30fe3adc13cb93 106-107
+content/tracks/dsa-javascript/concepts/18-binary-search/testout_stub.js
+  s_beb7708abc1117::t_b9c82122f7bb3b 1-36
+content/tracks/dsa-javascript/concepts/09-tree-dfs/testout_stub.js
+  s_beb7708abc1117::t_6b9eac6999a48f 1-38
+content/tracks/java/concepts/02-interfaces/instructions.md
+  s_beb7708abc1117::t_fb716bc38b1a61 5,59-65,69-73,75,78-98
+content/tracks/dsa-javascript/concepts/21-math/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-javascript/concepts/09-tree-dfs/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-javascript/concepts/21-math/testout_test.js
+  s_beb7708abc1117::t_9fa05947ace0e7 1-185
+content/tracks/dsa-javascript/concepts/10-tree-bfs/stub.js
+  s_beb7708abc1117::t_a2fc8c91fc623b 2-4,7-8,12-13,18-19,23-24,29-30,34-35,39-43,46-49
+content/tracks/dsa-javascript/concepts/19-heaps-and-priority-queues/testout_stub.js
+  s_beb7708abc1117::t_1634e12c8a5a0b 1-66
+content/tracks/java/concepts/07-collections-framework/instructions.md
+  s_beb7708abc1117::t_83c42f009d4cb8 5,56-62,66-76,78-100
+content/tracks/dsa-javascript/concepts/14-tries/exemplar.js
+  s_beb7708abc1117::t_a7c64bff9fbe52 4-124
+  s_beb7708abc1117::t_ad2cfe1fc1d919 1-3
+  s_beb7708abc1117::t_1562fbe73b06ab 125-127
+content/tracks/dsa-javascript/concepts/14-tries/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-javascript/concepts/05-hash-maps-and-sets/testout_test.js
+  s_beb7708abc1117::t_53578a5ccdc9c3 1-166
+content/tracks/dsa-javascript/concepts/07-stacks/stacks_test.js
+  s_beb7708abc1117::t_2a0ac4e8e0b7d2 2-144
+content/tracks/dsa-javascript/concepts/06-intervals/testout_test.js
+  s_beb7708abc1117::t_c9a36e5ec50066 1-173
+content/tracks/dsa-javascript/concepts/09-tree-dfs/testout_test.js
+  s_beb7708abc1117::t_4896834f224f4e 1-231
+content/tracks/dsa-javascript/concepts/07-stacks/stub.js
+  s_beb7708abc1117::t_4b89d6a8d190f9 4-76
+  s_beb7708abc1117::t_ac41c991682fbc 1-3
+  s_beb7708abc1117::t_41f3f79b8d1c2f 77-79
+content/tracks/dsa-javascript/concepts/19-heaps-and-priority-queues/exemplar.js
+  s_beb7708abc1117::t_064993f1d79c5b 3-161
+  s_beb7708abc1117::t_8a103fea0d1905 1-2,162-163
+content/tracks/dsa-javascript/concepts/08-linked-list-patterns/linked_list_patterns_test.js
+  s_beb7708abc1117::t_cea2aba06b7cd4 1-175
+content/tracks/dsa-javascript/concepts/10-tree-bfs/instructions.md
+  s_beb7708abc1117::t_ac9556e0e5a1fb 5,9,11,18-20,22-23,34,36,38-43,45-49,52-65,68-70,74-76,78,80,82-87,89,91,93,95,97-98,100-129,131-161,165-183,187,190-192,195-196,199,202-211,214-215,218,221-222,224-225
+content/tracks/dsa-javascript/concepts/18-binary-search/binary_search_test.js
+  s_beb7708abc1117::t_f743ae75581723 1-145
+content/tracks/dsa-javascript/concepts/04-matrix/matrix_test.js
+  s_beb7708abc1117::t_6fef601f915dcb 1-144
+content/tracks/dsa-javascript/concepts/19-heaps-and-priority-queues/heaps_and_priority_queues_test.js
+  s_beb7708abc1117::t_9c091a809d04e1 1-193
+content/tracks/java/concepts/03-generics/instructions.md
+  s_beb7708abc1117::t_e412434410ba07 5,33,47-53,57-64,66-85
+content/tracks/java/concepts/10-functional-interfaces/SolutionTest.java
+  s_beb7708abc1117::t_37f204bbc240e7 33
+content/tracks/dsa-javascript/concepts/14-tries/testout_stub.js
+  s_beb7708abc1117::t_492814c8cdfad9 1-49
+content/tracks/dsa-javascript/concepts/04-matrix/testout_test.js
+  s_beb7708abc1117::t_512e2efacfeb4e 1-147,149-209
+  s_beb7708abc1117::t_2f357d987482a1 148
+content/tracks/dsa-javascript/concepts/09-tree-dfs/exemplar.js
+  s_beb7708abc1117::t_ae162fc4d22956 2-4,7-8,10,14,19-24,27-32,36-37,39-57,59-63,66,69,71-75
+content/tracks/dsa-javascript/concepts/21-math/stub.js
+  s_beb7708abc1117::t_53372ff3561aee 1-60
+content/tracks/dsa-javascript/concepts/05-hash-maps-and-sets/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-javascript/concepts/05-hash-maps-and-sets/testout_stub.js
+  s_beb7708abc1117::t_b8114164627903 1-35
+content/tracks/dsa-javascript/concepts/06-intervals/intervals_test.js
+  s_beb7708abc1117::t_def271b2124a42 1-135
+content/tracks/dsa-javascript/concepts/10-tree-bfs/tree_bfs_test.js
+  s_beb7708abc1117::t_4e58ae78d385a1 1-119
+content/tracks/dsa-javascript/concepts/08-linked-list-patterns/exemplar.js
+  s_beb7708abc1117::t_2c09b1b70b752b 2-4,7-9,11,16,19,25-51,53-83,85-95,100,103-120
+content/tracks/java/concepts/04-streams-api/instructions.md
+  s_beb7708abc1117::t_e72a525e391568 5,46-52,56-62,64-77
+content/tracks/dsa-javascript/concepts/06-intervals/testout_stub.js
+  s_beb7708abc1117::t_a4a97c33b5b457 1-26
+content/tracks/dsa-javascript/concepts/14-tries/instructions.md
+  s_beb7708abc1117::t_b46687d1636848 1-208
+content/tracks/dsa-javascript/concepts/08-linked-list-patterns/instructions.md
+  s_beb7708abc1117::t_6adab7794f7a17 1,5,9,11,14-15,18,20-35,39,42,44,47-51,53,56-61,63,66,68,70,72,74-79,81,83-89,91,93,95,97-196,198-295,299,302-303,306-308,310,313-319,322,324,326,328-350,353-355,357-358
+content/tracks/dsa-javascript/concepts/03-sliding-window/sliding_window_test.js
+  s_beb7708abc1117::t_34793801335b59 110
+  s_beb7708abc1117::t_c44ebea3612327 1-109,111-117
+content/tracks/dsa-javascript/concepts/09-tree-dfs/instructions.md
+  s_beb7708abc1117::t_e61a29ce83bae7 1,5,9,11-34,38,43-45,47,50-54,58,60-62,65-70,74,76,78,80,82-87,89,91,93-99,101,103,105-221,223-345,349,352-358,362-363,366,369-371,374-376,378,381-384,387,389-391,394-396,398-412
+content/tracks/dsa-javascript/concepts/18-binary-search/instructions.md
+  s_beb7708abc1117::t_108805f6003299 5-283
+  s_beb7708abc1117::t_d72a5e369a4486 2-4
+  s_44e86341f55da7::t_929bde41003452 1
+content/tracks/dsa-javascript/concepts/05-hash-maps-and-sets/exemplar.js
+  s_beb7708abc1117::t_6b00b4650aaa9c 4-44,46,51,57,61-64,68-69,72,80,83-87
+content/tracks/dsa-javascript/concepts/10-tree-bfs/testout_test.js
+  s_beb7708abc1117::t_b6af2d536208ea 1-179
+content/tracks/dsa-javascript/concepts/03-sliding-window/instructions.md
+  s_beb7708abc1117::t_579b38196d8f17 5-212
+  s_beb7708abc1117::t_2907ae3a3e6f66 2-4
+  s_e43f78da070c06::t_b632fb6046d6a9 1
+content/tracks/dsa-javascript/concepts/03-sliding-window/testout_test.js
+  s_beb7708abc1117::t_e8ef7a3091c69b 1-143
+content/tracks/dsa-javascript/concepts/14-tries/stub.js
+  s_beb7708abc1117::t_a83981fef4fd8f 4-97
+  s_beb7708abc1117::t_b10fa13d83bded 1-3
+  s_beb7708abc1117::t_8e99cb56baf5a4 98-100
+content/tracks/dsa-javascript/concepts/09-tree-dfs/stub.js
+  s_beb7708abc1117::t_71ac8a5fd73fc2 2-4,7-8,12,17-19,22-24,29-31,33-35,39-51,54-60
+content/tracks/dsa-javascript/concepts/04-matrix/testout_stub.js
+  s_beb7708abc1117::t_115dff12f8f9b9 1-24
+content/tracks/dsa-javascript/concepts/07-stacks/testout_stub.js
+  s_beb7708abc1117::t_4aaea3a4c14cae 1-40
+content/tracks/dsa-javascript/concepts/08-linked-list-patterns/testout_test.js
+  s_beb7708abc1117::t_203b3eda4ddb96 1-205
+content/tracks/dsa-javascript/concepts/20-bit-manipulation/instructions.md
+  s_beb7708abc1117::t_a40a1c6354060b 1-238,240-242
+  s_beb7708abc1117::t_7bc4994b95ccf2 239
+content/tracks/java/concepts/08-exception-handling/instructions.md
+  s_beb7708abc1117::t_3548109e3e14cb 5,54-59,62-68,70-88
+content/tracks/dsa-javascript/concepts/03-sliding-window/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-javascript/concepts/08-linked-list-patterns/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-javascript/concepts/20-bit-manipulation/bit_manipulation_test.js
+  s_beb7708abc1117::t_cf4d0c02d24202 1-123
+content/tracks/dsa-javascript/concepts/14-tries/tries_test.js
+  s_beb7708abc1117::t_1b3bc32d392fcc 2-173
+  s_beb7708abc1117::t_8e20737675a244 1
+  s_beb7708abc1117::t_d2664b6bdb2352 174-176
+content/tracks/dsa-javascript/concepts/05-hash-maps-and-sets/instructions.md
+  s_beb7708abc1117::t_722b2d8ec76607 1,5,9,11,13-35,38-41,44,46-48,51-55,59,61,64-68,72,74,76,78,80-85,87,89-95,97,99,101,103,105-106,108-186,188-264,268-270,272,275-278,281,283-285,288-292,295,297-299,302-304,306-319
+content/tracks/java/concepts/01-classes-and-objects/instructions.md
+  s_beb7708abc1117::t_f4df2977e69b1e 5,38-43,46-73
+content/tracks/dsa-javascript/concepts/20-bit-manipulation/testout_test.js
+  s_beb7708abc1117::t_ba37e333b045e8 1-180
+content/tracks/java/concepts/03-generics/stub.java
+  s_beb7708abc1117::t_33635b4c0580f8 21
+content/tracks/java/concepts/10-functional-interfaces/instructions.md
+  s_beb7708abc1117::t_0f98cd53321f11 5,14-18,53-58,61-71,73-93
+content/tracks/dsa-javascript/concepts/07-stacks/testout_test.js
+  s_beb7708abc1117::t_8aa9d8c085274a 193-195,199
+  s_beb7708abc1117::t_da9887da226716 1-192,196-198,200-203
+content/tracks/dsa-javascript/concepts/06-intervals/exemplar.js
+  s_beb7708abc1117::t_415d7caa679544 1-89
+content/tracks/dsa-javascript/concepts/05-hash-maps-and-sets/stub.js
+  s_beb7708abc1117::t_c17c2ee6b39359 4-7,9-12,16-17,20-34,39-40,43-45,49,52-56
+content/tracks/dsa-javascript/concepts/19-heaps-and-priority-queues/testout_test.js
+  s_beb7708abc1117::t_8ba65458f3f34c 1-247
+content/tracks/dsa-javascript/concepts/06-intervals/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "ec6927ad6cb0665ddf15e4cbfbc857f7a372a705",
+  "prompts": {},
+  "sessions": {
+    "s_44e86341f55da7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a42cddd76c2ab3d93",
+        "model": "unknown"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_e43f78da070c06": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a02a1b7a564f04a1c",
+        "model": "unknown"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
