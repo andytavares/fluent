@@ -1,7 +1,20 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "./trpc.js";
 import { startCapstoneWorkflow, signalLearnerActive, signalVerifyStep } from "../temporal/capstone-client.js";
 import { CapstonePrereqService } from "../service/capstone-prereq.js";
+import type { PrismaClient } from "@prisma/client";
+
+const CAPSTONE_RUNNER_URL = process.env["CAPSTONE_RUNNER_URL"] ?? "http://localhost:3004";
+
+/** Loads the session and throws FORBIDDEN if it doesn't belong to this user (same pattern as submissions.getSubmission). */
+async function ownedSession(db: PrismaClient, sessionId: string, userId: string) {
+  const session = await db.capstoneSessions.findUniqueOrThrow({ where: { id: sessionId } });
+  if (session.userId !== userId) {
+    throw new TRPCError({ code: "FORBIDDEN" });
+  }
+  return session;
+}
 
 export const capstoneRouter = router({
   getCapstone: protectedProcedure
@@ -41,17 +54,29 @@ export const capstoneRouter = router({
         data: { userId, enrollmentId: input.enrollmentId },
       });
 
-      await startCapstoneWorkflow(session.id);
+      try {
+        await startCapstoneWorkflow(session.id);
+      } catch {
+        await ctx.db.capstoneSessions.delete({ where: { id: session.id } });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Could not start your capstone environment — this usually means backend services aren't running. Try again in a moment.",
+        });
+      }
       return session;
     }),
 
   getSessionStatus: protectedProcedure
     .input(z.object({ sessionId: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
-      return ctx.db.capstoneSessions.findUniqueOrThrow({
+      const session = await ctx.db.capstoneSessions.findUniqueOrThrow({
         where: { id: input.sessionId },
         include: { stepCompletions: { orderBy: { stepNumber: "asc" } } },
       });
+      if (session.userId !== ctx.user.id!) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      return session;
     }),
 
   verifyStep: protectedProcedure
@@ -62,11 +87,53 @@ export const capstoneRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      await ownedSession(ctx.db, input.sessionId, ctx.user.id!);
+
       // Signal learner activity and trigger step verification in Temporal workflow.
       // The workflow runs the verify activity and, on pass, records the step completion.
       // Poll getSessionStatus to see when stepCompletions updates.
       await signalLearnerActive(input.sessionId);
       await signalVerifyStep(input.sessionId, input.stepNumber);
       return { sessionId: input.sessionId, stepNumber: input.stepNumber, status: "pending" };
+    }),
+
+  deployCode: protectedProcedure
+    .input(z.object({ sessionId: z.string().uuid(), code: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      await ownedSession(ctx.db, input.sessionId, ctx.user.id!);
+
+      const res = await fetch(`${CAPSTONE_RUNNER_URL}/sessions/${input.sessionId}/deploy`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: input.code }),
+      });
+      const body = (await res.json()) as { compileLog?: string; error?: string };
+      if (!res.ok) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: body.error ?? "Deploy failed" });
+      }
+      return body as { compileLog: string };
+    }),
+
+  runQuery: protectedProcedure
+    .input(z.object({ sessionId: z.string().uuid(), sql: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      await ownedSession(ctx.db, input.sessionId, ctx.user.id!);
+
+      const res = await fetch(`${CAPSTONE_RUNNER_URL}/sessions/${input.sessionId}/query`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sql: input.sql }),
+      });
+      const body = (await res.json()) as
+        | { kind: "rows"; columns: string[]; rows: string[][] }
+        | { kind: "message"; message: string }
+        | { error: string };
+      if (!res.ok) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "error" in body ? body.error : "Query failed",
+        });
+      }
+      return body as { kind: "rows"; columns: string[]; rows: string[][] } | { kind: "message"; message: string };
     }),
 });
