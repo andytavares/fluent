@@ -1,0 +1,172 @@
+content/tracks/dsa-python/concepts/02-two-pointers/testout_stub.py
+  s_beb7708abc1117::t_a746df05658452 1-14
+content/tracks/dsa-python/concepts/01-array-string/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-python/concepts/07-stacks/stub.py
+  s_beb7708abc1117::t_a9356a0397077c 12-33,35-37,39-44,48-62,64
+  s_042089e495faa1::t_1ded8c6061822c 1-8
+content/tracks/dsa-python/concepts/04-matrix/instructions.md
+  s_beb7708abc1117::t_e723f0cfbd4fb3 1-254
+content/tracks/dsa-python/concepts/06-intervals/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-python/concepts/06-intervals/testout_stub.py
+  s_beb7708abc1117::t_6be9abac2f032e 1-10
+content/tracks/dsa-python/concepts/06-intervals/testout_test.py
+  s_beb7708abc1117::t_13eb0faba9989b 1-109
+content/tracks/dsa-python/concepts/04-matrix/exemplar.py
+  s_beb7708abc1117::t_7824cc01190fd9 1-92
+content/tracks/dsa-python/concepts/02-two-pointers/exemplar.py
+  s_beb7708abc1117::t_bb9ef0e0bc6b64 1-3,5-14,16-17,21-37,39-49,51-52,56-60,62,66-81,83-84,86-96
+content/tracks/dsa-python/concepts/08-linked-list-patterns/stub.py
+  s_beb7708abc1117::t_fd6ce3da4b2875 9,13-14,21,29,36,43,53
+  s_beb7708abc1117::t_d6da39f7184fc7 1-4,15-17,22-25,30-33,37-39,44-52,54-73,77
+  s_beb7708abc1117::t_f33d337b06d7f2 5,18
+content/tracks/dsa-python/concepts/06-intervals/stub.py
+  s_beb7708abc1117::t_1d2c1439717047 1-38
+content/tracks/dsa-python/concepts/08-linked-list-patterns/exemplar.py
+  s_beb7708abc1117::t_fd6ce3da4b2875 9,13-14,28,48,67,87,97
+  s_beb7708abc1117::t_703467c96e7dbb 1-4,15-18,20-21,24,29-32,34-41,43,49-66,68-86,88-94,98-121
+  s_beb7708abc1117::t_a09a029167fead 5,95-96
+content/tracks/dsa-python/concepts/04-matrix/testout_stub.py
+  s_beb7708abc1117::t_fcb535092763cf 1-10
+content/tracks/dsa-python/concepts/03-sliding-window/sliding-window_test.py
+  s_beb7708abc1117::t_7fc4fcc005288f 66
+  s_042089e495faa1::t_ed5d8ce53326e5 1,18-62
+content/tracks/dsa-python/concepts/02-two-pointers/stub.py
+  s_beb7708abc1117::t_476e231e01097e 1-3,5-7,11-18,20-21,26-28,32,34,36-40
+content/tracks/dsa-python/concepts/07-stacks/exemplar.py
+  s_beb7708abc1117::t_04e263991d0b89 8,39-58,60-80
+  s_beb7708abc1117::t_dbc4202ad2a490 5-7
+  s_beb7708abc1117::t_fc3c34ebd8bf46 9
+  s_beb7708abc1117::t_bc2b0f035be3b4 36-38
+  s_042089e495faa1::t_b424624bc5d1fe 1-4,11-35
+content/tracks/dsa-python/concepts/02-two-pointers/instructions.md
+  s_beb7708abc1117::t_3c23cad80a2173 38-40,43-61,64,66,68-73,75,77-82,84,86,88,90-144,146,148-152,154,156,158-186,190-207,210-212,215-217,219-237,239
+  s_beb7708abc1117::t_39df126285ac0a 5,9,11,14-22,25,27,30-33,36-37
+content/tracks/dsa-python/concepts/05-hash-maps-and-sets/testout_stub.py
+  s_beb7708abc1117::t_d9a27f01f7a1a4 1-14
+content/tracks/dsa-python/concepts/06-intervals/instructions.md
+  s_beb7708abc1117::t_351035240b4300 1-212
+content/tracks/dsa-python/concepts/07-stacks/instructions.md
+  s_beb7708abc1117::t_ef8690a067a636 55,59,69-73,77-144,146,148,150,152-189,193-220,222-230,232,234-242,245
+  s_beb7708abc1117::t_43f5310d8022ee 1,5,9,11,14-17,20,22,25-31,34,36,38,41-46,49-53,56-58,61,63,65,67
+content/tracks/dsa-python/concepts/01-array-string/testout_stub.py
+  s_beb7708abc1117::t_4fac92cd17db46 1-14
+content/tracks/dsa-python/concepts/01-array-string/array-string_test.py
+  s_beb7708abc1117::t_212598ef1e2d23 1-117
+content/tracks/dsa-python/concepts/02-two-pointers/two-pointers_test.py
+  s_beb7708abc1117::t_f49ac02a24c894 68
+  s_beb7708abc1117::t_a1f20848ff1984 1,18-19,22-32,34-49,51-53,55-56,59,61-64
+content/tracks/dsa-python/concepts/03-sliding-window/instructions.md
+  s_beb7708abc1117::t_6a7a0e6ebd8ef2 64-69,73-127,129-134,136,138,140-169,173-178,180-199,201,203-209,212
+  s_beb7708abc1117::t_30622e317e0a46 62-63
+  s_9fd17e45d9dcfd::t_4fd02f535310d1 5,9,11,13,15,18-26,29,31,33,36-43,46,48,50,52-54,56,58,60
+content/tracks/dsa-python/concepts/07-stacks/testout_stub.py
+  s_beb7708abc1117::t_ef95629ec81b69 1-23
+content/tracks/dsa-python/concepts/06-intervals/exemplar.py
+  s_beb7708abc1117::t_7a19f219079015 1-76
+content/tracks/dsa-python/concepts/06-intervals/intervals_test.py
+  s_beb7708abc1117::t_720e81adcfaa5b 1-84
+content/tracks/dsa-python/concepts/01-array-string/testout_test.py
+  s_beb7708abc1117::t_080b41f2c03ee5 1-152
+content/tracks/dsa-python/concepts/03-sliding-window/testout_stub.py
+  s_beb7708abc1117::t_a3a0f0edc6ccb1 1-10
+content/tracks/dsa-python/concepts/04-matrix/matrix_test.py
+  s_beb7708abc1117::t_fcc988a8af8a06 1-120
+content/tracks/dsa-python/concepts/08-linked-list-patterns/testout_test.py
+  s_beb7708abc1117::t_f57c0d78b99b01 1-149
+content/tracks/dsa-python/concepts/08-linked-list-patterns/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-python/concepts/04-matrix/testout_test.py
+  s_beb7708abc1117::t_adb0e0c8f285b6 1-172
+content/tracks/dsa-python/concepts/07-stacks/stacks_test.py
+  s_beb7708abc1117::t_61e601843875f5 32,34,37,41,43,45,49-51,57,61-96,100
+  s_beb7708abc1117::t_38f7a6a09f00bb 1,18-31,33,35-36,38-40,42,44,46-48,52-56,58-60
+content/tracks/dsa-python/concepts/04-matrix/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-python/concepts/07-stacks/testout_test.py
+  s_beb7708abc1117::t_cf6479c0ee3c18 1-142
+content/tracks/dsa-python/concepts/05-hash-maps-and-sets/testout_test.py
+  s_beb7708abc1117::t_275d9081b877ec 1-112
+content/tracks/dsa-python/concepts/08-linked-list-patterns/linked-list-patterns_test.py
+  s_beb7708abc1117::t_08c3eba07477d8 1,18-132,136
+content/tracks/dsa-python/concepts/01-array-string/stub.py
+  s_beb7708abc1117::t_6f49ce8630f78b 1,5-9,13-17,21-25,29-32
+  s_beb7708abc1117::t_19995c8f7fc236 2-4,10-12,18-20,26-28,33-52
+content/tracks/dsa-python/concepts/08-linked-list-patterns/testout_stub.py
+  s_beb7708abc1117::t_ef4734d94ec8a4 1-6,8-11,13-15,17-19,21-23,25-27,29-36,38-43
+  s_beb7708abc1117::t_fd6ce3da4b2875 7,12,16,20,24,28,37
+content/tracks/dsa-python/concepts/03-sliding-window/exemplar.py
+  s_beb7708abc1117::t_679559325530f1 1-2,6-18,20,23-35,39-45,47-50,52-59,61-65,67-79,81-82
+content/tracks/dsa-python/concepts/08-linked-list-patterns/instructions.md
+  s_beb7708abc1117::t_756cf8901a81c9 1,5,9-11,15,18-20,23-27,30-33,36-38,40,43-49,52-54,56,58,61-67,70,72,74,76,78-83,85,87-93,95-208,210-211,213-218,220,222,224-299,303-304,307,310-325,327,329,331-360,363
+content/tracks/dsa-python/concepts/01-array-string/instructions.md
+  s_beb7708abc1117::t_abc686f6cf06bb 1-540
+content/tracks/dsa-python/concepts/03-sliding-window/testout_test.py
+  s_beb7708abc1117::t_e646211beae4f5 1-86
+content/tracks/dsa-python/concepts/05-hash-maps-and-sets/config.json
+  s_beb7708abc1117::t_15de21d0fb109d 1
+content/tracks/dsa-python/concepts/05-hash-maps-and-sets/instructions.md
+  s_beb7708abc1117::t_3dbc63e2617b8b 1,5,9,11,14-16,19,21-35,38-40,43-45,47,50-55,58,60,62-70,72,74,76,78,80-85,89-190,192,194-195,197-202,204-264,268-300,302-307,309,311-316,319
+content/tracks/dsa-python/concepts/05-hash-maps-and-sets/hash-maps-and-sets_test.py
+  s_beb7708abc1117::t_0336a634080412 1,18-19,22-30,32-35,37-65,69
+content/tracks/dsa-python/concepts/03-sliding-window/stub.py
+  s_beb7708abc1117::t_294519ae0269ba 29-34,36
+  s_027266d8bf6411::t_79f28d9a09b094 1-8,12-15,19-25
+content/tracks/dsa-python/concepts/02-two-pointers/testout_test.py
+  s_beb7708abc1117::t_1fa862c5168310 1-92
+content/tracks/dsa-python/concepts/04-matrix/stub.py
+  s_beb7708abc1117::t_3cd82cb4ea648a 1-48
+content/tracks/dsa-python/concepts/05-hash-maps-and-sets/exemplar.py
+  s_beb7708abc1117::t_78f7712e28f1a2 1,3,6-19,21-25,27-29,33-52,54-60,62-73
+content/tracks/dsa-python/concepts/01-array-string/exemplar.py
+  s_beb7708abc1117::t_49269f9ed5a9ac 1-93
+content/tracks/dsa-python/concepts/05-hash-maps-and-sets/stub.py
+  s_beb7708abc1117::t_e2574d5c760c14 1,4-8,11-14,18-28,32-33,35-41
+content/tracks/dsa-python/concepts/02-two-pointers/config.json
+  s_beb7708abc1117::t_40beca1c07b27b 1
+content/tracks/dsa-python/concepts/03-sliding-window/config.json
+  s_beb7708abc1117::t_d5612b37abc727 1
+content/tracks/dsa-python/concepts/07-stacks/config.json
+  s_beb7708abc1117::t_672e388cd4dc56 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "7e8831727859379295ad9bdef330d435922e40a5",
+  "prompts": {},
+  "sessions": {
+    "s_027266d8bf6411": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-ad349102ad7f906f8",
+        "model": "unknown"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_042089e495faa1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a77a889582a8be926",
+        "model": "unknown"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_9fd17e45d9dcfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-ae9ab56d49c54bfd5",
+        "model": "unknown"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
