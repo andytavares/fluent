@@ -1,7 +1,7 @@
-import { TreeNode, maxDepth, hasPathSum, lowestCommonAncestor } from "./stub";
+import { maxDepth, isSameTree, invertTree, hasPathSum } from "./stub";
+import type { TreeNode } from "./stub";
 
-let passed = 0;
-let failed = 0;
+let passed = 0, failed = 0;
 
 function test(name: string, fn: () => void): void {
   try {
@@ -16,122 +16,167 @@ function test(name: string, fn: () => void): void {
 }
 
 function assertEqual<T>(actual: T, expected: T): void {
+  if (actual !== expected) throw new Error(`expected ${expected}, got ${actual}`);
+}
+
+function assertDeepEqual<T>(actual: T, expected: T): void {
   const a = JSON.stringify(actual);
   const b = JSON.stringify(expected);
   if (a !== b) throw new Error(`expected ${b}, got ${a}`);
 }
 
-// Build a tree from level-order array (null = missing node)
-function buildTree(vals: (number | null)[]): TreeNode | null {
-  if (vals.length === 0 || vals[0] === null) return null;
-  const root = new TreeNode(vals[0]);
+// Helpers: nodes are plain { val, left, right } objects, null children.
+// buildTree takes a level-order array where null marks an absent child
+// (children of absent nodes are omitted).
+function buildTree(values: (number | null)[]): TreeNode | null {
+  if (values.length === 0 || values[0] === null) return null;
+  const root: TreeNode = { val: values[0], left: null, right: null };
   const queue: TreeNode[] = [root];
   let i = 1;
-  while (queue.length > 0 && i < vals.length) {
-    const node = queue.shift()!;
-    if (i < vals.length && vals[i] !== null) {
-      node.left = new TreeNode(vals[i] as number);
-      queue.push(node.left);
+  let q = 0;
+  while (q < queue.length && i < values.length) {
+    const node = queue[q++];
+    if (i < values.length) {
+      const v = values[i++];
+      if (v !== null) {
+        node.left = { val: v, left: null, right: null };
+        queue.push(node.left);
+      }
     }
-    i++;
-    if (i < vals.length && vals[i] !== null) {
-      node.right = new TreeNode(vals[i] as number);
-      queue.push(node.right);
+    if (i < values.length) {
+      const v = values[i++];
+      if (v !== null) {
+        node.right = { val: v, left: null, right: null };
+        queue.push(node.right);
+      }
     }
-    i++;
   }
   return root;
 }
 
-// --- maxDepth ---
+// Level-order serialization with trailing nulls trimmed — the inverse of buildTree.
+function treeToArray(root: TreeNode | null): (number | null)[] {
+  if (root === null) return [];
+  const out: (number | null)[] = [];
+  const queue: (TreeNode | null)[] = [root];
+  let q = 0;
+  while (q < queue.length) {
+    const node = queue[q++];
+    if (node === null) {
+      out.push(null);
+      continue;
+    }
+    out.push(node.val);
+    queue.push(node.left, node.right);
+  }
+  while (out.length > 0 && out[out.length - 1] === null) out.pop();
+  return out;
+}
 
-test("maxDepth: depth-3 tree", () => {
+// ── maxDepth ──
+test("maxDepth: classic tree", () => {
   assertEqual(maxDepth(buildTree([3, 9, 20, null, null, 15, 7])), 3);
 });
-
-test("maxDepth: null tree", () => {
+test("maxDepth: empty tree", () => {
   assertEqual(maxDepth(null), 0);
 });
-
 test("maxDepth: single node", () => {
-  assertEqual(maxDepth(new TreeNode(1)), 1);
+  assertEqual(maxDepth(buildTree([1])), 1);
+});
+test("maxDepth: right-skewed chain", () => {
+  assertEqual(maxDepth(buildTree([1, null, 2, null, 3])), 3);
+});
+test("maxDepth: left-skewed chain", () => {
+  assertEqual(maxDepth(buildTree([1, 2, null, 3, null, 4])), 4);
+});
+test("maxDepth: deeper branch on one side", () => {
+  assertEqual(maxDepth(buildTree([1, 2, 2, 3, null, null, 3, 4])), 4);
 });
 
-test("maxDepth: left-skewed", () => {
-  const t = new TreeNode(1, new TreeNode(2, new TreeNode(3)));
-  assertEqual(maxDepth(t), 3);
+// ── isSameTree ──
+test("isSameTree: identical trees", () => {
+  assertEqual(isSameTree(buildTree([1, 2, 3]), buildTree([1, 2, 3])), true);
+});
+test("isSameTree: mirrored shape, same values", () => {
+  assertEqual(isSameTree(buildTree([1, 2]), buildTree([1, null, 2])), false);
+});
+test("isSameTree: same shape, swapped values", () => {
+  assertEqual(isSameTree(buildTree([1, 2, 1]), buildTree([1, 1, 2])), false);
+});
+test("isSameTree: both empty", () => {
+  assertEqual(isSameTree(null, null), true);
+});
+test("isSameTree: one empty", () => {
+  assertEqual(isSameTree(buildTree([1]), null), false);
+  assertEqual(isSameTree(null, buildTree([1])), false);
+});
+test("isSameTree: equal multi-level trees", () => {
+  const a = buildTree([5, 4, 8, 11, null, 13, 4]);
+  const b = buildTree([5, 4, 8, 11, null, 13, 4]);
+  assertEqual(isSameTree(a, b), true);
+});
+test("isSameTree: differ at a deep leaf", () => {
+  const a = buildTree([5, 4, 8, 11, null, 13, 4]);
+  const b = buildTree([5, 4, 8, 11, null, 13, 99]);
+  assertEqual(isSameTree(a, b), false);
 });
 
-test("maxDepth: balanced depth 2", () => {
-  assertEqual(maxDepth(buildTree([1, 2, 3])), 2);
+// ── invertTree ──
+test("invertTree: classic full tree", () => {
+  const result = invertTree(buildTree([4, 2, 7, 1, 3, 6, 9]));
+  assertDeepEqual(treeToArray(result), [4, 7, 2, 9, 6, 3, 1]);
+});
+test("invertTree: empty tree", () => {
+  assertEqual(invertTree(null), null);
+});
+test("invertTree: single node", () => {
+  assertDeepEqual(treeToArray(invertTree(buildTree([1]))), [1]);
+});
+test("invertTree: three nodes", () => {
+  assertDeepEqual(treeToArray(invertTree(buildTree([2, 1, 3]))), [2, 3, 1]);
+});
+test("invertTree: lone left child moves right", () => {
+  assertDeepEqual(treeToArray(invertTree(buildTree([1, 2]))), [1, null, 2]);
+});
+test("invertTree: lone right child moves left", () => {
+  assertDeepEqual(treeToArray(invertTree(buildTree([1, null, 2]))), [1, 2]);
+});
+test("invertTree: mutates in place and returns the same root", () => {
+  const root = buildTree([4, 2, 7]);
+  const result = invertTree(root);
+  assertEqual(result, root); // same object, not a copy
+  assertDeepEqual(treeToArray(root), [4, 7, 2]);
 });
 
-// --- hasPathSum ---
-
-test("hasPathSum: path exists (5→4→11→2=22)", () => {
-  const tree = buildTree([5, 4, 8, 11, null, 13, 4, 7, 2, null, null, null, 1]);
-  assertEqual(hasPathSum(tree, 22), true);
+// ── hasPathSum ──
+test("hasPathSum: classic tree, target 22", () => {
+  const root = buildTree([5, 4, 8, 11, null, 13, 4, 7, 2, null, null, null, 1]);
+  assertEqual(hasPathSum(root, 22), true);
 });
-
-test("hasPathSum: path does not exist", () => {
+test("hasPathSum: no path hits the target", () => {
   assertEqual(hasPathSum(buildTree([1, 2, 3]), 5), false);
 });
-
-test("hasPathSum: null tree", () => {
+test("hasPathSum: empty tree, target 0", () => {
   assertEqual(hasPathSum(null, 0), false);
 });
-
-test("hasPathSum: single node match", () => {
-  assertEqual(hasPathSum(new TreeNode(7), 7), true);
+test("hasPathSum: partial path does not count (1 is not a leaf)", () => {
+  assertEqual(hasPathSum(buildTree([1, 2]), 1), false);
 });
-
-test("hasPathSum: single node no match", () => {
-  assertEqual(hasPathSum(new TreeNode(7), 5), false);
+test("hasPathSum: path through a one-child node", () => {
+  assertEqual(hasPathSum(buildTree([1, 2]), 3), true);
 });
-
-test("hasPathSum: target matches internal node but not leaf path", () => {
-  // Tree: root=1, left=2, right=3; path to left leaf = 3, path to right leaf = 4
-  const t = buildTree([1, 2, 3]);
-  // 1 itself is not a leaf; target=1 should not match
-  assertEqual(hasPathSum(t, 1), false);
+test("hasPathSum: single node equals target", () => {
+  assertEqual(hasPathSum(buildTree([1]), 1), true);
 });
-
-// --- lowestCommonAncestor ---
-
-test("lowestCommonAncestor: p and q in different subtrees", () => {
-  // Tree:    3
-  //        /   \
-  //       5     1
-  //      / \   / \
-  //     6   2 0   8
-  //        / \
-  //       7   4
-  const root = buildTree([3, 5, 1, 6, 2, 0, 8, null, null, 7, 4]);
-  // Build node references manually to use with LCA
-  const p = root!.left!;      // node 5
-  const q = root!.right!;     // node 1
-  const lca = lowestCommonAncestor(root, p, q);
-  assertEqual(lca?.val ?? null, 3);
+test("hasPathSum: single node misses target", () => {
+  assertEqual(hasPathSum(buildTree([1]), 0), false);
 });
-
-test("lowestCommonAncestor: one is ancestor of the other", () => {
-  const root = buildTree([3, 5, 1, 6, 2, 0, 8, null, null, 7, 4]);
-  const p = root!.left!;              // node 5
-  const q = root!.left!.right!.right!; // node 4
-  const lca = lowestCommonAncestor(root, p, q);
-  assertEqual(lca?.val ?? null, 5);
+test("hasPathSum: negative values reach a negative target", () => {
+  const root = buildTree([1, -2, -3, 1, 3, -2, null, -1]);
+  assertEqual(hasPathSum(root, -1), true); // 1 → -2 → 1 → -1
 });
-
-test("lowestCommonAncestor: p and q are both root's children", () => {
-  const root = new TreeNode(1, new TreeNode(2), new TreeNode(3));
-  const p = root.left!;
-  const q = root.right!;
-  assertEqual(lowestCommonAncestor(root, p, q)?.val, 1);
-});
-
-test("lowestCommonAncestor: single-node tree, p === q === root", () => {
-  const root = new TreeNode(1);
-  assertEqual(lowestCommonAncestor(root, root, root)?.val, 1);
+test("hasPathSum: all-negative chain", () => {
+  assertEqual(hasPathSum(buildTree([-2, null, -3]), -5), true);
 });
 
 console.log(`\n${passed} passed, ${failed} failed`);

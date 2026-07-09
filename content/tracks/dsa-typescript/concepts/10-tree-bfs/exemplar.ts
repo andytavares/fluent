@@ -1,29 +1,33 @@
 // Run: tsx exemplar.ts
+//
+// Binary tree nodes are plain objects: { val, left, right }.
+// left/right are child nodes or null; an empty tree is null.
 
-export class TreeNode {
+export interface TreeNode {
   val: number;
   left: TreeNode | null;
   right: TreeNode | null;
-  constructor(val: number, left: TreeNode | null = null, right: TreeNode | null = null) {
-    this.val = val;
-    this.left = left;
-    this.right = right;
-  }
 }
 
+/**
+ * Level order traversal via BFS with a head-index queue (shift() is O(n);
+ * reading queue[head++] keeps the whole traversal linear). The levelEnd
+ * snapshot marks the boundary: children pushed while draining land at
+ * indexes >= levelEnd, so they always belong to the next level.
+ * O(n) time, O(w) space where w is the widest level.
+ */
 export function levelOrder(root: TreeNode | null): number[][] {
   if (root === null) return [];
   const result: number[][] = [];
   const queue: TreeNode[] = [root];
-
-  while (queue.length > 0) {
-    const levelSize = queue.length; // snapshot before inner loop
+  let head = 0;
+  while (head < queue.length) {
+    const levelEnd = queue.length; // snapshot: [head, levelEnd) is one level
     const level: number[] = [];
-
-    for (let i = 0; i < levelSize; i++) {
-      const node = queue.shift()!;
+    while (head < levelEnd) {
+      const node = queue[head++];
       level.push(node.val);
-      if (node.left)  queue.push(node.left);
+      if (node.left) queue.push(node.left);
       if (node.right) queue.push(node.right);
     }
     result.push(level);
@@ -31,43 +35,65 @@ export function levelOrder(root: TreeNode | null): number[][] {
   return result;
 }
 
+/**
+ * Rightmost node per level: same level loop, but only the last node drained
+ * from each level is recorded. Enqueue order is left-to-right, so the last
+ * node of a level is its rightmost — even when it lives in a left subtree.
+ * O(n) time, O(w) space.
+ */
 export function rightSideView(root: TreeNode | null): number[] {
   if (root === null) return [];
   const result: number[] = [];
   const queue: TreeNode[] = [root];
-
-  while (queue.length > 0) {
-    const levelSize = queue.length;
-    for (let i = 0; i < levelSize; i++) {
-      const node = queue.shift()!;
-      if (i === levelSize - 1) result.push(node.val); // last = rightmost
-      if (node.left)  queue.push(node.left);
+  let head = 0;
+  while (head < queue.length) {
+    const levelEnd = queue.length;
+    while (head < levelEnd) {
+      const node = queue[head++];
+      if (head === levelEnd) result.push(node.val); // last of this level
+      if (node.left) queue.push(node.left);
       if (node.right) queue.push(node.right);
     }
   }
   return result;
 }
 
+/**
+ * Zigzag is a presentation change, not a traversal change: children are
+ * always enqueued left-then-right, and only the collected level array is
+ * reversed on odd depths.
+ * O(n) time, O(w) space.
+ */
 export function zigzagLevelOrder(root: TreeNode | null): number[][] {
   if (root === null) return [];
   const result: number[][] = [];
   const queue: TreeNode[] = [root];
+  let head = 0;
   let leftToRight = true;
-
-  while (queue.length > 0) {
-    const levelSize = queue.length;
-    const level = new Array<number>(levelSize); // pre-sized for index fill
-
-    for (let i = 0; i < levelSize; i++) {
-      const node = queue.shift()!;
-      // Mirror the index when going right-to-left
-      const idx = leftToRight ? i : levelSize - 1 - i;
-      level[idx] = node.val;
-      if (node.left)  queue.push(node.left);
+  while (head < queue.length) {
+    const levelEnd = queue.length;
+    const level: number[] = [];
+    while (head < levelEnd) {
+      const node = queue[head++];
+      level.push(node.val);
+      if (node.left) queue.push(node.left);
       if (node.right) queue.push(node.right);
     }
-    result.push(level);
+    result.push(leftToRight ? level : level.reverse());
     leftToRight = !leftToRight;
   }
   return result;
 }
+
+function node(val: number, left: TreeNode | null = null, right: TreeNode | null = null): TreeNode {
+  return { val, left, right };
+}
+
+function main(): void {
+  const root = node(3, node(9), node(20, node(15), node(7)));
+  console.log(JSON.stringify(levelOrder(root)));       // [[3],[9,20],[15,7]]
+  console.log(JSON.stringify(rightSideView(root)));    // [3,20,7]
+  console.log(JSON.stringify(zigzagLevelOrder(root))); // [[3],[20,9],[15,7]]
+}
+
+main();

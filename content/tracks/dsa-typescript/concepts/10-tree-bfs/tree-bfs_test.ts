@@ -1,7 +1,7 @@
-import { TreeNode, levelOrder, rightSideView, zigzagLevelOrder } from "./stub";
+import { levelOrder, rightSideView, zigzagLevelOrder } from "./stub";
+import type { TreeNode } from "./stub";
 
-let passed = 0;
-let failed = 0;
+let passed = 0, failed = 0;
 
 function test(name: string, fn: () => void): void {
   try {
@@ -15,105 +15,111 @@ function test(name: string, fn: () => void): void {
   }
 }
 
-function assertEqual<T>(actual: T, expected: T): void {
+function assertDeepEqual<T>(actual: T, expected: T): void {
   const a = JSON.stringify(actual);
   const b = JSON.stringify(expected);
   if (a !== b) throw new Error(`expected ${b}, got ${a}`);
 }
 
-function buildTree(vals: (number | null)[]): TreeNode | null {
-  if (vals.length === 0 || vals[0] === null) return null;
-  const root = new TreeNode(vals[0]);
+// Helper: builds a { val, left, right } tree from a level-order array with
+// nulls for missing children, e.g. [3, 9, 20, null, null, 15, 7].
+function buildTree(values: (number | null)[]): TreeNode | null {
+  if (values.length === 0 || values[0] === null) return null;
+  const root: TreeNode = { val: values[0], left: null, right: null };
   const queue: TreeNode[] = [root];
+  let head = 0;
   let i = 1;
-  while (queue.length > 0 && i < vals.length) {
-    const node = queue.shift()!;
-    if (i < vals.length && vals[i] !== null) {
-      node.left = new TreeNode(vals[i] as number);
+  while (i < values.length) {
+    const node = queue[head++];
+    const l = values[i++];
+    if (l !== null && l !== undefined) {
+      node.left = { val: l, left: null, right: null };
       queue.push(node.left);
     }
-    i++;
-    if (i < vals.length && vals[i] !== null) {
-      node.right = new TreeNode(vals[i] as number);
-      queue.push(node.right);
+    if (i < values.length) {
+      const r = values[i++];
+      if (r !== null && r !== undefined) {
+        node.right = { val: r, left: null, right: null };
+        queue.push(node.right);
+      }
     }
-    i++;
   }
   return root;
 }
 
-// --- levelOrder ---
-
-test("levelOrder: 3-level tree", () => {
-  assertEqual(levelOrder(buildTree([3, 9, 20, null, null, 15, 7])), [[3], [9, 20], [15, 7]]);
+// ── levelOrder ──
+test("levelOrder: classic three-level tree", () => {
+  const root = buildTree([3, 9, 20, null, null, 15, 7]);
+  assertDeepEqual(levelOrder(root), [[3], [9, 20], [15, 7]]);
 });
-
+test("levelOrder: empty tree returns []", () => {
+  assertDeepEqual(levelOrder(null), []);
+});
 test("levelOrder: single node", () => {
-  assertEqual(levelOrder(new TreeNode(1)), [[1]]);
+  assertDeepEqual(levelOrder(buildTree([1])), [[1]]);
+});
+test("levelOrder: left-skewed chain — one node per level", () => {
+  const root = buildTree([1, 2, null, 3]);
+  assertDeepEqual(levelOrder(root), [[1], [2], [3]]);
+});
+test("levelOrder: right-skewed chain", () => {
+  const root = buildTree([1, null, 2, null, 3]);
+  assertDeepEqual(levelOrder(root), [[1], [2], [3]]);
+});
+test("levelOrder: negative values", () => {
+  const root = buildTree([-1, -2, -3]);
+  assertDeepEqual(levelOrder(root), [[-1], [-2, -3]]);
+});
+test("levelOrder: full three-level tree keeps left-to-right order", () => {
+  const root = buildTree([1, 2, 3, 4, 5, 6, 7]);
+  assertDeepEqual(levelOrder(root), [[1], [2, 3], [4, 5, 6, 7]]);
 });
 
-test("levelOrder: null", () => {
-  assertEqual(levelOrder(null), []);
+// ── rightSideView ──
+test("rightSideView: classic example", () => {
+  const root = buildTree([1, 2, 3, null, 5, null, 4]);
+  assertDeepEqual(rightSideView(root), [1, 3, 4]);
 });
-
-test("levelOrder: two levels", () => {
-  assertEqual(levelOrder(buildTree([1, 2, 3])), [[1], [2, 3]]);
+test("rightSideView: empty tree returns []", () => {
+  assertDeepEqual(rightSideView(null), []);
 });
-
-test("levelOrder: left-skewed", () => {
-  const t = new TreeNode(1, new TreeNode(2, new TreeNode(3)));
-  assertEqual(levelOrder(t), [[1], [2], [3]]);
-});
-
-// --- rightSideView ---
-
-test("rightSideView: standard case", () => {
-  assertEqual(rightSideView(buildTree([1, 2, 3, null, 5, null, 4])), [1, 3, 4]);
-});
-
 test("rightSideView: single node", () => {
-  assertEqual(rightSideView(new TreeNode(1)), [1]);
+  assertDeepEqual(rightSideView(buildTree([7])), [7]);
+});
+test("rightSideView: right-only chain", () => {
+  assertDeepEqual(rightSideView(buildTree([1, null, 3])), [1, 3]);
+});
+test("rightSideView: left-only chain is fully visible", () => {
+  assertDeepEqual(rightSideView(buildTree([1, 2, null, 3])), [1, 2, 3]);
+});
+test("rightSideView: left-subtree node visible when right side ends", () => {
+  // 1 → (2, 3), 2.left = 4, 3 is a leaf: depth 2 only contains 4
+  const root = buildTree([1, 2, 3, 4]);
+  assertDeepEqual(rightSideView(root), [1, 3, 4]);
 });
 
-test("rightSideView: null", () => {
-  assertEqual(rightSideView(null), []);
+// ── zigzagLevelOrder ──
+test("zigzagLevelOrder: classic three-level tree", () => {
+  const root = buildTree([3, 9, 20, null, null, 15, 7]);
+  assertDeepEqual(zigzagLevelOrder(root), [[3], [20, 9], [15, 7]]);
 });
-
-test("rightSideView: left-only subtree visible at deepest level", () => {
-  const t = new TreeNode(1, new TreeNode(2, new TreeNode(3)));
-  assertEqual(rightSideView(t), [1, 2, 3]);
+test("zigzagLevelOrder: empty tree returns []", () => {
+  assertDeepEqual(zigzagLevelOrder(null), []);
 });
-
-test("rightSideView: right child extends deeper", () => {
-  assertEqual(rightSideView(buildTree([1, 2, 3, null, 5])), [1, 3, 5]);
-});
-
-// --- zigzagLevelOrder ---
-
-test("zigzagLevelOrder: 3-level tree", () => {
-  assertEqual(
-    zigzagLevelOrder(buildTree([3, 9, 20, null, null, 15, 7])),
-    [[3], [20, 9], [15, 7]]
-  );
-});
-
 test("zigzagLevelOrder: single node", () => {
-  assertEqual(zigzagLevelOrder(new TreeNode(1)), [[1]]);
+  assertDeepEqual(zigzagLevelOrder(buildTree([1])), [[1]]);
 });
-
-test("zigzagLevelOrder: null", () => {
-  assertEqual(zigzagLevelOrder(null), []);
+test("zigzagLevelOrder: full three-level tree", () => {
+  const root = buildTree([1, 2, 3, 4, 5, 6, 7]);
+  assertDeepEqual(zigzagLevelOrder(root), [[1], [3, 2], [4, 5, 6, 7]]);
 });
-
-test("zigzagLevelOrder: two levels", () => {
-  // Level 0 (L→R): [1]; Level 1 (R→L): [3, 2]
-  assertEqual(zigzagLevelOrder(buildTree([1, 2, 3])), [[1], [3, 2]]);
+test("zigzagLevelOrder: four levels flip direction twice", () => {
+  const root = buildTree([1, 2, 3, 4, null, null, 5, 6, null, null, 7]);
+  assertDeepEqual(zigzagLevelOrder(root), [[1], [3, 2], [4, 5], [7, 6]]);
 });
-
-test("zigzagLevelOrder: three levels full tree", () => {
-  // Level 0 (L→R): [1]; Level 1 (R→L): [3,2]; Level 2 (L→R): [4,5,6,7]
-  const t = buildTree([1, 2, 3, 4, 5, 6, 7]);
-  assertEqual(zigzagLevelOrder(t), [[1], [3, 2], [4, 5, 6, 7]]);
+test("zigzagLevelOrder: single-node levels are unaffected by direction", () => {
+  const root = buildTree([1, 2, null, 3]);
+  assertDeepEqual(zigzagLevelOrder(root), [[1], [2], [3]]);
 });
 
 console.log(`\n${passed} passed, ${failed} failed`);
