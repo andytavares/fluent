@@ -1,0 +1,5 @@
+{
+  "step_number": 6,
+  "title": "Top rated",
+  "description": "List the highest-rated recipes, excluding recipes with no ratings."
+}

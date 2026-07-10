@@ -1,0 +1,7 @@
+{
+  "slug": "rust-kv-store",
+  "title": "Rust Key-Value Store",
+  "description": "Build a key-value store API with TTL expiry, backed by a real PostgreSQL database, across 6 incremental steps.",
+  "language": "rust",
+  "steps": 6
+}

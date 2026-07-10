@@ -1,0 +1,5 @@
+{
+  "step_number": 3,
+  "title": "GET /sensors/:name/latest",
+  "description": "Fetch the most recent reading for a sensor, returning 404 for sensors with no data."
+}

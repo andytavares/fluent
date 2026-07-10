@@ -1,0 +1,5 @@
+{
+  "step_number": 4,
+  "title": "POST /posts/:id/publish",
+  "description": "Publish a draft post, stamping published_at, and reject publishing an already-published post."
+}

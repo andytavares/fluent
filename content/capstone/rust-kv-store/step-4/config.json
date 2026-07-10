@@ -1,0 +1,5 @@
+{
+  "step_number": 4,
+  "title": "DELETE a key",
+  "description": "Delete a key by name, returning 204 on success and 404 when not found."
+}

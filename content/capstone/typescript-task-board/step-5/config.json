@@ -1,0 +1,5 @@
+{
+  "step_number": 5,
+  "title": "DELETE /tasks/:id",
+  "description": "Delete a task by id, but only once it has reached the done status."
+}

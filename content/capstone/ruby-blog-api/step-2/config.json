@@ -1,0 +1,5 @@
+{
+  "step_number": 2,
+  "title": "POST /posts",
+  "description": "Create and persist a draft post, returning the inserted row with its generated id."
+}

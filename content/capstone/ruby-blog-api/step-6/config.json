@@ -1,0 +1,5 @@
+{
+  "step_number": 6,
+  "title": "GET /posts (published feed)",
+  "description": "List only published posts, newest-first, with page/limit pagination."
+}

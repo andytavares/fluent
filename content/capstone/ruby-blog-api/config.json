@@ -1,0 +1,7 @@
+{
+  "slug": "ruby-blog-api",
+  "title": "Ruby Blog API",
+  "description": "Build a blog publishing REST API with comments and a real PostgreSQL database across 6 incremental steps.",
+  "language": "ruby",
+  "steps": 6
+}

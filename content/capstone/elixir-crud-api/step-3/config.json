@@ -1,5 +1,0 @@
-{
-  "step_number": 3,
-  "title": "GET /users/:id",
-  "description": "Fetch a single user by id, returning 404 for ids that don't exist."
-}

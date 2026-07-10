@@ -1,0 +1,5 @@
+{
+  "step_number": 2,
+  "title": "POST /accounts",
+  "description": "Create an account with a starting balance of zero."
+}

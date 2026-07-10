@@ -1,0 +1,5 @@
+{
+  "step_number": 2,
+  "title": "Sign the guestbook",
+  "description": "Create and persist an entry, returning the inserted row with its generated id."
+}

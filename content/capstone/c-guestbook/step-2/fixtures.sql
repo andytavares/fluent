@@ -1,0 +1,2 @@
+-- No existing rows needed — this step only exercises creating a new entry.
+-- The entries table itself is created by the learner's own code on startup.

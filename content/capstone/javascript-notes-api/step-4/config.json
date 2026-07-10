@@ -1,0 +1,5 @@
+{
+  "step_number": 4,
+  "title": "PUT /notes/:id",
+  "description": "Partially update a note's title, body, and/or tags, bumping updated_at."
+}

@@ -1,0 +1,5 @@
+{
+  "step_number": 3,
+  "title": "GET /recipes/:id",
+  "description": "Fetch a recipe with its average rating, or null when it has no ratings yet."
+}

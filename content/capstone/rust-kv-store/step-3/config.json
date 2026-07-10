@@ -1,0 +1,5 @@
+{
+  "step_number": 3,
+  "title": "GET a key",
+  "description": "Fetch a key's value, treating expired and missing keys the same way."
+}

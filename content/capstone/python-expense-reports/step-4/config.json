@@ -1,0 +1,5 @@
+{
+  "step_number": 4,
+  "title": "DELETE /expenses/:id",
+  "description": "Delete an expense by id, returning 204 on success and 404 when not found."
+}

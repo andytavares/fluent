@@ -1,7 +1,0 @@
-{
-  "slug": "rust-crud-api",
-  "title": "Rust CRUD API",
-  "description": "Build a REST API with a real PostgreSQL database across 6 incremental steps.",
-  "language": "rust",
-  "steps": 6
-}

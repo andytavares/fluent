@@ -1,2 +1,0 @@
--- No existing rows needed — this step only exercises creating a new user.
--- The users table itself is created by the learner's own code on startup.

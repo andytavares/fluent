@@ -1,0 +1,5 @@
+{
+  "step_number": 6,
+  "title": "Paginated history",
+  "description": "List entries oldest-first with page/limit query params."
+}

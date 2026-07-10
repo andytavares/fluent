@@ -1,0 +1,5 @@
+{
+  "step_number": 5,
+  "title": "Expiry semantics",
+  "description": "Report the remaining time-to-live for a key, treating expired keys as not found."
+}

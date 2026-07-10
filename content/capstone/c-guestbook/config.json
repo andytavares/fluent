@@ -1,0 +1,7 @@
+{
+  "slug": "c-guestbook",
+  "title": "C Guestbook Server",
+  "description": "Build a guestbook server on raw POSIX sockets, backed by a real PostgreSQL database, across 6 incremental steps.",
+  "language": "c",
+  "steps": 6
+}

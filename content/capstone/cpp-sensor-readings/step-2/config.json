@@ -1,0 +1,5 @@
+{
+  "step_number": 2,
+  "title": "POST /readings",
+  "description": "Record a sensor reading in milli-units, returning the inserted row with its generated id."
+}

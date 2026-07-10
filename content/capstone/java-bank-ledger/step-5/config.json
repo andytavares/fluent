@@ -1,0 +1,5 @@
+{
+  "step_number": 5,
+  "title": "Transfers",
+  "description": "Move money between two accounts atomically, failing the whole transfer on insufficient funds."
+}

@@ -1,0 +1,5 @@
+{
+  "step_number": 4,
+  "title": "Rate a recipe",
+  "description": "Add a star rating to a recipe and return the recipe's updated average."
+}

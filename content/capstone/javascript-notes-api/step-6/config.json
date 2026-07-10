@@ -1,0 +1,5 @@
+{
+  "step_number": 6,
+  "title": "GET /notes?q=&page=&limit=",
+  "description": "Search notes by title/body text and paginate the results."
+}

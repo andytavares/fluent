@@ -1,0 +1,5 @@
+{
+  "step_number": 5,
+  "title": "Comments",
+  "description": "Add comments to a post and list them oldest-first, backed by a foreign key to posts."
+}

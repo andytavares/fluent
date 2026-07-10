@@ -1,7 +1,0 @@
-{
-  "slug": "elixir-crud-api",
-  "title": "Elixir CRUD API",
-  "description": "Build a REST API with a real PostgreSQL database across 6 incremental steps.",
-  "language": "elixir",
-  "steps": 6
-}

@@ -1,0 +1,3 @@
+-- No existing rows needed — this step only exercises writing new keys.
+-- The kv_entries table itself is created by the learner's own code on
+-- startup, and PUT is idempotent (upsert), so nothing needs seeding.

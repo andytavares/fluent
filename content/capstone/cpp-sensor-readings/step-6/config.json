@@ -1,0 +1,5 @@
+{
+  "step_number": 6,
+  "title": "GET /sensors (paginated)",
+  "description": "List the sensor directory with per-sensor reading counts and last-seen timestamps, paginated."
+}

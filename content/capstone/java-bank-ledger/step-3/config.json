@@ -1,0 +1,5 @@
+{
+  "step_number": 3,
+  "title": "Deposits & withdrawals",
+  "description": "Move money in and out of an account with an atomic entry write and balance update."
+}

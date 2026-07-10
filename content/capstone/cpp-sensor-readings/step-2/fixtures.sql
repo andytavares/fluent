@@ -1,0 +1,3 @@
+-- No existing rows needed — this step only exercises creating a new
+-- reading. The readings table itself is created by the learner's own code
+-- on startup.

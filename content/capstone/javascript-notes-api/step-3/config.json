@@ -1,0 +1,5 @@
+{
+  "step_number": 3,
+  "title": "GET /notes/:id",
+  "description": "Fetch a single note by id, returning 404 for ids that don't exist."
+}

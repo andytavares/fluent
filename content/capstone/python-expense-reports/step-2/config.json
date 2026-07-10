@@ -1,0 +1,5 @@
+{
+  "step_number": 2,
+  "title": "POST /expenses",
+  "description": "Create and persist an expense, returning the inserted row with its generated id."
+}

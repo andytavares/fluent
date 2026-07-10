@@ -1,0 +1,5 @@
+{
+  "step_number": 2,
+  "title": "POST /notes",
+  "description": "Create and persist a note with optional body and tags, returning the inserted row."
+}

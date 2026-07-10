@@ -1,0 +1,5 @@
+{
+  "step_number": 4,
+  "title": "GET /sensors/:name/stats",
+  "description": "Aggregate count/min/max/avg for a sensor's readings, returning 404 for sensors with no data."
+}

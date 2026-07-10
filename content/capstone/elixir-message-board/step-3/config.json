@@ -1,0 +1,5 @@
+{
+  "step_number": 3,
+  "title": "POST /channels/:name/messages",
+  "description": "Post a message into a channel, returning 404 for channels that don't exist."
+}

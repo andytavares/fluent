@@ -1,0 +1,5 @@
+{
+  "step_number": 5,
+  "title": "DELETE /sensors/:name",
+  "description": "Purge all readings for a sensor, returning the deleted count and 404 when the sensor has none."
+}

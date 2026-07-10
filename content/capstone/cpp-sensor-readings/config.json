@@ -1,0 +1,7 @@
+{
+  "slug": "cpp-sensor-readings",
+  "title": "C++ Sensor Readings API",
+  "description": "Build a sensor-telemetry REST API with SQL-driven aggregation over fixed-point readings across 6 incremental steps.",
+  "language": "cpp",
+  "steps": 6
+}

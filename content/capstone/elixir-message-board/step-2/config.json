@@ -1,0 +1,5 @@
+{
+  "step_number": 2,
+  "title": "POST /channels",
+  "description": "Create a channel, rejecting duplicate names with a 409 conflict."
+}

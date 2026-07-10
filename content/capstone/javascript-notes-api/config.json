@@ -1,0 +1,7 @@
+{
+  "slug": "javascript-notes-api",
+  "title": "JavaScript Notes API",
+  "description": "Build a notes API with tags, filtering, and search across 6 incremental steps.",
+  "language": "javascript",
+  "steps": 6
+}

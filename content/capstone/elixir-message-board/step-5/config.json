@@ -1,0 +1,5 @@
+{
+  "step_number": 5,
+  "title": "GET /channels/:name/messages",
+  "description": "List the 10 most recent messages in a channel, newest first, 404 for unknown channels."
+}

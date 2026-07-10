@@ -1,0 +1,5 @@
+{
+  "step_number": 4,
+  "title": "GET /accounts/:id",
+  "description": "Fetch a single account's current balance by id."
+}

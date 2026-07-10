@@ -1,0 +1,7 @@
+{
+  "slug": "kotlin-recipe-box",
+  "title": "Kotlin Recipe Box API",
+  "description": "Build a recipe-and-ratings REST API leaning on Kotlin null-safety and data classes across 6 incremental steps.",
+  "language": "kotlin",
+  "steps": 6
+}

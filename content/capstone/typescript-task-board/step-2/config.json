@@ -1,0 +1,5 @@
+{
+  "step_number": 2,
+  "title": "POST /tasks",
+  "description": "Create and persist a task, modeling its status as a typed union with validation."
+}

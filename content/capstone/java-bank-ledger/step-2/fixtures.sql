@@ -1,0 +1,3 @@
+-- No existing rows needed — this step only exercises creating a new account.
+-- The accounts and entries tables themselves are created by the learner's
+-- own code on startup.

@@ -1,0 +1,5 @@
+{
+  "step_number": 4,
+  "title": "PATCH /tasks/:id/status",
+  "description": "Transition a task's status through the allowed todo -> in_progress -> done sequence only."
+}

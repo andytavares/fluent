@@ -1,0 +1,7 @@
+{
+  "slug": "java-bank-ledger",
+  "title": "Java Bank Ledger API",
+  "description": "Build a bank ledger REST API with real money invariants and JDBC transactions across 6 incremental steps.",
+  "language": "java",
+  "steps": 6
+}

@@ -1,0 +1,5 @@
+{
+  "step_number": 6,
+  "title": "GET /board",
+  "description": "Return every task grouped by status in a single query, with per-column counts."
+}

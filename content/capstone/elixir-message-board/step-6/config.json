@@ -1,0 +1,5 @@
+{
+  "step_number": 6,
+  "title": "GET /channels (paginated)",
+  "description": "List every channel with its message count and last-message timestamp, including channels with no messages."
+}

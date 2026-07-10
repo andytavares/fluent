@@ -1,0 +1,5 @@
+{
+  "step_number": 6,
+  "title": "GET /reports/monthly",
+  "description": "Report total spend and per-category breakdown for a given year and month."
+}

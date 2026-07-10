@@ -1,0 +1,5 @@
+{
+  "step_number": 5,
+  "title": "GET /reports/categories",
+  "description": "Aggregate total spend and count per category, ordered by total descending."
+}

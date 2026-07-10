@@ -1,5 +1,0 @@
-{
-  "step_number": 5,
-  "title": "DELETE /users/:id",
-  "description": "Delete a user by id, returning 204 on success and 404 when not found."
-}

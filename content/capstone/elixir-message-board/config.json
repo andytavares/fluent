@@ -1,0 +1,7 @@
+{
+  "slug": "elixir-message-board",
+  "title": "Elixir Message Board API",
+  "description": "Build a channels-and-messages REST API on raw :gen_tcp sockets across 6 incremental steps.",
+  "language": "elixir",
+  "steps": 6
+}

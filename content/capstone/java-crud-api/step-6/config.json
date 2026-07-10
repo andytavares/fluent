@@ -1,5 +1,0 @@
-{
-  "step_number": 6,
-  "title": "GET /users (paginated)",
-  "description": "List users with page/limit query params, ordered by newest first."
-}
