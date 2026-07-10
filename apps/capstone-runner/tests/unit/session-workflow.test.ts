@@ -83,7 +83,7 @@ describe("capstoneSessionWorkflow", () => {
       await handle.signal(VERIFY_STEP_SIGNAL, 2);
     });
 
-    expect(activities.verify).toHaveBeenCalledWith({ sessionId: "sess-1", stepNumber: 2 });
+    expect(activities.verify).toHaveBeenCalledWith({ sessionId: "sess-1", stepNumber: 2, trackSlug: "go" });
     expect(activities.recordStepCompletion).toHaveBeenCalledWith(
       expect.objectContaining({ sessionId: "sess-1", stepNumber: 2 }),
     );

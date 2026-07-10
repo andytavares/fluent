@@ -19,6 +19,21 @@ export interface CapstoneSessionInput {
   trackSlug: string;
 }
 
+/** Capstone content slug per track. Tracks absent here have no capstone. */
+export const CAPSTONE_SLUG_BY_TRACK: Record<string, string> = {
+  go: "go-crud-api",
+  python: "python-expense-reports",
+  javascript: "javascript-notes-api",
+  typescript: "typescript-task-board",
+  ruby: "ruby-blog-api",
+  java: "java-bank-ledger",
+  kotlin: "kotlin-recipe-box",
+  rust: "rust-kv-store",
+  c: "c-guestbook",
+  cpp: "cpp-sensor-readings",
+  elixir: "elixir-message-board",
+};
+
 /** Signature of the capstone session workflow function. */
 export type CapstoneSessionWorkflow = (input: CapstoneSessionInput) => Promise<void>;
 

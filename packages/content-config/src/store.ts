@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve, relative } from "node:path";
 import { LANG_EXT, TEST_FILE_PATTERNS } from "./lang.js";
-import { capstoneStepConfigSchema, conceptConfigSchema, trackConfigSchema } from "./schema.js";
+import { capstoneProjectConfigSchema, capstoneStepConfigSchema, conceptConfigSchema, trackConfigSchema } from "./schema.js";
 import { extractTaskPrompt } from "./task-prompt.js";
 import type { ConceptConfig, TrackConfig } from "./schema.js";
 
@@ -34,6 +34,14 @@ export interface CapstoneStepEntry {
   dir: string;
 }
 
+export interface CapstoneProjectEntry {
+  slug: string;
+  title: string;
+  description: string;
+  language: string;
+  stub: string;
+}
+
 export interface ContentStore {
   readonly root: string;
   getLessonStub(contentPath: string, language: string): string;
@@ -46,6 +54,7 @@ export interface ContentStore {
   listTracks(): TrackEntry[];
   listConcepts(trackDir: string): ConceptEntry[];
   getCapstoneSteps(capstoneSlug: string): CapstoneStepEntry[];
+  getCapstoneProject(capstoneSlug: string): CapstoneProjectEntry | null;
 }
 
 function listFiles(dir: string): string[] {
@@ -163,6 +172,24 @@ export function createContentStore(root: string = DEFAULT_ROOT): ContentStore {
           instructions,
           dir,
         }));
+    },
+
+    getCapstoneProject(capstoneSlug) {
+      const projectDir = join(root, "content/capstone", capstoneSlug);
+      const configPath = join(projectDir, "config.json");
+      if (!existsSync(configPath)) return null;
+
+      const config = capstoneProjectConfigSchema.parse(JSON.parse(readFileSync(configPath, "utf8")));
+      const ext = LANG_EXT[config.language];
+      const stub = ext ? readFileOrEmpty(join(projectDir, `stub.${ext}`)) : "";
+
+      return {
+        slug: config.slug,
+        title: config.title,
+        description: config.description,
+        language: config.language,
+        stub,
+      };
     },
   };
 }

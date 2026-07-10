@@ -65,7 +65,7 @@ export async function capstoneSessionWorkflow({ sessionId, trackSlug }: Capstone
       // step's verify.sh from authored content (content/capstone/…).
       while (verifyQueue.length > 0) {
         const stepNumber = verifyQueue.shift()!;
-        const result = await activities.verify({ sessionId, stepNumber });
+        const result = await activities.verify({ sessionId, stepNumber, trackSlug });
         if (result.passed) {
           await activities.recordStepCompletion({ sessionId, stepNumber, verificationResult: result });
         }

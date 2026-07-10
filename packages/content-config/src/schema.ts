@@ -28,6 +28,15 @@ export const capstoneStepConfigSchema = z.object({
   description: z.string(),
 });
 
+export const capstoneProjectConfigSchema = z.object({
+  slug: z.string().min(1),
+  title: z.string().min(1),
+  description: z.string(),
+  language: z.string().min(1),
+  steps: z.number().int().positive().optional(),
+});
+
 export type ConceptConfig = z.infer<typeof conceptConfigSchema>;
 export type TrackConfig = z.infer<typeof trackConfigSchema>;
 export type CapstoneStepConfig = z.infer<typeof capstoneStepConfigSchema>;
+export type CapstoneProjectConfig = z.infer<typeof capstoneProjectConfigSchema>;

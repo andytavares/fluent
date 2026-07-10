@@ -39,13 +39,17 @@ beforeEach(() => {
 
 describe("verifyScriptPath", () => {
   it("resolves the step's verify.sh inside the capstone content tree", () => {
-    expect(verifyScriptPath(4, "/repo")).toBe("/repo/content/capstone/go-crud-api/step-4/verify.sh");
+    expect(verifyScriptPath(4, "go", "/repo")).toBe("/repo/content/capstone/go-crud-api/step-4/verify.sh");
+  });
+
+  it("throws for a track with no configured capstone slug", () => {
+    expect(() => verifyScriptPath(4, "not-a-track", "/repo")).toThrow(/not-a-track/);
   });
 });
 
 describe("fixturesPath", () => {
   it("resolves the step's fixtures.sql inside the capstone content tree", () => {
-    expect(fixturesPath(4, "/repo")).toBe("/repo/content/capstone/go-crud-api/step-4/fixtures.sql");
+    expect(fixturesPath(4, "go", "/repo")).toBe("/repo/content/capstone/go-crud-api/step-4/fixtures.sql");
   });
 });
 
@@ -77,7 +81,7 @@ describe("verify activity", () => {
       exitCode: 0,
     });
 
-    const result = await verify({ sessionId: "s1", stepNumber: 1 }, contentRoot);
+    const result = await verify({ sessionId: "s1", stepNumber: 1, trackSlug: "go" }, contentRoot);
 
     expect(result.passed).toBe(true);
     expect(result.http_tests).toHaveLength(2);
@@ -91,7 +95,7 @@ describe("verify activity", () => {
       exitCode: 0,
     });
 
-    const result = await verify({ sessionId: "s1", stepNumber: 2 }, contentRoot);
+    const result = await verify({ sessionId: "s1", stepNumber: 2, trackSlug: "go" }, contentRoot);
 
     expect(result.passed).toBe(false);
   });
@@ -100,7 +104,7 @@ describe("verify activity", () => {
     await writeStepFile(3, "verify.sh", "echo test");
     execInPod.mockResolvedValue({ stdout: "not json", stderr: "", exitCode: 0 });
 
-    const result = await verify({ sessionId: "s1", stepNumber: 3 }, contentRoot);
+    const result = await verify({ sessionId: "s1", stepNumber: 3, trackSlug: "go" }, contentRoot);
 
     expect(result.passed).toBe(false);
     expect(result.http_tests[0]?.method).toBe("UNKNOWN");
@@ -110,14 +114,14 @@ describe("verify activity", () => {
     await writeStepFile(4, "verify.sh", "echo test");
     execInPod.mockResolvedValue({ stdout: "", stderr: "", exitCode: 0 });
 
-    const result = await verify({ sessionId: "s1", stepNumber: 4 }, contentRoot);
+    const result = await verify({ sessionId: "s1", stepNumber: 4, trackSlug: "go" }, contentRoot);
 
     expect(result.passed).toBe(false);
     expect(result.http_tests).toHaveLength(0);
   });
 
   it("fails safe when the step has no verify script", async () => {
-    const result = await verify({ sessionId: "s1", stepNumber: 99 }, contentRoot);
+    const result = await verify({ sessionId: "s1", stepNumber: 99, trackSlug: "go" }, contentRoot);
 
     expect(result.passed).toBe(false);
     expect(result.http_tests).toHaveLength(0);
@@ -128,7 +132,7 @@ describe("verify activity", () => {
     await writeStepFile(6, "verify.sh", "echo test");
     findSessionPod.mockRejectedValue(new Error("no pod"));
 
-    const result = await verify({ sessionId: "s1", stepNumber: 6 }, contentRoot);
+    const result = await verify({ sessionId: "s1", stepNumber: 6, trackSlug: "go" }, contentRoot);
 
     expect(result.passed).toBe(false);
     expect(result.http_tests).toHaveLength(0);
@@ -139,7 +143,7 @@ describe("verify activity", () => {
     await writeStepFile(7, "fixtures.sql", "insert into users values (1);");
     execInPod.mockResolvedValue({ stdout: '{"method":"GET","path":"/x","status":200,"passed":true}', stderr: "", exitCode: 0 });
 
-    await verify({ sessionId: "s1", stepNumber: 7 }, contentRoot);
+    await verify({ sessionId: "s1", stepNumber: 7, trackSlug: "go" }, contentRoot);
 
     expect(execInPod).toHaveBeenCalledTimes(2);
     const [fixturesCall, verifyCall] = execInPod.mock.calls;
@@ -164,7 +168,7 @@ describe("verify activity", () => {
       .mockRejectedValueOnce(new Error("psql failed"))
       .mockResolvedValueOnce({ stdout: '{"method":"GET","path":"/x","status":200,"passed":true}', stderr: "", exitCode: 0 });
 
-    const result = await verify({ sessionId: "s1", stepNumber: 8 }, contentRoot);
+    const result = await verify({ sessionId: "s1", stepNumber: 8, trackSlug: "go" }, contentRoot);
 
     expect(result.passed).toBe(true);
   });
@@ -173,7 +177,7 @@ describe("verify activity", () => {
     await writeStepFile(9, "verify.sh", "echo test");
     execInPod.mockResolvedValue({ stdout: '{"method":"GET","path":"/x","status":200,"passed":true}', stderr: "", exitCode: 0 });
 
-    await verify({ sessionId: "s1", stepNumber: 9 }, contentRoot);
+    await verify({ sessionId: "s1", stepNumber: 9, trackSlug: "go" }, contentRoot);
 
     expect(execInPod).toHaveBeenCalledTimes(1);
     expect(execInPod.mock.calls[0]?.[1]).toBe("app");
@@ -183,7 +187,7 @@ describe("verify activity", () => {
     await writeStepFile(10, "verify.sh", "echo test");
     execInPod.mockResolvedValue({ stdout: '{"method":"GET","path":"/x","status":200,"passed":true}', stderr: "", exitCode: 0 });
 
-    await verify({ sessionId: "sess-9; rm -rf /", stepNumber: 10 }, contentRoot);
+    await verify({ sessionId: "sess-9; rm -rf /", stepNumber: 10, trackSlug: "go" }, contentRoot);
 
     const verifyCall = execInPod.mock.calls[execInPod.mock.calls.length - 1];
     expect(verifyCall[0]).toBe("pod-1");
@@ -200,6 +204,6 @@ describe("verify activity", () => {
   });
 
   it("runs the real repo's step-1 verify script path by default", () => {
-    expect(verifyScriptPath(1)).toContain("content/capstone/go-crud-api/step-1/verify.sh");
+    expect(verifyScriptPath(1, "go")).toContain("content/capstone/go-crud-api/step-1/verify.sh");
   });
 });

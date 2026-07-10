@@ -49,6 +49,28 @@ beforeEach(() => {
   vi.unstubAllGlobals();
 });
 
+describe("getProject", () => {
+  it("returns the go capstone project for the go track", async () => {
+    const db = makeMockDb();
+    const result = await caller(db, "u1").getProject({ trackSlug: "go" });
+
+    expect(result).toEqual({
+      slug: "go-crud-api",
+      title: "Go CRUD API",
+      description: expect.any(String),
+      language: "go",
+      stub: expect.stringContaining("package main"),
+    });
+  });
+
+  it("returns null for a track with no capstone at all", async () => {
+    const db = makeMockDb();
+    const result = await caller(db, "u1").getProject({ trackSlug: "not-a-track" });
+
+    expect(result).toBeNull();
+  });
+});
+
 describe("deployCode", () => {
   it("forwards to the capstone-runner deploy endpoint and returns its response", async () => {
     const db = makeMockDb();

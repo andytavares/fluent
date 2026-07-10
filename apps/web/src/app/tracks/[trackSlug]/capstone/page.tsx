@@ -13,7 +13,7 @@ import {
   SqlEditor,
 } from "@fluent/ui";
 import type { SqlEditorSchema } from "@fluent/ui";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -40,16 +40,18 @@ function sqlIdent(name: string): string {
   return `"${name.replace(/"/g, '""')}"`;
 }
 
-const DEFAULT_STUB = "package main\n\n// Build your Go CRUD API here.\n// Listen on :8080 and read DATABASE_URL from your environment.\n";
-
 export default function CapstonePage() {
   const { trackSlug } = useParams<{ trackSlug: string }>();
-  const [code, setCode] = useState(DEFAULT_STUB);
+  const [code, setCode] = useState("");
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<"code" | "database">("code");
   const [compileLog, setCompileLog] = useState<string | null>(null);
   const [complexity, setComplexity] = useState<{ time: string; space: string; basis: string } | null>(null);
-  const [sql, setSql] = useState("SELECT * FROM users;");
+  // Language-neutral starter query — each capstone project has its own
+  // tables, so listing them is the one query that's always meaningful.
+  const [sql, setSql] = useState(
+    "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';",
+  );
   const [queryResult, setQueryResult] = useState<
     { kind: "rows"; columns: string[]; rows: string[][] } | { kind: "message"; message: string } | { kind: "error"; message: string } | null
   >(null);
@@ -63,6 +65,20 @@ export default function CapstonePage() {
 
   const stepsQuery = trpc.capstone.getSteps.useQuery({ trackSlug });
   const stepDefs = stepsQuery.data ?? [];
+
+  const projectQuery = trpc.capstone.getProject.useQuery({ trackSlug });
+  const project = projectQuery.data;
+
+  // Seed the editor from the project's stub exactly once, as soon as it
+  // resolves — never again after, so a background refetch can't clobber the
+  // learner's in-progress edits.
+  const stubSeededRef = useRef(false);
+  useEffect(() => {
+    if (project && !stubSeededRef.current) {
+      stubSeededRef.current = true;
+      setCode(project.stub);
+    }
+  }, [project]);
 
   const {
     sessionId,
@@ -200,10 +216,17 @@ export default function CapstonePage() {
     <main className="flex h-full flex-col overflow-hidden">
       <header className="border-b border-[var(--color-border-subtle)] px-6 py-3">
         <h1 className="text-base font-semibold text-[var(--color-text-primary)]">
-          Go CRUD API Capstone
+          {project ? `${project.title} Capstone` : "Capstone"}
         </h1>
       </header>
 
+      {projectQuery.isSuccess && project === null ? (
+        <div className="flex flex-1 items-center justify-center p-6">
+          <p className="text-sm text-[var(--color-text-secondary)]">
+            This track doesn't have a capstone project yet.
+          </p>
+        </div>
+      ) : (
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar: the ticket board */}
         <aside className="w-72 shrink-0 overflow-auto border-r border-[var(--color-border-subtle)] p-5 flex flex-col gap-4">
@@ -288,7 +311,7 @@ export default function CapstonePage() {
             >
               {activeTab === "code" ? (
                 <div className="flex flex-1 flex-col gap-4 overflow-auto p-4">
-                  <CodeEditor value={code} onChange={setCode} onRun={() => void handleDeploy()} />
+                  <CodeEditor value={code} onChange={setCode} onRun={() => void handleDeploy()} {...(project ? { language: project.language } : {})} />
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => void handleDeploy()}
@@ -400,6 +423,7 @@ export default function CapstonePage() {
           </div>
         </div>
       </div>
+      )}
     </main>
   );
 }

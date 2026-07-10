@@ -5,29 +5,11 @@ import { startCapstoneWorkflow, signalLearnerActive, signalVerifyStep } from "..
 import { CapstonePrereqService } from "../service/capstone-prereq.js";
 import { createContentStore } from "@fluent/content-config";
 import { estimateComplexity } from "@fluent/complexity-heuristic";
+import { CAPSTONE_SLUG_BY_TRACK } from "@fluent/capstone-contract";
 import type { PrismaClient } from "@prisma/client";
 
 const CAPSTONE_RUNNER_URL = process.env["CAPSTONE_RUNNER_URL"] ?? "http://localhost:3004";
 const content = createContentStore();
-
-// Every capstone track has exactly one project (`<language>-crud-api`),
-// matching each entry's `capstoneSlug` in capstone-runner's LANGUAGE_RUNTIMES
-// table (apps/capstone-runner/src/language-runtimes.ts). Content for most of
-// these (task #29) doesn't exist on disk yet — getSteps below gracefully
-// returns [] for a slug with no content directory rather than throwing.
-const CAPSTONE_SLUG_BY_TRACK: Record<string, string> = {
-  go: "go-crud-api",
-  python: "python-crud-api",
-  javascript: "javascript-crud-api",
-  typescript: "typescript-crud-api",
-  ruby: "ruby-crud-api",
-  java: "java-crud-api",
-  kotlin: "kotlin-crud-api",
-  rust: "rust-crud-api",
-  c: "c-crud-api",
-  cpp: "cpp-crud-api",
-  elixir: "elixir-crud-api",
-};
 
 /** Loads the session and throws FORBIDDEN if it doesn't belong to this user (same pattern as submissions.getSubmission). */
 async function ownedSession(db: PrismaClient, sessionId: string, userId: string) {
@@ -73,6 +55,14 @@ export const capstoneRouter = router({
       const capstoneSlug = CAPSTONE_SLUG_BY_TRACK[input.trackSlug];
       if (!capstoneSlug) return [];
       return content.getCapstoneSteps(capstoneSlug);
+    }),
+
+  getProject: protectedProcedure
+    .input(z.object({ trackSlug: z.string() }))
+    .query(({ input }) => {
+      const capstoneSlug = CAPSTONE_SLUG_BY_TRACK[input.trackSlug];
+      if (!capstoneSlug) return null;
+      return content.getCapstoneProject(capstoneSlug);
     }),
 
   getCapstone: protectedProcedure

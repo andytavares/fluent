@@ -58,6 +58,21 @@ beforeAll(async () => {
     JSON.stringify({ slug: "rust", title: "Rust", description: "Soon", language: "rust", status: "coming_soon" }),
   );
 
+  // A capstone project config + stub, to exercise getCapstoneProject.
+  const capstoneProjectDir = join(root, "content/capstone/go-crud-api");
+  await mkdir(capstoneProjectDir, { recursive: true });
+  await writeFile(
+    join(capstoneProjectDir, "config.json"),
+    JSON.stringify({
+      slug: "go-crud-api",
+      title: "Go CRUD API",
+      description: "Build a REST API with a real PostgreSQL database.",
+      language: "go",
+      steps: 6,
+    }),
+  );
+  await writeFile(join(capstoneProjectDir, "stub.go"), "package main\n\n// stub\n");
+
   // Capstone steps 1 through 11, to exercise the numeric-vs-lexicographic sort
   // bug (folder "step-10"/"step-11" sort before "step-2" as strings).
   const capstoneDir = join(root, "content/capstone/go-crud-api");
@@ -180,6 +195,23 @@ describe("ContentStore capstone steps", () => {
 
   it("returns [] for a capstone slug that does not exist", () => {
     expect(store.getCapstoneSteps("nonexistent-capstone")).toEqual([]);
+  });
+});
+
+describe("ContentStore capstone project", () => {
+  it("reads the project config and language-matched stub", () => {
+    const project = store.getCapstoneProject("go-crud-api");
+    expect(project).toEqual({
+      slug: "go-crud-api",
+      title: "Go CRUD API",
+      description: "Build a REST API with a real PostgreSQL database.",
+      language: "go",
+      stub: "package main\n\n// stub\n",
+    });
+  });
+
+  it("returns null for a capstone slug that does not exist", () => {
+    expect(store.getCapstoneProject("nonexistent-capstone")).toBeNull();
   });
 });
 

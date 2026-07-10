@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { LANGUAGE_RUNTIMES, composeAppCommand, ENSURE_CURL_SCRIPT } from "../../src/language-runtimes.js";
+import { CAPSTONE_SLUG_BY_TRACK } from "@fluent/capstone-contract";
 
 // Task #29 (per-language capstone content) reads this table's shape to know
 // which image/entrypoint/driver each track's capstone runs against — these
@@ -28,15 +29,18 @@ describe("LANGUAGE_RUNTIMES", () => {
     expect(Object.keys(LANGUAGE_RUNTIMES).sort()).toEqual([...EXPECTED_TRACK_SLUGS].sort());
   });
 
-  it("every entry has a non-empty image, capstoneSlug, entrypointFilename, setupScript, and runLoopScript", () => {
+  it("every entry has a non-empty image, entrypointFilename, setupScript, and runLoopScript", () => {
     for (const slug of EXPECTED_TRACK_SLUGS) {
       const runtime = LANGUAGE_RUNTIMES[slug]!;
       expect(runtime.image.length).toBeGreaterThan(0);
-      expect(runtime.capstoneSlug).toBe(`${slug}-crud-api`);
       expect(runtime.entrypointFilename.length).toBeGreaterThan(0);
       expect(runtime.setupScript.length).toBeGreaterThan(0);
       expect(runtime.runLoopScript.length).toBeGreaterThan(0);
     }
+  });
+
+  it("stays in lockstep with CAPSTONE_SLUG_BY_TRACK — every runtime has a capstone slug and vice versa", () => {
+    expect(Object.keys(LANGUAGE_RUNTIMES).sort()).toEqual(Object.keys(CAPSTONE_SLUG_BY_TRACK).sort());
   });
 
   it("every runLoopScript polls /code/.deployed and every setupScript signals /code/setup-done (mirrors the pre-existing Go restart-loop contract)", () => {

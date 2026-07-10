@@ -13,8 +13,6 @@
 export interface LanguageRuntime {
   /** Track slug this runtime serves, e.g. "python", "rust". */
   trackSlug: string;
-  /** Capstone content slug, e.g. "python-crud-api" (task #29 creates this content dir). */
-  capstoneSlug: string;
   /** Docker image with the language's toolchain. */
   image: string;
   /** Path (relative to /code) the learner's submitted code is written to. */
@@ -399,7 +397,6 @@ done
 export const LANGUAGE_RUNTIMES: Record<string, LanguageRuntime> = {
   go: {
     trackSlug: "go",
-    capstoneSlug: "go-crud-api",
     image: "golang:1.21-alpine",
     entrypointFilename: "main.go",
     setupScript: GO_SETUP_SCRIPT,
@@ -407,7 +404,6 @@ export const LANGUAGE_RUNTIMES: Record<string, LanguageRuntime> = {
   },
   python: {
     trackSlug: "python",
-    capstoneSlug: "python-crud-api",
     image: "python:3.12-slim",
     entrypointFilename: "main.py",
     setupScript: PYTHON_SETUP_SCRIPT,
@@ -415,7 +411,6 @@ export const LANGUAGE_RUNTIMES: Record<string, LanguageRuntime> = {
   },
   javascript: {
     trackSlug: "javascript",
-    capstoneSlug: "javascript-crud-api",
     image: "node:22-alpine",
     entrypointFilename: "main.js",
     setupScript: JAVASCRIPT_SETUP_SCRIPT,
@@ -423,7 +418,6 @@ export const LANGUAGE_RUNTIMES: Record<string, LanguageRuntime> = {
   },
   typescript: {
     trackSlug: "typescript",
-    capstoneSlug: "typescript-crud-api",
     image: "node:22-alpine",
     entrypointFilename: "main.ts",
     setupScript: TYPESCRIPT_SETUP_SCRIPT,
@@ -431,7 +425,6 @@ export const LANGUAGE_RUNTIMES: Record<string, LanguageRuntime> = {
   },
   ruby: {
     trackSlug: "ruby",
-    capstoneSlug: "ruby-crud-api",
     image: "ruby:3.3-alpine",
     entrypointFilename: "main.rb",
     setupScript: RUBY_SETUP_SCRIPT,
@@ -439,7 +432,6 @@ export const LANGUAGE_RUNTIMES: Record<string, LanguageRuntime> = {
   },
   java: {
     trackSlug: "java",
-    capstoneSlug: "java-crud-api",
     image: "eclipse-temurin:21-jdk-alpine",
     entrypointFilename: "Main.java",
     setupScript: JAVA_SETUP_SCRIPT,
@@ -447,7 +439,6 @@ export const LANGUAGE_RUNTIMES: Record<string, LanguageRuntime> = {
   },
   kotlin: {
     trackSlug: "kotlin",
-    capstoneSlug: "kotlin-crud-api",
     image: "eclipse-temurin:21-jdk-alpine",
     entrypointFilename: "Main.kt",
     setupScript: KOTLIN_SETUP_SCRIPT,
@@ -455,7 +446,6 @@ export const LANGUAGE_RUNTIMES: Record<string, LanguageRuntime> = {
   },
   rust: {
     trackSlug: "rust",
-    capstoneSlug: "rust-crud-api",
     image: "rust:1-slim",
     entrypointFilename: "src/main.rs",
     setupScript: RUST_SETUP_SCRIPT,
@@ -463,7 +453,6 @@ export const LANGUAGE_RUNTIMES: Record<string, LanguageRuntime> = {
   },
   c: {
     trackSlug: "c",
-    capstoneSlug: "c-crud-api",
     image: "gcc:latest",
     entrypointFilename: "main.c",
     setupScript: C_SETUP_SCRIPT,
@@ -471,7 +460,6 @@ export const LANGUAGE_RUNTIMES: Record<string, LanguageRuntime> = {
   },
   cpp: {
     trackSlug: "cpp",
-    capstoneSlug: "cpp-crud-api",
     image: "gcc:latest",
     entrypointFilename: "main.cpp",
     setupScript: CPP_SETUP_SCRIPT,
@@ -479,7 +467,6 @@ export const LANGUAGE_RUNTIMES: Record<string, LanguageRuntime> = {
   },
   elixir: {
     trackSlug: "elixir",
-    capstoneSlug: "elixir-crud-api",
     image: "elixir:1.17-alpine",
     entrypointFilename: "lib/main.ex",
     setupScript: ELIXIR_SETUP_SCRIPT,

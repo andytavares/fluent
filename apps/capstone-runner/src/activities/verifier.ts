@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
 import pino from "pino";
+import { CAPSTONE_SLUG_BY_TRACK } from "@fluent/capstone-contract";
 import { findSessionPod, execInPod } from "../k8s.js";
 
 const logger = pino({ base: { service: "capstone-runner" } });
@@ -9,14 +10,22 @@ const logger = pino({ base: { service: "capstone-runner" } });
 // Verify scripts and fixtures are authored content (ADR-005):
 // content/capstone/<slug>/step-N/{verify.sh,fixtures.sql}
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
-const CAPSTONE_SLUG = process.env["CAPSTONE_SLUG"] ?? "go-crud-api";
 
-export function verifyScriptPath(stepNumber: number, contentRoot: string = REPO_ROOT): string {
-  return join(contentRoot, "content/capstone", CAPSTONE_SLUG, `step-${stepNumber}`, "verify.sh");
+/** Resolves a track slug to its capstone content slug, failing loud on an unknown track. */
+function resolveCapstoneSlug(trackSlug: string): string {
+  const capstoneSlug = CAPSTONE_SLUG_BY_TRACK[trackSlug];
+  if (!capstoneSlug) {
+    throw new Error(`No capstone content slug configured for track "${trackSlug}"`);
+  }
+  return capstoneSlug;
 }
 
-export function fixturesPath(stepNumber: number, contentRoot: string = REPO_ROOT): string {
-  return join(contentRoot, "content/capstone", CAPSTONE_SLUG, `step-${stepNumber}`, "fixtures.sql");
+export function verifyScriptPath(stepNumber: number, trackSlug: string, contentRoot: string = REPO_ROOT): string {
+  return join(contentRoot, "content/capstone", resolveCapstoneSlug(trackSlug), `step-${stepNumber}`, "verify.sh");
+}
+
+export function fixturesPath(stepNumber: number, trackSlug: string, contentRoot: string = REPO_ROOT): string {
+  return join(contentRoot, "content/capstone", resolveCapstoneSlug(trackSlug), `step-${stepNumber}`, "fixtures.sql");
 }
 
 export interface HttpTestResult {
@@ -51,10 +60,15 @@ export function parseHttpTestOutput(stdout: string): HttpTestResult[] {
  * aborting verification (the subsequent HTTP checks will legitimately fail
  * on their own).
  */
-async function loadFixtures(podName: string, stepNumber: number, contentRoot: string | undefined): Promise<void> {
+async function loadFixtures(
+  podName: string,
+  stepNumber: number,
+  trackSlug: string,
+  contentRoot: string | undefined,
+): Promise<void> {
   let fixturesSql: string;
   try {
-    fixturesSql = readFileSync(fixturesPath(stepNumber, contentRoot), "utf8");
+    fixturesSql = readFileSync(fixturesPath(stepNumber, trackSlug, contentRoot), "utf8");
   } catch {
     return;
   }
@@ -79,18 +93,20 @@ export async function verify(
   {
     sessionId,
     stepNumber,
+    trackSlug,
   }: {
     sessionId: string;
     stepNumber: number;
+    trackSlug: string;
   },
   contentRoot?: string,
 ): Promise<VerifyResult> {
   try {
     const podName = await findSessionPod(sessionId);
 
-    await loadFixtures(podName, stepNumber, contentRoot);
+    await loadFixtures(podName, stepNumber, trackSlug, contentRoot);
 
-    const verifyScriptContent = readFileSync(verifyScriptPath(stepNumber, contentRoot), "utf8");
+    const verifyScriptContent = readFileSync(verifyScriptPath(stepNumber, trackSlug, contentRoot), "utf8");
 
     // The script content is $1, session/step are $2/$3 — all positional,
     // never interpolated into the script text, and no stdin (see k8s.ts).
