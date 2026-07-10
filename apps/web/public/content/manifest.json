@@ -78,6 +78,192 @@
       }
     ]
   },
+  "aws": {
+    "slug": "aws",
+    "title": "AWS (LocalStack)",
+    "description": "Core AWS services from first principles to production patterns — S3, IAM, DynamoDB, Lambda, SQS/SNS, API Gateway — practiced locally against LocalStack.",
+    "language": "aws",
+    "status": "published",
+    "concepts": [
+      {
+        "slug": "cli-and-localstack",
+        "title": "CLI & LocalStack",
+        "position": 1,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "s3-basics",
+        "title": "S3 Basics",
+        "position": 2,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "s3-advanced",
+        "title": "S3 Advanced",
+        "position": 3,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "iam-users-policies",
+        "title": "IAM Users & Policies",
+        "position": 4,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "iam-roles-sts",
+        "title": "IAM Roles & STS",
+        "position": 5,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "dynamodb-tables",
+        "title": "DynamoDB Tables",
+        "position": 6,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "dynamodb-queries-indexes",
+        "title": "DynamoDB Queries & Indexes",
+        "position": 7,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "lambda-functions",
+        "title": "Lambda Functions",
+        "position": 8,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "lambda-event-sources",
+        "title": "Lambda Event Sources",
+        "position": 9,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "sqs",
+        "title": "SQS",
+        "position": 10,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "sns-eventbridge",
+        "title": "SNS & EventBridge",
+        "position": 11,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "api-gateway",
+        "title": "API Gateway",
+        "position": 12,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "cloudwatch",
+        "title": "CloudWatch",
+        "position": 13,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "secrets-and-config",
+        "title": "Secrets & Config",
+        "position": 14,
+        "has_testout": false,
+        "status": "published"
+      }
+    ]
+  },
+  "buildkite": {
+    "slug": "buildkite",
+    "title": "Buildkite",
+    "description": "Buildkite pipelines from first steps to production CI/CD — agents, artifacts, conditionals, matrices, plugins, and dynamic pipelines.",
+    "language": "buildkite",
+    "status": "published",
+    "concepts": [
+      {
+        "slug": "pipeline-basics",
+        "title": "Pipeline Basics",
+        "position": 1,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "agents-and-targeting",
+        "title": "Agents and Targeting",
+        "position": 2,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "step-dependencies-and-gates",
+        "title": "Step Dependencies and Gates",
+        "position": 3,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "artifacts",
+        "title": "Artifacts",
+        "position": 4,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "env-and-secrets",
+        "title": "Env and Secrets",
+        "position": 5,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "conditionals",
+        "title": "Conditionals",
+        "position": 6,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "matrix-and-parallelism",
+        "title": "Matrix and Parallelism",
+        "position": 7,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "plugins",
+        "title": "Plugins",
+        "position": 8,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "dynamic-pipelines",
+        "title": "Dynamic Pipelines",
+        "position": 9,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "production-patterns",
+        "title": "Production Patterns",
+        "position": 10,
+        "has_testout": false,
+        "status": "published"
+      }
+    ]
+  },
   "c": {
     "slug": "c",
     "title": "C Foundations",
@@ -1311,6 +1497,113 @@
       }
     ]
   },
+  "kafka": {
+    "slug": "kafka",
+    "title": "Kafka",
+    "description": "Apache Kafka from first principles to production — partitions, delivery semantics, replication, and the configuration patterns behind reliable event streaming.",
+    "language": "kafka",
+    "status": "published",
+    "concepts": [
+      {
+        "slug": "topics-partitions-offsets",
+        "title": "Topics, Partitions, and Offsets",
+        "position": 1,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "brokers-and-kraft",
+        "title": "Brokers and KRaft",
+        "position": 2,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "producers",
+        "title": "Producers",
+        "position": 3,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "consumers-and-groups",
+        "title": "Consumers and Groups",
+        "position": 4,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "delivery-semantics",
+        "title": "Delivery Semantics",
+        "position": 5,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "keys-partitioning-ordering",
+        "title": "Keys, Partitioning, and Ordering",
+        "position": 6,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "replication-and-isr",
+        "title": "Replication and ISR",
+        "position": 7,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "retention-and-compaction",
+        "title": "Retention and Compaction",
+        "position": 8,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "offset-management",
+        "title": "Offset Management",
+        "position": 9,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "transactions",
+        "title": "Transactions",
+        "position": 10,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "schema-management",
+        "title": "Schema Management",
+        "position": 11,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "kafka-connect",
+        "title": "Kafka Connect",
+        "position": 12,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "kafka-streams",
+        "title": "Kafka Streams",
+        "position": 13,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "production-tuning",
+        "title": "Production Tuning",
+        "position": 14,
+        "has_testout": false,
+        "status": "published"
+      }
+    ]
+  },
   "kotlin": {
     "slug": "kotlin",
     "title": "Kotlin Essentials",
@@ -1385,6 +1678,234 @@
         "slug": "interfaces-and-delegation",
         "title": "Interfaces & Delegation",
         "position": 10,
+        "has_testout": false,
+        "status": "published"
+      }
+    ]
+  },
+  "kubernetes": {
+    "slug": "kubernetes",
+    "title": "Kubernetes",
+    "description": "Learn Kubernetes from first principles to production patterns — pods to autoscaling, written for app developers deploying real services.",
+    "language": "kubernetes",
+    "status": "published",
+    "concepts": [
+      {
+        "slug": "pods",
+        "title": "Pods",
+        "position": 1,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "labels-selectors-annotations",
+        "title": "Labels, Selectors & Annotations",
+        "position": 2,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "deployments",
+        "title": "Deployments",
+        "position": 3,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "rollout-strategies",
+        "title": "Rollout Strategies",
+        "position": 4,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "services",
+        "title": "Services",
+        "position": 5,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "ingress",
+        "title": "Ingress",
+        "position": 6,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "configmaps-secrets",
+        "title": "ConfigMaps & Secrets",
+        "position": 7,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "probes",
+        "title": "Probes",
+        "position": 8,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "resources-qos",
+        "title": "Resources & QoS",
+        "position": 9,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "volumes-persistence",
+        "title": "Volumes & Persistence",
+        "position": 10,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "statefulsets",
+        "title": "StatefulSets",
+        "position": 11,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "daemonsets-jobs-cronjobs",
+        "title": "DaemonSets, Jobs & CronJobs",
+        "position": 12,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "rbac-serviceaccounts",
+        "title": "RBAC & ServiceAccounts",
+        "position": 13,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "network-policies",
+        "title": "Network Policies",
+        "position": 14,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "scheduling",
+        "title": "Scheduling",
+        "position": 15,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "autoscaling-production",
+        "title": "Autoscaling & Production Readiness",
+        "position": 16,
+        "has_testout": false,
+        "status": "published"
+      }
+    ]
+  },
+  "observability": {
+    "slug": "observability",
+    "title": "Observability",
+    "description": "Metrics, dashboards, alerts, and traces with Prometheus, Grafana, and OpenTelemetry — what to measure, how to capture it, and how to graph what matters.",
+    "language": "observability",
+    "status": "published",
+    "concepts": [
+      {
+        "slug": "observability-foundations",
+        "title": "Observability Foundations",
+        "position": 1,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "metric-types",
+        "title": "Metric Types",
+        "position": 2,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "instrumenting-services",
+        "title": "Instrumenting Services",
+        "position": 3,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "histograms-and-quantiles",
+        "title": "Histograms and Quantiles",
+        "position": 4,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "promql-basics",
+        "title": "PromQL Basics",
+        "position": 5,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "promql-aggregations",
+        "title": "PromQL Aggregations",
+        "position": 6,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "red-and-use",
+        "title": "RED and USE Methods",
+        "position": 7,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "recording-rules",
+        "title": "Recording Rules",
+        "position": 8,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "alerting",
+        "title": "Alerting",
+        "position": 9,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "grafana-dashboards",
+        "title": "Grafana Dashboards",
+        "position": 10,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "dashboard-best-practices",
+        "title": "Dashboard Best Practices",
+        "position": 11,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "otel-fundamentals",
+        "title": "OpenTelemetry Fundamentals",
+        "position": 12,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "otel-traces",
+        "title": "OpenTelemetry Traces",
+        "position": 13,
+        "has_testout": false,
+        "status": "published"
+      },
+      {
+        "slug": "otel-collector",
+        "title": "The OpenTelemetry Collector",
+        "position": 14,
         "has_testout": false,
         "status": "published"
       }
