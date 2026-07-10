@@ -101,12 +101,19 @@ function isFrameworkLine(t: string) {
   );
 }
 
+export interface OutputComplexityEstimate {
+  time: string;
+  space: string;
+  basis: string;
+}
+
 interface OutputPaneProps {
   state: OutputState;
   lines: OutputEvent[];
   exitCode?: number;
   runtimeMs?: number;
   isSuite?: boolean;
+  complexity?: OutputComplexityEstimate | null;
 }
 
 function TestRow({ result }: { result: TestResult }) {
@@ -168,7 +175,7 @@ function TestRow({ result }: { result: TestResult }) {
   );
 }
 
-export function OutputPane({ state, lines, exitCode, runtimeMs, isSuite }: OutputPaneProps) {
+export function OutputPane({ state, lines, exitCode, runtimeMs, isSuite, complexity }: OutputPaneProps) {
   const [tab, setTab] = useState<"output" | "results">("output");
 
   const testResults = isSuite && state === "complete" ? parseTestResults(lines) : [];
@@ -240,6 +247,15 @@ export function OutputPane({ state, lines, exitCode, runtimeMs, isSuite }: Outpu
           {state === "complete" && exitCode !== undefined && (
             <span className={exitCode === 0 ? "text-[var(--color-status-success-text)]" : "text-[var(--color-status-error-text)]"}>
               Exit {exitCode} · {runtimeMs}ms
+            </span>
+          )}
+          {state === "complete" && complexity && (
+            <span
+              title={complexity.basis}
+              className="rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] px-2 py-0.5 text-[var(--color-text-secondary)]"
+            >
+              Time: {complexity.time} · Space: {complexity.space}{" "}
+              <span className="text-[var(--color-text-disabled)]">(estimated)</span>
             </span>
           )}
           {state === "timeout" && <span className="text-[var(--color-status-warning-text)]">Timed out</span>}

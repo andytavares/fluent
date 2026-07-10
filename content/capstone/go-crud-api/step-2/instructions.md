@@ -31,7 +31,21 @@ database-generated `id` and `created_at` fields:
 Requirements:
 
 - Connect to Postgres using the `DATABASE_URL` environment variable
-  (already set in your session).
+  (already set in your session), via the `database/sql` package with the
+  `github.com/jackc/pgx/v5/stdlib` driver (pre-fetched into your session —
+  import it for its side effect and open with driver name `"pgx"`):
+
+  ```go
+  import (
+      "database/sql"
+      _ "github.com/jackc/pgx/v5/stdlib"
+  )
+
+  db, err := sql.Open("pgx", os.Getenv("DATABASE_URL"))
+  ```
+
+  No other third-party module is available — your session's `go run` has no
+  network access per deploy, only this one pre-fetched driver.
 - Your server should create the `users` table itself on startup if it
   doesn't already exist, e.g.:
 

@@ -42,7 +42,8 @@ describe.skipIf(!INTEGRATION)("Capstone integration", () => {
     const session = await api.capstone.createSession({ enrollmentId: enrollment.id });
 
     expect(session.enrollmentId).toBe(enrollment.id);
-    expect(vi.mocked(temporal.startCapstoneWorkflow)).toHaveBeenCalledWith(session.id);
+    const track = await env.db.track.findUniqueOrThrow({ where: { id: enrollment.trackId } });
+    expect(vi.mocked(temporal.startCapstoneWorkflow)).toHaveBeenCalledWith(session.id, track.slug);
 
     const status = await api.capstone.getSessionStatus({ sessionId: session.id });
     expect(status.currentStep).toBe(1);

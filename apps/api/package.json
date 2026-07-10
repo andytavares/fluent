@@ -32,7 +32,8 @@
     "superjson": "^2.2.0",
     "zod": "^3.23.0",
     "@fluent/capstone-contract": "workspace:*",
-    "@fluent/execution-contract": "workspace:*"
+    "@fluent/execution-contract": "workspace:*",
+    "@fluent/complexity-heuristic": "workspace:*"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

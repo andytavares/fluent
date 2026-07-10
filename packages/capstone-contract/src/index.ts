@@ -15,6 +15,8 @@ export const VERIFY_STEP_SIGNAL = "verify-step";
 
 export interface CapstoneSessionInput {
   sessionId: string;
+  /** Track slug (e.g. "go", "python") — selects the LanguageRuntime the app container provisions with. */
+  trackSlug: string;
 }
 
 /** Signature of the capstone session workflow function. */

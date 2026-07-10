@@ -4,15 +4,30 @@ import { router, protectedProcedure } from "./trpc.js";
 import { startCapstoneWorkflow, signalLearnerActive, signalVerifyStep } from "../temporal/capstone-client.js";
 import { CapstonePrereqService } from "../service/capstone-prereq.js";
 import { createContentStore } from "@fluent/content-config";
+import { estimateComplexity } from "@fluent/complexity-heuristic";
 import type { PrismaClient } from "@prisma/client";
 
 const CAPSTONE_RUNNER_URL = process.env["CAPSTONE_RUNNER_URL"] ?? "http://localhost:3004";
 const content = createContentStore();
 
-// Every capstone track has exactly one project for v1 (go-crud-api); this
-// mirrors ADR-005's per-language track slug pattern closely enough that a
-// second track's capstone can follow the same convention when it exists.
-const CAPSTONE_SLUG_BY_TRACK: Record<string, string> = { go: "go-crud-api" };
+// Every capstone track has exactly one project (`<language>-crud-api`),
+// matching each entry's `capstoneSlug` in capstone-runner's LANGUAGE_RUNTIMES
+// table (apps/capstone-runner/src/language-runtimes.ts). Content for most of
+// these (task #29) doesn't exist on disk yet — getSteps below gracefully
+// returns [] for a slug with no content directory rather than throwing.
+const CAPSTONE_SLUG_BY_TRACK: Record<string, string> = {
+  go: "go-crud-api",
+  python: "python-crud-api",
+  javascript: "javascript-crud-api",
+  typescript: "typescript-crud-api",
+  ruby: "ruby-crud-api",
+  java: "java-crud-api",
+  kotlin: "kotlin-crud-api",
+  rust: "rust-crud-api",
+  c: "c-crud-api",
+  cpp: "cpp-crud-api",
+  elixir: "elixir-crud-api",
+};
 
 /** Loads the session and throws FORBIDDEN if it doesn't belong to this user (same pattern as submissions.getSubmission). */
 async function ownedSession(db: PrismaClient, sessionId: string, userId: string) {
@@ -21,6 +36,15 @@ async function ownedSession(db: PrismaClient, sessionId: string, userId: string)
     throw new TRPCError({ code: "FORBIDDEN" });
   }
   return session;
+}
+
+/** Resolves the track slug (language) an enrollment belongs to. */
+async function enrollmentTrackSlug(db: PrismaClient, enrollmentId: string): Promise<string> {
+  const enrollment = await db.enrollment.findUniqueOrThrow({
+    where: { id: enrollmentId },
+    include: { track: true },
+  });
+  return enrollment.track.slug;
 }
 
 export const capstoneRouter = router({
@@ -70,7 +94,8 @@ export const capstoneRouter = router({
       });
 
       try {
-        await startCapstoneWorkflow(session.id);
+        const trackSlug = await enrollmentTrackSlug(ctx.db, input.enrollmentId);
+        await startCapstoneWorkflow(session.id, trackSlug);
       } catch {
         await ctx.db.capstoneSessions.delete({ where: { id: session.id } });
         throw new TRPCError({
@@ -115,18 +140,22 @@ export const capstoneRouter = router({
   deployCode: protectedProcedure
     .input(z.object({ sessionId: z.string().uuid(), code: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
-      await ownedSession(ctx.db, input.sessionId, ctx.user.id!);
+      const session = await ownedSession(ctx.db, input.sessionId, ctx.user.id!);
+      const trackSlug = await enrollmentTrackSlug(ctx.db, session.enrollmentId);
 
       const res = await fetch(`${CAPSTONE_RUNNER_URL}/sessions/${input.sessionId}/deploy`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: input.code }),
+        body: JSON.stringify({ code: input.code, language: trackSlug }),
       });
       const body = (await res.json()) as { compileLog?: string; error?: string };
       if (!res.ok) {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: body.error ?? "Deploy failed" });
       }
-      return body as { compileLog: string };
+      // Rough static-analysis estimate — not persisted, computed fresh from
+      // the deployed code each time.
+      const complexity = estimateComplexity(input.code, trackSlug);
+      return { ...body, complexity } as { compileLog: string; complexity: typeof complexity };
     }),
 
   runQuery: protectedProcedure

@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import type { TraceFrame } from "@fluent/execution-contract";
+import type { ComplexityEstimate } from "@fluent/complexity-heuristic";
 import { trpc } from "@/lib/trpc/client";
 import { consumeExecutionStream } from "@/lib/execution-stream";
 
@@ -40,6 +41,7 @@ export function useSubmission({ conceptId, enrollmentId, language = "go", onComp
   const [runtimeMs, setRuntimeMs] = useState<number | undefined>();
   const [lastIsSuite, setLastIsSuite] = useState(false);
   const [traceFrames, setTraceFrames] = useState<TraceFrame[]>([]);
+  const [complexity, setComplexity] = useState<ComplexityEstimate | null>(null);
 
   const createSubmission = trpc.submissions.createSubmission.useMutation();
   const doCompleteSubmission = trpc.submissions.completeSubmission.useMutation();
@@ -56,6 +58,7 @@ export function useSubmission({ conceptId, enrollmentId, language = "go", onComp
       setRuntimeMs(undefined);
       setLastIsSuite(isSuite);
       setTraceFrames([]);
+      setComplexity(null);
 
       try {
         const { submissionId, streamToken } = await createSubmission.mutateAsync({
@@ -82,7 +85,10 @@ export function useSubmission({ conceptId, enrollmentId, language = "go", onComp
             // from Redis, scores it, and advances concept state.
             void doCompleteSubmission
               .mutateAsync({ submissionId })
-              .then(({ passed }) => onComplete?.(passed, { isSuite, kind }))
+              .then(({ passed, complexity: estimate }) => {
+                setComplexity(estimate ?? null);
+                onComplete?.(passed, { isSuite, kind });
+              })
               .catch(() => setState("error"));
           },
           onError: () => setState("error"),
@@ -94,5 +100,5 @@ export function useSubmission({ conceptId, enrollmentId, language = "go", onComp
     [conceptId, enrollmentId, language, createSubmission, doCompleteSubmission, onComplete],
   );
 
-  return { state, lines, exitCode, runtimeMs, isSuite: lastIsSuite, traceFrames, submit };
+  return { state, lines, exitCode, runtimeMs, isSuite: lastIsSuite, traceFrames, complexity, submit };
 }

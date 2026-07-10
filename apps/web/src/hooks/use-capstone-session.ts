@@ -46,10 +46,20 @@ export function useCapstoneSession(enrollmentId: string) {
     [sessionId, deployCodeMutation],
   );
 
+  // Query errors (bad SQL, `relation already exists`, etc.) are expected,
+  // routine outcomes for a SQL tool — surface them as a normal error result
+  // instead of letting them reject and crash the page.
   const runQuery = useCallback(
     async (sql: string) => {
       if (!sessionId) return null;
-      return runQueryMutation.mutateAsync({ sessionId, sql });
+      try {
+        return await runQueryMutation.mutateAsync({ sessionId, sql });
+      } catch (err) {
+        return {
+          kind: "error" as const,
+          message: err instanceof Error ? err.message : "Query failed",
+        };
+      }
     },
     [sessionId, runQueryMutation],
   );

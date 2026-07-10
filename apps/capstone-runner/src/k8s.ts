@@ -1,6 +1,5 @@
 import * as k8s from "@kubernetes/client-node";
 import { PassThrough } from "node:stream";
-import type { Readable } from "node:stream";
 
 // Everything the capstone-runner needs from a learner's pod — deploying
 // code, verifying a step, and running a SQL query — goes through this one
@@ -52,12 +51,19 @@ export interface ExecResult {
  * command completes (not once the WebSocket opens, which is what Exec.exec's
  * own promise resolves on — completion arrives later via the status
  * callback, per the Kubernetes exec sub-protocol).
+ *
+ * Deliberately does NOT support stdin: this client library's exec protocol
+ * (v4.channel.k8s.io) has no way to half-close just the stdin channel, so
+ * its stdin end-handler closes the ENTIRE WebSocket — the status frame never
+ * arrives and the returned promise hangs forever. Callers that need to feed
+ * content into a command must pass it as a positional `sh -c '... "$1"' sh
+ * <content>` argv element instead (which also avoids shell interpolation of
+ * untrusted content — see the SQL query route).
  */
 export async function execInPod(
   podName: string,
   containerName: string,
   command: string[],
-  opts: { stdin?: string | Readable } = {},
 ): Promise<ExecResult> {
   const exec = new k8s.Exec(kubeConfig());
   const stdout = new PassThrough();
@@ -67,21 +73,24 @@ export async function execInPod(
   stdout.on("data", (chunk: Buffer) => stdoutChunks.push(chunk));
   stderr.on("data", (chunk: Buffer) => stderrChunks.push(chunk));
 
-  const stdin =
-    typeof opts.stdin === "string"
-      ? (() => {
-          const s = new PassThrough();
-          s.end(opts.stdin);
-          return s;
-        })()
-      : (opts.stdin ?? null);
-
   return new Promise<ExecResult>((resolve, reject) => {
+    let settled = false;
     exec
-      .exec(NAMESPACE, podName, containerName, command, stdout, stderr, stdin, false, (status) => {
+      .exec(NAMESPACE, podName, containerName, command, stdout, stderr, null, false, (status) => {
+        settled = true;
         const exitCause = status.details?.causes?.find((c) => c.reason === "ExitCode");
         const exitCode = status.status === "Success" ? 0 : parseInt(exitCause?.message ?? "1", 10);
         resolve({ stdout: Buffer.concat(stdoutChunks).toString("utf8"), stderr: Buffer.concat(stderrChunks).toString("utf8"), exitCode });
+      })
+      .then((conn) => {
+        // Fail loud instead of hanging if the socket dies before the status
+        // frame arrives (network blip, pod killed mid-exec, etc.).
+        conn.onclose = () => {
+          if (!settled) {
+            settled = true;
+            reject(new Error(`exec socket closed before command completion (pod ${podName}, container ${containerName})`));
+          }
+        };
       })
       .catch(reject);
   });

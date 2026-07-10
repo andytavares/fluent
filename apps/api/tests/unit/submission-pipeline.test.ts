@@ -174,6 +174,8 @@ function primeFinalize(
     passed: null,
     kind: opts.kind,
     enrollmentId: opts.enrollmentId === undefined ? "enr1" : opts.enrollmentId,
+    code: "package main",
+    language: "go",
   });
   redis.streams.set("result:sub1", resultStream(opts.exitCode, opts.timedOut ?? false));
 }
@@ -195,6 +197,16 @@ describe("SubmissionPipeline.finalize", () => {
       expect.objectContaining({
         data: expect.objectContaining({ stdout: "hello", stderr: "warning", exitCode: 0, runtimeMs: 120, timedOut: false, passed: true }),
       }),
+    );
+  });
+
+  it("includes a heuristic complexity estimate computed from the submitted code", async () => {
+    primeFinalize(parts, { kind: "lesson", exitCode: 0 });
+
+    const result = await parts.pipeline.finalize({ submissionId: "sub1", userId: "usr1" });
+
+    expect(result.complexity).toEqual(
+      expect.objectContaining({ time: expect.any(String), space: expect.any(String), basis: expect.any(String) }),
     );
   });
 
@@ -282,6 +294,8 @@ describe("SubmissionPipeline.finalize", () => {
       passed: true,
       kind: "lesson",
       enrollmentId: "enr1",
+      code: "package main",
+      language: "go",
     });
 
     const result = await parts.pipeline.finalize({ submissionId: "sub1", userId: "usr1" });

@@ -1,0 +1,5 @@
+{
+  "step_number": 1,
+  "title": "Health endpoint",
+  "description": "Add a GET /health handler so we can confirm the server boots and responds."
+}

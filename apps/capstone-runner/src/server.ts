@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import { parse } from "csv-parse/sync";
 import { findSessionPod, execInPod, PodNotFoundError } from "./k8s.js";
+import { LANGUAGE_RUNTIMES } from "./language-runtimes.js";
 
 // Small internal HTTP server (mirrors apps/sandbox's registerInternalRoutes
 // style): not internet-facing, only called by apps/api over a private URL.
@@ -55,14 +56,29 @@ export function buildServer() {
 
   app.post("/sessions/:sessionId/deploy", async (req, reply) => {
     const { sessionId } = req.params as { sessionId: string };
-    const { code } = req.body as { code: string };
+    const { code, language } = req.body as { code: string; language: string };
+
+    const runtime = LANGUAGE_RUNTIMES[language];
+    if (!runtime) {
+      void reply.status(400).send({ error: `unsupported language "${language}"` });
+      return;
+    }
+    const entrypointPath = `/code/${runtime.entrypointFilename}`;
 
     await withSessionPod(sessionId, reply, async (podName) => {
       let deployResult;
       try {
-        deployResult = await execInPod(podName, "app", ["sh", "-c", "cat > /code/main.go && touch /code/.deployed"], {
-          stdin: code,
-        });
+        // The code travels as a positional argv element ($1), not stdin —
+        // execInPod deliberately has no stdin (see k8s.ts) — and not
+        // interpolated into the script text (shell-injection safety, same
+        // pattern as the query route). printf '%s' writes it verbatim.
+        deployResult = await execInPod(podName, "app", [
+          "sh",
+          "-c",
+          `mkdir -p "$(dirname ${entrypointPath})" && printf '%s' "$1" > ${entrypointPath} && touch /code/.deployed`,
+          "sh",
+          code,
+        ]);
       } catch (err) {
         void reply.status(500).send({ error: err instanceof Error ? err.message : String(err) });
         return;
@@ -86,10 +102,15 @@ export function buildServer() {
     const { sql } = req.body as { sql: string };
 
     await withSessionPod(sessionId, reply, async (podName) => {
+      // The statement timeout is applied via PGOPTIONS at connection startup,
+      // not a `SET ...;` prefix on the query text — a prefixed SET emits its
+      // own completion tag ("SET") ahead of the real query's output, which
+      // parseQueryOutput's leading-completion-tag check would then treat as
+      // the entire response, discarding any actual result rows.
       const result = await execInPod(podName, "postgres", [
         "sh",
         "-c",
-        'PGPASSWORD="$POSTGRES_PASSWORD" exec psql -h localhost -U postgres -d capstone --csv -v ON_ERROR_STOP=1 -c "SET statement_timeout=10000; $1"',
+        'PGPASSWORD="$POSTGRES_PASSWORD" PGOPTIONS="-c statement_timeout=10000" exec psql -h localhost -U postgres -d capstone --csv -v ON_ERROR_STOP=1 -c "$1"',
         "sh",
         sql,
       ]);

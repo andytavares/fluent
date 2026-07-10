@@ -2,6 +2,8 @@ import * as k8s from "@kubernetes/client-node";
 import { capstoneJobName } from "@fluent/capstone-contract";
 import { createCipheriv, randomBytes } from "node:crypto";
 import pino from "pino";
+import { findSessionPod, execInPod, PodNotFoundError } from "../k8s.js";
+import { LANGUAGE_RUNTIMES } from "../language-runtimes.js";
 
 if (!process.env["CAPSTONE_ENCRYPTION_KEY"]) {
   throw new Error("CAPSTONE_ENCRYPTION_KEY is required");
@@ -11,40 +13,6 @@ const logger = pino({ base: { service: "capstone-runner" } });
 
 const NAMESPACE = process.env["K8S_NAMESPACE"] ?? "capstone-sessions";
 const DB_IMAGE = process.env["POSTGRES_SIDECAR_IMAGE"] ?? "postgres:16-alpine";
-const APP_IMAGE = process.env["CAPSTONE_APP_IMAGE"] ?? "golang:1.21-alpine";
-
-// Polls /code/.deployed for mtime changes and (re)starts `go run main.go` on
-// each change, capturing combined stdout+stderr to /code/out.log (truncated
-// on each restart so stale errors don't linger). The deploy HTTP endpoint
-// (a parallel workstream) writes /code/main.go then touches /code/.deployed
-// to trigger a restart.
-//
-// Learner server contract: the learner's Go server MUST listen on port 8080
-// (fixed, no configurability for v1) and read DATABASE_URL from its
-// environment to connect to Postgres.
-const APP_RUN_LOOP_SCRIPT = `
-apk add --no-cache curl >/dev/null 2>&1
-mkdir -p /code
-cat > /code/go.mod <<'EOF'
-module solution
-
-go 1.21
-EOF
-touch /code/main.go /code/.deployed
-LAST=0
-PID=
-while true; do
-  MTIME=$(stat -c %Y /code/.deployed 2>/dev/null || echo 0)
-  if [ "$MTIME" != "$LAST" ]; then
-    LAST="$MTIME"
-    if [ -n "$PID" ]; then kill "$PID" 2>/dev/null; fi
-    : > /code/out.log
-    (cd /code && go run main.go >> /code/out.log 2>&1) &
-    PID=$!
-  fi
-  sleep 1
-done
-`;
 
 function encryptConnString(plaintext: string): string {
   const keyHex = process.env["CAPSTONE_ENCRYPTION_KEY"]!;
@@ -57,7 +25,12 @@ function encryptConnString(plaintext: string): string {
   return `${iv.toString("hex")}:${authTag.toString("hex")}:${encrypted.toString("hex")}`;
 }
 
-export async function provision({ sessionId }: { sessionId: string }) {
+export async function provision({ sessionId, trackSlug }: { sessionId: string; trackSlug: string }) {
+  const runtime = LANGUAGE_RUNTIMES[trackSlug];
+  if (!runtime) {
+    throw new Error(`No LanguageRuntime configured for track "${trackSlug}"`);
+  }
+
   const kc = new k8s.KubeConfig();
   kc.loadFromDefault();
   const coreApi = kc.makeApiClient(k8s.CoreV1Api);
@@ -96,9 +69,9 @@ export async function provision({ sessionId }: { sessionId: string }) {
             },
             {
               name: "app",
-              image: APP_IMAGE,
+              image: runtime.image,
               env: [{ name: "DATABASE_URL", value: `postgresql://postgres:${dbPassword}@localhost:5432/capstone` }],
-              command: ["sh", "-c", APP_RUN_LOOP_SCRIPT],
+              command: ["sh", "-c", `${runtime.setupScript}\n${runtime.runLoopScript}`],
             },
           ],
         },
@@ -107,6 +80,7 @@ export async function provision({ sessionId }: { sessionId: string }) {
   };
 
   await batchApi.createNamespacedJob(NAMESPACE, job);
+  await waitForAppReady(sessionId);
 
   const connString = `postgresql://postgres:${dbPassword}@${jobName}:5432/capstone`;
   const encryptedConn = encryptConnString(connString);
@@ -114,4 +88,33 @@ export async function provision({ sessionId }: { sessionId: string }) {
   logger.info({ event: "provision_complete", sessionId, jobName });
 
   return { jobName, encryptedConn };
+}
+
+const READY_POLL_INTERVAL_MS = 2000;
+const READY_TIMEOUT_MS = 4 * 60 * 1000; // pulling the image + one-time dependency setup can take a while on a cold cache
+
+/**
+ * The Job being created does not mean the pod is Running yet, and a Running
+ * pod doesn't mean the app container's one-time setupScript has finished
+ * — deploy/query would 404 (no pod) or silently fail (no driver yet) if
+ * callers treated "provisioned" as "immediately usable". This blocks
+ * provision() from returning until /code/setup-done actually exists (each
+ * language's setupScript touches it right after its one-time Postgres client
+ * setup completes), so by the time the session row records
+ * dbConnectionEncrypted — which the UI reads as "connected" — the
+ * environment genuinely is.
+ */
+async function waitForAppReady(sessionId: string): Promise<void> {
+  const deadline = Date.now() + READY_TIMEOUT_MS;
+  while (Date.now() < deadline) {
+    try {
+      const podName = await findSessionPod(sessionId);
+      const result = await execInPod(podName, "app", ["test", "-f", "/code/setup-done"]);
+      if (result.exitCode === 0) return;
+    } catch (err) {
+      if (!(err instanceof PodNotFoundError)) throw err;
+    }
+    await new Promise((resolve) => setTimeout(resolve, READY_POLL_INTERVAL_MS));
+  }
+  throw new Error(`Session ${sessionId}'s app container did not become ready within ${READY_TIMEOUT_MS}ms`);
 }

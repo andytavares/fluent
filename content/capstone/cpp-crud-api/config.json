@@ -1,0 +1,7 @@
+{
+  "slug": "cpp-crud-api",
+  "title": "C++ CRUD API",
+  "description": "Build a REST API with a real PostgreSQL database across 6 incremental steps.",
+  "language": "cpp",
+  "steps": 6
+}

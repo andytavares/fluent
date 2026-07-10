@@ -53,7 +53,7 @@ async function runSession(
     const handle = await testEnv.client.workflow.start(CAPSTONE_WORKFLOW_TYPE, {
       taskQueue: TASK_QUEUE,
       workflowId: capstoneWorkflowId(randomUUID()),
-      args: [{ sessionId: "sess-1" }],
+      args: [{ sessionId: "sess-1", trackSlug: "go" }],
     });
     if (interact) await interact(handle);
     await handle.result();
@@ -66,7 +66,7 @@ describe("capstoneSessionWorkflow", () => {
 
     await runSession(activities);
 
-    expect(activities.provision).toHaveBeenCalledWith({ sessionId: "sess-1" });
+    expect(activities.provision).toHaveBeenCalledWith({ sessionId: "sess-1", trackSlug: "go" });
     expect(activities.recordProvisioned).toHaveBeenCalledWith({
       sessionId: "sess-1",
       jobName: "capstone-job",

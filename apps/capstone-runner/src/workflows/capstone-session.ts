@@ -22,7 +22,7 @@ const activities = proxyActivities<Activities>({
 export const learnerActiveSignal = defineSignal(LEARNER_ACTIVE_SIGNAL);
 export const verifyStepSignal = defineSignal<[number]>(VERIFY_STEP_SIGNAL);
 
-export async function capstoneSessionWorkflow({ sessionId }: CapstoneSessionInput) {
+export async function capstoneSessionWorkflow({ sessionId, trackSlug }: CapstoneSessionInput) {
   let learnerActive = false;
   const verifyQueue: number[] = [];
 
@@ -38,7 +38,7 @@ export async function capstoneSessionWorkflow({ sessionId }: CapstoneSessionInpu
   // Provision the K8s Job + Postgres sidecar, then persist its identity and
   // encrypted connection string on the session row — the UI derives its
   // "connected" status from that write.
-  const provisioned = await activities.provision({ sessionId });
+  const provisioned = await activities.provision({ sessionId, trackSlug });
 
   // Once real infrastructure exists, teardown must run no matter how the
   // session ends — normal inactivity lapse or a failing activity — or the

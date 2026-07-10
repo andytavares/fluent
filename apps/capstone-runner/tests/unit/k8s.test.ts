@@ -97,20 +97,7 @@ describe("execInPod", () => {
     expect(result.exitCode).toBe(1);
   });
 
-  it("pipes a string stdin argument to the command", async () => {
-    let capturedStdin: NodeJS.ReadableStream | null = null;
-    execMock.mockImplementation(async (_ns, _pod, _container, _cmd, stdout, _stderr, stdin, _tty, statusCallback) => {
-      capturedStdin = stdin;
-      queueMicrotask(() => statusCallback({ status: "Success" }));
-      return {};
-    });
-
-    await execInPod("pod-1", "app", ["sh", "-c", "cat > /code/main.go"], { stdin: "package main" });
-
-    expect(capturedStdin).not.toBeNull();
-  });
-
-  it("passes null stdin when none is given", async () => {
+  it("always passes null stdin (the exec protocol can't half-close stdin — see k8s.ts)", async () => {
     let capturedStdin: unknown = "unset";
     execMock.mockImplementation(async (_ns, _pod, _container, _cmd, _stdout, _stderr, stdin, _tty, statusCallback) => {
       capturedStdin = stdin;
@@ -121,5 +108,19 @@ describe("execInPod", () => {
     await execInPod("pod-1", "app", ["true"]);
 
     expect(capturedStdin).toBeNull();
+  });
+
+  it("rejects instead of hanging when the socket closes before the status frame arrives", async () => {
+    execMock.mockImplementation(async () => {
+      const conn: { onclose?: () => void } = {};
+      // Simulate the socket dying after connect but before any status.
+      // (Macrotask, so execInPod's .then has attached onclose by then.)
+      setTimeout(() => conn.onclose?.(), 0);
+      return conn;
+    });
+
+    await expect(execInPod("pod-1", "app", ["true"])).rejects.toThrow(
+      /exec socket closed before command completion/,
+    );
   });
 });

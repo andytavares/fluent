@@ -19,12 +19,12 @@ async function getClient(): Promise<Client> {
   return client;
 }
 
-export async function startCapstoneWorkflow(sessionId: string): Promise<void> {
+export async function startCapstoneWorkflow(sessionId: string, trackSlug: string): Promise<void> {
   const c = await getClient();
   await c.workflow.start<CapstoneSessionWorkflow>(CAPSTONE_WORKFLOW_TYPE, {
     taskQueue: CAPSTONE_TASK_QUEUE,
     workflowId: capstoneWorkflowId(sessionId),
-    args: [{ sessionId }],
+    args: [{ sessionId, trackSlug }],
   });
 }
 

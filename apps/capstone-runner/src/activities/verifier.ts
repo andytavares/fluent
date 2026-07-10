@@ -60,12 +60,16 @@ async function loadFixtures(podName: string, stepNumber: number, contentRoot: st
   }
 
   try {
-    await execInPod(
-      podName,
-      "postgres",
-      ["sh", "-c", 'PGPASSWORD="$POSTGRES_PASSWORD" psql -h localhost -U postgres -d capstone -v ON_ERROR_STOP=0'],
-      { stdin: fixturesSql },
-    );
+    // Fixtures travel as a positional argv element ($1), not stdin —
+    // execInPod deliberately has no stdin (see k8s.ts). psql -c accepts
+    // multiple semicolon-separated statements in one string.
+    await execInPod(podName, "postgres", [
+      "sh",
+      "-c",
+      'PGPASSWORD="$POSTGRES_PASSWORD" psql -h localhost -U postgres -d capstone -v ON_ERROR_STOP=0 -c "$1"',
+      "sh",
+      fixturesSql,
+    ]);
   } catch (err) {
     logger.warn({ event: "fixtures_load_failed", stepNumber, err });
   }
@@ -88,12 +92,17 @@ export async function verify(
 
     const verifyScriptContent = readFileSync(verifyScriptPath(stepNumber, contentRoot), "utf8");
 
-    const result = await execInPod(
-      podName,
-      "app",
-      ["sh", "-c", 'cat > /tmp/verify.sh && SESSION_ID="$1" STEP_NUMBER="$2" bash /tmp/verify.sh', "sh", sessionId, String(stepNumber)],
-      { stdin: verifyScriptContent },
-    );
+    // The script content is $1, session/step are $2/$3 — all positional,
+    // never interpolated into the script text, and no stdin (see k8s.ts).
+    const result = await execInPod(podName, "app", [
+      "sh",
+      "-c",
+      'printf \'%s\' "$1" > /tmp/verify.sh && SESSION_ID="$2" STEP_NUMBER="$3" bash /tmp/verify.sh',
+      "sh",
+      verifyScriptContent,
+      sessionId,
+      String(stepNumber),
+    ]);
 
     const httpTests = parseHttpTestOutput(result.stdout);
 

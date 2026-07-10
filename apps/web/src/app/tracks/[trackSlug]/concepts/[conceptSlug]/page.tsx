@@ -37,7 +37,7 @@ export default function LessonPage() {
     }
   }, [conceptQuery.data, code]);
 
-  const { state, lines, exitCode, runtimeMs, isSuite, traceFrames, submit } = useSubmission({
+  const { state, lines, exitCode, runtimeMs, isSuite, traceFrames, complexity, submit } = useSubmission({
     conceptId: conceptQuery.data?.id ?? "",
     enrollmentId: enrollment?.id ?? "",
     language: conceptQuery.data?.language,
@@ -131,6 +131,7 @@ export default function LessonPage() {
             state={state === "idle" ? "idle" : state === "streaming" ? "streaming" : state === "complete" ? "complete" : "error"}
             lines={lines}
             isSuite={isSuite}
+            complexity={complexity}
             {...(exitCode !== null && exitCode !== undefined ? { exitCode } : {})}
             {...(runtimeMs !== null && runtimeMs !== undefined ? { runtimeMs } : {})}
           />

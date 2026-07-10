@@ -41,7 +41,8 @@
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "tailwind-merge": "^2.3.0",
-    "@fluent/execution-contract": "workspace:*"
+    "@fluent/execution-contract": "workspace:*",
+    "@codemirror/lang-sql": "^6.8.0"
   },
   "devDependencies": {
     "@storybook/addon-a11y": "^8.1.0",

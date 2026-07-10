@@ -1,0 +1,5 @@
+{
+  "step_number": 2,
+  "title": "POST /users",
+  "description": "Create and persist a user, returning the inserted row with its generated id."
+}

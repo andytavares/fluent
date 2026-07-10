@@ -26,6 +26,9 @@ function makeMockDb(overrides: Record<string, unknown> = {}) {
       create: vi.fn(),
       delete: vi.fn(),
     },
+    enrollment: {
+      findUniqueOrThrow: vi.fn().mockResolvedValue({ id: "enr-1", track: { slug: "go" } }),
+    },
     ...overrides,
   };
 }
@@ -49,7 +52,11 @@ beforeEach(() => {
 describe("deployCode", () => {
   it("forwards to the capstone-runner deploy endpoint and returns its response", async () => {
     const db = makeMockDb();
-    db.capstoneSessions.findUniqueOrThrow.mockResolvedValue({ id: "7369a0e5-fec3-4821-8b19-1bd46b2d004e", userId: "u1" });
+    db.capstoneSessions.findUniqueOrThrow.mockResolvedValue({
+      id: "7369a0e5-fec3-4821-8b19-1bd46b2d004e",
+      userId: "u1",
+      enrollmentId: "enr-1",
+    });
 
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
@@ -59,10 +66,13 @@ describe("deployCode", () => {
 
     const result = await caller(db, "u1").deployCode({ sessionId: "7369a0e5-fec3-4821-8b19-1bd46b2d004e", code: "package main" });
 
-    expect(result).toEqual({ compileLog: "listening on :8080" });
+    expect(result).toEqual({
+      compileLog: "listening on :8080",
+      complexity: expect.objectContaining({ time: expect.any(String), space: expect.any(String), basis: expect.any(String) }),
+    });
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining("/sessions/7369a0e5-fec3-4821-8b19-1bd46b2d004e/deploy"),
-      expect.objectContaining({ method: "POST", body: JSON.stringify({ code: "package main" }) }),
+      expect.objectContaining({ method: "POST", body: JSON.stringify({ code: "package main", language: "go" }) }),
     );
   });
 
@@ -121,7 +131,10 @@ describe("runQuery", () => {
 describe("createSession rollback", () => {
   it("deletes the just-created session row and throws a clean TRPCError when the workflow fails to start", async () => {
     const db = makeMockDb({
-      enrollment: { findUnique: vi.fn() },
+      enrollment: {
+        findUnique: vi.fn(),
+        findUniqueOrThrow: vi.fn().mockResolvedValue({ id: "enr-1", track: { slug: "go" } }),
+      },
       conceptState: { findMany: vi.fn().mockResolvedValue([]) },
     });
     db.capstoneSessions.findFirst.mockResolvedValue(null);

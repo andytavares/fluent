@@ -148,9 +148,10 @@ describe("verify activity", () => {
     expect(fixturesCall[2]).toEqual([
       "sh",
       "-c",
-      'PGPASSWORD="$POSTGRES_PASSWORD" psql -h localhost -U postgres -d capstone -v ON_ERROR_STOP=0',
+      'PGPASSWORD="$POSTGRES_PASSWORD" psql -h localhost -U postgres -d capstone -v ON_ERROR_STOP=0 -c "$1"',
+      "sh",
+      "insert into users values (1);",
     ]);
-    expect(fixturesCall[3]).toEqual({ stdin: "insert into users values (1);" });
 
     expect(verifyCall[0]).toBe("pod-1");
     expect(verifyCall[1]).toBe("app");
@@ -190,12 +191,12 @@ describe("verify activity", () => {
     expect(verifyCall[2]).toEqual([
       "sh",
       "-c",
-      'cat > /tmp/verify.sh && SESSION_ID="$1" STEP_NUMBER="$2" bash /tmp/verify.sh',
+      'printf \'%s\' "$1" > /tmp/verify.sh && SESSION_ID="$2" STEP_NUMBER="$3" bash /tmp/verify.sh',
       "sh",
+      "echo test",
       "sess-9; rm -rf /",
       "10",
     ]);
-    expect(verifyCall[3]).toEqual({ stdin: "echo test" });
   });
 
   it("runs the real repo's step-1 verify script path by default", () => {

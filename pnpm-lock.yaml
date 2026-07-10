@@ -41,6 +41,9 @@ importers:
       '@fluent/capstone-contract':
         specifier: workspace:*
         version: link:../../packages/capstone-contract
+      '@fluent/complexity-heuristic':
+        specifier: workspace:*
+        version: link:../../packages/complexity-heuristic
       '@fluent/content-config':
         specifier: workspace:*
         version: link:../../packages/content-config
@@ -197,6 +200,9 @@ importers:
       '@auth/prisma-adapter':
         specifier: ^2.0.0
         version: 2.11.2(@prisma/client@5.22.0(prisma@5.22.0))
+      '@fluent/complexity-heuristic':
+        specifier: workspace:*
+        version: link:../../packages/complexity-heuristic
       '@fluent/content-config':
         specifier: workspace:*
         version: link:../../packages/content-config
@@ -279,6 +285,12 @@ importers:
 
   packages/capstone-contract: {}
 
+  packages/complexity-heuristic:
+    devDependencies:
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.1(@types/node@20.19.43)(lightningcss@1.32.0)(terser@5.48.0)
+
   packages/content-config:
     dependencies:
       zod:
@@ -297,6 +309,9 @@ importers:
 
   packages/ui:
     dependencies:
+      '@codemirror/lang-sql':
+        specifier: ^6.8.0
+        version: 6.10.0
       '@codemirror/language':
         specifier: ^6.10.0
         version: 6.12.3
@@ -554,6 +569,9 @@ packages:
 
   '@codemirror/commands@6.10.3':
     resolution: {integrity: sha512-JFRiqhKu+bvSkDLI+rUhJwSxQxYb759W5GBezE8Uc8mHLqC9aV/9aTC7yJSqCtB3F00pylrLCwnyS91Ap5ej4Q==}
+
+  '@codemirror/lang-sql@6.10.0':
+    resolution: {integrity: sha512-6ayPkEd/yRw0XKBx5uAiToSgGECo/GY2NoJIHXIIQh1EVwLuKoU8BP/qK0qH5NLXAbtJRLuT73hx7P9X34iO4w==}
 
   '@codemirror/language@6.12.3':
     resolution: {integrity: sha512-QwCZW6Tt1siP37Jet9Tb02Zs81TQt6qQrZR2H+eGMcFsL1zMrk2/b9CLC7/9ieP1fjIUMgviLWMmgiHoJrj+ZA==}
@@ -5076,6 +5094,15 @@ snapshots:
       '@codemirror/state': 6.6.0
       '@codemirror/view': 6.43.1
       '@lezer/common': 1.5.2
+
+  '@codemirror/lang-sql@6.10.0':
+    dependencies:
+      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/language': 6.12.3
+      '@codemirror/state': 6.6.0
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
 
   '@codemirror/language@6.12.3':
     dependencies:

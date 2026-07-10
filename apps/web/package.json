@@ -30,7 +30,8 @@
     "remark-gfm": "^4.0.1",
     "superjson": "^2.2.0",
     "@fluent/content-config": "workspace:*",
-    "@fluent/execution-contract": "workspace:*"
+    "@fluent/execution-contract": "workspace:*",
+    "@fluent/complexity-heuristic": "workspace:*"
   },
   "prisma": {
     "schema": "../api/prisma/schema.prisma"

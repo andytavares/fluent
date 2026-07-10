@@ -1,6 +1,7 @@
 import type { PrismaClient, SubmissionKind } from "@prisma/client";
 import type { ContentStore } from "@fluent/content-config";
 import { resultStreamKey, parseResultStream } from "@fluent/execution-contract";
+import { estimateComplexity } from "@fluent/complexity-heuristic";
 import type { CodeExecutionJob } from "../queue/queues.js";
 import { MasteryService } from "./mastery.js";
 import { ConceptStateService } from "./concept-state.js";
@@ -149,9 +150,13 @@ export class SubmissionPipeline {
       throw new SubmissionAccessError("Submission does not belong to this user");
     }
 
+    // Computed fresh each time from the submitted code — not persisted, it's
+    // a rough static-analysis estimate, not a verified fact about the run.
+    const complexity = estimateComplexity(submission.code, submission.language);
+
     // Already finalized — return the stored verdict, never advance twice.
     if (submission.passed !== null) {
-      return { submission, passed: submission.passed };
+      return { submission, passed: submission.passed, complexity };
     }
 
     const parsed = parseResultStream(await this.redis.xrange(resultStreamKey(submissionId), "-", "+"));
@@ -176,7 +181,7 @@ export class SubmissionPipeline {
       await this.advanceState(submission.kind, submission.enrollmentId, submission.conceptId, userId, passed);
     }
 
-    return { submission: updated, passed };
+    return { submission: updated, passed, complexity };
   }
 
   private async advanceState(

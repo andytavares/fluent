@@ -1,0 +1,5 @@
+{
+  "step_number": 4,
+  "title": "PUT /users/:id",
+  "description": "Update an existing user's name and/or email from a partial request body."
+}

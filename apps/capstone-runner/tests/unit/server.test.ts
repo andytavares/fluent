@@ -32,28 +32,67 @@ describe("POST /sessions/:sessionId/deploy", () => {
     const res = await app.inject({
       method: "POST",
       url: "/sessions/s1/deploy",
-      payload: { code: "package main" },
+      payload: { code: "package main", language: "go" },
     });
 
     expect(res.statusCode).toBe(200);
     expect(res.json()).toEqual({ compileLog: "server listening on :8080\n" });
 
     expect(findSessionPod).toHaveBeenCalledWith("s1");
-    expect(execInPod).toHaveBeenNthCalledWith(
-      1,
-      "pod-1",
-      "app",
-      ["sh", "-c", "cat > /code/main.go && touch /code/.deployed"],
-      { stdin: "package main" },
-    );
+    expect(execInPod).toHaveBeenNthCalledWith(1, "pod-1", "app", [
+      "sh",
+      "-c",
+      'mkdir -p "$(dirname /code/main.go)" && printf \'%s\' "$1" > /code/main.go && touch /code/.deployed',
+      "sh",
+      "package main",
+    ]);
     expect(execInPod).toHaveBeenNthCalledWith(2, "pod-1", "app", ["cat", "/code/out.log"]);
   }, 10000);
+
+  it("writes to the language-specific entrypoint path (including nested directories)", async () => {
+    findSessionPod.mockResolvedValue("pod-1");
+    execInPod
+      .mockResolvedValueOnce({ stdout: "", stderr: "", exitCode: 0 })
+      .mockResolvedValueOnce({ stdout: "", stderr: "", exitCode: 0 });
+
+    const app = buildServer();
+    await app.inject({
+      method: "POST",
+      url: "/sessions/s1/deploy",
+      payload: { code: "fn main() {}", language: "rust" },
+    });
+
+    expect(execInPod).toHaveBeenNthCalledWith(1, "pod-1", "app", [
+      "sh",
+      "-c",
+      'mkdir -p "$(dirname /code/src/main.rs)" && printf \'%s\' "$1" > /code/src/main.rs && touch /code/.deployed',
+      "sh",
+      "fn main() {}",
+    ]);
+  });
+
+  it("replies 400 for an unsupported language", async () => {
+    const app = buildServer();
+    const res = await app.inject({
+      method: "POST",
+      url: "/sessions/s1/deploy",
+      payload: { code: "x", language: "cobol" },
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.json()).toEqual({ error: 'unsupported language "cobol"' });
+    expect(findSessionPod).not.toHaveBeenCalled();
+  });
 
   it("replies 404 when the session pod isn't found", async () => {
     findSessionPod.mockRejectedValue(new PodNotFoundError("s1"));
 
     const app = buildServer();
-    const res = await app.inject({ method: "POST", url: "/sessions/s1/deploy", payload: { code: "x" } });
+    const res = await app.inject({
+      method: "POST",
+      url: "/sessions/s1/deploy",
+      payload: { code: "x", language: "go" },
+    });
 
     expect(res.statusCode).toBe(404);
     expect(res.json()).toEqual({ error: "session pod not found" });
@@ -65,7 +104,11 @@ describe("POST /sessions/:sessionId/deploy", () => {
     execInPod.mockResolvedValueOnce({ stdout: "", stderr: "no such file", exitCode: 1 });
 
     const app = buildServer();
-    const res = await app.inject({ method: "POST", url: "/sessions/s1/deploy", payload: { code: "x" } });
+    const res = await app.inject({
+      method: "POST",
+      url: "/sessions/s1/deploy",
+      payload: { code: "x", language: "go" },
+    });
 
     expect(res.statusCode).toBe(500);
     expect(res.json()).toEqual({ error: "no such file" });
@@ -77,7 +120,11 @@ describe("POST /sessions/:sessionId/deploy", () => {
     execInPod.mockRejectedValueOnce(new Error("websocket closed"));
 
     const app = buildServer();
-    const res = await app.inject({ method: "POST", url: "/sessions/s1/deploy", payload: { code: "x" } });
+    const res = await app.inject({
+      method: "POST",
+      url: "/sessions/s1/deploy",
+      payload: { code: "x", language: "go" },
+    });
 
     expect(res.statusCode).toBe(500);
     expect(res.json()).toEqual({ error: "websocket closed" });

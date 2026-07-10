@@ -10,8 +10,10 @@ import {
   Tabs,
   VerificationChecklist,
   SqlResultsGrid,
+  SqlEditor,
 } from "@fluent/ui";
-import { useState } from "react";
+import type { SqlEditorSchema } from "@fluent/ui";
+import { useState, useEffect, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -23,6 +25,21 @@ interface HttpTestResult {
   response_body?: unknown;
 }
 
+interface ColumnInfo {
+  name: string;
+  type: string;
+}
+
+/** Escapes a value for use inside a single-quoted SQL string literal. */
+function sqlStringLiteral(value: string): string {
+  return `'${value.replace(/'/g, "''")}'`;
+}
+
+/** Quotes an identifier (table/column name) so casing/special characters survive round-tripping. */
+function sqlIdent(name: string): string {
+  return `"${name.replace(/"/g, '""')}"`;
+}
+
 const DEFAULT_STUB = "package main\n\n// Build your Go CRUD API here.\n// Listen on :8080 and read DATABASE_URL from your environment.\n";
 
 export default function CapstonePage() {
@@ -31,10 +48,15 @@ export default function CapstonePage() {
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<"code" | "database">("code");
   const [compileLog, setCompileLog] = useState<string | null>(null);
+  const [complexity, setComplexity] = useState<{ time: string; space: string; basis: string } | null>(null);
   const [sql, setSql] = useState("SELECT * FROM users;");
   const [queryResult, setQueryResult] = useState<
     { kind: "rows"; columns: string[]; rows: string[][] } | { kind: "message"; message: string } | { kind: "error"; message: string } | null
   >(null);
+  const [tables, setTables] = useState<string[] | null>(null);
+  const [isLoadingTables, setIsLoadingTables] = useState(false);
+  const [expandedTable, setExpandedTable] = useState<string | null>(null);
+  const [columnsByTable, setColumnsByTable] = useState<Record<string, ColumnInfo[]>>({});
 
   const enrollmentsQuery = trpc.enrollments.listEnrollments.useQuery();
   const enrollment = enrollmentsQuery.data?.find((e) => e.track.slug === trackSlug);
@@ -71,6 +93,12 @@ export default function CapstonePage() {
 
   const selectedDef = stepDefs.find((d) => d.stepNumber === selectedStep) ?? null;
 
+  // Feeds SqlEditor's autocomplete. refreshTables() batch-fetches every
+  // table's columns up front, so this is populated as soon as the tab loads.
+  const editorSchema: SqlEditorSchema = Object.fromEntries(
+    (tables ?? []).map((table) => [table, (columnsByTable[table] ?? []).map((c) => c.name)]),
+  );
+
   // The workflow only records a completion (with its real http_tests) when a
   // step PASSES — a failed verify writes nothing, so there's no per-check
   // detail to show for a step that's still "current". This is real data,
@@ -87,14 +115,81 @@ export default function CapstonePage() {
 
   async function handleDeploy() {
     setCompileLog(null);
+    setComplexity(null);
     const result = await deployCode(code);
-    if (result) setCompileLog(result.compileLog || "(no output)");
+    if (result) {
+      setCompileLog(result.compileLog || "(no output)");
+      setComplexity(result.complexity ?? null);
+    }
   }
 
   async function handleRunQuery() {
     setQueryResult(null);
     const result = await runQuery(sql);
     if (result) setQueryResult(result);
+  }
+
+  const refreshTables = useCallback(async () => {
+    setIsLoadingTables(true);
+    try {
+      const result = await runQuery(
+        "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name;",
+      );
+      if (result?.kind === "error") return; // leave the last known table list in place
+      const tableNames = result?.kind === "rows" ? result.rows.map((r) => r[0]!) : [];
+      setTables(tableNames);
+
+      // Batch-fetch every table's columns in one query so autocomplete has
+      // real column names immediately, not only for tables the learner has
+      // manually expanded in the sidebar.
+      if (tableNames.length > 0) {
+        const allColumns = await runQuery(
+          "SELECT table_name, column_name, data_type FROM information_schema.columns " +
+            "WHERE table_schema = 'public' ORDER BY table_name, ordinal_position;",
+        );
+        if (allColumns?.kind === "rows") {
+          const grouped: Record<string, ColumnInfo[]> = {};
+          for (const [table, name, type] of allColumns.rows) {
+            (grouped[table!] ??= []).push({ name: name!, type: type! });
+          }
+          setColumnsByTable(grouped);
+        }
+      } else {
+        setColumnsByTable({});
+      }
+    } finally {
+      setIsLoadingTables(false);
+    }
+  }, [runQuery]);
+
+  // Auto-load the table list once the session's database is actually usable.
+  useEffect(() => {
+    if (dbStatus === "connected" && tables === null) {
+      void refreshTables();
+    }
+  }, [dbStatus, tables, refreshTables]);
+
+  async function toggleTable(table: string) {
+    if (expandedTable === table) {
+      setExpandedTable(null);
+      return;
+    }
+    setExpandedTable(table);
+    if (!columnsByTable[table]) {
+      const result = await runQuery(
+        `SELECT column_name, data_type FROM information_schema.columns WHERE table_schema = 'public' AND table_name = ${sqlStringLiteral(table)} ORDER BY ordinal_position;`,
+      );
+      if (result?.kind === "rows") {
+        setColumnsByTable((prev) => ({
+          ...prev,
+          [table]: result.rows.map((r) => ({ name: r[0]!, type: r[1]! })),
+        }));
+      }
+    }
+  }
+
+  function useTableInQuery(table: string) {
+    setSql(`SELECT * FROM ${sqlIdent(table)} LIMIT 100;`);
   }
 
   return (
@@ -197,6 +292,15 @@ export default function CapstonePage() {
                       Deploys your code to your session's live server (port 8080), replacing whatever was running before.
                     </p>
                   </div>
+                  {complexity && (
+                    <div
+                      title={complexity.basis}
+                      className="inline-flex w-fit items-center gap-1.5 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] px-2.5 py-1 text-xs text-[var(--color-text-secondary)]"
+                    >
+                      Time: {complexity.time} · Space: {complexity.space}{" "}
+                      <span className="text-[var(--color-text-disabled)]">(estimated)</span>
+                    </div>
+                  )}
                   {compileLog !== null && (
                     <pre className="flex-1 overflow-auto rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-raised)] p-3 text-xs font-mono text-[var(--color-text-primary)] whitespace-pre-wrap">
                       {compileLog || "(no output)"}
@@ -204,27 +308,83 @@ export default function CapstonePage() {
                   )}
                 </div>
               ) : (
-                <div className="flex flex-1 flex-col gap-3 overflow-auto p-4">
-                  <p className="text-xs text-[var(--color-text-secondary)]">
-                    Run any SQL against your session's own isolated database.
-                  </p>
-                  <textarea
-                    value={sql}
-                    onChange={(e) => setSql(e.target.value)}
-                    rows={4}
-                    spellCheck={false}
-                    className="w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-raised)] p-3 font-mono text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-interactive-primary)]"
-                  />
-                  <div>
-                    <button
-                      onClick={() => void handleRunQuery()}
-                      disabled={isRunningQuery || !sessionId || dbStatus !== "connected"}
-                      className="rounded-lg bg-[var(--color-interactive-primary)] px-4 py-2 text-sm font-medium text-[var(--color-interactive-primary-text)] disabled:opacity-50"
-                    >
-                      {isRunningQuery ? "Running…" : "Run query"}
-                    </button>
+                <div className="flex flex-1 overflow-hidden">
+                  {/* Schema browser */}
+                  <div className="w-56 shrink-0 overflow-auto border-r border-[var(--color-border-subtle)] p-3">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+                        Tables
+                      </span>
+                      <button
+                        onClick={() => void refreshTables()}
+                        disabled={isLoadingTables || dbStatus !== "connected"}
+                        className="text-xs text-[var(--color-text-link)] hover:underline disabled:opacity-50"
+                      >
+                        Refresh
+                      </button>
+                    </div>
+                    {isLoadingTables && tables === null ? (
+                      <p className="text-xs text-[var(--color-text-disabled)]">Loading…</p>
+                    ) : !tables || tables.length === 0 ? (
+                      <p className="text-xs text-[var(--color-text-disabled)]">
+                        No tables yet — deploy code that creates one.
+                      </p>
+                    ) : (
+                      <ul className="flex flex-col gap-0.5">
+                        {tables.map((table) => (
+                          <li key={table}>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => void toggleTable(table)}
+                                className="flex-1 truncate rounded px-2 py-1.5 text-left text-xs font-mono text-[var(--color-text-primary)] hover:bg-[var(--color-surface-overlay)]"
+                              >
+                                {expandedTable === table ? "▾" : "▸"} {table}
+                              </button>
+                              <button
+                                onClick={() => useTableInQuery(table)}
+                                title={`SELECT * FROM ${table} LIMIT 100`}
+                                className="shrink-0 px-1.5 text-xs text-[var(--color-text-link)] hover:underline"
+                              >
+                                use
+                              </button>
+                            </div>
+                            {expandedTable === table && (
+                              <ul className="ml-4 border-l border-[var(--color-border-subtle)] pl-2">
+                                {(columnsByTable[table] ?? []).map((col) => (
+                                  <li key={col.name} className="py-0.5 text-xs font-mono text-[var(--color-text-secondary)]">
+                                    {col.name} <span className="text-[var(--color-text-disabled)]">{col.type}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
-                  <SqlResultsGrid result={queryResult} isRunning={isRunningQuery} />
+
+                  {/* Query editor + results */}
+                  <div className="flex flex-1 flex-col gap-3 overflow-auto p-4">
+                    <p className="text-xs text-[var(--color-text-secondary)]">
+                      Run any SQL against your session's own isolated database.
+                    </p>
+                    <SqlEditor
+                      value={sql}
+                      onChange={setSql}
+                      onRun={() => void handleRunQuery()}
+                      schema={editorSchema}
+                    />
+                    <div>
+                      <button
+                        onClick={() => void handleRunQuery()}
+                        disabled={isRunningQuery || !sessionId || dbStatus !== "connected"}
+                        className="rounded-lg bg-[var(--color-interactive-primary)] px-4 py-2 text-sm font-medium text-[var(--color-interactive-primary-text)] disabled:opacity-50"
+                      >
+                        {isRunningQuery ? "Running…" : "Run query"}
+                      </button>
+                    </div>
+                    <SqlResultsGrid result={queryResult} isRunning={isRunningQuery} />
+                  </div>
                 </div>
               )}
             </Tabs>
