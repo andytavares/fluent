@@ -1,0 +1,42 @@
+apps/web/src/hooks/use-capstone-session.ts
+  s_beb7708abc1117::t_ab683587c93b9c 100
+  s_beb7708abc1117::t_1a3d70372c2972 9
+  s_beb7708abc1117::t_a71cbc35a401b8 31-32,36-41,47-49,53-57
+apps/capstone-runner/src/activities/provisioner.ts
+  s_beb7708abc1117::t_9ddba919ef9d01 6
+  s_beb7708abc1117::t_38f776d1a80646 74
+apps/capstone-runner/src/language-runtimes.ts
+  s_beb7708abc1117::t_534bcbc984a7cb 41-54
+  s_beb7708abc1117::t_10f79d622a031c 94
+  s_beb7708abc1117::t_da33ee9ac3b89a 26-28
+apps/web/src/app/tracks/[trackSlug]/capstone/page.tsx
+  s_beb7708abc1117::t_926d90af3ca336 269-273
+  s_beb7708abc1117::t_e2e9c7cb8dd851 75
+  s_beb7708abc1117::t_d8a144d5413ccd 121-124,126-127
+apps/api/src/router/capstone.ts
+  s_beb7708abc1117::t_b8d0ba4c13a4d3 162
+  s_beb7708abc1117::t_369dd7a4b86fac 149
+  s_beb7708abc1117::t_ca2cb7f77eaa52 41-59
+  s_beb7708abc1117::t_b521f3dde5400a 183
+apps/capstone-runner/tests/unit/language-runtimes.test.ts
+  s_beb7708abc1117::t_a494b0d671803f 2
+  s_beb7708abc1117::t_3b881c6a34a479 52-53,60
+  s_beb7708abc1117::t_304382c666553b 51,54-59,61-64
+  s_beb7708abc1117::t_b4dfe36988253f 65-66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "c9ba3c6ab9f24c95056455a808fd3b4271fdb378",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
