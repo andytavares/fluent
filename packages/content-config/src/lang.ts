@@ -14,6 +14,11 @@ export const LANG_EXT: Record<string, string> = {
   helm: "yaml",
   kotlin: "kt",
   rust: "rs",
+  kubernetes: "yaml",
+  kafka: "properties",
+  aws: "sh",
+  buildkite: "yaml",
+  observability: "yaml",
 };
 
 // Java: match both SolutionTest.java (class-named) and _test.java (file-named) conventions
@@ -34,4 +39,9 @@ export const TEST_FILE_PATTERNS: Record<string, RegExp> = {
   helm: /_test\.sh$/,
   kotlin: /_test\.kt$/,
   rust: /_test\.rs$/,
+  kubernetes: /_test\.sh$/,
+  kafka: /_test\.sh$/,
+  aws: /_test\.sh$/,
+  buildkite: /_test\.sh$/,
+  observability: /_test\.sh$/,
 };

@@ -31,6 +31,23 @@ async function getLanguageExtension(language: string) {
       const { rust } = await import("@codemirror/legacy-modes/mode/rust");
       return StreamLanguage.define(rust);
     }
+    case "helm":
+    case "kubernetes":
+    case "buildkite":
+    case "observability": {
+      const { yaml } = await import("@codemirror/legacy-modes/mode/yaml");
+      return StreamLanguage.define(yaml);
+    }
+    case "shell":
+    case "aws": {
+      const { shell } = await import("@codemirror/legacy-modes/mode/shell");
+      return StreamLanguage.define(shell);
+    }
+    case "kafka": {
+      // Kafka lesson artifacts are .properties config files
+      const { properties } = await import("@codemirror/legacy-modes/mode/properties");
+      return StreamLanguage.define(properties);
+    }
     default: {
       const { go } = await import("@codemirror/legacy-modes/mode/go");
       return StreamLanguage.define(go);

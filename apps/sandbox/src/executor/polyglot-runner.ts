@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import { accessSync } from "node:fs";
 import { executionTimeoutMs } from "@fluent/execution-contract";
 import type { TraceFrame } from "@fluent/execution-contract";
+import { LANG_EXT } from "@fluent/content-config";
 import type { ExecutionResult } from "./docker-runner.js";
 
 const TRACE_PREFIX = "__TRACE__:";
@@ -96,6 +97,24 @@ const DOCKER_IMAGES: Record<string, string> = {
   kotlin: "zenika/kotlin:latest",
   assembly: "fluent-assembly:latest",
 };
+
+// "Artifact" languages: there's no CLI to actually run the learner's file
+// (no terraform/helm/kubectl/etc. in the sandbox), so tests are bash+grep
+// scripts that inspect the stub as a text artifact. The stub filename is
+// derived from LANG_EXT (content-config), the same registry the content
+// store uses — one source of truth, so the two can't drift.
+// terraform is the one historical special case: its test scripts take the
+// stub path as $1; every other language (the helm convention) locates it
+// via `$(dirname "$0")/stub.<ext>`.
+const ARTIFACT_LANGUAGES = new Set([
+  "terraform",
+  "helm",
+  "kubernetes",
+  "kafka",
+  "aws",
+  "buildkite",
+  "observability",
+]);
 
 function stripMainFromC(code: string): string {
   return code.replace(/\n\s*int\s+main\s*\([^)]*\)\s*\{[\s\S]*$/, "\n");
@@ -311,27 +330,19 @@ export async function runCode(
       return execInDir(dir, "bash", ["stub.sh"]);
     }
 
-    // ── Terraform ─────────────────────────────────────────────────────────────
-    // Tests are bash+grep scripts — no terraform CLI needed
-    if (language === "terraform") {
-      await writeFile(join(dir, "stub.tf"), code, "utf8");
+    // ── Artifact languages (terraform, helm, kubernetes, kafka, aws, ─────────
+    // ── buildkite, observability) ─────────────────────────────────────────────
+    // No CLI in the sandbox to actually run these — tests are bash+grep
+    // scripts that inspect the stub as a text artifact.
+    if (ARTIFACT_LANGUAGES.has(language)) {
+      const stubFile = `stub.${LANG_EXT[language]}`;
+      await writeFile(join(dir, stubFile), code, "utf8");
       if (isSuite) {
         await writeFile(join(dir, "solution_test.sh"), testFile!, "utf8");
-        // Pass stub.tf as the target so the test validates the user's file
-        return execInDir(dir, "bash", ["solution_test.sh", "stub.tf"]);
+        const args = language === "terraform" ? ["solution_test.sh", stubFile] : ["solution_test.sh"];
+        return execInDir(dir, "bash", args);
       }
-      // Run-only: just show the file contents (no terraform CLI in dev)
-      return { stdout: code, stderr: null, exitCode: 0, runtimeMs: 0, timedOut: false };
-    }
-
-    // ── Helm ──────────────────────────────────────────────────────────────────
-    // Tests are bash+grep scripts — no helm CLI needed
-    if (language === "helm") {
-      await writeFile(join(dir, "stub.yaml"), code, "utf8");
-      if (isSuite) {
-        await writeFile(join(dir, "solution_test.sh"), testFile!, "utf8");
-        return execInDir(dir, "bash", ["solution_test.sh"]);
-      }
+      // Run-only: just show the file contents (no CLI to execute against)
       return { stdout: code, stderr: null, exitCode: 0, runtimeMs: 0, timedOut: false };
     }
 
