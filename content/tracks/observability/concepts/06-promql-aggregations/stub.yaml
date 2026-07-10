@@ -1,0 +1,10 @@
+# promql-aggregations.yaml — annotated aggregation query set
+# TODO: queries list with seven entries (name, promql, explains):
+#   1. total_request_rate            -> sum(rate(http_requests_total[5m]))
+#   2. request_rate_by_route         -> sum by (route) (rate(http_requests_total[5m]))
+#   3. request_rate_collapse_instance-> sum without (instance) (rate(http_requests_total[5m]))
+#   4. top5_error_routes             -> topk(5, sum by (route) (rate(http_requests_total{status=~"5.."}[5m])))
+#   5. error_ratio                   -> sum without (status) (rate(...5xx...[5m])) / sum without (status) (rate(...[5m]))
+#   6. memory_utilization_ratio      -> node_memory_MemAvailable_bytes / on (instance) group_left node_memory_MemTotal_bytes
+#   7. critical_service_missing      -> absent(up{job="critical-service"})
+queries:

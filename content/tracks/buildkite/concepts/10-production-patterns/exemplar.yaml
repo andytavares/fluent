@@ -1,0 +1,42 @@
+# pipeline.yml
+steps:
+  - label: ":hammer: Build"
+    key: "build"
+    command: "make build"
+    timeout_in_minutes: 10
+    retry:
+      automatic:
+        - exit_status: "*"
+          limit: 2
+
+  - label: ":test_tube: Flaky integration tests"
+    key: "integration-tests"
+    command: "make test-integration"
+    depends_on: "build"
+    timeout_in_minutes: 15
+    soft_fail:
+      - exit_status: 1
+
+  - label: ":rocket: Deploy to production"
+    key: "deploy"
+    command: "make deploy"
+    depends_on: "build"
+    concurrency: 1
+    concurrency_group: "myapp/deploy"
+    timeout_in_minutes: 20
+    retry:
+      manual:
+        allowed: false
+        reason: "Deploys can't be retried; roll forward instead"
+
+  - trigger: "downstream-smoke-tests"
+    label: ":arrow_forward: Trigger smoke tests"
+    key: "trigger-smoke"
+    depends_on: "deploy"
+    build:
+      branch: "main"
+
+notify:
+  - slack:
+      channels: ["#deploys"]
+    if: build.state == "failed"

@@ -1,0 +1,23 @@
+# TODO: set apiVersion to v1
+# TODO: set kind to Pod
+apiVersion:
+kind:
+metadata:
+  # TODO: name the pod "web"
+  name:
+  # TODO: add labels with app: web
+  labels:
+spec:
+  containers:
+    # TODO: add a container named "web" using image nginx:1.25
+    # TODO: expose containerPort 8080
+    # TODO: set env var APP_ENV=production
+    - name:
+      image:
+      ports:
+        - containerPort:
+      env:
+        - name:
+          value:
+  # TODO: set restartPolicy to Always
+  restartPolicy:

@@ -1,0 +1,25 @@
+# promql-queries.yaml — annotated PromQL query set
+queries:
+  - name: current_request_total
+    promql: 'http_requests_total{job="web-app"}'
+    explains: "Instant vector of the current value of every web-app request-count series."
+
+  - name: five_xx_rate
+    promql: 'http_requests_total{status=~"5.."}'
+    explains: "Selects only series whose status label matches the 5xx regex."
+
+  - name: request_rate_5m
+    promql: 'rate(http_requests_total[5m])'
+    explains: "Per-second request rate, averaged over a 5 minute window, with counter-reset correction."
+
+  - name: request_increase_5m
+    promql: 'increase(http_requests_total[5m])'
+    explains: "Approximate total number of requests in the last 5 minutes."
+
+  - name: request_rate_spike_check
+    promql: 'irate(http_requests_total[1m])'
+    explains: "Instant rate from only the last two samples — reacts fast but noisy, for ad-hoc investigation only."
+
+  - name: request_rate_day_over_day
+    promql: 'rate(http_requests_total[5m]) offset 1d'
+    explains: "The same rate query evaluated 24 hours in the past, for day-over-day comparison."

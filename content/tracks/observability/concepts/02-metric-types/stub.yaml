@@ -1,0 +1,13 @@
+# metrics.yaml — metric definitions + scrape config
+# TODO: metric_definitions list with four entries:
+#   1. http_requests_total (counter) labels [method, status, route]
+#   2. http_requests_in_flight (gauge)
+#   3. http_request_duration_seconds (histogram) labels [method, route]
+#   4. process_resident_memory_bytes (gauge)
+metric_definitions:
+
+# TODO: scrape_configs with job_name 'web-app', target web-app:8080
+scrape_configs:
+
+# TODO: cardinality_review comment block — name a label that must never be
+# added to http_requests_total, and why

@@ -1,0 +1,16 @@
+# otel-sdk-config.yaml — OTel SDK resource + exporter configuration
+resource:
+  attributes:
+    service.name: checkout-api
+    service.version: "2.4.1"
+    deployment.environment: production
+    k8s.pod.name: checkout-api-7d9f8c-x2kq1
+
+instrumentation:
+  auto: [http-server, http-client, db-driver]
+  manual: [pricing-quote-duration, cart-item-count]
+
+exporters:
+  otlp:
+    endpoint: "otel-collector:4317"
+    protocol: grpc

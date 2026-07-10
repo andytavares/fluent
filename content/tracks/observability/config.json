@@ -1,0 +1,7 @@
+{
+  "slug": "observability",
+  "title": "Observability",
+  "description": "Metrics, dashboards, alerts, and traces with Prometheus, Grafana, and OpenTelemetry — what to measure, how to capture it, and how to graph what matters.",
+  "language": "observability",
+  "status": "published"
+}

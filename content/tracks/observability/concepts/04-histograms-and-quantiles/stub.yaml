@@ -1,0 +1,10 @@
+# histogram-slo.yaml — histogram tuned for a 300ms SLO + quantile queries
+# TODO: histogram_definition with name http_request_duration_seconds and
+# buckets including 0.1, 0.25, 0.3, 0.5, 1, 2.5 (ascending)
+histogram_definition:
+
+# TODO: queries list with three named entries:
+#   1. p50_latency  -> histogram_quantile(0.5, sum by (le) (rate(..._bucket[5m])))
+#   2. p95_latency  -> histogram_quantile(0.95, sum by (le) (rate(..._bucket[5m])))
+#   3. p99_latency_per_route -> histogram_quantile(0.99, sum by (le, route) (rate(..._bucket[5m])))
+queries:

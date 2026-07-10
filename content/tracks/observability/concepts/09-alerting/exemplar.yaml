@@ -1,0 +1,26 @@
+# slo-burn-rate-alerts.yaml — multi-window, multi-burn-rate SLO alerts
+groups:
+  - name: web-app-slo-alerts
+    rules:
+      - alert: ErrorBudgetBurnFast
+        expr: |
+          (job:http_request_errors:ratio_rate1h > (14.4 * 0.001))
+          and
+          (job:http_request_errors:ratio_rate5m > (14.4 * 0.001))
+        for: 2m
+        labels:
+          severity: page
+        annotations:
+          summary: "{{ $labels.job }} is burning error budget fast ({{ $value | humanizePercentage }})"
+          runbook_url: "https://runbooks.internal/error-budget-burn"
+
+      - alert: ErrorBudgetBurnSlow
+        expr: |
+          (job:http_request_errors:ratio_rate6h > (6 * 0.001))
+          and
+          (job:http_request_errors:ratio_rate30m > (6 * 0.001))
+        for: 15m
+        labels:
+          severity: ticket
+        annotations:
+          summary: "{{ $labels.job }} is burning error budget ({{ $value | humanizePercentage }})"

@@ -1,0 +1,6 @@
+# slo-burn-rate-alerts.yaml — multi-window, multi-burn-rate SLO alerts
+# TODO: groups list with one group name: web-app-slo-alerts containing two rules:
+#   1. ErrorBudgetBurnFast — burn rate 14.4, windows 1h AND 5m, for: 2m, severity: page
+#   2. ErrorBudgetBurnSlow — burn rate 6, windows 6h AND 30m, for: 15m, severity: ticket
+# both annotations must template {{ $labels.job }} and {{ $value | humanizePercentage }}
+groups:

@@ -1,0 +1,9 @@
+# pipeline.yml
+# TODO: add a "Lint" step — label ":mag: Lint", key "lint", command "make lint"
+# TODO: add a "Test" step — label ":test_tube: Test", key "test",
+#       using a `commands:` list running "make deps" then "make test"
+# TODO: add a "Build" step — label ":package: Build", key "build", command "make build"
+steps:
+  - label:
+    key:
+    command:

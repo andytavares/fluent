@@ -1,0 +1,10 @@
+# pipeline.yml
+# TODO: pipeline-level env: NODE_ENV "test", APP_NAME "webapp"
+# TODO: "Build" — key "build", command "make build", step-level env overriding NODE_ENV to "production"
+# TODO: "Deploy" — key "deploy", command "make deploy", depends_on "build",
+#       secrets: ["API_ACCESS_TOKEN"] — NEVER hardcode a secret value here
+env:
+steps:
+  - label:
+    key:
+    command:

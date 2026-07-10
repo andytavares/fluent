@@ -1,0 +1,24 @@
+# TODO: set apiVersion to apps/v1, kind to Deployment
+apiVersion:
+kind:
+metadata:
+  name: web
+spec:
+  # TODO: set replicas to 3
+  replicas:
+  # TODO: set revisionHistoryLimit to 5
+  revisionHistoryLimit:
+  # TODO: selector.matchLabels must match template.metadata.labels below
+  selector:
+    matchLabels:
+  template:
+    metadata:
+      # TODO: labels must match spec.selector.matchLabels above (app: web)
+      labels:
+    spec:
+      containers:
+        # TODO: container named "web", image nginx:1.25, containerPort 8080
+        - name:
+          image:
+          ports:
+            - containerPort:

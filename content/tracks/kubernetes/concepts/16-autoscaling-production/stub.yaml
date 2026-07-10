@@ -1,0 +1,65 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: web-hpa
+spec:
+  # TODO: scaleTargetRef -> apps/v1 Deployment "web"
+  scaleTargetRef:
+    apiVersion:
+    kind:
+    name:
+  # TODO: minReplicas 3, maxReplicas 20
+  minReplicas:
+  maxReplicas:
+  # TODO: metrics -> Resource cpu, target Utilization 70
+  metrics:
+    - type:
+      resource:
+        name:
+        target:
+          type:
+          averageUtilization:
+  # TODO: behavior.scaleDown.stabilizationWindowSeconds -> 300
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds:
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: web-pdb
+spec:
+  # TODO: minAvailable -> 2
+  minAvailable:
+  selector:
+    matchLabels:
+      app: web
+
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: high-priority
+# TODO: value -> 1000000, globalDefault -> false
+value:
+globalDefault:
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web
+spec:
+  # TODO: priorityClassName -> high-priority
+  priorityClassName:
+  # TODO: terminationGracePeriodSeconds -> 30
+  terminationGracePeriodSeconds:
+  containers:
+    - name: web
+      image: web:1.0
+      # TODO: lifecycle.preStop.exec.command -> ["sleep", "5"]
+      lifecycle:
+        preStop:
+          exec:
+            command:

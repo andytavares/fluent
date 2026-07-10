@@ -1,0 +1,7 @@
+{
+  "slug": "kafka",
+  "title": "Kafka",
+  "description": "Apache Kafka from first principles to production — partitions, delivery semantics, replication, and the configuration patterns behind reliable event streaming.",
+  "language": "kafka",
+  "status": "published"
+}

@@ -1,0 +1,10 @@
+# pipeline.yml
+# TODO: "Lint" — key "lint", command "make lint"
+# TODO: "Unit Tests" — key "unit-tests", command "make test-unit", depends_on "lint"
+# TODO: "Integration Tests" — key "integration-tests", command "make test-integration", depends_on "lint"
+# TODO: block step "deploy-gate" — depends_on ["unit-tests", "integration-tests"], blocked_state "failed"
+# TODO: "Deploy" — key "deploy", command "make deploy", depends_on "deploy-gate"
+steps:
+  - label:
+    key:
+    command:

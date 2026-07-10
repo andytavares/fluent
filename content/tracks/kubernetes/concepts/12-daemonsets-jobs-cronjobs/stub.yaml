@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: log-agent
+spec:
+  selector:
+    matchLabels:
+      app: log-agent
+  template:
+    metadata:
+      labels:
+        app: log-agent
+    spec:
+      containers:
+        # TODO: container named "log-agent", image fluentd:1.16
+        - name:
+          image:
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migrate
+spec:
+  # TODO: completions 1, parallelism 1, backoffLimit 3, ttlSecondsAfterFinished 3600
+  completions:
+  parallelism:
+  backoffLimit:
+  ttlSecondsAfterFinished:
+  template:
+    spec:
+      # TODO: restartPolicy must be OnFailure or Never for a Job
+      restartPolicy:
+      containers:
+        # TODO: container named "migrate", image migrate:1.0
+        - name:
+          image:
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nightly-backup
+spec:
+  # TODO: schedule "0 2 * * *", concurrencyPolicy Forbid, startingDeadlineSeconds 300
+  schedule:
+  concurrencyPolicy:
+  startingDeadlineSeconds:
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy:
+          containers:
+            # TODO: container named "backup", image backup:1.0
+            - name:
+              image:

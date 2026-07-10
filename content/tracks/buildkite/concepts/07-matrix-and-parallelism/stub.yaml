@@ -1,0 +1,11 @@
+# pipeline.yml
+# TODO: "test-matrix" — key "test-matrix", command "make test LANG_VERSION={{matrix}}",
+#       matrix: ["3.9", "3.10", "3.11"]
+# TODO: "test-matrix-multi" — key "test-matrix-multi", command "echo {{matrix.os}} {{matrix.arch}}",
+#       matrix.setup: os ["linux","windows"], arch ["amd64","arm64"],
+#       adjustments: skip windows/arm64
+# TODO: "test-shards" — key "test-shards", command "make test-shard", parallelism: 4
+steps:
+  - label:
+    key:
+    command:

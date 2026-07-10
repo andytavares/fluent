@@ -1,0 +1,27 @@
+# pipeline.yml
+steps:
+  - label: ":mag: Lint"
+    key: "lint"
+    command: "make lint"
+
+  - label: ":test_tube: Unit Tests"
+    key: "unit-tests"
+    command: "make test-unit"
+    depends_on: "lint"
+
+  - label: ":test_tube: Integration Tests"
+    key: "integration-tests"
+    command: "make test-integration"
+    depends_on: "lint"
+
+  - block: ":rocket: Deploy to production?"
+    key: "deploy-gate"
+    blocked_state: "failed"
+    depends_on:
+      - "unit-tests"
+      - "integration-tests"
+
+  - label: ":shipit: Deploy"
+    key: "deploy"
+    command: "make deploy"
+    depends_on: "deploy-gate"

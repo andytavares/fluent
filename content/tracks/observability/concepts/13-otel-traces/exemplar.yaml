@@ -1,0 +1,35 @@
+# tracing-config.yaml — span design, sampling, and exemplar linkage
+spans:
+  - name: "POST /checkout"
+    kind: server
+    attributes:
+      http.method: POST
+      http.route: /checkout
+
+  - name: charge-payment
+    kind: internal
+    attributes:
+      payment.provider: stripe
+
+  - name: stripe.charge
+    kind: client
+    attributes:
+      http.method: POST
+      peer.service: stripe
+
+propagation:
+  header: traceparent
+  standard: w3c
+
+sampling:
+  strategy: tail
+  rules:
+    - condition: "status == Error"
+      sample_rate: 1.0
+    - condition: "duration > 1s"
+      sample_rate: 1.0
+  default_sample_rate: 0.1
+
+exemplars:
+  enabled: true
+  linked_metric: http_request_duration_seconds

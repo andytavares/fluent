@@ -1,0 +1,10 @@
+# red-dashboard.yaml — Grafana dashboard with three RED panels
+title: "Web App RED Overview"
+# TODO: panels list with three panels:
+#   1. id 1, "Request Rate", type timeseries, gridPos h8 w12 x0 y0,
+#      target sum(rate(http_requests_total[5m])), unit reqps
+#   2. id 2, "Error Ratio", type stat, gridPos h8 w12 x12 y0,
+#      target error ratio expr, unit percentunit, thresholds green/yellow/red
+#   3. id 3, "Latency Percentiles", type timeseries, gridPos h8 w24 x0 y8,
+#      two targets p95 and p99 histogram_quantile, unit s
+panels:

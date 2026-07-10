@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  # TODO: set replicas to 10
+  replicas:
+  # TODO: set minReadySeconds to 10
+  minReadySeconds:
+  # TODO: set strategy.type to RollingUpdate
+  # TODO: set strategy.rollingUpdate.maxSurge to 2
+  # TODO: set strategy.rollingUpdate.maxUnavailable to 0
+  strategy:
+    type:
+    rollingUpdate:
+      maxSurge:
+      maxUnavailable:
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        # TODO: container named "api", image api:2.0, containerPort 8080
+        - name:
+          image:
+          ports:
+            - containerPort:

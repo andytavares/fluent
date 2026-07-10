@@ -1,0 +1,11 @@
+# pipeline.yml
+# TODO: "Deploy to staging" — key "deploy-staging", command "make deploy ENV=staging", branches "main"
+# TODO: "Deploy to production" — key "deploy-production", command "make deploy ENV=production",
+#       if: build.tag != null
+# TODO: "Extended tests" — key "extended-tests", command "make test-extended",
+#       if: "build.pull_request.id == null && build.branch == 'main'"
+# TODO: "Lint" — key "lint", command "make lint", if: build.message !~ /skip ci/
+steps:
+  - label:
+    key:
+    command:

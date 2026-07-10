@@ -1,0 +1,11 @@
+# otel-sdk-config.yaml — OTel SDK resource + exporter configuration
+# TODO: resource.attributes with service.name, service.version,
+# deployment.environment, k8s.pod.name
+resource:
+
+# TODO: instrumentation.auto (list of auto-instrumented boundaries) and
+# instrumentation.manual (list of manually-instrumented domain measurements)
+instrumentation:
+
+# TODO: exporters.otlp with endpoint "otel-collector:4317" and protocol grpc
+exporters:

@@ -1,0 +1,7 @@
+{
+  "slug": "buildkite",
+  "title": "Buildkite",
+  "description": "Buildkite pipelines from first steps to production CI/CD — agents, artifacts, conditionals, matrices, plugins, and dynamic pipelines.",
+  "language": "buildkite",
+  "status": "published"
+}

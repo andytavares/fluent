@@ -1,0 +1,16 @@
+# tracing-config.yaml — span design, sampling, and exemplar linkage
+# TODO: spans list with three entries (name, kind, attributes):
+#   1. "POST /checkout" (kind: server) http.method POST, http.route /checkout
+#   2. charge-payment (kind: internal) payment.provider stripe
+#   3. stripe.charge (kind: client) http.method POST, peer.service stripe
+spans:
+
+# TODO: propagation.header traceparent, propagation.standard w3c
+propagation:
+
+# TODO: sampling.strategy tail, rules for Error status and duration > 1s at
+# sample_rate 1.0, default_sample_rate 0.1
+sampling:
+
+# TODO: exemplars.enabled true, exemplars.linked_metric http_request_duration_seconds
+exemplars:

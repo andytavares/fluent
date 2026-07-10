@@ -1,0 +1,42 @@
+# service-overview-dashboard.yaml — templated per-service standard dashboard
+title: "Service Overview"
+
+templating:
+  list:
+    - name: job
+      type: query
+      query: 'label_values(http_requests_total, job)'
+      multi: false
+      includeAll: false
+
+    - name: instance
+      type: query
+      query: 'label_values(http_requests_total{job="$job"}, instance)'
+      multi: true
+      includeAll: true
+
+panels:
+  - title: "Throughput"
+    type: timeseries
+    targets:
+      - expr: 'sum(rate(http_requests_total{job="$job"}[5m]))'
+
+  - title: "Error Rate"
+    type: stat
+    targets:
+      - expr: 'sum(rate(http_requests_total{job="$job", status=~"5.."}[5m])) / sum(rate(http_requests_total{job="$job"}[5m]))'
+
+  - title: "Latency Percentiles"
+    type: timeseries
+    targets:
+      - expr: 'histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket{job="$job"}[5m])))'
+
+  - title: "Saturation"
+    type: timeseries
+    targets:
+      - expr: 'avg by (instance) (rate(node_cpu_seconds_total{job="$job", mode="idle"}[5m]))'
+
+  - title: "Dependencies"
+    type: timeseries
+    targets:
+      - expr: 'sum by (dependency) (rate(outbound_request_duration_seconds_count{job="$job"}[5m]))'

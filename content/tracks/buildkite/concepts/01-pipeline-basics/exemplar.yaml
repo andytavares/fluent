@@ -1,0 +1,15 @@
+# pipeline.yml
+steps:
+  - label: ":mag: Lint"
+    key: "lint"
+    command: "make lint"
+
+  - label: ":test_tube: Test"
+    key: "test"
+    commands:
+      - "make deps"
+      - "make test"
+
+  - label: ":package: Build"
+    key: "build"
+    command: "make build"

@@ -1,0 +1,31 @@
+# pipeline.yml
+steps:
+  - label: ":test_tube: Test {{matrix}}"
+    key: "test-matrix"
+    command: "make test LANG_VERSION={{matrix}}"
+    matrix:
+      - "3.9"
+      - "3.10"
+      - "3.11"
+
+  - label: ":test_tube: {{matrix.os}} / {{matrix.arch}}"
+    key: "test-matrix-multi"
+    command: "echo {{matrix.os}} {{matrix.arch}}"
+    matrix:
+      setup:
+        os:
+          - "linux"
+          - "windows"
+        arch:
+          - "amd64"
+          - "arm64"
+      adjustments:
+        - with:
+            os: "windows"
+            arch: "arm64"
+          skip: true
+
+  - label: ":test_tube: Sharded tests"
+    key: "test-shards"
+    command: "make test-shard"
+    parallelism: 4

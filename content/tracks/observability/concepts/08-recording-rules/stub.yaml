@@ -1,0 +1,8 @@
+# red-recording-rules.yaml — recording rules implementing the RED pack
+# TODO: groups list with one group:
+#   name: web-app-red, interval: 30s, rules: [4 recording rules in order]
+#   1. job:http_requests:rate5m
+#   2. job:http_request_errors:rate5m
+#   3. job:http_request_errors:ratio_rate5m (references rules 1 and 2 by name)
+#   4. job:http_request_duration_seconds:p99_rate5m
+groups:

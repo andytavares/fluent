@@ -1,0 +1,23 @@
+# pipeline.yml
+steps:
+  - label: ":hammer: Build"
+    key: "build"
+    command: "make build"
+    artifact_paths:
+      - "dist/**/*"
+
+  - label: ":test_tube: Test"
+    key: "test"
+    depends_on: "build"
+    commands:
+      - "buildkite-agent artifact download 'dist/**/*' ."
+      - "make test"
+
+  - label: ":package: Package"
+    key: "package"
+    depends_on: "test"
+    commands:
+      - "buildkite-agent artifact download 'dist/**/*' ."
+      - "make package"
+    artifact_paths:
+      - "release/*.tar.gz"

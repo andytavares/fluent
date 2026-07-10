@@ -1,0 +1,13 @@
+# service-metrics.yaml — exposition sample + scrape config with relabeling
+# TODO: exposition_sample block containing http_requests_total (counter) and
+# http_request_duration_seconds (histogram) in real exposition format
+exposition_sample: |
+
+# TODO: scrape_configs with two jobs:
+#   1. 'node' scraping node-exporter:9100
+#   2. 'blackbox' probing https://example.com via metrics_path /probe,
+#      params module: [http_2xx], and a relabel_configs chain that:
+#        - moves __address__ into __param_target
+#        - moves __param_target into instance
+#        - rewrites __address__ to the blackbox exporter itself
+scrape_configs:

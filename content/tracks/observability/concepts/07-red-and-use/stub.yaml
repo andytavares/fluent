@@ -1,0 +1,10 @@
+# red-use-pack.yaml — complete RED + USE query pack
+# TODO: red_queries list (rate, errors, duration_p99) — see instructions.md
+red_queries:
+
+# TODO: use_queries list (cpu_utilization, load_saturation, oom_kill_errors)
+use_queries:
+
+# TODO: per_endpoint_error_ratio — the drill-down query that catches a single
+# broken endpoint the aggregate error ratio would mask
+per_endpoint_error_ratio:

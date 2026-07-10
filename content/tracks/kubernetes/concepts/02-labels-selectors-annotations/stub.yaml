@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: catalog
+  # TODO: add labels app: catalog, tier: backend, env: production
+  labels:
+  # TODO: add annotations description and owner
+  annotations:
+spec:
+  containers:
+    - name: catalog
+      image: catalog:1.0
+
+---
+# TODO: add a standalone selector block
+# selector.matchLabels: app: catalog, tier: backend
+# selector.matchExpressions: one entry — key: env, operator: In, values: [production, staging]
+selector:
+  matchLabels:
+  matchExpressions:

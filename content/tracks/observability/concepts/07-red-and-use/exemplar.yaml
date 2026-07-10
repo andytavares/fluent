@@ -1,0 +1,30 @@
+# red-use-pack.yaml — complete RED + USE query pack
+red_queries:
+  - name: rate
+    promql: 'sum(rate(http_requests_total[5m]))'
+    explains: "Requests per second across the whole service."
+
+  - name: errors
+    promql: 'sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m]))'
+    explains: "Fraction of requests returning a 5xx, aggregated across the service."
+
+  - name: duration_p99
+    promql: 'histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket[5m])))'
+    explains: "p99 request latency — never a raw average."
+
+use_queries:
+  - name: cpu_utilization
+    promql: '1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m]))'
+    explains: "Fraction of CPU time not spent idle, per host."
+
+  - name: load_saturation
+    promql: 'node_load1 / count without (cpu, mode) (node_cpu_seconds_total{mode="idle"})'
+    explains: "1-minute load average normalized by core count — saturation, the leading indicator."
+
+  - name: oom_kill_errors
+    promql: 'rate(node_vmstat_oom_kill[5m])'
+    explains: "Rate of out-of-memory kills — a resource-level error, distinct from request-level errors."
+
+per_endpoint_error_ratio:
+  promql: 'sum by (route) (rate(http_requests_total{status=~"5.."}[5m])) / sum by (route) (rate(http_requests_total[5m]))'
+  explains: "Per-route error ratio — catches a single broken endpoint the aggregate error ratio would mask."

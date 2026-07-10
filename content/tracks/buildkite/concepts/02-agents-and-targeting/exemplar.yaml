@@ -1,0 +1,22 @@
+# pipeline.yml
+steps:
+  - label: ":apple: Build macOS"
+    key: "build-macos"
+    command: "make build"
+    agents:
+      queue: "macos"
+      os: "macos"
+
+  - label: ":linux: Build Linux"
+    key: "build-linux"
+    command: "make build"
+    agents:
+      queue: "linux"
+      os: "linux"
+
+  - label: ":rocket: Deploy"
+    key: "deploy"
+    command: "make deploy"
+    agents:
+      queue: "deploy"
+      role: "release"

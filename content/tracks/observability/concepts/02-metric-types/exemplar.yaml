@@ -1,0 +1,28 @@
+# metrics.yaml — metric definitions + scrape config
+metric_definitions:
+  - name: http_requests_total
+    type: counter
+    help: "Total number of HTTP requests"
+    labels: [method, status, route]
+
+  - name: http_requests_in_flight
+    type: gauge
+    help: "Number of HTTP requests currently being served"
+
+  - name: http_request_duration_seconds
+    type: histogram
+    help: "HTTP request duration in seconds"
+    labels: [method, route]
+
+  - name: process_resident_memory_bytes
+    type: gauge
+    help: "Resident memory size in bytes"
+
+scrape_configs:
+  - job_name: 'web-app'
+    static_configs:
+      - targets: ['web-app:8080']
+
+# cardinality_review:
+# Never add a `user_id` label to http_requests_total — it multiplies the
+# series count by the number of distinct users and is unbounded over time.

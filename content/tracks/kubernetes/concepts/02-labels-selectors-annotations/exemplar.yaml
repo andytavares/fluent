@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: catalog
+  labels:
+    app: catalog
+    tier: backend
+    env: production
+  annotations:
+    description: "Catalog service backend"
+    owner: "team-catalog"
+spec:
+  containers:
+    - name: catalog
+      image: catalog:1.0
+
+---
+selector:
+  matchLabels:
+    app: catalog
+    tier: backend
+  matchExpressions:
+    - key: env
+      operator: In
+      values: [production, staging]

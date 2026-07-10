@@ -1,0 +1,13 @@
+# pipeline.yml
+# TODO: add "Build macOS" — key "build-macos", command "make build",
+#       agents: { queue: "macos", os: "macos" }
+# TODO: add "Build Linux" — key "build-linux", command "make build",
+#       agents: { queue: "linux", os: "linux" }
+# TODO: add "Deploy" — key "deploy", command "make deploy",
+#       agents: { queue: "deploy", role: "release" }
+steps:
+  - label:
+    key:
+    command:
+    agents:
+      queue:

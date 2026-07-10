@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+spec:
+  # TODO: clusterIP -> None (headless)
+  clusterIP:
+  selector:
+    app: db
+  ports:
+    - port: 5432
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db
+spec:
+  # TODO: serviceName -> db (must match the headless Service above)
+  serviceName:
+  # TODO: replicas -> 3
+  replicas:
+  # TODO: podManagementPolicy -> OrderedReady
+  podManagementPolicy:
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+        # TODO: container named "db", image postgres:15, containerPort 5432
+        - name:
+          image:
+          ports:
+            - containerPort:
+  # TODO: volumeClaimTemplates -> "data" PVC template, ReadWriteOnce, 10Gi
+  volumeClaimTemplates:
+    - metadata:
+        name:
+      spec:
+        accessModes:
+        resources:
+          requests:
+            storage:

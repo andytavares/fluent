@@ -1,0 +1,29 @@
+# promql-aggregations.yaml — annotated aggregation query set
+queries:
+  - name: total_request_rate
+    promql: 'sum(rate(http_requests_total[5m]))'
+    explains: "Total request rate across every series, all labels collapsed."
+
+  - name: request_rate_by_route
+    promql: 'sum by (route) (rate(http_requests_total[5m]))'
+    explains: "Request rate grouped by route, everything else collapsed."
+
+  - name: request_rate_collapse_instance
+    promql: 'sum without (instance) (rate(http_requests_total[5m]))'
+    explains: "Request rate with only the instance label collapsed, keeping every other label."
+
+  - name: top5_error_routes
+    promql: 'topk(5, sum by (route) (rate(http_requests_total{status=~"5.."}[5m])))'
+    explains: "The 5 routes with the highest 5xx error rate right now."
+
+  - name: error_ratio
+    promql: 'sum without (status) (rate(http_requests_total{status=~"5.."}[5m])) / sum without (status) (rate(http_requests_total[5m]))'
+    explains: "Fraction of total requests that returned a 5xx, with status stripped from both sides so the division matches."
+
+  - name: memory_utilization_ratio
+    promql: 'node_memory_MemAvailable_bytes / on (instance) group_left node_memory_MemTotal_bytes'
+    explains: "Available memory as a fraction of total memory, matched per instance with group_left for the many-to-one relationship."
+
+  - name: critical_service_missing
+    promql: 'absent(up{job="critical-service"})'
+    explains: "Returns 1 only if no series for the critical-service job exists at all — catches total scrape/discovery loss, not just a 0 value."

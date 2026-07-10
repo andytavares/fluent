@@ -1,0 +1,44 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all
+spec:
+  # TODO: podSelector -> {} (selects every Pod in the namespace)
+  podSelector:
+  # TODO: policyTypes -> [Ingress, Egress]
+  policyTypes:
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-api
+spec:
+  # TODO: podSelector.matchLabels -> app: api
+  podSelector:
+    matchLabels:
+  policyTypes:
+    - Ingress
+    - Egress
+  # TODO: ingress -> from podSelector app: web, ports TCP/8080
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+      ports:
+        - protocol:
+          port:
+  # TODO: egress -> two rules: ipBlock 10.0.0.0/16 TCP/5432, namespaceSelector kube-system UDP/53
+  egress:
+    - to:
+        - ipBlock:
+            cidr:
+      ports:
+        - protocol:
+          port:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+      ports:
+        - protocol:
+          port:

@@ -1,0 +1,7 @@
+{
+  "slug": "aws",
+  "title": "AWS (LocalStack)",
+  "description": "Core AWS services from first principles to production patterns — S3, IAM, DynamoDB, Lambda, SQS/SNS, API Gateway — practiced locally against LocalStack.",
+  "language": "aws",
+  "status": "published"
+}

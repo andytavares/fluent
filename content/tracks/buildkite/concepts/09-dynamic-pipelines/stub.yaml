@@ -1,0 +1,10 @@
+# pipeline.yml
+# TODO: "Generate pipeline" — key "generate",
+#       command ".buildkite/generate-pipeline.sh | buildkite-agent pipeline upload"
+# TODO: below the steps block, add a commented example of the generated YAML:
+#       a "# steps:" block with a test step and a deploy step guarded by
+#       "if: build.branch == \"main\""
+steps:
+  - label:
+    key:
+    command:

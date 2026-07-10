@@ -1,0 +1,11 @@
+# service-overview-dashboard.yaml — templated per-service standard dashboard
+title: "Service Overview"
+
+# TODO: templating.list with two variables: job (single, no "all") and
+# instance (multi, includeAll, query cascades on $job)
+templating:
+
+# TODO: panels list, five sections in order:
+#   Throughput, Error Rate, Latency Percentiles, Saturation, Dependencies
+# every panel's expr must reference $job, not a hardcoded job name
+panels:

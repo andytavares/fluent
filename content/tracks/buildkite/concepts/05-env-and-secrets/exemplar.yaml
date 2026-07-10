@@ -1,0 +1,18 @@
+# pipeline.yml
+env:
+  NODE_ENV: "test"
+  APP_NAME: "webapp"
+
+steps:
+  - label: ":hammer: Build"
+    key: "build"
+    command: "make build"
+    env:
+      NODE_ENV: "production"
+
+  - label: ":closed_lock_with_key: Deploy"
+    key: "deploy"
+    command: "make deploy"
+    depends_on: "build"
+    secrets:
+      - API_ACCESS_TOKEN

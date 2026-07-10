@@ -1,0 +1,9 @@
+# pipeline.yml
+# TODO: "Build" — key "build", command "make build", artifact_paths: ["dist/**/*"]
+# TODO: "Test" — key "test", depends_on "build", commands: download dist/**/* then "make test"
+# TODO: "Package" — key "package", depends_on "test", commands: download dist/**/* then
+#       "make package", artifact_paths: ["release/*.tar.gz"]
+steps:
+  - label:
+    key:
+    command:

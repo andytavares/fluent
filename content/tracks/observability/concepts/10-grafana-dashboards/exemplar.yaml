@@ -1,0 +1,43 @@
+# red-dashboard.yaml — Grafana dashboard with three RED panels
+title: "Web App RED Overview"
+panels:
+  - id: 1
+    title: "Request Rate"
+    type: timeseries
+    gridPos: { h: 8, w: 12, x: 0, y: 0 }
+    targets:
+      - expr: 'sum(rate(http_requests_total[5m]))'
+        legendFormat: "requests/s"
+    fieldConfig:
+      defaults:
+        unit: reqps
+
+  - id: 2
+    title: "Error Ratio"
+    type: stat
+    gridPos: { h: 8, w: 12, x: 12, y: 0 }
+    targets:
+      - expr: 'sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m]))'
+        legendFormat: "error ratio"
+    fieldConfig:
+      defaults:
+        unit: percentunit
+        thresholds:
+          mode: absolute
+          steps:
+            - { color: green, value: null }
+            - { color: yellow, value: 0.01 }
+            - { color: red, value: 0.05 }
+
+  - id: 3
+    title: "Latency Percentiles"
+    type: timeseries
+    gridPos: { h: 8, w: 24, x: 0, y: 8 }
+    targets:
+      - expr: 'histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket[5m])))'
+        legendFormat: "p95"
+      - expr: 'histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket[5m])))'
+        legendFormat: "p99"
+    fieldConfig:
+      defaults:
+        unit: s

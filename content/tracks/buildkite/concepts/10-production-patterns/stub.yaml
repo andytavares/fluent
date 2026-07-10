@@ -1,0 +1,15 @@
+# pipeline.yml
+# TODO: "Build" — key "build", command "make build", timeout_in_minutes 10,
+#       retry.automatic: [{ exit_status: "*", limit: 2 }]
+# TODO: "Flaky integration tests" — key "integration-tests", depends_on "build",
+#       timeout_in_minutes 15, soft_fail: [{ exit_status: 1 }]
+# TODO: "Deploy" — key "deploy", depends_on "build", concurrency 1,
+#       concurrency_group "myapp/deploy", timeout_in_minutes 20,
+#       retry.manual: { allowed: false, reason: "..." }
+# TODO: trigger step "trigger-smoke" — trigger "downstream-smoke-tests",
+#       depends_on "deploy", build.branch "main"
+# TODO: pipeline-level notify: slack channel #deploys, if build.state == "failed"
+steps:
+  - label:
+    key:
+    command:

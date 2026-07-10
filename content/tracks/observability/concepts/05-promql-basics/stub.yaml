@@ -1,0 +1,9 @@
+# promql-queries.yaml — annotated PromQL query set
+# TODO: queries list with six entries (name, promql, explains):
+#   1. current_request_total     -> http_requests_total{job="web-app"}
+#   2. five_xx_rate              -> http_requests_total{status=~"5.."}
+#   3. request_rate_5m           -> rate(http_requests_total[5m])
+#   4. request_increase_5m       -> increase(http_requests_total[5m])
+#   5. request_rate_spike_check  -> irate(http_requests_total[1m])
+#   6. request_rate_day_over_day -> rate(http_requests_total[5m]) offset 1d
+queries:

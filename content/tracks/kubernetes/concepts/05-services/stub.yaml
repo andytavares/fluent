@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+spec:
+  # TODO: set type to ClusterIP
+  type:
+  # TODO: selector app: web
+  selector:
+  ports:
+    # TODO: port 80, targetPort 8080
+    - port:
+      targetPort:
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+spec:
+  # TODO: set clusterIP to None (headless service)
+  clusterIP:
+  # TODO: selector app: db
+  selector:
+  ports:
+    # TODO: port 5432
+    - port:

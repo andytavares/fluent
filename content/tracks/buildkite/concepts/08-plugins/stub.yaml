@@ -1,0 +1,9 @@
+# pipeline.yml
+# TODO: "Build and test" — key "build-test", command "npm install && npm test",
+#       plugins: [docker#v5.13.0: { image: "node:20", workdir: "/app" }]
+# TODO: "Compose build and push" — key "compose-build", depends_on "build-test",
+#       plugins: [docker-compose#v5.11.0: { build: "app", image-repository: "index.docker.io/myorg/myapp" }]
+steps:
+  - label:
+    key:
+    command:

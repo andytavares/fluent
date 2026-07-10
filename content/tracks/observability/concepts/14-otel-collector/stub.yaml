@@ -1,0 +1,16 @@
+# collector-config.yaml — receivers, ordered processors, fan-out exporters
+# TODO: receivers.otlp with protocols grpc: {} and http: {}
+receivers:
+
+# TODO: processors, IN THIS ORDER: memory_limiter (check_interval 1s,
+# limit_mib 512), resource (upsert deployment.environment: production),
+# batch (timeout 5s, send_batch_size 1024)
+processors:
+
+# TODO: exporters.prometheusremotewrite (endpoint http://prometheus:9090/api/v1/write)
+# and exporters."otlp/tempo" (endpoint tempo:4317)
+exporters:
+
+# TODO: service.pipelines with metrics and traces pipelines, each using
+# processors [memory_limiter, resource, batch] in that exact order
+service:

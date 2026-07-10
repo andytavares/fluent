@@ -1,0 +1,13 @@
+# pipeline.yml
+steps:
+  - label: ":pipeline: Generate pipeline"
+    key: "generate"
+    command: ".buildkite/generate-pipeline.sh | buildkite-agent pipeline upload"
+
+# --- Example: generate-pipeline.sh emits YAML like this at runtime ---
+# steps:
+#   - label: ":test_tube: Test unit"
+#     command: "make test SUITE=unit"
+#   - label: ":rocket: Deploy"
+#     command: "make deploy"
+#     if: build.branch == "main"

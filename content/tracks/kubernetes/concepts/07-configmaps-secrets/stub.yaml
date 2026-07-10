@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+# TODO: set immutable to true
+immutable:
+# TODO: data with LOG_LEVEL: "info" and FEATURE_X: "enabled"
+data:
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-secret
+# TODO: set type to Opaque
+type:
+# TODO: data.DB_PASSWORD base64 value: czNjcjN0
+data:
+  DB_PASSWORD:
+# TODO: stringData.API_KEY plaintext value: "plaintext-key-here"
+stringData:
+  API_KEY:
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app
+spec:
+  containers:
+    - name: app
+      image: app:1.0
+      # TODO: envFrom -> configMapRef.name: app-config
+      envFrom:
+        - configMapRef:
+            name:
+      # TODO: env DB_PASSWORD from secretKeyRef app-secret/DB_PASSWORD
+      env:
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name:
+              key:
+      # TODO: volumeMounts -> config-volume at /etc/config
+      volumeMounts:
+        - name:
+          mountPath:
+  # TODO: volumes -> config-volume from configMap app-config
+  volumes:
+    - name:
+      configMap:
+        name:

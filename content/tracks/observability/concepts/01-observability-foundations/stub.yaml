@@ -1,0 +1,8 @@
+# prometheus.yml — minimal scrape configuration
+# TODO: global block with scrape_interval: 15s and evaluation_interval: 15s
+global:
+
+# TODO: scrape_configs list with two jobs:
+#   1. job_name 'prometheus' scraping itself at localhost:9090
+#   2. job_name 'web-app' scraping web-app:8080 every 10s, with label env: production
+scrape_configs:
