@@ -1,0 +1,26 @@
+apps/web/src/hooks/use-capstone-session.ts
+  s_beb7708abc1117::t_410e869a8d1ca9 12-13,39-56,78-81
+apps/api/src/router/capstone.ts
+  s_beb7708abc1117::t_4b5fc691d55c13 6,10-15
+  s_beb7708abc1117::t_f665789d988515 27-34
+apps/web/src/app/tracks/[trackSlug]/capstone/page.tsx
+  s_beb7708abc1117::t_4ecac9b3e7a0cb 6-13,18-23,26,30,32-37,42-60,72,88-99,109,131,140,142,169-171,175-230
+  s_beb7708abc1117::t_bc28742b22d476 74-82
+  s_beb7708abc1117::t_125ef757344b8c 73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "008bf90df1cef76aa1f7a91005cd266851702c19",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}

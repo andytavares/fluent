@@ -1,0 +1,79 @@
+content/capstone/go-crud-api/step-2/verify.sh
+  s_beb7708abc1117::t_79f55b4aa777be 1-27
+content/capstone/go-crud-api/step-4/config.json
+  s_beb7708abc1117::t_ace52918579c0d 3-4
+content/capstone/go-crud-api/step-6/config.json
+  s_beb7708abc1117::t_3bd1d79150018f 3-4
+content/capstone/go-crud-api/step-6/verify.sh
+  s_beb7708abc1117::t_6d4d8f5a587d3f 1-27
+packages/content-config/src/schema.ts
+  s_beb7708abc1117::t_fef067e686fe47 25-30,33
+content/capstone/go-crud-api/step-5/verify.sh
+  s_beb7708abc1117::t_d2bd0d56dc7f7e 1-19
+content/capstone/go-crud-api/step-3/fixtures.sql
+  s_beb7708abc1117::t_3ebbb8b62f6125 1-9
+content/capstone/go-crud-api/step-5/instructions.md
+  s_beb7708abc1117::t_99ec01816e8323 1-37
+packages/content-config/src/store.ts
+  s_beb7708abc1117::t_1e56b502004b37 5
+  s_beb7708abc1117::t_af26f19f77cfb0 144-164
+  s_beb7708abc1117::t_03abc073dbb70a 28-36
+  s_beb7708abc1117::t_7903c629938e75 165-166
+  s_beb7708abc1117::t_17482406173d29 48
+content/capstone/go-crud-api/step-1/verify.sh
+  s_beb7708abc1117::t_0cfe95504ff2e5 1-10
+content/capstone/go-crud-api/step-2/fixtures.sql
+  s_beb7708abc1117::t_a9865350c2f1ba 1-2
+content/capstone/go-crud-api/step-1/config.json
+  s_beb7708abc1117::t_8fd5c97b9faaea 3-4
+content/capstone/go-crud-api/step-1/instructions.md
+  s_beb7708abc1117::t_802e1cc8a9ac3c 1-34
+packages/content-config/tests/store.test.ts
+  s_beb7708abc1117::t_0f552446f5772e 160-182
+  s_beb7708abc1117::t_2483614372a332 61-76
+  s_beb7708abc1117::t_7903c629938e75 183-185
+content/capstone/go-crud-api/step-6/instructions.md
+  s_beb7708abc1117::t_b6e694f4e0f1ea 1-42
+content/capstone/go-crud-api/step-5/fixtures.sql
+  s_beb7708abc1117::t_5381dcd6101c2c 1-7
+content/capstone/go-crud-api/step-1/fixtures.sql
+  s_beb7708abc1117::t_d65252ccfe8bb0 1-2
+content/capstone/go-crud-api/step-3/verify.sh
+  s_beb7708abc1117::t_74d240bb80704b 1-19
+content/capstone/go-crud-api/step-6/fixtures.sql
+  s_beb7708abc1117::t_ab3d8034449c70 1-21
+content/capstone/go-crud-api/step-2/instructions.md
+  s_beb7708abc1117::t_44e7f505d6ea5e 1-48
+packages/content-config/src/index.ts
+  s_beb7708abc1117::t_c58798fe580d63 2-3,5
+content/capstone/go-crud-api/step-4/instructions.md
+  s_beb7708abc1117::t_b566881e76c974 1-43
+content/capstone/go-crud-api/step-4/fixtures.sql
+  s_beb7708abc1117::t_ae753d1829d610 1-7
+content/capstone/go-crud-api/step-2/config.json
+  s_beb7708abc1117::t_5633d9e04d2ce1 3-4
+content/capstone/go-crud-api/step-3/config.json
+  s_beb7708abc1117::t_78f989d8067e78 3-4
+content/capstone/go-crud-api/step-3/instructions.md
+  s_beb7708abc1117::t_ae63d0637b5b71 1-41
+content/capstone/go-crud-api/step-4/verify.sh
+  s_beb7708abc1117::t_a4199f623a68a2 1-26
+content/capstone/go-crud-api/step-5/config.json
+  s_beb7708abc1117::t_ffa19324616865 3-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "c01ea7f5853c9c570baf73752c3cc40bf1816492",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}

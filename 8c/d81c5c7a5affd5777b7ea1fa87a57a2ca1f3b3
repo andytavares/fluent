@@ -1,0 +1,28 @@
+apps/capstone-runner/tests/unit/verifier.test.ts
+  s_beb7708abc1117::t_be182bce6738a7 196
+  s_beb7708abc1117::t_c794914c093c9d 185
+  s_beb7708abc1117::t_a873d35e1d28ec 198
+  s_beb7708abc1117::t_78dd877f056ef4 1-2,6-16,20,23,34-39,46-70,73-78,87-92,100-101,110-111,124,127-157,159-179,181-184,186-195,197
+apps/capstone-runner/src/activities/provisioner.ts
+  s_beb7708abc1117::t_c16df6674d5cc8 84,97-101
+  s_beb7708abc1117::t_fb6b758356d8f3 14-47
+  s_beb7708abc1117::t_095cb80c2465c2 102
+apps/capstone-runner/src/activities/verifier.ts
+  s_beb7708abc1117::t_1ab0c701846b1d 1,5,9-10,18-22,30,35-73,85-98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "8cd81c5c7a5affd5777b7ea1fa87a57a2ca1f3b3",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+packages/ui/src/index.ts
+  s_beb7708abc1117::t_2277b4e39d56ae 24-26
+packages/ui/src/components/SqlResultsGrid.tsx
+  s_beb7708abc1117::t_83db3eee19d80f 1-84
+packages/ui/src/components/SqlResultsGrid.stories.tsx
+  s_beb7708abc1117::t_1d089da3875793 1-41
+packages/ui/src/components/VerificationChecklist.stories.tsx
+  s_beb7708abc1117::t_b36cf4047617c0 1-27
+packages/ui/src/components/VerificationChecklist.tsx
+  s_beb7708abc1117::t_17b91abf64c5d7 1-51,53-60
+  s_beb7708abc1117::t_4f44a4471ccb6d 52
+packages/ui/src/components/Tabs.stories.tsx
+  s_beb7708abc1117::t_40fe4cfcac9f84 1-49
+packages/ui/src/components/Tabs.tsx
+  s_beb7708abc1117::t_c51a099d60eb85 1-42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "21b656e9751454fae7cf3467ef5b72d25283f184",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
