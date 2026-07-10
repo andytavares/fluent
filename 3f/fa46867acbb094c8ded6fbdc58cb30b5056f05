@@ -1,0 +1,648 @@
+content/capstone/c-crud-api/step-2/fixtures.sql
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-2
+content/capstone/python-crud-api/step-6/instructions.md
+  s_beb7708abc1117::t_f9ba21a47d0a62 1-54
+content/capstone/elixir-crud-api/step-2/fixtures.sql
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-2
+content/capstone/python-crud-api/step-5/config.json
+  s_beb7708abc1117::t_0483a406d03ca0 1-5
+apps/web/tsconfig.tsbuildinfo
+  s_beb7708abc1117::t_cfe1d25c5f921f 1
+content/capstone/java-crud-api/step-5/instructions.md
+  s_beb7708abc1117::t_c3e6993d17ef3a 1-42
+content/capstone/python-crud-api/step-2/instructions.md
+  s_beb7708abc1117::t_3b4d09106bf236 1-72
+content/capstone/java-crud-api/step-2/verify.sh
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-27
+content/capstone/javascript-crud-api/step-3/fixtures.sql
+  s_beb7708abc1117::t_6272b75c2e774d 1-9
+content/capstone/kotlin-crud-api/step-2/instructions.md
+  s_beb7708abc1117::t_bab47357575284 1-98
+content/capstone/ruby-crud-api/step-4/verify.sh
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-26
+content/capstone/rust-crud-api/step-3/verify.sh
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-19
+content/capstone/cpp-crud-api/step-2/config.json
+  s_beb7708abc1117::t_76ea1d021db4f0 1-5
+packages/complexity-heuristic/vitest.config.ts
+  s_beb7708abc1117::t_923a6ccaa0c63e 1-13
+content/capstone/kotlin-crud-api/step-3/fixtures.sql
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-9
+content/capstone/kotlin-crud-api/step-2/config.json
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-5
+content/capstone/elixir-crud-api/step-1/fixtures.sql
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-2
+content/capstone/javascript-crud-api/step-3/instructions.md
+  s_beb7708abc1117::t_cc31c0d55626ca 1-43
+content/capstone/java-crud-api/step-2/config.json
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-5
+content/capstone/python-crud-api/step-5/verify.sh
+  s_beb7708abc1117::t_6272b75c2e774d 1-19
+content/capstone/ruby-crud-api/step-2/instructions.md
+  s_beb7708abc1117::t_4a5a7760357153 1-39,41-86
+  s_beb7708abc1117::t_1addf8595047a1 40
+content/capstone/cpp-crud-api/step-1/config.json
+  s_beb7708abc1117::t_76ea1d021db4f0 1-5
+content/capstone/kotlin-crud-api/step-5/instructions.md
+  s_beb7708abc1117::t_7bc06427498020 1-42
+content/capstone/c-crud-api/step-4/fixtures.sql
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-7
+content/capstone/cpp-crud-api/step-3/fixtures.sql
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-9
+content/capstone/kotlin-crud-api/step-5/fixtures.sql
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-7
+content/capstone/ruby-crud-api/step-1/verify.sh
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-10
+content/capstone/ruby-crud-api/step-5/config.json
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-5
+content/capstone/rust-crud-api/step-6/instructions.md
+  s_beb7708abc1117::t_80cb7c022f9751 1-111
+content/capstone/python-crud-api/step-4/instructions.md
+  s_beb7708abc1117::t_160786338e2385 1-44
+content/capstone/ruby-crud-api/step-5/instructions.md
+  s_beb7708abc1117::t_c0a768bf41c829 1-35,37,39-40
+  s_beb7708abc1117::t_4b73d60e1ed3e6 36,38
+content/capstone/elixir-crud-api/step-5/fixtures.sql
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-7
+content/capstone/python-crud-api/step-2/verify.sh
+  s_beb7708abc1117::t_6272b75c2e774d 1-27
+content/capstone/java-crud-api/step-3/fixtures.sql
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-9
+apps/web/src/app/tracks/[trackSlug]/capstone/page.tsx
+  s_beb7708abc1117::t_077bdf78608dfb 371,373-375
+  s_beb7708abc1117::t_71486fbe8d180a 118,120-123
+  s_beb7708abc1117::t_1164e2de56d08e 295-303
+  s_beb7708abc1117::t_134baddeb76547 364
+  s_beb7708abc1117::t_5b0cf1f4eeaa0c 96-97
+  s_beb7708abc1117::t_9f17c1c7bc4c97 56-59
+  s_beb7708abc1117::t_6d0e891908e649 138
+  s_beb7708abc1117::t_0e4d2b18cdd157 16,28-41
+  s_beb7708abc1117::t_5ee02fcdb8f2c4 98-101
+  s_beb7708abc1117::t_05834ce842b479 13,15
+  s_beb7708abc1117::t_e86b75e465f474 139-159
+  s_beb7708abc1117::t_932e27b5d8d3bf 132-137,160-194
+  s_beb7708abc1117::t_1141f45fc47b60 311-363,365-370,372,376-386
+  s_beb7708abc1117::t_e2a4a32ea93f66 51
+  s_beb7708abc1117::t_e42c6d5b24a16f 42
+content/capstone/ruby-crud-api/step-3/instructions.md
+  s_beb7708abc1117::t_81f783089242b7 1-43
+content/capstone/ruby-crud-api/step-5/verify.sh
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-19
+content/capstone/typescript-crud-api/step-1/verify.sh
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-10
+content/capstone/c-crud-api/step-5/verify.sh
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-19
+content/capstone/javascript-crud-api/step-2/fixtures.sql
+  s_beb7708abc1117::t_6272b75c2e774d 1-2
+packages/ui/src/components/SqlEditor.tsx
+  s_beb7708abc1117::t_53be085398ce77 118-120
+  s_beb7708abc1117::t_75d8c01dfe826c 60
+  s_beb7708abc1117::t_6d0e2c1e3383d7 1-59,61-117,121-131
+content/capstone/elixir-crud-api/step-5/verify.sh
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-19
+content/capstone/python-crud-api/step-4/fixtures.sql
+  s_beb7708abc1117::t_6272b75c2e774d 1-7
+content/capstone/c-crud-api/step-1/verify.sh
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-10
+content/capstone/rust-crud-api/step-3/config.json
+  s_beb7708abc1117::t_ad8ad471e7bedf 1-5
+content/capstone/c-crud-api/step-4/config.json
+  s_beb7708abc1117::t_ad8ad471e7bedf 1-5
+content/capstone/ruby-crud-api/step-6/verify.sh
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-27
+content/capstone/typescript-crud-api/step-6/verify.sh
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-27
+content/capstone/ruby-crud-api/step-3/config.json
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-5
+content/capstone/c-crud-api/step-5/config.json
+  s_beb7708abc1117::t_ad8ad471e7bedf 1-5
+content/capstone/cpp-crud-api/step-2/fixtures.sql
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-2
+content/capstone/cpp-crud-api/step-3/verify.sh
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-19
+content/capstone/elixir-crud-api/step-6/verify.sh
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-27
+content/capstone/cpp-crud-api/step-1/verify.sh
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-10
+apps/web/src/app/tracks/[trackSlug]/concepts/[conceptSlug]/page.tsx
+  s_beb7708abc1117::t_9bdd9582fb0f7e 134
+  s_beb7708abc1117::t_7daa1b2e56865c 40
+packages/ui/src/index.ts
+  s_beb7708abc1117::t_a1c8547b5f1f22 14
+  s_beb7708abc1117::t_d901cdeb96bf3e 28-29
+content/capstone/javascript-crud-api/step-4/fixtures.sql
+  s_beb7708abc1117::t_6272b75c2e774d 1-7
+content/capstone/ruby-crud-api/step-6/config.json
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-5
+content/capstone/typescript-crud-api/step-5/config.json
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-5
+content/capstone/java-crud-api/step-4/verify.sh
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-26
+content/capstone/c-crud-api/step-4/instructions.md
+  s_beb7708abc1117::t_5ecd8acfa47222 1-81
+content/capstone/c-crud-api/step-4/verify.sh
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-26
+content/capstone/elixir-crud-api/step-1/verify.sh
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-10
+content/capstone/java-crud-api/step-5/fixtures.sql
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-7
+apps/capstone-runner/tests/unit/server.test.ts
+  s_beb7708abc1117::t_1dac134aad43e9 35,52-64,72-86,91-95,107-111,123-127
+  s_beb7708abc1117::t_39ac498b0b6acc 42-48
+  s_beb7708abc1117::t_7b117cd52bbf8c 65-71
+apps/api/src/service/submission-pipeline.ts
+  s_beb7708abc1117::t_0c49c1ffb70a36 153-156,159,184
+  s_beb7708abc1117::t_d32dfb48253e5b 4
+apps/capstone-runner/src/server.ts
+  s_beb7708abc1117::t_85f78721ac133f 71-81
+  s_beb7708abc1117::t_58fbc5f8619a0e 59-66
+  s_beb7708abc1117::t_efcd86d72a324d 4
+  s_beb7708abc1117::t_3d33c1cc8cb84b 105-109,113
+content/capstone/python-crud-api/step-6/fixtures.sql
+  s_beb7708abc1117::t_6272b75c2e774d 1-21
+content/capstone/python-crud-api/step-4/config.json
+  s_beb7708abc1117::t_0483a406d03ca0 1-5
+content/capstone/ruby-crud-api/step-1/config.json
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-5
+content/capstone/typescript-crud-api/step-3/fixtures.sql
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-9
+content/capstone/c-crud-api/step-1/instructions.md
+  s_beb7708abc1117::t_55f5556c2a8800 1-113
+content/capstone/c-crud-api/step-2/instructions.md
+  s_beb7708abc1117::t_9abe44e7a9224c 1-174
+content/capstone/python-crud-api/step-1/verify.sh
+  s_beb7708abc1117::t_6272b75c2e774d 1-10
+content/capstone/python-crud-api/step-2/fixtures.sql
+  s_beb7708abc1117::t_6272b75c2e774d 1-2
+content/capstone/python-crud-api/step-3/instructions.md
+  s_beb7708abc1117::t_6582c8c73cc4c9 1-41
+content/capstone/ruby-crud-api/step-1/instructions.md
+  s_beb7708abc1117::t_315b61009838ad 1-68,71-93
+  s_beb7708abc1117::t_39c2cc8dd45af8 69-70
+content/capstone/cpp-crud-api/step-4/fixtures.sql
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-7
+content/capstone/javascript-crud-api/step-5/instructions.md
+  s_beb7708abc1117::t_35e12930f5967e 1-37
+content/capstone/kotlin-crud-api/step-3/config.json
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-5
+content/capstone/cpp-crud-api/step-5/verify.sh
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-19
+apps/capstone-runner/tests/unit/session-workflow.test.ts
+  s_beb7708abc1117::t_bb9441f4695c12 56
+  s_beb7708abc1117::t_1b792d1bd4bb59 69
+content/capstone/ruby-crud-api/step-2/verify.sh
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-27
+content/capstone/cpp-crud-api/step-6/config.json
+  s_beb7708abc1117::t_76ea1d021db4f0 1-5
+content/capstone/javascript-crud-api/step-6/config.json
+  s_beb7708abc1117::t_0483a406d03ca0 1-5
+content/capstone/cpp-crud-api/step-1/instructions.md
+  s_beb7708abc1117::t_37c54c98a7225d 1-77
+apps/capstone-runner/tests/unit/verifier.test.ts
+  s_beb7708abc1117::t_b305bd148e829e 151-153
+  s_beb7708abc1117::t_eb7f35cb9e4391 194,196
+content/capstone/typescript-crud-api/step-4/config.json
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-5
+content/capstone/typescript-crud-api/step-2/fixtures.sql
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-2
+content/capstone/kotlin-crud-api/step-2/fixtures.sql
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-2
+content/capstone/java-crud-api/step-5/config.json
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-5
+content/capstone/ruby-crud-api/step-3/fixtures.sql
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-9
+content/capstone/kotlin-crud-api/step-5/verify.sh
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-19
+content/capstone/c-crud-api/step-6/instructions.md
+  s_beb7708abc1117::t_1b532783b0dd74 1-118
+content/capstone/python-crud-api/step-5/fixtures.sql
+  s_beb7708abc1117::t_6272b75c2e774d 1-7
+content/capstone/kotlin-crud-api/step-1/instructions.md
+  s_beb7708abc1117::t_56d2593dbc4e4b 1-49,52-59,63-70
+  s_beb7708abc1117::t_18e773c035790c 50-51,60-62
+apps/web/package.json
+  s_beb7708abc1117::t_5a74c663ae5ace 33-34
+content/capstone/rust-crud-api/step-1/verify.sh
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-10
+content/capstone/elixir-crud-api/step-3/fixtures.sql
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-9
+apps/api/src/router/capstone.ts
+  s_beb7708abc1117::t_9cb53353499c80 155-158
+  s_beb7708abc1117::t_d31e8555d65b51 143-144,149
+  s_beb7708abc1117::t_b83b413cc7ff31 97-98
+  s_beb7708abc1117::t_a1e075cc135193 7
+  s_beb7708abc1117::t_47382dc88e550b 41-49
+  s_beb7708abc1117::t_d05f136370b313 13-30
+content/capstone/typescript-crud-api/step-3/instructions.md
+  s_beb7708abc1117::t_e8318bc8e7d1b9 1-43
+content/capstone/elixir-crud-api/step-3/verify.sh
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-19
+content/capstone/kotlin-crud-api/step-3/verify.sh
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-19
+content/capstone/cpp-crud-api/step-5/config.json
+  s_beb7708abc1117::t_76ea1d021db4f0 1-5
+content/capstone/kotlin-crud-api/step-3/instructions.md
+  s_beb7708abc1117::t_9c060216ec8404 1-57
+content/capstone/typescript-crud-api/step-6/instructions.md
+  s_beb7708abc1117::t_1447ed8ab95757 1-47
+content/capstone/javascript-crud-api/step-4/verify.sh
+  s_beb7708abc1117::t_6272b75c2e774d 1-26
+content/capstone/typescript-crud-api/step-2/verify.sh
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-27
+content/capstone/javascript-crud-api/step-6/fixtures.sql
+  s_beb7708abc1117::t_6272b75c2e774d 1-21
+packages/ui/package.json
+  s_beb7708abc1117::t_c80bbef5d5b34c 44-45
+content/capstone/go-crud-api/step-2/instructions.md
+  s_beb7708abc1117::t_d7cbf4e5b25363 34-48
+content/capstone/python-crud-api/step-3/config.json
+  s_beb7708abc1117::t_0483a406d03ca0 1-5
+content/capstone/cpp-crud-api/step-5/fixtures.sql
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-7
+content/capstone/rust-crud-api/step-2/fixtures.sql
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-2
+content/capstone/java-crud-api/step-3/verify.sh
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-19
+content/capstone/python-crud-api/step-1/config.json
+  s_beb7708abc1117::t_0483a406d03ca0 1-5
+content/capstone/kotlin-crud-api/step-4/instructions.md
+  s_beb7708abc1117::t_aeeaac5bbe1508 1-56
+content/capstone/javascript-crud-api/step-4/config.json
+  s_beb7708abc1117::t_0483a406d03ca0 1-5
+content/capstone/c-crud-api/step-5/instructions.md
+  s_beb7708abc1117::t_0878fc1af9b030 1-70
+apps/api/package.json
+  s_beb7708abc1117::t_1c8e66ef7eedbc 35-36
+content/capstone/javascript-crud-api/step-6/verify.sh
+  s_beb7708abc1117::t_6272b75c2e774d 1-27
+content/capstone/ruby-crud-api/step-6/instructions.md
+  s_beb7708abc1117::t_c9ee528f552d7d 1-49
+content/capstone/elixir-crud-api/step-4/config.json
+  s_beb7708abc1117::t_76ea1d021db4f0 1-5
+content/capstone/cpp-crud-api/step-2/verify.sh
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-27
+content/capstone/javascript-crud-api/step-1/verify.sh
+  s_beb7708abc1117::t_6272b75c2e774d 1-10
+content/capstone/kotlin-crud-api/step-1/config.json
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-5
+content/capstone/kotlin-crud-api/step-6/fixtures.sql
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-21
+content/capstone/java-crud-api/step-3/instructions.md
+  s_beb7708abc1117::t_e25036f7d0bf72 1-57
+content/capstone/ruby-crud-api/step-4/config.json
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-5
+apps/capstone-runner/src/language-runtimes.ts
+  s_beb7708abc1117::t_d46b0e4e573c5b 1-472
+content/capstone/elixir-crud-api/step-4/fixtures.sql
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-7
+content/capstone/ruby-crud-api/step-3/verify.sh
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-19
+content/capstone/cpp-crud-api/step-4/verify.sh
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-26
+content/capstone/c-crud-api/config.json
+  s_beb7708abc1117::t_7137d890b51693 1-7
+content/capstone/typescript-crud-api/step-2/instructions.md
+  s_beb7708abc1117::t_49b00049703718 1-78
+content/capstone/rust-crud-api/step-1/instructions.md
+  s_beb7708abc1117::t_99c697e5289a7e 1-89
+content/capstone/java-crud-api/step-3/config.json
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-5
+packages/complexity-heuristic/tests/unit/index.test.ts
+  s_beb7708abc1117::t_ca03ee94ff21ea 1-93,97-156
+  s_beb7708abc1117::t_3d1dd9e2f2ab08 94-96
+content/capstone/rust-crud-api/step-1/fixtures.sql
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-2
+content/capstone/kotlin-crud-api/step-6/verify.sh
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-27
+content/capstone/cpp-crud-api/step-4/config.json
+  s_beb7708abc1117::t_76ea1d021db4f0 1-5
+content/capstone/c-crud-api/step-2/verify.sh
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-27
+content/capstone/python-crud-api/step-4/verify.sh
+  s_beb7708abc1117::t_6272b75c2e774d 1-26
+content/capstone/java-crud-api/step-1/fixtures.sql
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-2
+content/capstone/cpp-crud-api/config.json
+  s_beb7708abc1117::t_9777db1a2de3e6 1-7
+content/capstone/elixir-crud-api/step-5/instructions.md
+  s_beb7708abc1117::t_86f8b0b02c3699 1-39
+apps/capstone-runner/tests/unit/language-runtimes.test.ts
+  s_beb7708abc1117::t_480717f2f41388 1-92
+content/capstone/ruby-crud-api/step-6/fixtures.sql
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-21
+content/capstone/kotlin-crud-api/step-4/fixtures.sql
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-7
+content/capstone/ruby-crud-api/step-5/fixtures.sql
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-7
+content/capstone/javascript-crud-api/step-5/verify.sh
+  s_beb7708abc1117::t_6272b75c2e774d 1-19
+content/capstone/java-crud-api/step-1/config.json
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-5
+content/capstone/ruby-crud-api/step-2/config.json
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-5
+content/capstone/c-crud-api/step-2/config.json
+  s_beb7708abc1117::t_ad8ad471e7bedf 1-5
+content/capstone/cpp-crud-api/step-1/fixtures.sql
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-2
+content/capstone/rust-crud-api/step-2/config.json
+  s_beb7708abc1117::t_ad8ad471e7bedf 1-5
+content/capstone/python-crud-api/step-6/config.json
+  s_beb7708abc1117::t_0483a406d03ca0 1-5
+content/capstone/kotlin-crud-api/step-6/config.json
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-5
+content/capstone/rust-crud-api/step-5/fixtures.sql
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-7
+content/capstone/python-crud-api/step-2/config.json
+  s_beb7708abc1117::t_0483a406d03ca0 1-5
+content/capstone/rust-crud-api/step-1/config.json
+  s_beb7708abc1117::t_ad8ad471e7bedf 1-5
+content/capstone/elixir-crud-api/step-2/config.json
+  s_beb7708abc1117::t_76ea1d021db4f0 1-5
+content/capstone/elixir-crud-api/step-4/verify.sh
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-26
+content/capstone/cpp-crud-api/step-6/instructions.md
+  s_beb7708abc1117::t_d2cf3cbf9c09ac 1-53
+content/capstone/rust-crud-api/step-4/verify.sh
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-26
+packages/capstone-contract/src/index.ts
+  s_beb7708abc1117::t_d25ce577e32cca 18-19
+content/capstone/elixir-crud-api/step-1/config.json
+  s_beb7708abc1117::t_76ea1d021db4f0 1-5
+content/capstone/java-crud-api/step-6/verify.sh
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-27
+content/capstone/typescript-crud-api/step-5/instructions.md
+  s_beb7708abc1117::t_3783db3017b8fd 1-38
+packages/complexity-heuristic/src/index.ts
+  s_beb7708abc1117::t_dc38d4b88b5ca8 242-246,248
+  s_beb7708abc1117::t_c316591fcca483 116-132,136-141,143
+  s_beb7708abc1117::t_76048fb98dbbf5 160
+  s_beb7708abc1117::t_9270fb8c8dac35 199,208
+  s_beb7708abc1117::t_baff1b559b796e 1-115,133-135,142,144-159,161-198,200-207,209-241,247,249-350
+content/capstone/typescript-crud-api/step-4/fixtures.sql
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-7
+content/capstone/rust-crud-api/step-2/instructions.md
+  s_beb7708abc1117::t_a7fedb845af11e 1-170
+content/capstone/c-crud-api/step-6/verify.sh
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-27
+content/capstone/python-crud-api/step-1/fixtures.sql
+  s_beb7708abc1117::t_6272b75c2e774d 1-2
+content/capstone/javascript-crud-api/step-6/instructions.md
+  s_beb7708abc1117::t_2ae50af10e4619 1-50
+content/capstone/rust-crud-api/step-2/verify.sh
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-27
+content/capstone/kotlin-crud-api/step-5/config.json
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-5
+apps/api/tests/unit/capstone.test.ts
+  s_beb7708abc1117::t_7e6a8f8965c679 134-137
+  s_beb7708abc1117::t_ff23d5f5a9da17 69-72
+  s_beb7708abc1117::t_a1900c1cd83939 29-31
+  s_beb7708abc1117::t_446cce31112377 55-59,75
+content/capstone/java-crud-api/step-1/verify.sh
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-10
+content/capstone/typescript-crud-api/step-4/instructions.md
+  s_beb7708abc1117::t_d85871692e69d3 1-47
+content/capstone/elixir-crud-api/step-2/verify.sh
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-27
+content/capstone/c-crud-api/step-3/config.json
+  s_beb7708abc1117::t_ad8ad471e7bedf 1-5
+apps/api/e2e-python-capstone-check.ts
+  s_beb7708abc1117::t_3eff0823462cb8 1-159
+content/capstone/rust-crud-api/step-4/config.json
+  s_beb7708abc1117::t_ad8ad471e7bedf 1-5
+content/capstone/rust-crud-api/step-6/fixtures.sql
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-21
+content/capstone/kotlin-crud-api/step-4/verify.sh
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-26
+content/capstone/java-crud-api/step-6/config.json
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-5
+content/capstone/c-crud-api/step-1/config.json
+  s_beb7708abc1117::t_ad8ad471e7bedf 1-5
+content/capstone/javascript-crud-api/step-5/config.json
+  s_beb7708abc1117::t_0483a406d03ca0 1-5
+content/capstone/java-crud-api/step-2/instructions.md
+  s_beb7708abc1117::t_639eacf34b73e1 1-101
+content/capstone/cpp-crud-api/step-6/verify.sh
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-27
+content/capstone/javascript-crud-api/step-2/instructions.md
+  s_beb7708abc1117::t_b02581dba2768e 1-82
+content/capstone/typescript-crud-api/step-2/config.json
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-5
+content/capstone/elixir-crud-api/step-4/instructions.md
+  s_beb7708abc1117::t_89f876aa954290 1-58
+content/capstone/elixir-crud-api/step-3/config.json
+  s_beb7708abc1117::t_76ea1d021db4f0 1-5
+content/capstone/java-crud-api/step-2/fixtures.sql
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-2
+packages/complexity-heuristic/package.json
+  s_beb7708abc1117::t_c364a9d66ff1ed 1-17
+content/capstone/typescript-crud-api/step-6/fixtures.sql
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-21
+content/capstone/rust-crud-api/step-5/instructions.md
+  s_beb7708abc1117::t_86ef8217059916 1-62
+content/capstone/cpp-crud-api/step-5/instructions.md
+  s_beb7708abc1117::t_7fc8d00b3b537e 1-40
+content/capstone/rust-crud-api/config.json
+  s_beb7708abc1117::t_c4ab6d1ccb2561 1-7
+content/capstone/c-crud-api/step-5/fixtures.sql
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-7
+content/capstone/ruby-crud-api/step-2/fixtures.sql
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-2
+content/capstone/cpp-crud-api/step-4/instructions.md
+  s_beb7708abc1117::t_b3ec1ac8b76671 1-55
+content/capstone/javascript-crud-api/step-1/config.json
+  s_beb7708abc1117::t_0483a406d03ca0 1-5
+content/capstone/java-crud-api/step-1/instructions.md
+  s_beb7708abc1117::t_c20b1430ed93de 1-71
+content/capstone/typescript-crud-api/step-6/config.json
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-5
+content/capstone/rust-crud-api/step-4/instructions.md
+  s_beb7708abc1117::t_c249020ebde86f 1-69
+apps/api/src/temporal/capstone-client.ts
+  s_beb7708abc1117::t_f9bcef325e92af 22,27
+content/capstone/ruby-crud-api/step-1/fixtures.sql
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-2
+content/capstone/typescript-crud-api/config.json
+  s_beb7708abc1117::t_980c24e853721c 1-7
+content/capstone/elixir-crud-api/step-3/instructions.md
+  s_beb7708abc1117::t_d1373c513816cd 1-45
+content/capstone/typescript-crud-api/step-3/config.json
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-5
+apps/api/tests/integration/capstone.test.ts
+  s_beb7708abc1117::t_506f344b7b4d3e 45-46
+content/capstone/java-crud-api/step-4/instructions.md
+  s_beb7708abc1117::t_3c2b73e97f66a0 1-48
+content/capstone/rust-crud-api/step-5/verify.sh
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-19
+apps/capstone-runner/src/activities/verifier.ts
+  s_beb7708abc1117::t_834b50c4a57b5c 95-105
+  s_beb7708abc1117::t_022e0966ec74d2 63-72
+content/capstone/c-crud-api/step-3/verify.sh
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-19
+content/capstone/c-crud-api/step-3/fixtures.sql
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-9
+content/capstone/typescript-crud-api/step-5/verify.sh
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-19
+content/capstone/ruby-crud-api/config.json
+  s_beb7708abc1117::t_7e0555a7a26327 1-7
+content/capstone/c-crud-api/step-6/fixtures.sql
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-21
+content/capstone/rust-crud-api/step-6/config.json
+  s_beb7708abc1117::t_ad8ad471e7bedf 1-5
+content/capstone/python-crud-api/step-1/instructions.md
+  s_beb7708abc1117::t_8238c1f07af919 1-56
+content/capstone/java-crud-api/step-6/instructions.md
+  s_beb7708abc1117::t_d3daa8c88ef813 1-64
+content/capstone/elixir-crud-api/step-2/instructions.md
+  s_beb7708abc1117::t_5dd65389032bbe 1-100
+content/capstone/elixir-crud-api/step-1/instructions.md
+  s_beb7708abc1117::t_b02fe224488320 1-84
+  s_beb7708abc1117::t_9755fa5aef39b6 85-104
+content/capstone/javascript-crud-api/step-3/config.json
+  s_beb7708abc1117::t_0483a406d03ca0 1-5
+content/capstone/ruby-crud-api/step-4/instructions.md
+  s_beb7708abc1117::t_b0a321c21087cb 1-47
+content/capstone/javascript-crud-api/step-2/config.json
+  s_beb7708abc1117::t_0483a406d03ca0 1-5
+content/capstone/typescript-crud-api/step-1/fixtures.sql
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-2
+content/capstone/kotlin-crud-api/step-1/verify.sh
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-10
+content/capstone/rust-crud-api/step-6/verify.sh
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-27
+content/capstone/java-crud-api/step-4/config.json
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-5
+content/capstone/rust-crud-api/step-5/config.json
+  s_beb7708abc1117::t_ad8ad471e7bedf 1-5
+content/capstone/typescript-crud-api/step-1/config.json
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-5
+content/capstone/cpp-crud-api/step-6/fixtures.sql
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-21
+content/capstone/python-crud-api/step-3/verify.sh
+  s_beb7708abc1117::t_6272b75c2e774d 1-19
+content/capstone/elixir-crud-api/step-6/instructions.md
+  s_beb7708abc1117::t_f71c9a659da414 1-61
+content/capstone/kotlin-crud-api/step-1/fixtures.sql
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-2
+content/capstone/javascript-crud-api/step-4/instructions.md
+  s_beb7708abc1117::t_c0db0b0c721dc1 1-44
+content/capstone/ruby-crud-api/step-4/fixtures.sql
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-7
+content/capstone/javascript-crud-api/step-2/verify.sh
+  s_beb7708abc1117::t_6272b75c2e774d 1-27
+content/capstone/c-crud-api/step-6/config.json
+  s_beb7708abc1117::t_ad8ad471e7bedf 1-5
+content/capstone/elixir-crud-api/step-6/fixtures.sql
+  s_beb7708abc1117::t_44ca3c1cecf07c 1-21
+content/capstone/python-crud-api/step-5/instructions.md
+  s_beb7708abc1117::t_3a667a72cd7e77 1-37
+content/capstone/python-crud-api/step-3/fixtures.sql
+  s_beb7708abc1117::t_6272b75c2e774d 1-9
+content/capstone/elixir-crud-api/step-5/config.json
+  s_beb7708abc1117::t_76ea1d021db4f0 1-5
+content/capstone/typescript-crud-api/step-5/fixtures.sql
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-7
+content/capstone/java-crud-api/step-6/fixtures.sql
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-21
+content/capstone/cpp-crud-api/step-2/instructions.md
+  s_beb7708abc1117::t_3529699a4e3245 1-92
+content/capstone/typescript-crud-api/step-4/verify.sh
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-26
+content/capstone/cpp-crud-api/step-3/instructions.md
+  s_beb7708abc1117::t_16e52fcde1f179 1-44
+content/capstone/cpp-crud-api/step-3/config.json
+  s_beb7708abc1117::t_76ea1d021db4f0 1-5
+content/capstone/javascript-crud-api/step-3/verify.sh
+  s_beb7708abc1117::t_6272b75c2e774d 1-19
+content/capstone/kotlin-crud-api/step-2/verify.sh
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-27
+apps/web/src/hooks/use-capstone-session.ts
+  s_beb7708abc1117::t_8ff02d15be5ea4 49-51,55-62
+content/capstone/java-crud-api/step-4/fixtures.sql
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-7
+content/capstone/typescript-crud-api/step-1/instructions.md
+  s_beb7708abc1117::t_982b0f70f59f7f 1-65
+apps/capstone-runner/tests/unit/k8s.test.ts
+  s_beb7708abc1117::t_d59fba3b8b9c8d 100,112-116,119-124
+  s_beb7708abc1117::t_1cf00bc339ca6f 117-118
+  s_beb7708abc1117::t_6bbad9096f249b 125
+content/capstone/javascript-crud-api/step-1/instructions.md
+  s_beb7708abc1117::t_b0f86d0bd3ce1c 1-53
+apps/api/e2e-capstone-check.ts
+  s_beb7708abc1117::t_7d154444689240 1-209
+packages/ui/src/components/OutputPane.tsx
+  s_beb7708abc1117::t_cbbd93aaa0ca7f 104-109,116
+  s_beb7708abc1117::t_75064110e4f2c7 178
+  s_beb7708abc1117::t_407bceb489c59e 252-260
+apps/api/tests/unit/submission-pipeline.test.ts
+  s_beb7708abc1117::t_30998b476ed40e 203-212
+  s_beb7708abc1117::t_0649e39dee328a 297-298
+  s_beb7708abc1117::t_0b8cca4726c5d7 177-178
+content/capstone/elixir-crud-api/step-6/config.json
+  s_beb7708abc1117::t_76ea1d021db4f0 1-5
+content/capstone/typescript-crud-api/step-3/verify.sh
+  s_beb7708abc1117::t_7c0f73b07c54f3 1-19
+apps/capstone-runner/src/workflows/capstone-session.ts
+  s_beb7708abc1117::t_e4af7a198acc7e 25,41
+content/capstone/javascript-crud-api/step-5/fixtures.sql
+  s_beb7708abc1117::t_6272b75c2e774d 1-7
+content/capstone/rust-crud-api/step-3/instructions.md
+  s_beb7708abc1117::t_8f2f2de18a793c 1-84
+content/capstone/elixir-crud-api/config.json
+  s_beb7708abc1117::t_cd81b430e8b956 1-7
+apps/capstone-runner/src/k8s.ts
+  s_beb7708abc1117::t_fc272a268185ba 54-61,77,79-80,85-93
+  s_beb7708abc1117::t_360c1453a1129b 94
+content/capstone/java-crud-api/step-5/verify.sh
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-19
+content/capstone/kotlin-crud-api/step-6/instructions.md
+  s_beb7708abc1117::t_24226127be8203 1-42,47-65
+  s_beb7708abc1117::t_49ca3c3ef41f82 43-46
+content/capstone/kotlin-crud-api/step-4/config.json
+  s_beb7708abc1117::t_d807e9dd94ca1d 1-5
+content/capstone/rust-crud-api/step-3/fixtures.sql
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-9
+apps/capstone-runner/src/activities/provisioner.ts
+  s_beb7708abc1117::t_686ee4b0a29928 72,74
+  s_beb7708abc1117::t_c7a4434dc88fb8 5
+  s_beb7708abc1117::t_7afab4753ca99e 28-33
+  s_beb7708abc1117::t_35c8ec44faa790 94,98
+  s_beb7708abc1117::t_3243bcd391aec4 102-105
+  s_beb7708abc1117::t_134baddeb76547 120
+  s_beb7708abc1117::t_944f2c6349af7e 101
+  s_beb7708abc1117::t_8772b5915e5373 83,92-93,95-97,99-100,106-119
+  s_beb7708abc1117::t_c38795d73adf04 6
+content/capstone/c-crud-api/step-1/fixtures.sql
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-2
+content/capstone/python-crud-api/step-6/verify.sh
+  s_beb7708abc1117::t_6272b75c2e774d 1-27
+content/capstone/javascript-crud-api/step-1/fixtures.sql
+  s_beb7708abc1117::t_6272b75c2e774d 1-2
+content/capstone/c-crud-api/step-3/instructions.md
+  s_beb7708abc1117::t_4ffea360b240f1 1-93
+apps/web/src/hooks/use-submission.ts
+  s_beb7708abc1117::t_0c10f773b748e2 88-91
+  s_beb7708abc1117::t_5b264e2ffb2b24 44
+  s_beb7708abc1117::t_b4c44db0ec797d 103
+  s_beb7708abc1117::t_c57a09a93969f7 61
+  s_beb7708abc1117::t_05c177e8590262 5
+content/capstone/rust-crud-api/step-4/fixtures.sql
+  s_beb7708abc1117::t_d5c686ff7e4f84 1-7
+pnpm-lock.yaml
+  s_beb7708abc1117::t_7eb6060dc64efc 44-46,203-205,288-293,312-314,573-575,5098-5106
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "3ffa46867acbb094c8ded6fbdc58cb30b5056f05",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
