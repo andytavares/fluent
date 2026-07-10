@@ -1,0 +1,724 @@
+content/tracks/kubernetes/concepts/15-scheduling/config.json
+  s_beb7708abc1117::t_fbe805e1f11beb 1-7
+content/tracks/kubernetes/concepts/11-statefulsets/statefulsets_test.sh
+  s_beb7708abc1117::t_d49663841b9701 1-43
+content/tracks/kubernetes/concepts/02-labels-selectors-annotations/config.json
+  s_beb7708abc1117::t_f09c521d3673a6 1-7
+content/tracks/observability/concepts/09-alerting/stub.yaml
+  s_beb7708abc1117::t_89aa7fd4124a40 1-6
+content/tracks/aws/concepts/06-dynamodb-tables/stub.sh
+  s_beb7708abc1117::t_9bc2d4ce4bbcda 1-15
+content/tracks/aws/concepts/08-lambda-functions/config.json
+  s_beb7708abc1117::t_a494f2e8c8b3dc 1-7
+content/tracks/observability/concepts/14-otel-collector/config.json
+  s_beb7708abc1117::t_fe2f7bb35cee69 1-7
+content/tracks/buildkite/concepts/01-pipeline-basics/config.json
+  s_beb7708abc1117::t_40af8ea1399765 1-7
+content/tracks/kubernetes/concepts/10-volumes-persistence/volumes-persistence_test.sh
+  s_beb7708abc1117::t_fbbde729086987 1-38
+content/tracks/aws/concepts/09-lambda-event-sources/stub.sh
+  s_beb7708abc1117::t_e5991f719767aa 1-23
+content/tracks/aws/concepts/06-dynamodb-tables/config.json
+  s_beb7708abc1117::t_761a29f39ae0a9 1-7
+content/tracks/kafka/concepts/01-topics-partitions-offsets/stub.properties
+  s_beb7708abc1117::t_74cffc27766a63 1-13
+content/tracks/aws/concepts/02-s3-basics/exemplar.sh
+  s_beb7708abc1117::t_fec5f25d366be8 1-23
+content/tracks/buildkite/concepts/05-env-and-secrets/stub.yaml
+  s_beb7708abc1117::t_45f4909c481ae5 1-10
+content/tracks/kafka/concepts/13-kafka-streams/instructions.md
+  s_beb7708abc1117::t_10b7d2c27d5a4e 1-60
+content/tracks/kafka/concepts/14-production-tuning/stub.properties
+  s_beb7708abc1117::t_d8a00b47ca1f3c 1-26
+content/tracks/observability/concepts/12-otel-fundamentals/otel-fundamentals_test.sh
+  s_beb7708abc1117::t_01750120cece2f 1-39
+content/tracks/kubernetes/concepts/08-probes/config.json
+  s_beb7708abc1117::t_f38c9487d0458e 1-7
+content/tracks/aws/config.json
+  s_beb7708abc1117::t_d152df0e0a813f 1-7
+content/tracks/aws/concepts/11-sns-eventbridge/instructions.md
+  s_beb7708abc1117::t_7278aca63a66bc 1-127
+content/tracks/kafka/concepts/05-delivery-semantics/exemplar.properties
+  s_beb7708abc1117::t_21b8c21f58a6ce 1-18
+content/tracks/observability/concepts/06-promql-aggregations/config.json
+  s_beb7708abc1117::t_37d481a3859626 1-7
+content/tracks/buildkite/concepts/04-artifacts/stub.yaml
+  s_beb7708abc1117::t_5a34a25ff79112 1-9
+content/tracks/kafka/concepts/04-consumers-and-groups/stub.properties
+  s_beb7708abc1117::t_78a8b14d7de3c7 1-15
+content/tracks/buildkite/concepts/05-env-and-secrets/instructions.md
+  s_beb7708abc1117::t_127fd04e59ebc0 1-143
+content/tracks/kubernetes/concepts/10-volumes-persistence/instructions.md
+  s_beb7708abc1117::t_64ca67c12f6408 1-191
+content/tracks/observability/concepts/12-otel-fundamentals/config.json
+  s_beb7708abc1117::t_c63c8508dfd1f2 1-7
+content/tracks/kubernetes/concepts/15-scheduling/instructions.md
+  s_beb7708abc1117::t_b5e726c6ef7870 1-234
+content/tracks/aws/concepts/14-secrets-and-config/instructions.md
+  s_beb7708abc1117::t_050308c547872c 1-126
+content/tracks/kafka/concepts/02-brokers-and-kraft/instructions.md
+  s_beb7708abc1117::t_b2c6aa66339a17 1-83
+content/tracks/aws/concepts/05-iam-roles-sts/config.json
+  s_beb7708abc1117::t_b88a17737001bd 1-7
+content/tracks/buildkite/concepts/09-dynamic-pipelines/stub.yaml
+  s_beb7708abc1117::t_0ea5c70a58aa38 1-10
+content/tracks/kubernetes/concepts/04-rollout-strategies/exemplar.yaml
+  s_beb7708abc1117::t_0f22bbfc2854af 1-25
+content/tracks/buildkite/concepts/03-step-dependencies-and-gates/stub.yaml
+  s_beb7708abc1117::t_819925b0044be0 1-10
+content/tracks/observability/concepts/07-red-and-use/instructions.md
+  s_beb7708abc1117::t_0eb30743a0c687 1-122
+content/tracks/kafka/concepts/08-retention-and-compaction/instructions.md
+  s_beb7708abc1117::t_9b88306e7701be 1-70
+content/tracks/kubernetes/concepts/10-volumes-persistence/config.json
+  s_beb7708abc1117::t_05ea2ae6c31d42 1-7
+content/tracks/kubernetes/config.json
+  s_beb7708abc1117::t_37becbb6c1c75b 1-7
+content/tracks/aws/concepts/11-sns-eventbridge/sns-eventbridge_test.sh
+  s_beb7708abc1117::t_88eb51b2544bf9 1-43
+content/tracks/observability/concepts/01-observability-foundations/observability-foundations_test.sh
+  s_beb7708abc1117::t_5c4c71699b9ed3 1-39
+content/tracks/observability/concepts/14-otel-collector/stub.yaml
+  s_beb7708abc1117::t_4ae346dd4158da 1-16
+content/tracks/observability/concepts/04-histograms-and-quantiles/stub.yaml
+  s_beb7708abc1117::t_f989f52407c493 1-10
+content/tracks/aws/concepts/12-api-gateway/exemplar.sh
+  s_beb7708abc1117::t_6bd78a6afa5ecf 1-50
+content/tracks/kafka/concepts/12-kafka-connect/exemplar.properties
+  s_beb7708abc1117::t_b1981fbf7e406a 1-15
+content/tracks/buildkite/concepts/03-step-dependencies-and-gates/instructions.md
+  s_beb7708abc1117::t_6f48903dd466f4 1-177
+content/tracks/kubernetes/concepts/05-services/instructions.md
+  s_beb7708abc1117::t_4a38b6e7e0e026 1-161
+content/tracks/observability/concepts/10-grafana-dashboards/exemplar.yaml
+  s_beb7708abc1117::t_784b22d951f519 1-43
+content/tracks/kafka/concepts/06-keys-partitioning-ordering/config.json
+  s_beb7708abc1117::t_28b9e5616c3ebb 1-7
+content/tracks/buildkite/concepts/01-pipeline-basics/pipeline-basics_test.sh
+  s_beb7708abc1117::t_74d85601c0915a 1-51
+content/tracks/aws/concepts/14-secrets-and-config/config.json
+  s_beb7708abc1117::t_6374ed2ebc4b38 1-7
+content/tracks/kafka/concepts/06-keys-partitioning-ordering/keys-partitioning-ordering_test.sh
+  s_beb7708abc1117::t_b4ddab3ec34ec3 1-33
+content/tracks/kubernetes/concepts/07-configmaps-secrets/configmaps-secrets_test.sh
+  s_beb7708abc1117::t_ded218d653ad46 1-43
+content/tracks/aws/concepts/07-dynamodb-queries-indexes/dynamodb-queries-indexes_test.sh
+  s_beb7708abc1117::t_efdc1ac3d9560c 1-38
+content/tracks/aws/concepts/02-s3-basics/stub.sh
+  s_beb7708abc1117::t_cf325d44965e8b 1-19
+content/tracks/buildkite/concepts/03-step-dependencies-and-gates/exemplar.yaml
+  s_beb7708abc1117::t_7a28a582e656c9 1-27
+content/tracks/kafka/concepts/12-kafka-connect/stub.properties
+  s_beb7708abc1117::t_98bf58150f9245 1-15
+content/tracks/kafka/concepts/11-schema-management/exemplar.properties
+  s_beb7708abc1117::t_b7139b65feba6e 1-9
+content/tracks/observability/concepts/05-promql-basics/promql-basics_test.sh
+  s_beb7708abc1117::t_0c24d4ea984448 1-40
+content/tracks/buildkite/concepts/03-step-dependencies-and-gates/step-dependencies-and-gates_test.sh
+  s_beb7708abc1117::t_7ab4ecc8b40246 1-46
+content/tracks/kubernetes/concepts/06-ingress/stub.yaml
+  s_beb7708abc1117::t_4ebb7d43c55bf5 1-29
+content/tracks/kubernetes/concepts/09-resources-qos/instructions.md
+  s_beb7708abc1117::t_106bd1cc5794fb 1-183
+content/tracks/kubernetes/concepts/05-services/exemplar.yaml
+  s_beb7708abc1117::t_232e43fc1cefe4 1-23
+content/tracks/kubernetes/concepts/05-services/config.json
+  s_beb7708abc1117::t_6aa31e96cf95d9 1-7
+content/tracks/aws/concepts/04-iam-users-policies/exemplar.sh
+  s_beb7708abc1117::t_1e841e4ef62aee 1-40
+content/tracks/kubernetes/concepts/12-daemonsets-jobs-cronjobs/instructions.md
+  s_beb7708abc1117::t_1bb061bb264682 1-226
+content/tracks/buildkite/concepts/02-agents-and-targeting/instructions.md
+  s_beb7708abc1117::t_ed3c3616466ea7 1-121
+content/tracks/observability/concepts/07-red-and-use/config.json
+  s_beb7708abc1117::t_a6d61e0c9cea1b 1-7
+content/tracks/kafka/concepts/01-topics-partitions-offsets/exemplar.properties
+  s_beb7708abc1117::t_1862ac9be85e21 1-15
+content/tracks/observability/concepts/03-instrumenting-services/instrumenting-services_test.sh
+  s_beb7708abc1117::t_ee1ab3794dcbc9 1-45
+content/tracks/kubernetes/concepts/09-resources-qos/stub.yaml
+  s_beb7708abc1117::t_1476abb5e380b2 1-34
+content/tracks/kubernetes/concepts/14-network-policies/config.json
+  s_beb7708abc1117::t_1426078d20acd7 1-7
+content/tracks/kubernetes/concepts/08-probes/instructions.md
+  s_beb7708abc1117::t_1773170769ebba 1-170
+content/tracks/observability/concepts/03-instrumenting-services/exemplar.yaml
+  s_beb7708abc1117::t_34cc7c842c5dd4 1-33
+content/tracks/kafka/concepts/10-transactions/stub.properties
+  s_beb7708abc1117::t_9f3dd130a8d0f5 1-10
+content/tracks/buildkite/concepts/06-conditionals/exemplar.yaml
+  s_beb7708abc1117::t_62d3cf9e0dc30a 1-21
+content/tracks/aws/concepts/03-s3-advanced/s3-advanced_test.sh
+  s_beb7708abc1117::t_827761feaba821 1-44
+content/tracks/aws/concepts/13-cloudwatch/exemplar.sh
+  s_beb7708abc1117::t_c38ac0543e2ef9 1-42
+content/tracks/observability/concepts/02-metric-types/stub.yaml
+  s_beb7708abc1117::t_372497a1f6bf37 1-13
+content/tracks/kubernetes/concepts/15-scheduling/exemplar.yaml
+  s_beb7708abc1117::t_6ae1a25718d48a 1-45
+content/tracks/observability/concepts/06-promql-aggregations/promql-aggregations_test.sh
+  s_beb7708abc1117::t_c4b2821ec1f94f 1-31,33-42
+  s_beb7708abc1117::t_be11000ba77727 32
+content/tracks/kubernetes/concepts/16-autoscaling-production/autoscaling-production_test.sh
+  s_beb7708abc1117::t_41158fa81ed543 1-52
+content/tracks/kafka/concepts/04-consumers-and-groups/consumers-and-groups_test.sh
+  s_beb7708abc1117::t_644f02732e064a 1-39
+content/tracks/kafka/concepts/11-schema-management/instructions.md
+  s_beb7708abc1117::t_2582021965d6fb 1-67
+content/tracks/kafka/concepts/04-consumers-and-groups/exemplar.properties
+  s_beb7708abc1117::t_6b8541a6f3dc07 1-18
+content/tracks/kubernetes/concepts/07-configmaps-secrets/stub.yaml
+  s_beb7708abc1117::t_1eb7dc2f7ba226 1-52
+content/tracks/aws/concepts/09-lambda-event-sources/lambda-event-sources_test.sh
+  s_beb7708abc1117::t_5fce9f6ab66adc 1-36,39-42
+  s_beb7708abc1117::t_978037fc167280 37-38
+content/tracks/aws/concepts/10-sqs/exemplar.sh
+  s_beb7708abc1117::t_4850a3aa85f844 1-36
+content/tracks/observability/concepts/01-observability-foundations/config.json
+  s_beb7708abc1117::t_8e3574abf66204 1-7
+content/tracks/kafka/concepts/05-delivery-semantics/config.json
+  s_beb7708abc1117::t_2ec1d97fc03b37 1-7
+content/tracks/buildkite/concepts/06-conditionals/stub.yaml
+  s_beb7708abc1117::t_e8f247d8de601c 1-11
+content/tracks/observability/concepts/06-promql-aggregations/instructions.md
+  s_beb7708abc1117::t_0f3a5a1a17777c 1-132
+content/tracks/kafka/concepts/10-transactions/config.json
+  s_beb7708abc1117::t_778e8c93011039 1-7
+content/tracks/kafka/concepts/14-production-tuning/config.json
+  s_beb7708abc1117::t_4715d4a96e1b80 1-7
+content/tracks/kubernetes/concepts/16-autoscaling-production/config.json
+  s_beb7708abc1117::t_cbb3c5ab6b9c35 1-7
+content/tracks/kafka/concepts/08-retention-and-compaction/exemplar.properties
+  s_beb7708abc1117::t_a4daefcff3f04a 1-9
+content/tracks/observability/concepts/02-metric-types/exemplar.yaml
+  s_beb7708abc1117::t_7dd74297463c3b 1-28
+content/tracks/aws/concepts/01-cli-and-localstack/config.json
+  s_beb7708abc1117::t_7e592385a5125b 1-7
+content/tracks/observability/concepts/12-otel-fundamentals/exemplar.yaml
+  s_beb7708abc1117::t_0f6d3e95412cc9 1-16
+content/tracks/kubernetes/concepts/08-probes/probes_test.sh
+  s_beb7708abc1117::t_f47eb531e8bee2 1-39
+content/tracks/kafka/concepts/02-brokers-and-kraft/config.json
+  s_beb7708abc1117::t_b96a36892b3bbe 1-7
+content/tracks/kafka/concepts/14-production-tuning/exemplar.properties
+  s_beb7708abc1117::t_2473ba23dba1e8 1-26
+content/tracks/aws/concepts/11-sns-eventbridge/stub.sh
+  s_beb7708abc1117::t_11f3fda1c6510d 1-26
+content/tracks/observability/concepts/11-dashboard-best-practices/instructions.md
+  s_beb7708abc1117::t_b7be9e49862037 1-134
+content/tracks/kubernetes/concepts/12-daemonsets-jobs-cronjobs/daemonsets-jobs-cronjobs_test.sh
+  s_beb7708abc1117::t_3f80af499aca83 1-43
+content/tracks/buildkite/concepts/10-production-patterns/stub.yaml
+  s_beb7708abc1117::t_9a5408de54c79c 2-11,13-15
+  s_beb7708abc1117::t_eb4ba694596484 1,12
+content/tracks/aws/concepts/05-iam-roles-sts/instructions.md
+  s_beb7708abc1117::t_5a1a5982088862 1-104
+content/tracks/aws/concepts/12-api-gateway/instructions.md
+  s_beb7708abc1117::t_9da32c137fea72 1-140
+content/tracks/buildkite/concepts/06-conditionals/config.json
+  s_beb7708abc1117::t_b91f743c995a4b 1-7
+content/tracks/observability/concepts/03-instrumenting-services/config.json
+  s_beb7708abc1117::t_76028fe6fa987b 1-7
+content/tracks/buildkite/concepts/04-artifacts/exemplar.yaml
+  s_beb7708abc1117::t_0185dbddc34805 1-23
+content/tracks/aws/concepts/08-lambda-functions/lambda-functions_test.sh
+  s_beb7708abc1117::t_a1e6c5bef6f6a1 1-44
+content/tracks/kubernetes/concepts/14-network-policies/stub.yaml
+  s_beb7708abc1117::t_a1a3bbe067a573 1-44
+content/tracks/buildkite/concepts/05-env-and-secrets/exemplar.yaml
+  s_beb7708abc1117::t_2073477b6d0e4d 1-18
+content/tracks/kafka/concepts/06-keys-partitioning-ordering/instructions.md
+  s_beb7708abc1117::t_c8e6da7d4876b5 1-57
+content/tracks/aws/concepts/09-lambda-event-sources/exemplar.sh
+  s_beb7708abc1117::t_f71809ae15bef6 1-42
+content/tracks/observability/concepts/12-otel-fundamentals/instructions.md
+  s_beb7708abc1117::t_aa5c3571b98f83 1-87
+content/tracks/aws/concepts/09-lambda-event-sources/config.json
+  s_beb7708abc1117::t_3da2842ba76b38 1-7
+content/tracks/buildkite/concepts/02-agents-and-targeting/agents-and-targeting_test.sh
+  s_beb7708abc1117::t_7ebed6939737a7 1-48
+content/tracks/aws/concepts/10-sqs/config.json
+  s_beb7708abc1117::t_e1b9e0d7ded09e 1-7
+content/tracks/kubernetes/concepts/05-services/services_test.sh
+  s_beb7708abc1117::t_d15efa2dc610df 1-42
+content/tracks/observability/concepts/12-otel-fundamentals/stub.yaml
+  s_beb7708abc1117::t_c2fc0a3b6238ee 1-11
+content/tracks/aws/concepts/05-iam-roles-sts/stub.sh
+  s_beb7708abc1117::t_2a83104caf2428 1-20
+content/tracks/buildkite/config.json
+  s_beb7708abc1117::t_46058b8e2cae1f 1-7
+content/tracks/kubernetes/concepts/04-rollout-strategies/rollout-strategies_test.sh
+  s_beb7708abc1117::t_229d92640ed0f5 1-43
+content/tracks/kubernetes/concepts/06-ingress/ingress_test.sh
+  s_beb7708abc1117::t_552e5d26c98050 1-36,39-41,44-49
+  s_beb7708abc1117::t_6984f1da68714d 37-38,42-43
+content/tracks/aws/concepts/07-dynamodb-queries-indexes/stub.sh
+  s_beb7708abc1117::t_c39370efc4b7ec 1-19
+content/tracks/buildkite/concepts/10-production-patterns/exemplar.yaml
+  s_beb7708abc1117::t_ab33dc7ea7e061 1-42
+content/tracks/observability/concepts/11-dashboard-best-practices/config.json
+  s_beb7708abc1117::t_5e70b5907def07 1-7
+content/tracks/observability/concepts/09-alerting/instructions.md
+  s_beb7708abc1117::t_473aaa988c62b3 1-132
+content/tracks/observability/concepts/09-alerting/config.json
+  s_beb7708abc1117::t_5e279ce6e34dc6 1-7
+content/tracks/aws/concepts/14-secrets-and-config/stub.sh
+  s_beb7708abc1117::t_f7afffcefc84fc 1-26
+content/tracks/aws/concepts/02-s3-basics/config.json
+  s_beb7708abc1117::t_836a8e7d76a2e7 1-7
+content/tracks/kafka/concepts/08-retention-and-compaction/retention-and-compaction_test.sh
+  s_beb7708abc1117::t_502bc61303afbc 1-50
+content/tracks/kafka/concepts/10-transactions/instructions.md
+  s_beb7708abc1117::t_55c24b799d9d40 1-71
+content/tracks/kafka/concepts/07-replication-and-isr/instructions.md
+  s_beb7708abc1117::t_4f954c183ae068 1-74
+content/tracks/kafka/concepts/14-production-tuning/production-tuning_test.sh
+  s_beb7708abc1117::t_2d931c571b6f49 1-74
+content/tracks/buildkite/concepts/09-dynamic-pipelines/instructions.md
+  s_beb7708abc1117::t_cf02de7be07174 1-141
+content/tracks/aws/concepts/14-secrets-and-config/secrets-and-config_test.sh
+  s_beb7708abc1117::t_4e22d0432fcf23 1-41
+content/tracks/buildkite/concepts/10-production-patterns/instructions.md
+  s_beb7708abc1117::t_43caa5ca88fce8 1-216
+content/tracks/aws/concepts/08-lambda-functions/exemplar.sh
+  s_beb7708abc1117::t_df28c5493934c6 1-45
+content/tracks/buildkite/concepts/07-matrix-and-parallelism/instructions.md
+  s_beb7708abc1117::t_50c60d6150605a 1-171
+content/tracks/aws/concepts/11-sns-eventbridge/config.json
+  s_beb7708abc1117::t_7530b44b853d9f 1-7
+content/tracks/kubernetes/concepts/13-rbac-serviceaccounts/config.json
+  s_beb7708abc1117::t_8f7f617b7c3429 1-7
+content/tracks/observability/concepts/14-otel-collector/instructions.md
+  s_beb7708abc1117::t_434e7b3462a9af 1-167
+content/tracks/kubernetes/concepts/12-daemonsets-jobs-cronjobs/exemplar.yaml
+  s_beb7708abc1117::t_546857c1da3b96 1-51
+content/tracks/buildkite/concepts/07-matrix-and-parallelism/config.json
+  s_beb7708abc1117::t_1a5f8084faeefe 1-7
+content/tracks/observability/concepts/08-recording-rules/config.json
+  s_beb7708abc1117::t_ae09c1e4b0ebf4 1-7
+content/tracks/buildkite/concepts/07-matrix-and-parallelism/exemplar.yaml
+  s_beb7708abc1117::t_5b3a7d19a1fd64 1-31
+content/tracks/kafka/concepts/05-delivery-semantics/instructions.md
+  s_beb7708abc1117::t_7e53d4bc7f995c 1-78
+content/tracks/kubernetes/concepts/02-labels-selectors-annotations/instructions.md
+  s_beb7708abc1117::t_fc9be15d7020ee 1-163
+content/tracks/observability/concepts/06-promql-aggregations/exemplar.yaml
+  s_beb7708abc1117::t_1d326a1f751528 1-29
+content/tracks/observability/concepts/03-instrumenting-services/stub.yaml
+  s_beb7708abc1117::t_e287f837d80795 1-13
+content/tracks/kubernetes/concepts/13-rbac-serviceaccounts/instructions.md
+  s_beb7708abc1117::t_26e7a1714f8807 1-209
+content/tracks/kafka/concepts/03-producers/producers_test.sh
+  s_beb7708abc1117::t_6380c3befec62d 1-27,31-54
+  s_beb7708abc1117::t_1e9568d1338d74 28-30
+content/tracks/kafka/concepts/01-topics-partitions-offsets/config.json
+  s_beb7708abc1117::t_51546a9cdf284f 1-7
+content/tracks/aws/concepts/09-lambda-event-sources/instructions.md
+  s_beb7708abc1117::t_a4763ba7af13f2 1-102
+content/tracks/observability/concepts/10-grafana-dashboards/stub.yaml
+  s_beb7708abc1117::t_db7ec7f32a3037 1-10
+content/tracks/buildkite/concepts/07-matrix-and-parallelism/matrix-and-parallelism_test.sh
+  s_beb7708abc1117::t_588282c3e50e72 1-46
+content/tracks/kafka/concepts/04-consumers-and-groups/config.json
+  s_beb7708abc1117::t_47e5b3545226d4 1-7
+content/tracks/kubernetes/concepts/01-pods/stub.yaml
+  s_beb7708abc1117::t_89417303ed4f84 1-23
+content/tracks/kubernetes/concepts/12-daemonsets-jobs-cronjobs/config.json
+  s_beb7708abc1117::t_a9e040526b0181 1-7
+content/tracks/kafka/concepts/02-brokers-and-kraft/exemplar.properties
+  s_beb7708abc1117::t_1e0649638803e8 1-19
+content/tracks/kubernetes/concepts/03-deployments/deployments_test.sh
+  s_beb7708abc1117::t_7389b3ac3522ca 1-50
+content/tracks/kubernetes/concepts/14-network-policies/exemplar.yaml
+  s_beb7708abc1117::t_759a2b9f0af7e5 1-44
+content/tracks/aws/concepts/03-s3-advanced/config.json
+  s_beb7708abc1117::t_9929e973749a23 1-7
+content/tracks/aws/concepts/08-lambda-functions/stub.sh
+  s_beb7708abc1117::t_8add3f9fcfcee5 1-27
+content/tracks/observability/config.json
+  s_beb7708abc1117::t_45dfa930cad084 1-7
+content/tracks/kubernetes/concepts/12-daemonsets-jobs-cronjobs/stub.yaml
+  s_beb7708abc1117::t_2af657b75ab079 1-57
+content/tracks/observability/concepts/04-histograms-and-quantiles/histograms-and-quantiles_test.sh
+  s_beb7708abc1117::t_9f9baf09a070c0 1-42
+content/tracks/buildkite/concepts/04-artifacts/config.json
+  s_beb7708abc1117::t_51943bc688186a 1-7
+content/tracks/aws/concepts/01-cli-and-localstack/exemplar.sh
+  s_beb7708abc1117::t_7953d2a9bd0653 1-16
+content/tracks/aws/concepts/12-api-gateway/stub.sh
+  s_beb7708abc1117::t_ae0d3174bc8f92 1-31
+content/tracks/kafka/concepts/06-keys-partitioning-ordering/exemplar.properties
+  s_beb7708abc1117::t_e4ed78ac50d968 1-10
+content/tracks/observability/concepts/02-metric-types/config.json
+  s_beb7708abc1117::t_85aea6bece5830 1-7
+content/tracks/kubernetes/concepts/13-rbac-serviceaccounts/rbac-serviceaccounts_test.sh
+  s_beb7708abc1117::t_83e1ad847a97dd 1-42
+content/tracks/kubernetes/concepts/10-volumes-persistence/stub.yaml
+  s_beb7708abc1117::t_68dcf4d7bedd22 1-36
+content/tracks/kafka/concepts/12-kafka-connect/kafka-connect_test.sh
+  s_beb7708abc1117::t_0c60d25ac13b4c 1-38
+content/tracks/kafka/concepts/13-kafka-streams/kafka-streams_test.sh
+  s_beb7708abc1117::t_bb06db61a3b747 1-34
+content/tracks/aws/concepts/04-iam-users-policies/instructions.md
+  s_beb7708abc1117::t_baaf2e4672f249 1-130
+content/tracks/kubernetes/concepts/02-labels-selectors-annotations/labels-selectors-annotations_test.sh
+  s_beb7708abc1117::t_9c5deb5271f8d7 1-49
+content/tracks/kubernetes/concepts/16-autoscaling-production/instructions.md
+  s_beb7708abc1117::t_89a5a9063d0236 1-288
+content/tracks/observability/concepts/03-instrumenting-services/instructions.md
+  s_beb7708abc1117::t_96db132f4ae5af 1-111
+content/tracks/kubernetes/concepts/08-probes/stub.yaml
+  s_beb7708abc1117::t_bac17c3c477cc6 1-32
+content/tracks/kubernetes/concepts/01-pods/config.json
+  s_beb7708abc1117::t_9bfd3f7defd126 1-7
+content/tracks/kubernetes/concepts/11-statefulsets/exemplar.yaml
+  s_beb7708abc1117::t_86444bc2343204 1-42
+content/tracks/aws/concepts/03-s3-advanced/instructions.md
+  s_beb7708abc1117::t_f575be6611e41c 1-146
+content/tracks/observability/concepts/04-histograms-and-quantiles/exemplar.yaml
+  s_beb7708abc1117::t_9e67c377c09e4c 1-14
+content/tracks/kubernetes/concepts/02-labels-selectors-annotations/stub.yaml
+  s_beb7708abc1117::t_b71725a14a2b02 1-20
+content/tracks/aws/concepts/06-dynamodb-tables/instructions.md
+  s_beb7708abc1117::t_d674ad3a43ef48 1-115
+content/tracks/aws/concepts/10-sqs/sqs_test.sh
+  s_beb7708abc1117::t_84061faa813e40 1-39
+content/tracks/kubernetes/concepts/11-statefulsets/stub.yaml
+  s_beb7708abc1117::t_3b6b5015aa5849 1-47
+content/tracks/aws/concepts/13-cloudwatch/instructions.md
+  s_beb7708abc1117::t_70395539c04dca 1-118
+content/tracks/aws/concepts/11-sns-eventbridge/exemplar.sh
+  s_beb7708abc1117::t_5eedd4b4436798 1-41
+content/tracks/observability/concepts/08-recording-rules/recording-rules_test.sh
+  s_beb7708abc1117::t_7538461228bc1e 1-40
+content/tracks/observability/concepts/05-promql-basics/exemplar.yaml
+  s_beb7708abc1117::t_072f1a2f265121 1-25
+content/tracks/kafka/concepts/07-replication-and-isr/exemplar.properties
+  s_beb7708abc1117::t_a63f86f3d9835e 1-13
+content/tracks/buildkite/concepts/04-artifacts/artifacts_test.sh
+  s_beb7708abc1117::t_a7d84596053756 1-46
+content/tracks/aws/concepts/13-cloudwatch/cloudwatch_test.sh
+  s_beb7708abc1117::t_e96d6fd22b8c1a 1-45
+content/tracks/kafka/concepts/07-replication-and-isr/config.json
+  s_beb7708abc1117::t_10ec964be74827 1-7
+content/tracks/buildkite/concepts/05-env-and-secrets/env-and-secrets_test.sh
+  s_beb7708abc1117::t_74a64131ab5af7 1-40
+content/tracks/kubernetes/concepts/03-deployments/config.json
+  s_beb7708abc1117::t_a25873de667054 1-7
+content/tracks/buildkite/concepts/09-dynamic-pipelines/config.json
+  s_beb7708abc1117::t_3a493535769cf3 1-7
+content/tracks/aws/concepts/02-s3-basics/instructions.md
+  s_beb7708abc1117::t_1ef8e9e72ecdd6 1-105
+content/tracks/aws/concepts/06-dynamodb-tables/exemplar.sh
+  s_beb7708abc1117::t_6b81c86d1cafcd 1-34
+content/tracks/aws/concepts/03-s3-advanced/stub.sh
+  s_beb7708abc1117::t_b5c28d8497d6fb 1-24
+content/tracks/observability/concepts/13-otel-traces/config.json
+  s_beb7708abc1117::t_920394c3d0f7df 1-7
+content/tracks/kafka/concepts/13-kafka-streams/stub.properties
+  s_beb7708abc1117::t_7883a2c436c240 1-15
+content/tracks/kubernetes/concepts/13-rbac-serviceaccounts/exemplar.yaml
+  s_beb7708abc1117::t_1a375d3406eae4 1-39
+content/tracks/kubernetes/concepts/03-deployments/exemplar.yaml
+  s_beb7708abc1117::t_4cec592c54243f 1-20
+content/tracks/observability/concepts/13-otel-traces/exemplar.yaml
+  s_beb7708abc1117::t_91a3af10a2d4da 1-35
+content/tracks/kafka/config.json
+  s_beb7708abc1117::t_cf5ee631c41b0c 1-7
+content/tracks/aws/concepts/04-iam-users-policies/stub.sh
+  s_beb7708abc1117::t_c67cd9578f1c0a 1-21
+content/tracks/buildkite/concepts/01-pipeline-basics/exemplar.yaml
+  s_beb7708abc1117::t_ae1c87ea8cfe66 1-15
+content/tracks/kubernetes/concepts/07-configmaps-secrets/instructions.md
+  s_beb7708abc1117::t_1e9f162247c7af 1-236
+content/tracks/aws/concepts/12-api-gateway/config.json
+  s_beb7708abc1117::t_2c83ead38050f8 1-7
+content/tracks/observability/concepts/01-observability-foundations/stub.yaml
+  s_beb7708abc1117::t_6b7b8a74480dc3 2,5-7
+  s_beb7708abc1117::t_1c8d67b921d3cf 1,3-4,8
+content/tracks/aws/concepts/01-cli-and-localstack/instructions.md
+  s_beb7708abc1117::t_e104b33ad65ccb 1-127
+content/tracks/observability/concepts/14-otel-collector/exemplar.yaml
+  s_beb7708abc1117::t_0a718ad23c2e82 1-36
+content/tracks/kafka/concepts/05-delivery-semantics/stub.properties
+  s_beb7708abc1117::t_0fa4bd848b336f 1-18
+content/tracks/observability/concepts/05-promql-basics/instructions.md
+  s_beb7708abc1117::t_c4846fae9d680c 1-122
+content/tracks/kafka/concepts/09-offset-management/stub.properties
+  s_beb7708abc1117::t_eec155e953dd49 1-11
+content/tracks/kubernetes/concepts/15-scheduling/stub.yaml
+  s_beb7708abc1117::t_5df64cf1d398e1 1-48
+content/tracks/observability/concepts/10-grafana-dashboards/instructions.md
+  s_beb7708abc1117::t_28f1c09e9240fe 1-139
+content/tracks/kubernetes/concepts/09-resources-qos/resources-qos_test.sh
+  s_beb7708abc1117::t_1685df4bc43795 1-19,22-55
+  s_beb7708abc1117::t_e58e843010f79a 20-21
+content/tracks/aws/concepts/08-lambda-functions/instructions.md
+  s_beb7708abc1117::t_3b27557ea469e0 1-127
+content/tracks/kubernetes/concepts/11-statefulsets/instructions.md
+  s_beb7708abc1117::t_170b2f9483386e 1-208
+content/tracks/observability/concepts/14-otel-collector/otel-collector_test.sh
+  s_beb7708abc1117::t_f839abdbbc7b83 1-49
+content/tracks/kafka/concepts/02-brokers-and-kraft/brokers-and-kraft_test.sh
+  s_beb7708abc1117::t_9cfea201faaa4b 1-38
+content/tracks/kafka/concepts/12-kafka-connect/instructions.md
+  s_beb7708abc1117::t_c1c254d3511f0f 1-66
+content/tracks/kafka/concepts/03-producers/stub.properties
+  s_beb7708abc1117::t_9749d44997717b 1-13
+content/tracks/kubernetes/concepts/16-autoscaling-production/stub.yaml
+  s_beb7708abc1117::t_9306570e520c27 1-65
+content/tracks/kafka/concepts/11-schema-management/config.json
+  s_beb7708abc1117::t_dbc1c74a7f17aa 1-7
+content/tracks/kubernetes/concepts/13-rbac-serviceaccounts/stub.yaml
+  s_beb7708abc1117::t_f413974e77c5d9 1-43
+content/tracks/kafka/concepts/03-producers/instructions.md
+  s_beb7708abc1117::t_62a90b16c97562 1-75
+content/tracks/kafka/concepts/09-offset-management/config.json
+  s_beb7708abc1117::t_c8ea47bb5248f0 1-7
+content/tracks/aws/concepts/13-cloudwatch/stub.sh
+  s_beb7708abc1117::t_dd560a6302d236 1-24
+content/tracks/observability/concepts/09-alerting/exemplar.yaml
+  s_beb7708abc1117::t_21e0dab6472b90 1-26
+content/tracks/aws/concepts/01-cli-and-localstack/cli-and-localstack_test.sh
+  s_beb7708abc1117::t_595651eaaef675 1-36
+content/tracks/observability/concepts/13-otel-traces/stub.yaml
+  s_beb7708abc1117::t_fe8755cf7b5c3e 1-16
+content/tracks/aws/concepts/07-dynamodb-queries-indexes/instructions.md
+  s_beb7708abc1117::t_7646e323f79ddf 1-132
+content/tracks/buildkite/concepts/02-agents-and-targeting/stub.yaml
+  s_beb7708abc1117::t_fe840ade5a6226 1-13
+content/tracks/kafka/concepts/08-retention-and-compaction/stub.properties
+  s_beb7708abc1117::t_3af9b03603bccb 1-9
+content/tracks/aws/concepts/04-iam-users-policies/iam-users-policies_test.sh
+  s_beb7708abc1117::t_0c65f3702ddf43 1-39
+content/tracks/buildkite/concepts/02-agents-and-targeting/config.json
+  s_beb7708abc1117::t_ee1fad54639ec9 1-7
+content/tracks/kubernetes/concepts/01-pods/instructions.md
+  s_beb7708abc1117::t_570cc853791241 1-138
+content/tracks/kubernetes/concepts/09-resources-qos/exemplar.yaml
+  s_beb7708abc1117::t_3a1a9f7f781058 1-32
+content/tracks/kubernetes/concepts/07-configmaps-secrets/config.json
+  s_beb7708abc1117::t_9b0b1811d180f8 1-7
+content/tracks/buildkite/concepts/06-conditionals/conditionals_test.sh
+  s_beb7708abc1117::t_98f7c1cb54d373 1-40
+content/tracks/aws/concepts/01-cli-and-localstack/stub.sh
+  s_beb7708abc1117::t_4b6cd29237b2d1 1-16
+content/tracks/kafka/concepts/09-offset-management/offset-management_test.sh
+  s_beb7708abc1117::t_93d36101128682 1-32
+content/tracks/kubernetes/concepts/03-deployments/instructions.md
+  s_beb7708abc1117::t_9364f161f734e5 1-143
+content/tracks/kubernetes/concepts/09-resources-qos/config.json
+  s_beb7708abc1117::t_d8600aa397699a 1-7
+content/tracks/buildkite/concepts/07-matrix-and-parallelism/stub.yaml
+  s_beb7708abc1117::t_62676b5ded3031 1-11
+content/tracks/kafka/concepts/01-topics-partitions-offsets/topics-partitions-offsets_test.sh
+  s_beb7708abc1117::t_1de61d0198c474 1-33
+content/tracks/observability/concepts/08-recording-rules/exemplar.yaml
+  s_beb7708abc1117::t_9625fa85eda084 1-16
+content/tracks/buildkite/concepts/10-production-patterns/production-patterns_test.sh
+  s_beb7708abc1117::t_aeaecd499a2679 1-52
+content/tracks/kafka/concepts/04-consumers-and-groups/instructions.md
+  s_beb7708abc1117::t_e5da98507d8609 1-79
+content/tracks/buildkite/concepts/05-env-and-secrets/config.json
+  s_beb7708abc1117::t_02b2261af4119f 1-7
+content/tracks/aws/concepts/03-s3-advanced/exemplar.sh
+  s_beb7708abc1117::t_7193f41d88849a 10
+  s_beb7708abc1117::t_7d2b372ca41c0d 1-9,11-61
+content/tracks/observability/concepts/04-histograms-and-quantiles/config.json
+  s_beb7708abc1117::t_2a23ab778dddec 1-7
+content/tracks/buildkite/concepts/04-artifacts/instructions.md
+  s_beb7708abc1117::t_fc7b3bc6d12c4c 1-135
+content/tracks/buildkite/concepts/09-dynamic-pipelines/dynamic-pipelines_test.sh
+  s_beb7708abc1117::t_4994afdda2cd75 1-34
+content/tracks/observability/concepts/05-promql-basics/stub.yaml
+  s_beb7708abc1117::t_48c10531e147ff 1-9
+content/tracks/kubernetes/concepts/03-deployments/stub.yaml
+  s_beb7708abc1117::t_8456a4f66059c5 1-24
+content/tracks/observability/concepts/13-otel-traces/otel-traces_test.sh
+  s_beb7708abc1117::t_a75a661b993ecb 1-45
+content/tracks/kubernetes/concepts/16-autoscaling-production/exemplar.yaml
+  s_beb7708abc1117::t_7ba5384799c4a9 1-56
+content/tracks/kubernetes/concepts/01-pods/pods_test.sh
+  s_beb7708abc1117::t_553ecf23de4b29 1-28,30,32-37
+  s_beb7708abc1117::t_cb5c6e2dab846e 29,31
+content/tracks/observability/concepts/02-metric-types/instructions.md
+  s_beb7708abc1117::t_b5cdb60a6f8abf 1-123
+content/tracks/observability/concepts/07-red-and-use/exemplar.yaml
+  s_beb7708abc1117::t_5fdc3591a7b2d3 1-30
+content/tracks/aws/concepts/05-iam-roles-sts/exemplar.sh
+  s_beb7708abc1117::t_b586ce43f79899 1-36
+content/tracks/kubernetes/concepts/10-volumes-persistence/exemplar.yaml
+  s_beb7708abc1117::t_b0381e64ec0bd5 1-32
+content/tracks/kubernetes/concepts/06-ingress/exemplar.yaml
+  s_beb7708abc1117::t_e350fd83b5cabe 1-26
+content/tracks/observability/concepts/11-dashboard-best-practices/exemplar.yaml
+  s_beb7708abc1117::t_f078f661e1c0a7 1-42
+content/tracks/buildkite/concepts/09-dynamic-pipelines/exemplar.yaml
+  s_beb7708abc1117::t_95d51ba6c93787 1-13
+content/tracks/kubernetes/concepts/02-labels-selectors-annotations/exemplar.yaml
+  s_beb7708abc1117::t_2694a756243201 1-25
+content/tracks/observability/concepts/11-dashboard-best-practices/dashboard-best-practices_test.sh
+  s_beb7708abc1117::t_7840034f44e713 1-43
+content/tracks/kafka/concepts/08-retention-and-compaction/config.json
+  s_beb7708abc1117::t_a1cef1d5523d37 1-7
+content/tracks/kafka/concepts/14-production-tuning/instructions.md
+  s_beb7708abc1117::t_deffa3e85401c3 1-88
+content/tracks/kafka/concepts/09-offset-management/exemplar.properties
+  s_beb7708abc1117::t_2317ec5c13ffeb 1-8
+content/tracks/kafka/concepts/12-kafka-connect/config.json
+  s_beb7708abc1117::t_335f382ba94087 1-7
+content/tracks/observability/concepts/07-red-and-use/red-and-use_test.sh
+  s_beb7708abc1117::t_2e40388e430d5f 37
+  s_beb7708abc1117::t_bbae7dfccef7ef 1-36,38-42
+content/tracks/observability/concepts/04-histograms-and-quantiles/instructions.md
+  s_beb7708abc1117::t_f7a44eaf606609 1-92
+content/tracks/kubernetes/concepts/06-ingress/config.json
+  s_beb7708abc1117::t_457739f34db516 1-7
+content/tracks/observability/concepts/10-grafana-dashboards/grafana-dashboards_test.sh
+  s_beb7708abc1117::t_98468ae24f4699 1-23,25-47
+  s_beb7708abc1117::t_878e0b78c13409 24
+content/tracks/buildkite/concepts/10-production-patterns/config.json
+  s_beb7708abc1117::t_a148c043c39ec7 1-7
+content/tracks/kubernetes/concepts/04-rollout-strategies/instructions.md
+  s_beb7708abc1117::t_a8114b488dbd14 1-147
+content/tracks/kafka/concepts/09-offset-management/instructions.md
+  s_beb7708abc1117::t_ea86c6a09257e9 1-69
+content/tracks/observability/concepts/06-promql-aggregations/stub.yaml
+  s_beb7708abc1117::t_6ee258b11c9261 1-10
+content/tracks/kafka/concepts/10-transactions/exemplar.properties
+  s_beb7708abc1117::t_106c9b78873d46 1-10
+content/tracks/kubernetes/concepts/14-network-policies/network-policies_test.sh
+  s_beb7708abc1117::t_6845b3fd100d2b 33
+  s_beb7708abc1117::t_f02c22c3a39882 40
+  s_beb7708abc1117::t_a02cc8a645129a 1-32,34-39,41-45
+content/tracks/aws/concepts/10-sqs/instructions.md
+  s_beb7708abc1117::t_31b24dc21f342f 1-128
+content/tracks/observability/concepts/13-otel-traces/instructions.md
+  s_beb7708abc1117::t_4adc41ceecc598 1-134
+content/tracks/aws/concepts/07-dynamodb-queries-indexes/exemplar.sh
+  s_beb7708abc1117::t_41f94570eb86fd 1-47
+content/tracks/observability/concepts/01-observability-foundations/instructions.md
+  s_beb7708abc1117::t_28341b23990b02 1-90
+content/tracks/observability/concepts/02-metric-types/metric-types_test.sh
+  s_beb7708abc1117::t_b8b29447f5d202 1-42
+content/tracks/observability/concepts/05-promql-basics/config.json
+  s_beb7708abc1117::t_7b46caaaa6634f 1-7
+content/tracks/kubernetes/concepts/14-network-policies/instructions.md
+  s_beb7708abc1117::t_d0a4dc3e22b298 1-219
+content/tracks/buildkite/concepts/02-agents-and-targeting/exemplar.yaml
+  s_beb7708abc1117::t_de9e91992527ca 1-22
+content/tracks/observability/concepts/11-dashboard-best-practices/stub.yaml
+  s_beb7708abc1117::t_b055644ac29fb8 1-11
+content/tracks/kubernetes/concepts/06-ingress/instructions.md
+  s_beb7708abc1117::t_e8f6658f83a9a8 1-145
+content/tracks/buildkite/concepts/08-plugins/instructions.md
+  s_beb7708abc1117::t_5b2ab5548bbde9 1-152
+content/tracks/kafka/concepts/11-schema-management/schema-management_test.sh
+  s_beb7708abc1117::t_606273ac7bc6a5 1-33
+content/tracks/aws/concepts/14-secrets-and-config/exemplar.sh
+  s_beb7708abc1117::t_8df4bdf450115c 1-46
+content/tracks/buildkite/concepts/08-plugins/config.json
+  s_beb7708abc1117::t_434e045e8c9315 1-7
+content/tracks/kubernetes/concepts/04-rollout-strategies/stub.yaml
+  s_beb7708abc1117::t_45726b6ea80d5f 1-31
+content/tracks/kubernetes/concepts/07-configmaps-secrets/exemplar.yaml
+  s_beb7708abc1117::t_a41c294a3303a4 1-45
+content/tracks/observability/concepts/09-alerting/alerting_test.sh
+  s_beb7708abc1117::t_e9528d0dacaa02 1-44
+content/tracks/observability/concepts/08-recording-rules/stub.yaml
+  s_beb7708abc1117::t_a6a24f081df06d 1-8
+content/tracks/kubernetes/concepts/08-probes/exemplar.yaml
+  s_beb7708abc1117::t_ae5e45d1c157ea 1-28
+content/tracks/kubernetes/concepts/05-services/stub.yaml
+  s_beb7708abc1117::t_84c66e9169fb4d 1-27
+content/tracks/kafka/concepts/01-topics-partitions-offsets/instructions.md
+  s_beb7708abc1117::t_b90fedb50088d0 1-66
+content/tracks/kafka/concepts/03-producers/config.json
+  s_beb7708abc1117::t_967c3f9cd633fd 1-7
+content/tracks/kafka/concepts/06-keys-partitioning-ordering/stub.properties
+  s_beb7708abc1117::t_e52452df208597 1-11
+content/tracks/observability/concepts/01-observability-foundations/exemplar.yaml
+  s_beb7708abc1117::t_00462d8e3a6760 1-16
+content/tracks/kubernetes/concepts/01-pods/exemplar.yaml
+  s_beb7708abc1117::t_6136cba688dbc7 1-16
+content/tracks/kafka/concepts/07-replication-and-isr/replication-and-isr_test.sh
+  s_beb7708abc1117::t_7d486d6ddc00a3 1-56
+content/tracks/buildkite/concepts/08-plugins/exemplar.yaml
+  s_beb7708abc1117::t_21cf47ba0c8841 1-17
+content/tracks/aws/concepts/12-api-gateway/api-gateway_test.sh
+  s_beb7708abc1117::t_cb0acc3edd5d94 1-43
+content/tracks/buildkite/concepts/08-plugins/stub.yaml
+  s_beb7708abc1117::t_5f90dccd085ee4 1-9
+content/tracks/observability/concepts/10-grafana-dashboards/config.json
+  s_beb7708abc1117::t_0b6995ac94e04b 1-7
+content/tracks/buildkite/concepts/08-plugins/plugins_test.sh
+  s_beb7708abc1117::t_a43231c0d613ef 1-36
+content/tracks/aws/concepts/06-dynamodb-tables/dynamodb-tables_test.sh
+  s_beb7708abc1117::t_fc72c538fa7755 1-39
+content/tracks/kafka/concepts/03-producers/exemplar.properties
+  s_beb7708abc1117::t_6ac1da573b61a7 1-13
+content/tracks/buildkite/concepts/03-step-dependencies-and-gates/config.json
+  s_beb7708abc1117::t_60f79a04c6e0b0 1-7
+content/tracks/aws/concepts/02-s3-basics/s3-basics_test.sh
+  s_beb7708abc1117::t_95250a6fd928e7 27-28
+  s_beb7708abc1117::t_3e9a96b3c7e178 1-26,29-37
+content/tracks/kafka/concepts/13-kafka-streams/config.json
+  s_beb7708abc1117::t_374698243ae4a1 1-7
+content/tracks/buildkite/concepts/01-pipeline-basics/instructions.md
+  s_beb7708abc1117::t_9ce10f9c53bc5d 1-126
+content/tracks/observability/concepts/07-red-and-use/stub.yaml
+  s_beb7708abc1117::t_417913d39c1317 1-10
+content/tracks/aws/concepts/07-dynamodb-queries-indexes/config.json
+  s_beb7708abc1117::t_aca2ef590da8f7 1-7
+content/tracks/kafka/concepts/05-delivery-semantics/delivery-semantics_test.sh
+  s_beb7708abc1117::t_1f582773d6f961 1-60
+content/tracks/aws/concepts/13-cloudwatch/config.json
+  s_beb7708abc1117::t_cbb5be71843fd5 1-7
+content/tracks/observability/concepts/08-recording-rules/instructions.md
+  s_beb7708abc1117::t_2cd5779461c5c8 1-110
+content/tracks/kafka/concepts/10-transactions/transactions_test.sh
+  s_beb7708abc1117::t_3b1977ad69045c 1-50
+content/tracks/kafka/concepts/07-replication-and-isr/stub.properties
+  s_beb7708abc1117::t_a48d7094bf1cfc 1-13
+content/tracks/aws/concepts/10-sqs/stub.sh
+  s_beb7708abc1117::t_b3c16dcfc7aea2 1-23
+content/tracks/aws/concepts/05-iam-roles-sts/iam-roles-sts_test.sh
+  s_beb7708abc1117::t_44ca199d9260ac 1-36
+content/tracks/kafka/concepts/02-brokers-and-kraft/stub.properties
+  s_beb7708abc1117::t_10e4cbe6838e53 1-17
+content/tracks/kubernetes/concepts/15-scheduling/scheduling_test.sh
+  s_beb7708abc1117::t_16a77827bbb44d 34
+  s_beb7708abc1117::t_f2949fb412b5ac 1-26,28-33,35-37,39-45
+  s_beb7708abc1117::t_e2d20b272fe37e 38
+  s_beb7708abc1117::t_821cd7066953a3 27
+content/tracks/kafka/concepts/11-schema-management/stub.properties
+  s_beb7708abc1117::t_d8ce3bb17f7fda 1-13
+content/tracks/kubernetes/concepts/04-rollout-strategies/config.json
+  s_beb7708abc1117::t_9958e770f583a7 1-7
+content/tracks/buildkite/concepts/01-pipeline-basics/stub.yaml
+  s_beb7708abc1117::t_59c963b154b925 1-9
+content/tracks/kubernetes/concepts/11-statefulsets/config.json
+  s_beb7708abc1117::t_b61722ba30b19a 1-7
+content/tracks/kafka/concepts/13-kafka-streams/exemplar.properties
+  s_beb7708abc1117::t_3fd3c07ae84884 1-10
+content/tracks/buildkite/concepts/06-conditionals/instructions.md
+  s_beb7708abc1117::t_8e5b495ecfc73a 1-154
+content/tracks/aws/concepts/04-iam-users-policies/config.json
+  s_beb7708abc1117::t_01583830047a48 1-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a4f8b61a8bd710c9d9a109e3511353ca43353342",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
