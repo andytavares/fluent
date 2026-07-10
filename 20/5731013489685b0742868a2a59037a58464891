@@ -1,0 +1,61 @@
+packages/content-config/tests/store.test.ts
+  s_beb7708abc1117::t_77ce459feb12b1 201-217
+  s_beb7708abc1117::t_a50575e0659a72 61-75
+packages/capstone-contract/src/index.ts
+  s_beb7708abc1117::t_7aed5fef027630 22-36
+apps/api/src/router/capstone.ts
+  s_beb7708abc1117::t_09b939c7a420bd 8
+  s_beb7708abc1117::t_21637fa94f26a1 60-67
+packages/content-config/src/index.ts
+  s_beb7708abc1117::t_bf2395cf98e3a1 2-3,5
+apps/api/tests/unit/capstone.test.ts
+  s_beb7708abc1117::t_215cec56cd583b 52-65,69-73
+  s_beb7708abc1117::t_a0237ce4e690c2 66-68
+apps/capstone-runner/tests/unit/language-runtimes.test.ts
+  s_beb7708abc1117::t_43fe518c80d1af 32,42-43
+  s_beb7708abc1117::t_5e1e4895c8d5e9 3
+  s_beb7708abc1117::t_43b50d936bd292 44-45
+packages/content-config/src/schema.ts
+  s_beb7708abc1117::t_813de19d9d9b9c 31-38,42
+apps/capstone-runner/tests/unit/verifier.test.ts
+  s_beb7708abc1117::t_e71533dc705fc3 84,98,107,117,124,135,146,171,180,190
+  s_beb7708abc1117::t_1da4796dd50a1d 42-46,52
+  s_beb7708abc1117::t_2c950cd44936e7 207
+apps/capstone-runner/tests/unit/session-workflow.test.ts
+  s_beb7708abc1117::t_a7a9d043fd848e 86
+apps/capstone-runner/src/workflows/capstone-session.ts
+  s_beb7708abc1117::t_0253f935a3bb91 68
+apps/web/src/app/tracks/[trackSlug]/capstone/page.tsx
+  s_beb7708abc1117::t_18486b08ca62be 50-54
+  s_beb7708abc1117::t_746ebe250e2e87 314
+  s_beb7708abc1117::t_635d844eeaa44b 219,223-229
+  s_beb7708abc1117::t_36bf94567a9cef 69-82
+  s_beb7708abc1117::t_7171dc0a9e6945 16
+  s_beb7708abc1117::t_7dd69286430d61 45
+  s_beb7708abc1117::t_15781853920509 426
+packages/content-config/src/store.ts
+  s_beb7708abc1117::t_befc842ba1eb89 37-44
+  s_beb7708abc1117::t_021bf77c2e0848 57
+  s_beb7708abc1117::t_57ff2de023dd4c 176-193
+  s_beb7708abc1117::t_4da955f9e94cca 5
+apps/capstone-runner/src/activities/verifier.ts
+  s_beb7708abc1117::t_c8619e76a8d38a 5,14-24,27-28
+  s_beb7708abc1117::t_48ea896d3da269 63-68,71
+  s_beb7708abc1117::t_4ea5b6e774fe19 96,100,107,109
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "205731013489685b0742868a2a59037a58464891",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
