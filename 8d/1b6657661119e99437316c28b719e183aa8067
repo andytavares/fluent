@@ -1,0 +1,21 @@
+apps/web/tsconfig.tsbuildinfo
+  s_beb7708abc1117::t_c15c517eaa6415 1
+apps/web/public/content/manifest.json
+  s_beb7708abc1117::t_63a07878928935 81-266,1500-1606,1686-1913
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "8d1b6657661119e99437316c28b719e183aa8067",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
