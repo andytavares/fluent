@@ -3,7 +3,7 @@ import { capstoneJobName } from "@fluent/capstone-contract";
 import { createCipheriv, randomBytes } from "node:crypto";
 import pino from "pino";
 import { findSessionPod, execInPod, PodNotFoundError } from "../k8s.js";
-import { LANGUAGE_RUNTIMES } from "../language-runtimes.js";
+import { LANGUAGE_RUNTIMES, composeAppCommand } from "../language-runtimes.js";
 
 if (!process.env["CAPSTONE_ENCRYPTION_KEY"]) {
   throw new Error("CAPSTONE_ENCRYPTION_KEY is required");
@@ -71,7 +71,7 @@ export async function provision({ sessionId, trackSlug }: { sessionId: string; t
               name: "app",
               image: runtime.image,
               env: [{ name: "DATABASE_URL", value: `postgresql://postgres:${dbPassword}@localhost:5432/capstone` }],
-              command: ["sh", "-c", `${runtime.setupScript}\n${runtime.runLoopScript}`],
+              command: ["sh", "-c", composeAppCommand(runtime)],
             },
           ],
         },

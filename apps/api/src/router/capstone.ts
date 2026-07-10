@@ -38,6 +38,25 @@ async function ownedSession(db: PrismaClient, sessionId: string, userId: string)
   return session;
 }
 
+/**
+ * ownedSession + rejects completed sessions. Every mutation that touches the
+ * session's live environment (verify, deploy, query) must use this: a
+ * completed session's workflow is gone (Temporal silently drops signals to
+ * it) and its pod is torn down (deploy/query fetches fail opaquely) — fail
+ * loud with one consistent message instead. getSessionStatus deliberately
+ * keeps plain ownedSession so the UI can still read expired sessions.
+ */
+async function activeOwnedSession(db: PrismaClient, sessionId: string, userId: string) {
+  const session = await ownedSession(db, sessionId, userId);
+  if (session.completedAt) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message: "This capstone session has expired — start a new session to continue.",
+    });
+  }
+  return session;
+}
+
 /** Resolves the track slug (language) an enrollment belongs to. */
 async function enrollmentTrackSlug(db: PrismaClient, enrollmentId: string): Promise<string> {
   const enrollment = await db.enrollment.findUniqueOrThrow({
@@ -127,7 +146,7 @@ export const capstoneRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      await ownedSession(ctx.db, input.sessionId, ctx.user.id!);
+      await activeOwnedSession(ctx.db, input.sessionId, ctx.user.id!);
 
       // Signal learner activity and trigger step verification in Temporal workflow.
       // The workflow runs the verify activity and, on pass, records the step completion.
@@ -140,7 +159,7 @@ export const capstoneRouter = router({
   deployCode: protectedProcedure
     .input(z.object({ sessionId: z.string().uuid(), code: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
-      const session = await ownedSession(ctx.db, input.sessionId, ctx.user.id!);
+      const session = await activeOwnedSession(ctx.db, input.sessionId, ctx.user.id!);
       const trackSlug = await enrollmentTrackSlug(ctx.db, session.enrollmentId);
 
       const res = await fetch(`${CAPSTONE_RUNNER_URL}/sessions/${input.sessionId}/deploy`, {
@@ -161,7 +180,7 @@ export const capstoneRouter = router({
   runQuery: protectedProcedure
     .input(z.object({ sessionId: z.string().uuid(), sql: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
-      await ownedSession(ctx.db, input.sessionId, ctx.user.id!);
+      await activeOwnedSession(ctx.db, input.sessionId, ctx.user.id!);
 
       const res = await fetch(`${CAPSTONE_RUNNER_URL}/sessions/${input.sessionId}/query`, {
         method: "POST",

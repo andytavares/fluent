@@ -72,6 +72,7 @@ export default function CapstonePage() {
     isStarting,
     startError,
     verifyStep,
+    verifyError,
     isVerifying,
     deployCode,
     isDeploying,
@@ -117,10 +118,13 @@ export default function CapstonePage() {
     setCompileLog(null);
     setComplexity(null);
     const result = await deployCode(code);
-    if (result) {
-      setCompileLog(result.compileLog || "(no output)");
-      setComplexity(result.complexity ?? null);
+    if (!result) return;
+    if ("error" in result) {
+      setCompileLog(`Deploy failed: ${result.error}`);
+      return;
     }
+    setCompileLog(result.compileLog || "(no output)");
+    setComplexity(result.complexity ?? null);
   }
 
   async function handleRunQuery() {
@@ -262,6 +266,11 @@ export default function CapstonePage() {
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedDef.instructions}</ReactMarkdown>
               </div>
               <div className="mt-3">
+                {verifyError && (
+                  <p className="mb-2 rounded-lg bg-[var(--color-status-error-subtle)] px-3 py-2 text-xs text-[var(--color-status-error-text)]">
+                    {verifyError}
+                  </p>
+                )}
                 <VerificationChecklist results={verificationResults} isVerifying={isVerifying} />
               </div>
             </div>

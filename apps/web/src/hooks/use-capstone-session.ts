@@ -6,6 +6,7 @@ import { trpc } from "@/lib/trpc/client";
 export function useCapstoneSession(enrollmentId: string) {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [startError, setStartError] = useState<string | null>(null);
+  const [verifyError, setVerifyError] = useState<string | null>(null);
 
   const createSession = trpc.capstone.createSession.useMutation();
   const verifyStepMutation = trpc.capstone.verifyStep.useMutation();
@@ -27,21 +28,33 @@ export function useCapstoneSession(enrollmentId: string) {
   }, [enrollmentId, createSession]);
 
   // Fire-and-poll: the workflow verifies asynchronously and records the step
-  // completion; the 3s status poll picks it up.
+  // completion; the 3s status poll picks it up. Rejections (e.g. the session
+  // expired) surface via verifyError instead of an unhandled rejection.
   const verifyStep = useCallback(
     async (stepNumber: number) => {
       if (!sessionId) return;
-      await verifyStepMutation.mutateAsync({ sessionId, stepNumber });
+      setVerifyError(null);
+      try {
+        await verifyStepMutation.mutateAsync({ sessionId, stepNumber });
+      } catch (err) {
+        setVerifyError(err instanceof Error ? err.message : "Verification failed to start");
+      }
     },
     [sessionId, verifyStepMutation],
   );
 
   // Synchronous: writes the learner's code into their pod and restarts their
-  // server, returning whatever it printed (including compile errors).
+  // server, returning whatever it printed (including compile errors). Failures
+  // (expired session, runner unreachable) come back as an error field, never
+  // a rejection — same contract as runQuery below.
   const deployCode = useCallback(
     async (code: string) => {
       if (!sessionId) return null;
-      return deployCodeMutation.mutateAsync({ sessionId, code });
+      try {
+        return await deployCodeMutation.mutateAsync({ sessionId, code });
+      } catch (err) {
+        return { error: err instanceof Error ? err.message : "Deploy failed" } as const;
+      }
     },
     [sessionId, deployCodeMutation],
   );
@@ -84,6 +97,7 @@ export function useCapstoneSession(enrollmentId: string) {
     isStarting: createSession.isPending,
     startError,
     verifyStep,
+    verifyError,
     isVerifying: verifyStepMutation.isPending,
     deployCode,
     isDeploying: deployCodeMutation.isPending,

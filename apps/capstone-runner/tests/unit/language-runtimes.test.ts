@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { LANGUAGE_RUNTIMES } from "../../src/language-runtimes.js";
+import { LANGUAGE_RUNTIMES, composeAppCommand, ENSURE_CURL_SCRIPT } from "../../src/language-runtimes.js";
 
 // Task #29 (per-language capstone content) reads this table's shape to know
 // which image/entrypoint/driver each track's capstone runs against — these
@@ -46,6 +46,22 @@ describe("LANGUAGE_RUNTIMES", () => {
       expect(runtime.runLoopScript).toContain("/code/.deployed");
       expect(runtime.runLoopScript).toContain("/code/out.log");
     }
+  });
+
+  it("composeAppCommand prepends the shared ensure-curl preamble before every language's setup (verify.sh drives the learner's server with curl; alpine/debian-slim bases don't ship it)", () => {
+    for (const slug of EXPECTED_TRACK_SLUGS) {
+      const runtime = LANGUAGE_RUNTIMES[slug]!;
+      const command = composeAppCommand(runtime);
+      const curlAt = command.indexOf(ENSURE_CURL_SCRIPT);
+      const setupAt = command.indexOf(runtime.setupScript);
+      expect(curlAt, `${slug} command must include the ensure-curl preamble`).toBeGreaterThanOrEqual(0);
+      expect(setupAt).toBeGreaterThan(curlAt);
+      expect(command.indexOf(runtime.runLoopScript)).toBeGreaterThan(setupAt);
+    }
+    // The preamble must handle both package-manager families and log failures.
+    expect(ENSURE_CURL_SCRIPT).toContain("apk add");
+    expect(ENSURE_CURL_SCRIPT).toContain("apt-get");
+    expect(ENSURE_CURL_SCRIPT).toContain("/code/setup.log");
   });
 
   it("go's scripts are byte-for-byte the pre-existing hardcoded APP_RUN_LOOP_SCRIPT contents, just split at the setup-done boundary", () => {

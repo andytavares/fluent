@@ -23,7 +23,9 @@ export interface LanguageRuntime {
    * Shell script run ONCE at container startup, before the restart loop, to
    * install a Postgres client library so it's cached and needs no further
    * network access per redeploy. Must write a sentinel /code/setup-done file
-   * when finished (waitForAppReady polls this).
+   * when finished (waitForAppReady polls this). curl (needed by every step's
+   * verify.sh) does NOT need installing here — composeAppCommand prepends the
+   * shared ENSURE_CURL_SCRIPT before every language's setupScript.
    */
   setupScript: string;
   /**
@@ -34,6 +36,20 @@ export interface LanguageRuntime {
    * build errors land there too, same as a failing `go run` today).
    */
   runLoopScript: string;
+}
+
+// Every step's verify.sh drives the learner's server with curl, but most
+// base images (alpine, debian-slim) don't ship it. Enforced ONCE here, at
+// the same composition point that joins setup + run-loop, so a new language
+// runtime can't forget it. Failures land in /code/setup.log, not /dev/null.
+export const ENSURE_CURL_SCRIPT = `
+mkdir -p /code
+(command -v curl >/dev/null 2>&1 || apk add --no-cache curl || (apt-get update -qq && apt-get install -y -qq curl)) >>/code/setup.log 2>&1
+`;
+
+/** The app container's full startup command: ensure-curl, then the language's one-time setup, then its restart loop. */
+export function composeAppCommand(runtime: LanguageRuntime): string {
+  return `${ENSURE_CURL_SCRIPT}\n${runtime.setupScript}\n${runtime.runLoopScript}`;
 }
 
 // go — unchanged from the pre-existing hardcoded constants (byte-for-byte
@@ -75,7 +91,7 @@ done
 // guard that Debian-based python images enforce for the system interpreter.
 const PYTHON_SETUP_SCRIPT = `
 mkdir -p /code
-pip install --no-cache-dir --break-system-packages --quiet "psycopg[binary]" >/code/setup.log 2>&1
+pip install --no-cache-dir --break-system-packages --quiet "psycopg[binary]" >>/code/setup.log 2>&1
 touch /code/setup-done
 `;
 
