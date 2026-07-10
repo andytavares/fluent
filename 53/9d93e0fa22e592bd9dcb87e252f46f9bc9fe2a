@@ -1,0 +1,32 @@
+apps/sandbox/src/executor/polyglot-runner.ts
+  s_beb7708abc1117::t_e788a371dad1ec 103-117
+  s_beb7708abc1117::t_238c1b51ecc16c 11
+  s_beb7708abc1117::t_62361828c4fa10 101-102,118
+  s_beb7708abc1117::t_afa1b82e407d8e 337-338,342
+  s_beb7708abc1117::t_518b023f5971de 333-336,339,343,345
+apps/sandbox/tests/unit/polyglot-runner.test.ts
+  s_beb7708abc1117::t_07127afc114578 95-220
+  s_beb7708abc1117::t_8fa5ad7a1365dc 227-236
+packages/ui/src/components/CodeEditor.tsx
+  s_beb7708abc1117::t_435a3fecb9f25b 34-45
+  s_beb7708abc1117::t_6505eb5b5b677f 46-50
+packages/content-config/src/lang.ts
+  s_beb7708abc1117::t_32f582d0dc43ac 42-46
+  s_beb7708abc1117::t_cfc42f5cce4e49 17-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "539d93e0fa22e592bd9dcb87e252f46f9bc9fe2a",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
