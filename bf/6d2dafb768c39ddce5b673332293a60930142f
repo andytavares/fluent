@@ -1,0 +1,540 @@
+content/capstone/kotlin-recipe-box/step-6/verify.sh
+  s_beb7708abc1117::t_e97b8dd1fa3e89 1-41
+content/capstone/rust-kv-store/step-6/instructions.md
+  s_beb7708abc1117::t_f47be84dbcf414 1-144
+content/capstone/kotlin-recipe-box/step-4/fixtures.sql
+  s_beb7708abc1117::t_fa4fc09d907765 1-12
+content/capstone/cpp-sensor-readings/step-6/verify.sh
+  s_beb7708abc1117::t_449d893e978cf8 1-33
+content/capstone/typescript-task-board/step-2/instructions.md
+  s_beb7708abc1117::t_700697dfec4f79 1-108
+content/capstone/rust-kv-store/step-1/verify.sh
+  s_beb7708abc1117::t_2378a6569b844d 1-10
+content/capstone/elixir-message-board/step-3/instructions.md
+  s_beb7708abc1117::t_0ede7ca8797247 1-53
+content/capstone/ruby-blog-api/step-2/fixtures.sql
+  s_beb7708abc1117::t_140e22fcf174cb 1-3
+content/capstone/typescript-task-board/step-6/verify.sh
+  s_beb7708abc1117::t_8a6aa322e2ec66 1-25
+content/capstone/rust-kv-store/step-2/config.json
+  s_beb7708abc1117::t_6257a633b2be78 1-5
+content/capstone/java-bank-ledger/step-6/fixtures.sql
+  s_beb7708abc1117::t_a0b5806614255e 1-25
+content/capstone/cpp-sensor-readings/step-2/fixtures.sql
+  s_beb7708abc1117::t_e5bf58ee3e2180 1-3
+content/capstone/python-expense-reports/step-4/config.json
+  s_beb7708abc1117::t_2dc9e726376534 1-5
+content/capstone/javascript-notes-api/step-1/fixtures.sql
+  s_beb7708abc1117::t_5f1f05f5e80264 1-2
+content/capstone/python-expense-reports/step-1/instructions.md
+  s_beb7708abc1117::t_9ac7131689f10d 1-56
+content/capstone/rust-kv-store/step-6/config.json
+  s_beb7708abc1117::t_8b149acbe3aa4e 1-5
+content/capstone/kotlin-recipe-box/step-1/fixtures.sql
+  s_beb7708abc1117::t_24e327d8b3fe85 1-2
+content/capstone/elixir-message-board/step-6/verify.sh
+  s_beb7708abc1117::t_7b0fd1584c53f3 1-37
+content/capstone/elixir-message-board/step-1/instructions.md
+  s_beb7708abc1117::t_0a0e0786080bbc 1-107
+content/capstone/rust-kv-store/step-6/verify.sh
+  s_beb7708abc1117::t_5a5d822222ee93 1-40
+content/capstone/kotlin-recipe-box/step-5/verify.sh
+  s_beb7708abc1117::t_eb4880feebb4bc 1-35
+content/capstone/java-bank-ledger/step-2/fixtures.sql
+  s_beb7708abc1117::t_839c8fbd87069e 1-3
+content/capstone/typescript-task-board/step-4/verify.sh
+  s_beb7708abc1117::t_2dda3ec2a76ef8 1-47
+content/capstone/c-guestbook/step-2/verify.sh
+  s_beb7708abc1117::t_a2d6d5860b9143 1-28
+content/capstone/rust-kv-store/step-1/config.json
+  s_beb7708abc1117::t_10ffe477534212 1-5
+content/capstone/typescript-task-board/step-5/fixtures.sql
+  s_beb7708abc1117::t_278b0e75b0107a 1-8
+content/capstone/typescript-task-board/step-4/fixtures.sql
+  s_beb7708abc1117::t_9327eee379539e 1-8
+content/capstone/elixir-message-board/step-2/config.json
+  s_beb7708abc1117::t_48a5d8e591626a 1-5
+content/capstone/elixir-message-board/step-5/verify.sh
+  s_beb7708abc1117::t_d83441c319f476 1-25
+content/capstone/java-bank-ledger/step-6/config.json
+  s_beb7708abc1117::t_45d1709a71b394 1-5
+content/capstone/typescript-task-board/step-2/fixtures.sql
+  s_beb7708abc1117::t_91551fb1820703 1-2
+content/capstone/ruby-blog-api/step-1/config.json
+  s_beb7708abc1117::t_e3c32bb4b051ef 1-5
+content/capstone/elixir-message-board/step-3/verify.sh
+  s_beb7708abc1117::t_b532bd33f09fc5 1-37
+content/capstone/kotlin-recipe-box/step-4/verify.sh
+  s_beb7708abc1117::t_cbd1c1257ddbba 1-37
+content/capstone/elixir-message-board/config.json
+  s_beb7708abc1117::t_883e3b5f88877f 1-7
+content/capstone/cpp-sensor-readings/step-4/config.json
+  s_beb7708abc1117::t_2791b2d49e1b41 1-5
+content/capstone/ruby-blog-api/step-3/config.json
+  s_beb7708abc1117::t_ad92a0b2404fc0 1-5
+content/capstone/ruby-blog-api/stub.rb
+  s_beb7708abc1117::t_49cc260a04eefe 1-2
+content/capstone/elixir-message-board/step-4/verify.sh
+  s_beb7708abc1117::t_5062074defeb31 1-30
+content/capstone/kotlin-recipe-box/step-6/instructions.md
+  s_beb7708abc1117::t_52cbabda3a82c2 1-56
+content/capstone/java-bank-ledger/step-2/config.json
+  s_beb7708abc1117::t_0a4d83ee562bc4 1-5
+content/capstone/rust-kv-store/step-2/fixtures.sql
+  s_beb7708abc1117::t_22a2d54b321b3d 1-3
+content/capstone/rust-kv-store/step-1/instructions.md
+  s_beb7708abc1117::t_c3afe4cc61b390 1-89
+content/capstone/elixir-message-board/step-4/fixtures.sql
+  s_beb7708abc1117::t_1dedd98f333057 1-9
+content/capstone/cpp-sensor-readings/step-3/fixtures.sql
+  s_beb7708abc1117::t_0db6f12d115c6f 1-11
+content/capstone/java-bank-ledger/step-5/verify.sh
+  s_beb7708abc1117::t_4f2a1f880c4c01 1-42
+content/capstone/elixir-message-board/step-5/fixtures.sql
+  s_beb7708abc1117::t_34c0600e9705a7 1-22
+content/capstone/kotlin-recipe-box/step-1/instructions.md
+  s_beb7708abc1117::t_ee72e8248d1992 1-77
+content/capstone/python-expense-reports/step-6/config.json
+  s_beb7708abc1117::t_9ab7a66e170789 1-5
+content/capstone/rust-kv-store/step-3/config.json
+  s_beb7708abc1117::t_f0c07e59c1399f 1-5
+content/capstone/python-expense-reports/step-6/verify.sh
+  s_beb7708abc1117::t_b0ede83dc44266 1-36
+content/capstone/ruby-blog-api/step-2/config.json
+  s_beb7708abc1117::t_3cd3187945d521 1-5
+content/capstone/elixir-message-board/step-3/config.json
+  s_beb7708abc1117::t_1eeed1713693ea 1-5
+content/capstone/python-expense-reports/step-4/verify.sh
+  s_beb7708abc1117::t_2b063b10006703 1-19
+content/capstone/c-guestbook/step-3/fixtures.sql
+  s_beb7708abc1117::t_f7fd70e5c173e7 1-9
+content/capstone/kotlin-recipe-box/step-4/instructions.md
+  s_beb7708abc1117::t_dfcd70d8301436 1-39
+content/capstone/typescript-task-board/step-1/fixtures.sql
+  s_beb7708abc1117::t_9fc0f618819bde 1-2
+content/capstone/java-bank-ledger/step-2/instructions.md
+  s_beb7708abc1117::t_a8921d17cfc943 1-110
+content/capstone/kotlin-recipe-box/step-5/config.json
+  s_beb7708abc1117::t_b7e760558cf93f 1-5
+content/capstone/ruby-blog-api/step-1/instructions.md
+  s_beb7708abc1117::t_b78d8491db22ae 1-93
+content/capstone/cpp-sensor-readings/step-6/instructions.md
+  s_beb7708abc1117::t_67b70cc6178a4a 1-63
+content/capstone/cpp-sensor-readings/step-3/verify.sh
+  s_beb7708abc1117::t_3641afc6c568f1 1-20
+content/capstone/cpp-sensor-readings/step-1/config.json
+  s_beb7708abc1117::t_c8cb50a6902383 1-5
+content/capstone/python-expense-reports/step-6/instructions.md
+  s_beb7708abc1117::t_241a8aa1558564 1-58
+content/capstone/rust-kv-store/step-5/instructions.md
+  s_beb7708abc1117::t_96f01730fd2b3a 1-106
+content/capstone/c-guestbook/step-6/config.json
+  s_beb7708abc1117::t_5d715ee145cb6e 1-5
+content/capstone/cpp-sensor-readings/step-1/instructions.md
+  s_beb7708abc1117::t_2f5169eff16b85 1-101
+content/capstone/javascript-notes-api/step-3/config.json
+  s_beb7708abc1117::t_c43a9f86caafa2 1-5
+content/capstone/typescript-task-board/stub.ts
+  s_beb7708abc1117::t_27a88770af0342 1-2
+content/capstone/cpp-sensor-readings/step-6/config.json
+  s_beb7708abc1117::t_eab6afd17e52b7 1-5
+content/capstone/elixir-message-board/step-3/fixtures.sql
+  s_beb7708abc1117::t_99fc6b73d1a59e 1-7
+content/capstone/javascript-notes-api/config.json
+  s_beb7708abc1117::t_5fa60346ae84a6 1-7
+content/capstone/c-guestbook/step-5/verify.sh
+  s_beb7708abc1117::t_82b6f73eacf46d 1-14
+content/capstone/kotlin-recipe-box/step-1/verify.sh
+  s_beb7708abc1117::t_a0da88edaf2dab 1-10
+content/capstone/ruby-blog-api/step-4/fixtures.sql
+  s_beb7708abc1117::t_12d9a5a955f75d 1-8
+content/capstone/javascript-notes-api/step-1/verify.sh
+  s_beb7708abc1117::t_b46adf549d9ccf 1-10
+content/capstone/elixir-message-board/step-2/instructions.md
+  s_beb7708abc1117::t_ec50880760177a 1-124
+content/capstone/typescript-task-board/step-5/instructions.md
+  s_beb7708abc1117::t_894b679e992d7a 1-52
+content/capstone/rust-kv-store/step-4/fixtures.sql
+  s_beb7708abc1117::t_6a880daf000c66 1-6
+content/capstone/rust-kv-store/step-5/verify.sh
+  s_beb7708abc1117::t_e2d4f0ff7641cf 1-37
+content/capstone/cpp-sensor-readings/step-4/verify.sh
+  s_beb7708abc1117::t_8104ea4c2c87ee 1-24
+content/capstone/elixir-message-board/step-5/config.json
+  s_beb7708abc1117::t_02513b9ddeb2c0 1-5
+content/capstone/typescript-task-board/step-3/instructions.md
+  s_beb7708abc1117::t_be25eeafb31a2f 1-44
+content/capstone/cpp-sensor-readings/stub.cpp
+  s_beb7708abc1117::t_4a35f382b82d07 1-22
+content/capstone/elixir-message-board/step-1/config.json
+  s_beb7708abc1117::t_14fbc87d2bdecf 1-5
+content/capstone/javascript-notes-api/step-3/fixtures.sql
+  s_beb7708abc1117::t_98a1caaefd1baf 1-9
+content/capstone/ruby-blog-api/step-3/verify.sh
+  s_beb7708abc1117::t_c95a8cf32e8dce 1-31
+content/capstone/ruby-blog-api/step-6/instructions.md
+  s_beb7708abc1117::t_4ce487bd5f8d95 1-53
+content/capstone/c-guestbook/step-6/instructions.md
+  s_beb7708abc1117::t_b40f977af833ef 1-118
+content/capstone/typescript-task-board/step-2/config.json
+  s_beb7708abc1117::t_1d2a5b493d9258 1-5
+content/capstone/rust-kv-store/step-1/fixtures.sql
+  s_beb7708abc1117::t_a15d0b0f97c3d4 1-2
+content/capstone/javascript-notes-api/step-4/verify.sh
+  s_beb7708abc1117::t_96c7d702d651c4 1-30
+content/capstone/python-expense-reports/step-2/instructions.md
+  s_beb7708abc1117::t_f28d50543df8dc 1-92
+content/capstone/typescript-task-board/config.json
+  s_beb7708abc1117::t_214f74a5790a18 1-7
+content/capstone/python-expense-reports/step-2/verify.sh
+  s_beb7708abc1117::t_0386b6b2ca303e 1-28
+content/capstone/java-bank-ledger/step-6/verify.sh
+  s_beb7708abc1117::t_4c1483b8a088cc 1-46
+content/capstone/kotlin-recipe-box/step-3/instructions.md
+  s_beb7708abc1117::t_457ef0197ffee0 1-80
+content/capstone/c-guestbook/step-5/fixtures.sql
+  s_beb7708abc1117::t_c1ba1a7dacf1d7 1-14
+content/capstone/kotlin-recipe-box/stub.kt
+  s_beb7708abc1117::t_04eeaf80aee8af 1-4
+content/capstone/python-expense-reports/stub.py
+  s_beb7708abc1117::t_cbd288f0354c3d 1-60
+content/capstone/python-expense-reports/step-3/verify.sh
+  s_beb7708abc1117::t_31cd39a24a61dc 1-21
+content/capstone/cpp-sensor-readings/step-4/fixtures.sql
+  s_beb7708abc1117::t_b39b5bebc19120 1-11
+content/capstone/c-guestbook/config.json
+  s_beb7708abc1117::t_a9708b315f4baa 1-7
+content/capstone/java-bank-ledger/step-4/instructions.md
+  s_beb7708abc1117::t_ed543c79425364 1-45
+content/capstone/ruby-blog-api/step-5/fixtures.sql
+  s_beb7708abc1117::t_90a147b99b7ef5 1-11
+content/capstone/python-expense-reports/step-5/verify.sh
+  s_beb7708abc1117::t_8f22857cb4c64d 1-31
+content/capstone/typescript-task-board/step-1/verify.sh
+  s_beb7708abc1117::t_508d16b57ed2f4 1-10
+content/capstone/kotlin-recipe-box/step-3/fixtures.sql
+  s_beb7708abc1117::t_edb65027b3ec01 1-14
+content/capstone/elixir-message-board/step-1/fixtures.sql
+  s_beb7708abc1117::t_4525b19a9c6549 1-2
+content/capstone/javascript-notes-api/step-4/instructions.md
+  s_beb7708abc1117::t_fd0831787675b1 1-49
+content/capstone/ruby-blog-api/step-1/verify.sh
+  s_beb7708abc1117::t_560e91dff5df6e 1-10
+content/capstone/kotlin-recipe-box/step-4/config.json
+  s_beb7708abc1117::t_4261c0588316a1 1-5
+content/capstone/java-bank-ledger/step-4/fixtures.sql
+  s_beb7708abc1117::t_88f4c4337c5159 1-9
+content/capstone/c-guestbook/step-3/verify.sh
+  s_beb7708abc1117::t_437f4a7a10333a 1-27
+content/capstone/java-bank-ledger/step-3/instructions.md
+  s_beb7708abc1117::t_fdcc1b4eedc5dc 1-80
+content/capstone/rust-kv-store/step-3/fixtures.sql
+  s_beb7708abc1117::t_a94d11a61f6fc1 1-10
+content/capstone/c-guestbook/step-1/fixtures.sql
+  s_beb7708abc1117::t_cb247f8dd272c6 1-2
+content/capstone/kotlin-recipe-box/step-1/config.json
+  s_beb7708abc1117::t_1910c248e00ac8 1-5
+content/capstone/rust-kv-store/step-4/instructions.md
+  s_beb7708abc1117::t_8120d2e5ef530e 1-64
+content/capstone/python-expense-reports/step-5/config.json
+  s_beb7708abc1117::t_e03c4993d41af6 1-5
+content/capstone/typescript-task-board/step-1/instructions.md
+  s_beb7708abc1117::t_2efa3ccc30c837 1-65
+content/capstone/javascript-notes-api/step-1/config.json
+  s_beb7708abc1117::t_6073e1f4b7a7a1 1-5
+content/capstone/kotlin-recipe-box/config.json
+  s_beb7708abc1117::t_38ec42017534a8 1-7
+content/capstone/kotlin-recipe-box/step-6/config.json
+  s_beb7708abc1117::t_67ee8d8531d0e4 1-5
+content/capstone/typescript-task-board/step-1/config.json
+  s_beb7708abc1117::t_32afa95ce67dba 1-5
+content/capstone/java-bank-ledger/step-5/instructions.md
+  s_beb7708abc1117::t_6a4bc1431829f0 1-91
+content/capstone/java-bank-ledger/step-3/config.json
+  s_beb7708abc1117::t_cc4325b6622ae4 1-5
+content/capstone/rust-kv-store/step-4/config.json
+  s_beb7708abc1117::t_75fc11ec9a2542 1-5
+content/capstone/java-bank-ledger/step-1/instructions.md
+  s_beb7708abc1117::t_19cc665807b1db 1-78
+content/capstone/java-bank-ledger/step-3/fixtures.sql
+  s_beb7708abc1117::t_f9271f37ca7bf5 1-9
+content/capstone/rust-kv-store/step-3/instructions.md
+  s_beb7708abc1117::t_4f05879c225588 1-94
+content/capstone/kotlin-recipe-box/step-5/fixtures.sql
+  s_beb7708abc1117::t_28c0a8f3bb0948 1-12
+content/capstone/javascript-notes-api/step-5/fixtures.sql
+  s_beb7708abc1117::t_9d668d196990cf 1-10
+content/capstone/typescript-task-board/step-5/config.json
+  s_beb7708abc1117::t_ac1146df6011dc 1-5
+content/capstone/python-expense-reports/step-6/fixtures.sql
+  s_beb7708abc1117::t_6d7c22f8643e48 1-19
+content/capstone/python-expense-reports/config.json
+  s_beb7708abc1117::t_d6f8c9b653ae0f 1-7
+content/capstone/elixir-message-board/step-6/fixtures.sql
+  s_beb7708abc1117::t_ccb41de4ee1c81 1-18
+content/capstone/ruby-blog-api/step-1/fixtures.sql
+  s_beb7708abc1117::t_600dd4739f8729 1-2
+content/capstone/java-bank-ledger/config.json
+  s_beb7708abc1117::t_4679952eb4b72f 1-7
+content/capstone/javascript-notes-api/step-1/instructions.md
+  s_beb7708abc1117::t_7adc0981067116 1-53
+content/capstone/python-expense-reports/step-1/fixtures.sql
+  s_beb7708abc1117::t_f0ac44ddf27353 1-2
+content/capstone/cpp-sensor-readings/step-1/verify.sh
+  s_beb7708abc1117::t_694ee0fb6d3d92 1-10
+content/capstone/cpp-sensor-readings/step-2/instructions.md
+  s_beb7708abc1117::t_1c157133a22690 1-106
+content/capstone/java-bank-ledger/step-1/verify.sh
+  s_beb7708abc1117::t_3a86336ff3bab5 1-10
+content/capstone/cpp-sensor-readings/step-3/config.json
+  s_beb7708abc1117::t_8ca7bd10fc657a 1-5
+content/capstone/c-guestbook/step-3/instructions.md
+  s_beb7708abc1117::t_2d4b45711a8a9b 1-118
+content/capstone/ruby-blog-api/step-4/instructions.md
+  s_beb7708abc1117::t_46fe65a9278eb3 1-65
+content/capstone/typescript-task-board/step-6/config.json
+  s_beb7708abc1117::t_844989bd2e18c8 1-5
+content/capstone/rust-kv-store/step-5/config.json
+  s_beb7708abc1117::t_79f2102c9a555c 1-5
+content/capstone/typescript-task-board/step-6/fixtures.sql
+  s_beb7708abc1117::t_7c25a0dbda6b91 1-11
+content/capstone/javascript-notes-api/step-6/config.json
+  s_beb7708abc1117::t_f5b02b77f0c4f3 1-5
+content/capstone/cpp-sensor-readings/step-5/fixtures.sql
+  s_beb7708abc1117::t_3e5152c83b5e7f 1-10
+content/capstone/python-expense-reports/step-5/instructions.md
+  s_beb7708abc1117::t_e9749bca34d489 1-50
+content/capstone/go-crud-api/stub.go
+  s_beb7708abc1117::t_bd875b37b36ee6 1-4
+content/capstone/java-bank-ledger/step-1/config.json
+  s_beb7708abc1117::t_ccb92b67d28067 1-5
+content/capstone/elixir-message-board/step-2/fixtures.sql
+  s_beb7708abc1117::t_36d7722676bf05 1-8
+content/capstone/java-bank-ledger/step-5/fixtures.sql
+  s_beb7708abc1117::t_61e0af063cd125 1-10
+content/capstone/cpp-sensor-readings/step-4/instructions.md
+  s_beb7708abc1117::t_0a816e26967988 1-53
+content/capstone/ruby-blog-api/step-4/config.json
+  s_beb7708abc1117::t_c7441869965296 1-5
+content/capstone/java-bank-ledger/step-6/instructions.md
+  s_beb7708abc1117::t_f606f2490cf0f8 1-60
+content/capstone/javascript-notes-api/step-4/config.json
+  s_beb7708abc1117::t_753840b990b800 1-5
+content/capstone/ruby-blog-api/step-5/config.json
+  s_beb7708abc1117::t_d4f3d3d994ebbf 1-5
+content/capstone/rust-kv-store/step-6/fixtures.sql
+  s_beb7708abc1117::t_345187d7bbbf6d 1-23
+content/capstone/kotlin-recipe-box/step-2/fixtures.sql
+  s_beb7708abc1117::t_416db668f66271 1-3
+content/capstone/c-guestbook/step-4/instructions.md
+  s_beb7708abc1117::t_b556a0369c695b 1-53
+content/capstone/typescript-task-board/step-3/verify.sh
+  s_beb7708abc1117::t_5808f386103230 1-29
+content/capstone/javascript-notes-api/step-2/config.json
+  s_beb7708abc1117::t_160cd79828394a 1-5
+content/capstone/typescript-task-board/step-4/config.json
+  s_beb7708abc1117::t_3aaa7a2392db67 1-5
+content/capstone/elixir-message-board/step-4/config.json
+  s_beb7708abc1117::t_a99069ad8349b3 1-5
+content/capstone/javascript-notes-api/stub.js
+  s_beb7708abc1117::t_3fde4cb991a6be 1-60
+content/capstone/c-guestbook/step-2/fixtures.sql
+  s_beb7708abc1117::t_9f844ece4b082f 1-2
+content/capstone/python-expense-reports/step-3/fixtures.sql
+  s_beb7708abc1117::t_aba604560cc039 1-9
+content/capstone/ruby-blog-api/step-5/instructions.md
+  s_beb7708abc1117::t_2644a8a226a518 68
+  s_beb7708abc1117::t_752d4960f5101a 1-67,69-72
+content/capstone/cpp-sensor-readings/step-5/instructions.md
+  s_beb7708abc1117::t_0f07c8437f6ebf 1-43
+content/capstone/cpp-sensor-readings/step-1/fixtures.sql
+  s_beb7708abc1117::t_59334978873390 1-2
+content/capstone/ruby-blog-api/step-6/fixtures.sql
+  s_beb7708abc1117::t_64c0ff27508731 1-17
+content/capstone/javascript-notes-api/step-2/fixtures.sql
+  s_beb7708abc1117::t_598f3a73087aa8 1-2
+content/capstone/javascript-notes-api/step-4/fixtures.sql
+  s_beb7708abc1117::t_4a5fc675ef903b 1-8
+content/capstone/rust-kv-store/step-2/instructions.md
+  s_beb7708abc1117::t_b3d7af09232533 1-211
+content/capstone/rust-kv-store/step-3/verify.sh
+  s_beb7708abc1117::t_60012172304922 1-27
+content/capstone/ruby-blog-api/step-2/instructions.md
+  s_beb7708abc1117::t_ff737d82f85ba7 1-95
+content/capstone/c-guestbook/step-6/fixtures.sql
+  s_beb7708abc1117::t_5f658577380128 1-21
+content/capstone/javascript-notes-api/step-3/instructions.md
+  s_beb7708abc1117::t_afade32d81d36b 1-43
+content/capstone/typescript-task-board/step-6/instructions.md
+  s_beb7708abc1117::t_ff6675f221e2fa 1-61
+content/capstone/cpp-sensor-readings/step-6/fixtures.sql
+  s_beb7708abc1117::t_b076916afe5e7b 1-17
+content/capstone/javascript-notes-api/step-5/config.json
+  s_beb7708abc1117::t_bea0f1885d100f 1-5
+content/capstone/typescript-task-board/step-4/instructions.md
+  s_beb7708abc1117::t_d49398a7abfc0d 1-78
+content/capstone/python-expense-reports/step-2/config.json
+  s_beb7708abc1117::t_e2181d9cc811ae 1-5
+content/capstone/elixir-message-board/step-4/instructions.md
+  s_beb7708abc1117::t_873d85adf2001a 1-52
+content/capstone/ruby-blog-api/step-2/verify.sh
+  s_beb7708abc1117::t_6015c61f38348b 1-27
+content/capstone/python-expense-reports/step-4/fixtures.sql
+  s_beb7708abc1117::t_7eb821761c3a09 1-7
+content/capstone/typescript-task-board/step-5/verify.sh
+  s_beb7708abc1117::t_e0c4e83b6427a1 1-27
+content/capstone/elixir-message-board/step-6/config.json
+  s_beb7708abc1117::t_7c596242f136eb 1-5
+content/capstone/rust-kv-store/step-5/fixtures.sql
+  s_beb7708abc1117::t_ba7579afa4bb4d 1-11
+content/capstone/c-guestbook/step-4/fixtures.sql
+  s_beb7708abc1117::t_0322b716278255 1-12
+content/capstone/kotlin-recipe-box/step-5/instructions.md
+  s_beb7708abc1117::t_f6e8800690691c 1-47
+content/capstone/c-guestbook/stub.c
+  s_beb7708abc1117::t_c8a29f48fa1f76 1-5
+content/capstone/typescript-task-board/step-3/config.json
+  s_beb7708abc1117::t_3d947d4d6ef9f0 1-5
+content/capstone/c-guestbook/step-1/config.json
+  s_beb7708abc1117::t_163ee126ea4efa 1-5
+content/capstone/c-guestbook/step-5/config.json
+  s_beb7708abc1117::t_d44aa9f67323a1 1-5
+content/capstone/javascript-notes-api/step-6/fixtures.sql
+  s_beb7708abc1117::t_0b518b3f52ebce 1-15
+content/capstone/javascript-notes-api/step-6/instructions.md
+  s_beb7708abc1117::t_a045080941d63c 1-64
+content/capstone/javascript-notes-api/step-5/verify.sh
+  s_beb7708abc1117::t_c96d5ba43470d8 1-37
+content/capstone/javascript-notes-api/step-3/verify.sh
+  s_beb7708abc1117::t_cf40f4e5bca661 1-21
+content/capstone/java-bank-ledger/step-1/fixtures.sql
+  s_beb7708abc1117::t_bd1c9dd9734509 1-2
+content/capstone/c-guestbook/step-4/config.json
+  s_beb7708abc1117::t_6c4332d90f9539 1-5
+content/capstone/ruby-blog-api/step-6/config.json
+  s_beb7708abc1117::t_c291a6859d5556 1-5
+content/capstone/c-guestbook/step-3/config.json
+  s_beb7708abc1117::t_4e037c736a0e31 1-5
+content/capstone/elixir-message-board/step-6/instructions.md
+  s_beb7708abc1117::t_655cf759789bc8 1-80
+content/capstone/javascript-notes-api/step-2/verify.sh
+  s_beb7708abc1117::t_f8ab7bd6792864 1-39
+content/capstone/ruby-blog-api/step-3/instructions.md
+  s_beb7708abc1117::t_882dc73f75f915 1-45
+content/capstone/rust-kv-store/stub.rs
+  s_beb7708abc1117::t_6cfde679e30957 1-4
+content/capstone/python-expense-reports/step-3/instructions.md
+  s_beb7708abc1117::t_f854163c881394 1-44
+content/capstone/elixir-message-board/stub.ex
+  s_beb7708abc1117::t_bac922e75ddcd6 1-25
+content/capstone/kotlin-recipe-box/step-6/fixtures.sql
+  s_beb7708abc1117::t_370a720d41d382 1-19
+content/capstone/python-expense-reports/step-2/fixtures.sql
+  s_beb7708abc1117::t_561a805c565dc0 1-3
+content/capstone/java-bank-ledger/step-4/verify.sh
+  s_beb7708abc1117::t_be64eb19ba2890 1-21
+content/capstone/cpp-sensor-readings/step-3/instructions.md
+  s_beb7708abc1117::t_3042191b9c9b37 1-46
+content/capstone/ruby-blog-api/step-6/verify.sh
+  s_beb7708abc1117::t_91e4f17fa4327c 1-41
+content/capstone/kotlin-recipe-box/step-3/config.json
+  s_beb7708abc1117::t_243a4223cd3c68 1-5
+content/capstone/elixir-message-board/step-5/instructions.md
+  s_beb7708abc1117::t_882c88a1b61807 1-60
+content/capstone/c-guestbook/step-2/config.json
+  s_beb7708abc1117::t_7b51eeeff71093 1-5
+content/capstone/ruby-blog-api/config.json
+  s_beb7708abc1117::t_8eac9be6c4bd08 1-7
+content/capstone/python-expense-reports/step-3/config.json
+  s_beb7708abc1117::t_41eb4c34616099 1-5
+content/capstone/typescript-task-board/step-3/fixtures.sql
+  s_beb7708abc1117::t_6ab6f4672712e6 1-9
+content/capstone/javascript-notes-api/step-6/verify.sh
+  s_beb7708abc1117::t_a8e605ee45cd3d 1-40
+content/capstone/kotlin-recipe-box/step-2/config.json
+  s_beb7708abc1117::t_f0371360fc8cbc 1-5
+content/capstone/rust-kv-store/step-4/verify.sh
+  s_beb7708abc1117::t_edcdd4431cd826 1-19
+content/capstone/rust-kv-store/config.json
+  s_beb7708abc1117::t_706a96a080788b 1-7
+content/capstone/c-guestbook/step-2/instructions.md
+  s_beb7708abc1117::t_f325940785185c 1-173
+content/capstone/python-expense-reports/step-4/instructions.md
+  s_beb7708abc1117::t_6e6eee8f61385b 1-38
+content/capstone/ruby-blog-api/step-3/fixtures.sql
+  s_beb7708abc1117::t_9b588c4dd34103 1-9
+content/capstone/cpp-sensor-readings/config.json
+  s_beb7708abc1117::t_f9c5a798c1ff9f 1-7
+content/capstone/java-bank-ledger/step-2/verify.sh
+  s_beb7708abc1117::t_e77a3071793d88 1-26
+content/capstone/elixir-message-board/step-1/verify.sh
+  s_beb7708abc1117::t_707f5ca7b14d98 1-10
+content/capstone/cpp-sensor-readings/step-5/verify.sh
+  s_beb7708abc1117::t_c20b807ad86232 1-20
+content/capstone/ruby-blog-api/step-5/verify.sh
+  s_beb7708abc1117::t_e3d494bec55372 1-38
+content/capstone/java-bank-ledger/step-3/verify.sh
+  s_beb7708abc1117::t_764b98c854f496 1-43
+content/capstone/elixir-message-board/step-2/verify.sh
+  s_beb7708abc1117::t_f815675bc5531d 1-37
+content/capstone/kotlin-recipe-box/step-2/instructions.md
+  s_beb7708abc1117::t_452675fbc1028a 1-148
+content/capstone/javascript-notes-api/step-5/instructions.md
+  s_beb7708abc1117::t_64de954dc04c21 1-47
+content/capstone/cpp-sensor-readings/step-2/config.json
+  s_beb7708abc1117::t_9d3aca8d3f8196 1-5
+content/capstone/python-expense-reports/step-5/fixtures.sql
+  s_beb7708abc1117::t_8626210073ffda 1-14
+content/capstone/rust-kv-store/step-2/verify.sh
+  s_beb7708abc1117::t_e200149b8ef0bc 1-38
+content/capstone/cpp-sensor-readings/step-5/config.json
+  s_beb7708abc1117::t_aea65adb2bff8f 1-5
+content/capstone/c-guestbook/step-6/verify.sh
+  s_beb7708abc1117::t_ee6387f8dbbf96 1-29
+content/capstone/python-expense-reports/step-1/verify.sh
+  s_beb7708abc1117::t_1fa8052b9baa50 1-10
+content/capstone/typescript-task-board/step-2/verify.sh
+  s_beb7708abc1117::t_7b1c89a5daaf66 1-36
+content/capstone/c-guestbook/step-5/instructions.md
+  s_beb7708abc1117::t_7634750240022e 1-75
+content/capstone/cpp-sensor-readings/step-2/verify.sh
+  s_beb7708abc1117::t_918c38e696dba1 1-37
+content/capstone/ruby-blog-api/step-4/verify.sh
+  s_beb7708abc1117::t_1c61d5d54eb7e5 1-30
+content/capstone/java-bank-ledger/step-5/config.json
+  s_beb7708abc1117::t_1e200ef269f767 1-5
+content/capstone/kotlin-recipe-box/step-2/verify.sh
+  s_beb7708abc1117::t_819be5810c78b7 1-37
+content/capstone/java-bank-ledger/step-4/config.json
+  s_beb7708abc1117::t_adba07c92ae818 1-5
+content/capstone/c-guestbook/step-1/instructions.md
+  s_beb7708abc1117::t_4ebfca5e288cea 1-113
+content/capstone/c-guestbook/step-4/verify.sh
+  s_beb7708abc1117::t_feb3a9270c4215 1-10
+content/capstone/java-bank-ledger/stub.java
+  s_beb7708abc1117::t_bcab63cc453492 1-6
+content/capstone/kotlin-recipe-box/step-3/verify.sh
+  s_beb7708abc1117::t_9025def12b7cab 1-29
+content/capstone/c-guestbook/step-1/verify.sh
+  s_beb7708abc1117::t_c0d86d83702027 1-10
+content/capstone/javascript-notes-api/step-2/instructions.md
+  s_beb7708abc1117::t_221a30e59edb31 1-100
+content/capstone/python-expense-reports/step-1/config.json
+  s_beb7708abc1117::t_932ac6b969f58c 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "bf6d2dafb768c39ddce5b673332293a60930142f",
+  "prompts": {},
+  "sessions": {
+    "s_beb7708abc1117": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6af6adc3-580c-48a5-b49e-d9265b42ae3b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
