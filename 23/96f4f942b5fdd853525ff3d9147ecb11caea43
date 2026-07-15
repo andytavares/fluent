@@ -1,0 +1,48 @@
+content/tracks/helm/concepts/01-chart-structure/chart-structure_test.sh
+  s_8a4925160ca424::t_4329ea8ca0b30f 4
+  s_8a4925160ca424::t_da9339d6d6dd06 51-62
+content/tracks/helm/concepts/04-control-flow/control-flow_test.sh
+  s_8a4925160ca424::t_82e8d8c5facd9e 4
+  s_8a4925160ca424::t_eb0002f99adad3 43-75
+content/tracks/helm/concepts/03-built-in-objects/built-in-objects_test.sh
+  s_8a4925160ca424::t_8db3e3f87fa94c 4
+  s_8a4925160ca424::t_1e6b8ea4809357 38-51
+content/tracks/helm/concepts/05-named-templates/named-templates_test.sh
+  s_8a4925160ca424::t_bb9b3b9d894872 4
+  s_8a4925160ca424::t_408a01cf0b64f2 41-61
+content/tracks/helm/concepts/07-hooks/hooks_test.sh
+  s_8a4925160ca424::t_ed1ddac589db30 39-56
+  s_8a4925160ca424::t_444c473efd03da 4
+content/tracks/helm/concepts/10-production-patterns/production-patterns_test.sh
+  s_8a4925160ca424::t_af0dbb0399d122 63-82,84-89
+  s_8a4925160ca424::t_3ea7ba3be8ce19 83
+  s_8a4925160ca424::t_33706d5e1f2aeb 4
+content/tracks/helm/concepts/08-dependencies/dependencies_test.sh
+  s_8a4925160ca424::t_a247575b4893ff 48-62
+  s_8a4925160ca424::t_de3c19d3c47bf6 4
+content/tracks/helm/concepts/09-chart-tests/chart-tests_test.sh
+  s_8a4925160ca424::t_0dabe2b36f4b58 4
+  s_8a4925160ca424::t_d6be8252136535 46-70
+content/tracks/helm/concepts/06-functions-and-pipelines/functions-and-pipelines_test.sh
+  s_8a4925160ca424::t_7b1782688419c1 36-56
+  s_8a4925160ca424::t_f94f98c6a22c70 4
+content/tracks/helm/concepts/02-templates-and-values/templates-and-values_test.sh
+  s_8a4925160ca424::t_08eb1375700a8a 36-56
+  s_8a4925160ca424::t_4ae8f367952715 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "2396f4f942b5fdd853525ff3d9147ecb11caea43",
+  "prompts": {},
+  "sessions": {
+    "s_8a4925160ca424": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2ecb4892-79ac-40ba-bb96-e97ea7926b43",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
