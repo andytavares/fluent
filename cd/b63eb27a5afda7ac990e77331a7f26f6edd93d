@@ -1,0 +1,69 @@
+content/tracks/buildkite/concepts/09-dynamic-pipelines/dynamic-pipelines_test.sh
+  s_8a4925160ca424::t_ba62f26d139b0c 22-32
+  s_8a4925160ca424::t_eb42f9d6335f7b 4
+  s_8a4925160ca424::t_39dd464238850c 43-48
+  s_8a4925160ca424::t_631f70c1f1c2aa 49
+content/tracks/buildkite/concepts/01-pipeline-basics/pipeline-basics_test.sh
+  s_8a4925160ca424::t_0ba9bfcbd17fc2 58-63
+  s_8a4925160ca424::t_c35f82093a6299 4,22-29
+  s_8a4925160ca424::t_378b32e4c6384d 30
+  s_8a4925160ca424::t_11bf3f43c2bfa3 64
+content/tracks/buildkite/concepts/02-agents-and-targeting/agents-and-targeting_test.sh
+  s_8a4925160ca424::t_f9dbabc3448bb2 4
+  s_8a4925160ca424::t_2b33886a64ebf8 22-30
+  s_8a4925160ca424::t_9f6f9c81d2f661 55-60
+  s_8a4925160ca424::t_817e6ace2e24b8 61
+content/tracks/buildkite/concepts/07-matrix-and-parallelism/matrix-and-parallelism_test.sh
+  s_8a4925160ca424::t_973903b745ee78 53-58
+  s_8a4925160ca424::t_ea98063f150e08 4
+  s_8a4925160ca424::t_9c5ff9e03f3a1d 22-30
+  s_8a4925160ca424::t_902ed0b15388a3 59
+content/tracks/buildkite/concepts/05-env-and-secrets/env-and-secrets_test.sh
+  s_8a4925160ca424::t_61a12b97771ecb 47-52
+  s_8a4925160ca424::t_d74793845bdb84 22-30
+  s_8a4925160ca424::t_b580c96e405bc7 4
+  s_8a4925160ca424::t_a5cdb665a0d72e 53
+content/tracks/buildkite/concepts/08-plugins/plugins_test.sh
+  s_8a4925160ca424::t_599d1c354d2d4d 22-30
+  s_8a4925160ca424::t_70ca8a72cddac7 43-48
+  s_8a4925160ca424::t_1ce08cc3f53878 4
+  s_8a4925160ca424::t_dbb4c650e080ee 49
+content/tracks/buildkite/concepts/04-artifacts/artifacts_test.sh
+  s_8a4925160ca424::t_e8fd5ce316c4bd 53-58
+  s_8a4925160ca424::t_a1992118422d7b 4
+  s_8a4925160ca424::t_cd06cb592368b9 22-30
+  s_8a4925160ca424::t_148d892cac2a14 59
+content/tracks/buildkite/concepts/03-step-dependencies-and-gates/step-dependencies-and-gates_test.sh
+  s_8a4925160ca424::t_59c547b8d644f3 4
+  s_8a4925160ca424::t_5f8b7f1e221f12 22-30
+  s_8a4925160ca424::t_23dbc3b62d2861 53-58
+  s_8a4925160ca424::t_5b6cb26f6447bb 59
+content/tracks/buildkite/concepts/10-production-patterns/production-patterns_test.sh
+  s_8a4925160ca424::t_b686a3e106240f 59-64
+  s_8a4925160ca424::t_067f1d8dd262cf 4
+  s_8a4925160ca424::t_135f9b77682823 22-30
+  s_8a4925160ca424::t_778be28a512a90 65
+content/tracks/buildkite/concepts/06-conditionals/conditionals_test.sh
+  s_8a4925160ca424::t_b8c78378fc1476 4
+  s_8a4925160ca424::t_8af681ad571dd7 22-30
+  s_8a4925160ca424::t_76d685cc400f79 47-52
+  s_8a4925160ca424::t_1210f8a78c5ad1 53
+apps/web/src/lib/infra-session-tracks.ts
+  s_8a4925160ca424::t_fb8ecf66eb0ef7 16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "cdb63eb27a5afda7ac990e77331a7f26f6edd93d",
+  "prompts": {},
+  "sessions": {
+    "s_8a4925160ca424": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2ecb4892-79ac-40ba-bb96-e97ea7926b43",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
