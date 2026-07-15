@@ -1,0 +1,50 @@
+packages/capstone-contract/package.json
+  s_8a4925160ca424::t_da1f2962c64f7c 8-9
+apps/capstone-runner/package.json
+  s_8a4925160ca424::t_428570b76d1b37 16
+packages/capstone-contract/src/terminal-token.ts
+  s_8a4925160ca424::t_e7df9ea79b09ba 1-72
+.env.example
+  s_8a4925160ca424::t_857300cc28e40f 30-37
+apps/capstone-runner/vitest.config.ts
+  s_8a4925160ca424::t_930720d3870e82 8-13
+apps/capstone-runner/src/server.ts
+  s_8a4925160ca424::t_4dacbc800522cb 2,4,7-17
+  s_8a4925160ca424::t_954ec8aeeea22f 143-148
+  s_8a4925160ca424::t_ed9f4ea6e5c53e 151-152,155-161
+  s_8a4925160ca424::t_1d31d72beabc13 6
+  s_8a4925160ca424::t_7bbc32821c1029 57-60
+  s_8a4925160ca424::t_ec1d2ac7f4ac4e 49-56,61-64
+  s_8a4925160ca424::t_2d91c6973494eb 96-142,149-150
+  s_8a4925160ca424::t_0df87667706a08 83-95
+  s_8a4925160ca424::t_2ff0415c1b6f61 1
+apps/api/src/router/infra.ts
+  s_8a4925160ca424::t_de57a6e3d51694 147-159
+  s_8a4925160ca424::t_164b3bce72416b 10,13-14
+  s_8a4925160ca424::t_078e91dfec4b1d 6
+  s_8a4925160ca424::t_25e6bae5fa8e2b 15
+packages/capstone-contract/src/index.ts
+  s_8a4925160ca424::t_aedfb3c40bd849 4-14
+apps/capstone-runner/src/k8s.ts
+  s_8a4925160ca424::t_234a7d00d5ee4b 180-182,184-189
+  s_8a4925160ca424::t_d9a5c84b1e2530 2
+  s_8a4925160ca424::t_b688966a837dd1 98-179,183,190-205
+pnpm-lock.yaml
+  s_8a4925160ca424::t_d9c4164fbb53c2 108-110,950-952,2991-2993,3009-3011,4006-4008,4267-4270,4468-4470,4483-4485,4796-4798,4937-4939,5398-5406,7484-7490,7504-7507,8735-8738,9047-9052,9298-9299,9314-9317,9583-9584,9760-9761
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "4b7a8bf803867836b6b87315c363fe5d33fd5981",
+  "prompts": {},
+  "sessions": {
+    "s_8a4925160ca424": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2ecb4892-79ac-40ba-bb96-e97ea7926b43",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
