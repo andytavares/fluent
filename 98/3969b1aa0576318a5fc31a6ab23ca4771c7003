@@ -1,0 +1,40 @@
+packages/ui/src/components/CodeEditor.tsx
+  s_8a4925160ca424::t_8ce697c7b8e357 82
+  s_8a4925160ca424::t_4436fcd2759cee 80
+  s_8a4925160ca424::t_115a39d436bab0 116
+  s_8a4925160ca424::t_f0f80e6433a0e1 9
+  s_8a4925160ca424::t_2feaa41200794e 3
+  s_8a4925160ca424::t_c408c0a234e077 106,108-112
+  s_8a4925160ca424::t_27a421fd48cda7 100-104,117
+  s_8a4925160ca424::t_7ae2e82b4fc3f3 59,65-71
+packages/ui/package.json
+  s_8a4925160ca424::t_d09031dc32f801 25
+apps/web/src/app/tracks/[trackSlug]/concepts/[conceptSlug]/page.tsx
+  s_8a4925160ca424::t_4b25a58d45b684 7-8,13-14
+  s_8a4925160ca424::t_a71f741671ec15 128
+  s_8a4925160ca424::t_d9625adc74980e 159
+apps/sandbox/src/executor/docker-runner.ts
+  s_8a4925160ca424::t_c8256706f17fd4 37
+packages/ui/src/components/OutputPane.tsx
+  s_8a4925160ca424::t_4b25a58d45b684 8,16,23
+packages/ui/src/index.ts
+  s_8a4925160ca424::t_4b25a58d45b684 13-14
+pnpm-lock.yaml
+  s_8a4925160ca424::t_18bf96a297324d 312-314
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "983969b1aa0576318a5fc31a6ab23ca4771c7003",
+  "prompts": {},
+  "sessions": {
+    "s_8a4925160ca424": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2ecb4892-79ac-40ba-bb96-e97ea7926b43",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
