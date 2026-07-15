@@ -1,0 +1,50 @@
+content/tracks/terraform/concepts/04-expressions-and-functions/expressions-and-functions_test.sh
+  s_8a4925160ca424::t_a46985211af72b 4-11,27
+  s_8a4925160ca424::t_386202ef5dc1cc 54-73
+content/tracks/terraform/concepts/01-providers-and-resources/providers-and-resources_test.sh
+  s_8a4925160ca424::t_a46985211af72b 4-11,27
+  s_8a4925160ca424::t_386202ef5dc1cc 53-72
+content/tracks/terraform/concepts/10-workspaces-and-environments/workspaces-and-environments_test.sh
+  s_8a4925160ca424::t_a46985211af72b 4-11,27
+  s_8a4925160ca424::t_386202ef5dc1cc 55-74
+content/tracks/terraform/concepts/08-state-management/state-management_test.sh
+  s_8a4925160ca424::t_386202ef5dc1cc 51-70
+  s_8a4925160ca424::t_a46985211af72b 4-11,27
+content/tracks/terraform/concepts/02-variables-and-outputs/variables-and-outputs_test.sh
+  s_8a4925160ca424::t_a46985211af72b 4-11,27
+  s_8a4925160ca424::t_386202ef5dc1cc 54-73
+content/tracks/terraform/concepts/09-backends-and-remote-state/backends-and-remote-state_test.sh
+  s_8a4925160ca424::t_386202ef5dc1cc 52-71
+  s_8a4925160ca424::t_a46985211af72b 4-11,27
+content/tracks/terraform/concepts/06-count-and-for-each/count-and-for-each_test.sh
+  s_8a4925160ca424::t_386202ef5dc1cc 57-62,67,69-72
+  s_8a4925160ca424::t_a46985211af72b 4-11,27
+  s_8a4925160ca424::t_8865cfd050a899 63-66,68
+content/tracks/terraform/concepts/05-locals-and-depends-on/locals-and-depends-on_test.sh
+  s_8a4925160ca424::t_a46985211af72b 4-11,27
+  s_8a4925160ca424::t_c362be08733a75 68-73
+  s_8a4925160ca424::t_386202ef5dc1cc 56-67,74-78
+content/tracks/terraform/concepts/07-modules/modules_test.sh
+  s_8a4925160ca424::t_a9d1d95713f582 53-65,71,73-76
+  s_8a4925160ca424::t_a46985211af72b 4-11,27
+  s_8a4925160ca424::t_fd9a37c3175704 66-70,72
+content/tracks/terraform/concepts/03-data-sources/data-sources_test.sh
+  s_8a4925160ca424::t_a46985211af72b 4-11,27
+  s_8a4925160ca424::t_a9d1d95713f582 51-73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "9884d89cc9b8991c64cdc6d89c28be873822f355",
+  "prompts": {},
+  "sessions": {
+    "s_8a4925160ca424": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2ecb4892-79ac-40ba-bb96-e97ea7926b43",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
