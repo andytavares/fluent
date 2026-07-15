@@ -1,0 +1,21 @@
+apps/capstone-runner/src/infra-runtimes.ts
+  s_8a4925160ca424::t_5da189e076541a 203-238,242-246
+  s_8a4925160ca424::t_3b8c7cc68b8dbb 61-67
+  s_8a4925160ca424::t_52020863415624 239-241
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "6d4968efeb3dcd2ae4f21364ecdc4a86e65441c6",
+  "prompts": {},
+  "sessions": {
+    "s_8a4925160ca424": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2ecb4892-79ac-40ba-bb96-e97ea7926b43",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
