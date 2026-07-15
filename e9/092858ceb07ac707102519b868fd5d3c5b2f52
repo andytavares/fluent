@@ -1,0 +1,97 @@
+content/tracks/aws/concepts/07-dynamodb-queries-indexes/dynamodb-queries-indexes_test.sh
+  s_8a4925160ca424::t_235be3fcff646b 44-71,77-81,95-97
+  s_8a4925160ca424::t_27449fe4c6cda9 4
+  s_8a4925160ca424::t_6a4586e067f87d 82-94
+  s_8a4925160ca424::t_ca5a4b7dc8b30f 5-12
+  s_8a4925160ca424::t_a82bb571914aa0 72-76
+  s_8a4925160ca424::t_019b49d0c89ebb 98
+content/tracks/aws/concepts/14-secrets-and-config/secrets-and-config_test.sh
+  s_8a4925160ca424::t_30d7166df3ebcb 71-79
+  s_8a4925160ca424::t_d5e5f026e1945e 56-61
+  s_8a4925160ca424::t_2584239f34ecac 47-55,62-70,80-86
+  s_8a4925160ca424::t_784d81ea7b99ab 4
+  s_8a4925160ca424::t_ca5a4b7dc8b30f 5-12
+  s_8a4925160ca424::t_76f05f4aa02d07 87
+content/tracks/aws/concepts/13-cloudwatch/cloudwatch_test.sh
+  s_8a4925160ca424::t_ca5a4b7dc8b30f 5-12
+  s_8a4925160ca424::t_15a0f5c4b33ac4 4
+  s_8a4925160ca424::t_3afe39a3572fcc 51-78
+  s_8a4925160ca424::t_45f627885f450f 79
+content/tracks/aws/concepts/08-lambda-functions/lambda-functions_test.sh
+  s_8a4925160ca424::t_ca5a4b7dc8b30f 5-12
+  s_8a4925160ca424::t_e08a5410736600 50,68-70
+  s_8a4925160ca424::t_7bcf0c2c57f601 4
+  s_8a4925160ca424::t_9d6b958a7c821a 51-67
+  s_8a4925160ca424::t_c0371628951b53 71
+content/tracks/aws/concepts/02-s3-basics/s3-basics_test.sh
+  s_8a4925160ca424::t_d80da5c7e3753a 43-74
+  s_8a4925160ca424::t_ca5a4b7dc8b30f 5-12
+  s_8a4925160ca424::t_a8dca09464bb07 4
+  s_8a4925160ca424::t_2bda590ab016aa 75
+content/tracks/aws/concepts/05-iam-roles-sts/iam-roles-sts_test.sh
+  s_8a4925160ca424::t_ca5a4b7dc8b30f 5-12
+  s_8a4925160ca424::t_a1f120bf343319 4
+  s_8a4925160ca424::t_c69942d783a376 42-71
+  s_8a4925160ca424::t_9aab2932b0323d 72
+content/tracks/aws/concepts/12-api-gateway/api-gateway_test.sh
+  s_8a4925160ca424::t_85ece320fff65c 90-97
+  s_8a4925160ca424::t_771310a712773f 4
+  s_8a4925160ca424::t_71ba6f48c4e6ad 49-89,98-99,102-114
+  s_8a4925160ca424::t_b3dd1c1dfd5e82 100-101
+  s_8a4925160ca424::t_ca5a4b7dc8b30f 5-12
+  s_8a4925160ca424::t_c7fa4e9a6d064c 115
+content/tracks/aws/concepts/06-dynamodb-tables/dynamodb-tables_test.sh
+  s_8a4925160ca424::t_ca5a4b7dc8b30f 5-12
+  s_8a4925160ca424::t_1ea12098d70b52 45-70
+  s_8a4925160ca424::t_1317453fdf42e4 4
+  s_8a4925160ca424::t_c8eeb5d6ecc33a 71
+content/tracks/aws/concepts/11-sns-eventbridge/sns-eventbridge_test.sh
+  s_8a4925160ca424::t_621510d0fb2fb4 49-57
+  s_8a4925160ca424::t_ca5a4b7dc8b30f 5-12
+  s_8a4925160ca424::t_d40e8e72a47068 4
+  s_8a4925160ca424::t_39a7f388e20342 58
+content/tracks/aws/concepts/04-iam-users-policies/iam-users-policies_test.sh
+  s_8a4925160ca424::t_66662ae8391bd0 45-73
+  s_8a4925160ca424::t_7ea86a4dc8c37b 4
+  s_8a4925160ca424::t_ca5a4b7dc8b30f 5-12
+  s_8a4925160ca424::t_f5f7618dc92f57 74
+content/tracks/aws/concepts/03-s3-advanced/s3-advanced_test.sh
+  s_8a4925160ca424::t_81dede2c4ce6e3 50-91
+  s_8a4925160ca424::t_ca5a4b7dc8b30f 5-12
+  s_8a4925160ca424::t_fae9c7ae55c07d 4
+  s_8a4925160ca424::t_748ef655851b03 92
+content/tracks/aws/concepts/01-cli-and-localstack/cli-and-localstack_test.sh
+  s_8a4925160ca424::t_49985af3da6dc9 42-61
+  s_8a4925160ca424::t_ca5a4b7dc8b30f 5-12
+  s_8a4925160ca424::t_f0dbbb118dbcc9 4
+  s_8a4925160ca424::t_d997f0b1792233 62
+content/tracks/aws/concepts/09-lambda-event-sources/lambda-event-sources_test.sh
+  s_8a4925160ca424::t_a578698da54019 49-65
+  s_8a4925160ca424::t_ca5a4b7dc8b30f 5-12
+  s_8a4925160ca424::t_adf96816786636 4
+  s_8a4925160ca424::t_05b3ff9cc3b5ae 48,66-68
+  s_8a4925160ca424::t_6bd3497ca000b6 69
+content/tracks/aws/concepts/10-sqs/sqs_test.sh
+  s_8a4925160ca424::t_ca5a4b7dc8b30f 5-12
+  s_8a4925160ca424::t_dee421c3e74b9b 4
+  s_8a4925160ca424::t_fb4f600dbcf0e2 45-78
+  s_8a4925160ca424::t_806222e6629f56 79
+apps/web/src/lib/infra-session-tracks.ts
+  s_8a4925160ca424::t_152242bfb81987 14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "e9092858ceb07ac707102519b868fd5d3c5b2f52",
+  "prompts": {},
+  "sessions": {
+    "s_8a4925160ca424": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2ecb4892-79ac-40ba-bb96-e97ea7926b43",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
