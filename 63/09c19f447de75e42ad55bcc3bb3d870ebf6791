@@ -1,0 +1,60 @@
+content/tracks/kafka/concepts/10-transactions/transactions_test.sh
+  s_8a4925160ca424::t_ca2487d45e191f 4-8
+content/tracks/kafka/concepts/08-retention-and-compaction/retention-and-compaction_test.sh
+  s_8a4925160ca424::t_001facd3464f1d 4
+  s_8a4925160ca424::t_00d0e465cf8cdf 54-111
+  s_8a4925160ca424::t_8e1ab38db98124 29-34
+  s_8a4925160ca424::t_1da3648c11744c 112
+content/tracks/kafka/concepts/14-production-tuning/production-tuning_test.sh
+  s_8a4925160ca424::t_dcb34c6cf99cb6 4
+  s_8a4925160ca424::t_ccfb16f92b2449 38-43
+  s_8a4925160ca424::t_e095e158e15070 78-115
+content/tracks/kafka/concepts/06-keys-partitioning-ordering/keys-partitioning-ordering_test.sh
+  s_8a4925160ca424::t_94b74a2ed2bf56 4-9
+content/tracks/kafka/concepts/02-brokers-and-kraft/brokers-and-kraft_test.sh
+  s_8a4925160ca424::t_db2193ab894628 4-9
+content/tracks/kafka/concepts/07-replication-and-isr/replication-and-isr_test.sh
+  s_8a4925160ca424::t_703443f650f8fb 60-65,76-98
+  s_8a4925160ca424::t_4fc1b88fbb6e42 4
+  s_8a4925160ca424::t_e7c43292c4ee6c 32-37
+  s_8a4925160ca424::t_eacbc8560771ec 66-75
+  s_8a4925160ca424::t_12daaaacdf7421 99
+content/tracks/kafka/concepts/11-schema-management/schema-management_test.sh
+  s_8a4925160ca424::t_400fdcef57154a 4-8
+content/tracks/kafka/concepts/05-delivery-semantics/delivery-semantics_test.sh
+  s_8a4925160ca424::t_a36fcc8c2c6a50 4-7
+content/tracks/kafka/concepts/09-offset-management/offset-management_test.sh
+  s_8a4925160ca424::t_03ed2668dc0b86 4-7
+content/tracks/kafka/concepts/03-producers/producers_test.sh
+  s_8a4925160ca424::t_160f826c61813b 4-7
+content/tracks/kafka/concepts/04-consumers-and-groups/consumers-and-groups_test.sh
+  s_8a4925160ca424::t_1f6db5ca0a5244 4-7
+content/tracks/kafka/concepts/01-topics-partitions-offsets/topics-partitions-offsets_test.sh
+  s_8a4925160ca424::t_e0ac2747cc4ecb 43-56,61-83
+  s_8a4925160ca424::t_f628f780500581 57-60
+  s_8a4925160ca424::t_e3f66d33d8d20d 4,20-30
+  s_8a4925160ca424::t_66e2c9fae6bd1e 31
+  s_8a4925160ca424::t_b13dd97aa3ab32 84
+content/tracks/kafka/concepts/12-kafka-connect/kafka-connect_test.sh
+  s_8a4925160ca424::t_49fca16f7e81c1 4-8
+content/tracks/kafka/concepts/13-kafka-streams/kafka-streams_test.sh
+  s_8a4925160ca424::t_e0e6077e5aa9c4 4-8
+apps/web/src/lib/infra-session-tracks.ts
+  s_8a4925160ca424::t_6d108a8f288f63 13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "6309c19f447de75e42ad55bcc3bb3d870ebf6791",
+  "prompts": {},
+  "sessions": {
+    "s_8a4925160ca424": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2ecb4892-79ac-40ba-bb96-e97ea7926b43",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
