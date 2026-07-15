@@ -1,0 +1,84 @@
+content/tracks/observability/concepts/05-promql-basics/promql-basics_test.sh
+  s_8a4925160ca424::t_4069922ff4f7f3 4-9,30-43
+  s_8a4925160ca424::t_22818e54c2acaa 10
+  s_8a4925160ca424::t_e293ba8e65a862 11-12
+content/tracks/observability/concepts/12-otel-fundamentals/otel-fundamentals_test.sh
+  s_8a4925160ca424::t_4069922ff4f7f3 4-9,31-43
+  s_8a4925160ca424::t_e293ba8e65a862 11-13
+  s_8a4925160ca424::t_22818e54c2acaa 10
+content/tracks/observability/concepts/07-red-and-use/red-and-use_test.sh
+  s_8a4925160ca424::t_e293ba8e65a862 11-12
+  s_8a4925160ca424::t_73f67cd594b4fb 45
+  s_8a4925160ca424::t_22818e54c2acaa 10
+  s_8a4925160ca424::t_4069922ff4f7f3 4-9,30-44
+content/tracks/observability/concepts/03-instrumenting-services/instrumenting-services_test.sh
+  s_8a4925160ca424::t_e293ba8e65a862 11-13
+  s_8a4925160ca424::t_4069922ff4f7f3 4-9,31-49
+  s_8a4925160ca424::t_22818e54c2acaa 10
+content/tracks/observability/concepts/04-histograms-and-quantiles/histograms-and-quantiles_test.sh
+  s_8a4925160ca424::t_e293ba8e65a862 11-12
+  s_8a4925160ca424::t_4069922ff4f7f3 4-9,30-45
+  s_8a4925160ca424::t_22818e54c2acaa 10
+content/tracks/observability/concepts/02-metric-types/metric-types_test.sh
+  s_8a4925160ca424::t_22818e54c2acaa 10
+  s_8a4925160ca424::t_4069922ff4f7f3 4-9,31-39,41-46
+  s_8a4925160ca424::t_e293ba8e65a862 11-13
+  s_8a4925160ca424::t_73f67cd594b4fb 40
+content/tracks/observability/concepts/06-promql-aggregations/promql-aggregations_test.sh
+  s_8a4925160ca424::t_e293ba8e65a862 11-12
+  s_8a4925160ca424::t_73f67cd594b4fb 40
+  s_8a4925160ca424::t_22818e54c2acaa 10
+  s_8a4925160ca424::t_4069922ff4f7f3 4-9,30-39,41-45
+content/tracks/observability/concepts/13-otel-traces/otel-traces_test.sh
+  s_8a4925160ca424::t_e293ba8e65a862 11-12
+  s_8a4925160ca424::t_22818e54c2acaa 10
+  s_8a4925160ca424::t_4069922ff4f7f3 4-9,30-48
+content/tracks/observability/concepts/01-observability-foundations/observability-foundations_test.sh
+  s_8a4925160ca424::t_4069922ff4f7f3 4-9,28-36,39-40
+  s_8a4925160ca424::t_73f67cd594b4fb 37-38
+  s_8a4925160ca424::t_22818e54c2acaa 10
+  s_8a4925160ca424::t_aa18ce37bd452c 43-48
+content/tracks/observability/concepts/08-recording-rules/recording-rules_test.sh
+  s_8a4925160ca424::t_c149109a9d3fe0 44-49
+  s_8a4925160ca424::t_22818e54c2acaa 10
+  s_8a4925160ca424::t_4069922ff4f7f3 4-9,28-40
+  s_8a4925160ca424::t_73f67cd594b4fb 41
+content/tracks/observability/concepts/09-alerting/alerting_test.sh
+  s_8a4925160ca424::t_22818e54c2acaa 10
+  s_8a4925160ca424::t_56426635d17b51 48-53
+  s_8a4925160ca424::t_4069922ff4f7f3 4-9,28-31,33-45
+  s_8a4925160ca424::t_73f67cd594b4fb 32
+content/tracks/observability/concepts/11-dashboard-best-practices/dashboard-best-practices_test.sh
+  s_8a4925160ca424::t_4069922ff4f7f3 4-9,30-44,46
+  s_8a4925160ca424::t_e293ba8e65a862 11-12
+  s_8a4925160ca424::t_73f67cd594b4fb 45
+  s_8a4925160ca424::t_22818e54c2acaa 10
+content/tracks/observability/concepts/14-otel-collector/otel-collector_test.sh
+  s_8a4925160ca424::t_4f0d67067c3250 53-58
+  s_8a4925160ca424::t_4069922ff4f7f3 4-9,28-41,43-49
+  s_8a4925160ca424::t_22818e54c2acaa 10
+  s_8a4925160ca424::t_73f67cd594b4fb 42,50
+content/tracks/observability/concepts/10-grafana-dashboards/grafana-dashboards_test.sh
+  s_8a4925160ca424::t_e293ba8e65a862 11-12
+  s_8a4925160ca424::t_4069922ff4f7f3 4-9,30-31,33-42,44-50
+  s_8a4925160ca424::t_73f67cd594b4fb 32,43
+  s_8a4925160ca424::t_22818e54c2acaa 10
+apps/web/src/lib/infra-session-tracks.ts
+  s_8a4925160ca424::t_1eb8e3dca9092a 15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "26fbd2e0b4e22c16e5ad0c6d4413351c71e39c2e",
+  "prompts": {},
+  "sessions": {
+    "s_8a4925160ca424": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2ecb4892-79ac-40ba-bb96-e97ea7926b43",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
