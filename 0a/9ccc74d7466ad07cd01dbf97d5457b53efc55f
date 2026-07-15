@@ -1,0 +1,37 @@
+content/tracks/shell/concepts/03-loops/loops_test.sh
+  s_8a4925160ca424::t_99ad5678b1c1eb 4
+content/tracks/shell/concepts/10-process-management/process-management_test.sh
+  s_8a4925160ca424::t_99ad5678b1c1eb 4
+content/tracks/shell/concepts/09-scripts-and-arguments/scripts-and-arguments_test.sh
+  s_8a4925160ca424::t_99ad5678b1c1eb 4
+content/tracks/shell/concepts/05-arrays/arrays_test.sh
+  s_8a4925160ca424::t_99ad5678b1c1eb 4
+content/tracks/shell/concepts/02-control-flow/control-flow_test.sh
+  s_8a4925160ca424::t_99ad5678b1c1eb 4
+content/tracks/shell/concepts/07-pipes-and-redirection/pipes-and-redirection_test.sh
+  s_8a4925160ca424::t_99ad5678b1c1eb 4
+content/tracks/shell/concepts/08-file-operations/file-operations_test.sh
+  s_8a4925160ca424::t_99ad5678b1c1eb 4
+content/tracks/shell/concepts/06-text-processing/text-processing_test.sh
+  s_8a4925160ca424::t_99ad5678b1c1eb 4
+content/tracks/shell/concepts/01-variables-and-strings/variables-and-strings_test.sh
+  s_8a4925160ca424::t_99ad5678b1c1eb 4
+content/tracks/shell/concepts/04-functions/functions_test.sh
+  s_8a4925160ca424::t_99ad5678b1c1eb 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "0a9ccc74d7466ad07cd01dbf97d5457b53efc55f",
+  "prompts": {},
+  "sessions": {
+    "s_8a4925160ca424": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2ecb4892-79ac-40ba-bb96-e97ea7926b43",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
