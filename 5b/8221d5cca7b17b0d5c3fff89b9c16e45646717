@@ -1,0 +1,68 @@
+content/tracks/kubernetes/concepts/02-labels-selectors-annotations/labels-selectors-annotations_test.sh
+  s_8a4925160ca424::t_3f25b2cd1b6259 48-52
+  s_8a4925160ca424::t_db098ffe38dc86 4,47
+  s_8a4925160ca424::t_4e45714aa27ab0 53
+content/tracks/kubernetes/concepts/11-statefulsets/statefulsets_test.sh
+  s_8a4925160ca424::t_db098ffe38dc86 4,41-46
+  s_8a4925160ca424::t_d0072e6cce2d85 47
+content/tracks/kubernetes/concepts/05-services/services_test.sh
+  s_8a4925160ca424::t_db098ffe38dc86 4,40-45
+  s_8a4925160ca424::t_b78e66c46dc474 46
+content/tracks/kubernetes/concepts/15-scheduling/scheduling_test.sh
+  s_8a4925160ca424::t_db098ffe38dc86 4,43-48
+  s_8a4925160ca424::t_4589722438b64e 49
+content/tracks/kubernetes/concepts/03-deployments/deployments_test.sh
+  s_8a4925160ca424::t_db098ffe38dc86 4,48-53
+  s_8a4925160ca424::t_0d6e9df65e864d 54
+content/tracks/kubernetes/concepts/16-autoscaling-production/autoscaling-production_test.sh
+  s_8a4925160ca424::t_db098ffe38dc86 4,50-55
+  s_8a4925160ca424::t_9d8e4e534458a8 56
+content/tracks/kubernetes/concepts/06-ingress/ingress_test.sh
+  s_8a4925160ca424::t_db098ffe38dc86 4,47-52
+  s_8a4925160ca424::t_a4ef3c91b526dc 53
+apps/web/src/lib/infra-session-tracks.ts
+  s_8a4925160ca424::t_2c18fa7fd1cd67 6-13
+content/tracks/kubernetes/concepts/12-daemonsets-jobs-cronjobs/daemonsets-jobs-cronjobs_test.sh
+  s_8a4925160ca424::t_db098ffe38dc86 4,41-46
+  s_8a4925160ca424::t_3505f9d5e74c11 47
+content/tracks/kubernetes/concepts/14-network-policies/network-policies_test.sh
+  s_8a4925160ca424::t_db098ffe38dc86 4,43-48
+  s_8a4925160ca424::t_308669ec560575 49
+content/tracks/kubernetes/concepts/01-pods/pods_test.sh
+  s_8a4925160ca424::t_db098ffe38dc86 4,35-40
+  s_8a4925160ca424::t_eb7089c459e979 41
+content/tracks/kubernetes/concepts/07-configmaps-secrets/configmaps-secrets_test.sh
+  s_8a4925160ca424::t_db098ffe38dc86 4,41-46
+  s_8a4925160ca424::t_cd699ef1897f96 47
+content/tracks/kubernetes/concepts/04-rollout-strategies/rollout-strategies_test.sh
+  s_8a4925160ca424::t_db098ffe38dc86 4,41-46
+  s_8a4925160ca424::t_aa2140707fe58d 47
+content/tracks/kubernetes/concepts/08-probes/probes_test.sh
+  s_8a4925160ca424::t_db098ffe38dc86 4,37-42
+  s_8a4925160ca424::t_3f56ed0fdab706 43
+content/tracks/kubernetes/concepts/09-resources-qos/resources-qos_test.sh
+  s_8a4925160ca424::t_db098ffe38dc86 4,53-58
+  s_8a4925160ca424::t_b55e7b04a3a0af 59
+content/tracks/kubernetes/concepts/13-rbac-serviceaccounts/rbac-serviceaccounts_test.sh
+  s_8a4925160ca424::t_db098ffe38dc86 4,40-45
+  s_8a4925160ca424::t_e1cb94384c9746 46
+content/tracks/kubernetes/concepts/10-volumes-persistence/volumes-persistence_test.sh
+  s_8a4925160ca424::t_db098ffe38dc86 4,36-41
+  s_8a4925160ca424::t_eb67a0a38656ed 42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "5b8221d5cca7b17b0d5c3fff89b9c16e45646717",
+  "prompts": {},
+  "sessions": {
+    "s_8a4925160ca424": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2ecb4892-79ac-40ba-bb96-e97ea7926b43",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
