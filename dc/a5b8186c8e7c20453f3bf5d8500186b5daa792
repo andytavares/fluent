@@ -1,0 +1,23 @@
+apps/api/src/router/infra.ts
+  s_8a4925160ca424::t_7cefbf98781a7d 7-8,15-23
+  s_8a4925160ca424::t_4a24061b093b9a 79-87
+  s_8a4925160ca424::t_ea2e14baa0f614 24
+apps/api/src/queue/rate-limiter.ts
+  s_8a4925160ca424::t_5ad891a8dc2971 40-51,53-61,64,66,75,77,87,93
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "dca5b8186c8e7c20453f3bf5d8500186b5daa792",
+  "prompts": {},
+  "sessions": {
+    "s_8a4925160ca424": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2ecb4892-79ac-40ba-bb96-e97ea7926b43",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
