@@ -1,0 +1,50 @@
+apps/capstone-runner/src/infra-runtimes.ts
+  s_8a4925160ca424::t_51c59882985fd9 26-32
+  s_8a4925160ca424::t_9782bf9ce245e6 131
+  s_8a4925160ca424::t_54254c5bbd3c4d 111
+  s_8a4925160ca424::t_e7a6f16c1f38b7 40,42-49,52-54,59-65
+  s_8a4925160ca424::t_21358003e2ddd7 155
+  s_8a4925160ca424::t_87d1ac307fe07b 296-303,306,318
+  s_8a4925160ca424::t_f915e659e9a319 116,178,218,239,263
+  s_8a4925160ca424::t_4489816aeae8fa 66-67
+infra/infra-runtimes/shell/Dockerfile
+  s_8a4925160ca424::t_35212b985dc550 1-14
+infra/infra-runtimes/kubernetes/Dockerfile
+  s_8a4925160ca424::t_6796167efcbe9f 1-22
+infra/infra-runtimes/build.sh
+  s_8a4925160ca424::t_52d3160af1cbf5 1-32
+infra/infra-runtimes/buildkite/Dockerfile
+  s_8a4925160ca424::t_b346426de467ad 1-20
+infra/infra-runtimes/terraform/Dockerfile
+  s_8a4925160ca424::t_bfe7f4f2f4e172 1-25
+apps/capstone-runner/src/activities/provisioner.ts
+  s_8a4925160ca424::t_c4d577798133d1 41-48
+  s_8a4925160ca424::t_b3a45d8fd770f0 65-67,73-93
+  s_8a4925160ca424::t_454c3a485d9dc4 104-108,110,115-118,120,125-127,147,149-154
+  s_8a4925160ca424::t_b8817a0fb8be9a 235-237,243
+  s_8a4925160ca424::t_2a3bab2b62ad8e 94
+infra/infra-runtimes/helm/Dockerfile
+  s_8a4925160ca424::t_fd7e51f1dc3ee4 1-20
+infra/infra-runtimes/aws/Dockerfile
+  s_8a4925160ca424::t_df93f2824d68cb 1-23
+infra/infra-runtimes/kafka/Dockerfile
+  s_8a4925160ca424::t_108502e78090fd 1-22
+infra/infra-runtimes/observability/Dockerfile
+  s_8a4925160ca424::t_b769c9eedd7cd5 1-27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "7fc8478399cf21620372c3302959c914854d3ff5",
+  "prompts": {},
+  "sessions": {
+    "s_8a4925160ca424": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2ecb4892-79ac-40ba-bb96-e97ea7926b43",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
