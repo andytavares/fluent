@@ -1,0 +1,31 @@
+content/tracks/terraform/concepts/06-count-and-for-each/exemplar.tf
+  s_8a4925160ca424::t_d9c212b0f86017 3
+content/tracks/terraform/concepts/07-modules/modules_test.sh
+  s_8a4925160ca424::t_2a60eb48da18b1 72-95
+content/tracks/terraform/concepts/06-count-and-for-each/count-and-for-each_test.sh
+  s_8a4925160ca424::t_9f0a0f4816ae96 68-76
+content/tracks/terraform/concepts/05-locals-and-depends-on/locals-and-depends-on_test.sh
+  s_8a4925160ca424::t_02e87d5c5edd98 68-70
+content/tracks/terraform/concepts/05-locals-and-depends-on/exemplar.tf
+  s_8a4925160ca424::t_07582509546ab3 38-40
+apps/capstone-runner/src/infra-runtimes.ts
+  s_8a4925160ca424::t_f02b81230cd202 112-114
+content/tracks/terraform/concepts/05-locals-and-depends-on/stub.tf
+  s_8a4925160ca424::t_535003d76c431c 34-36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "488aa58491f98c45b44479afeb248263490955d3",
+  "prompts": {},
+  "sessions": {
+    "s_8a4925160ca424": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2ecb4892-79ac-40ba-bb96-e97ea7926b43",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
