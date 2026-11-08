@@ -1,11 +1,10 @@
 import { defineConfig } from "vitest/config";
-import react from "@vitejs/plugin-react";
 
+// Tests render with react-dom/server, so they need no DOM environment.
 export default defineConfig({
-  plugins: [react()],
+  esbuild: { jsx: "automatic" },
   test: {
-    globals: true,
-    environment: "jsdom",
+    environment: "node",
     include: ["src/**/*.test.{ts,tsx}"],
     coverage: {
       provider: "v8",

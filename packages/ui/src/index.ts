@@ -9,6 +9,7 @@ export { Badge } from "./components/Badge";
 export { ConfidenceSelector } from "./components/ConfidenceSelector";
 export type { ConfidenceLevel } from "./components/ConfidenceSelector";
 export { PlacementTask } from "./components/PlacementTask";
+export { LessonMarkdown } from "./components/LessonMarkdown";
 export { CodeEditor } from "./components/CodeEditor";
 export { OutputPane } from "./components/OutputPane";
 export type { OutputComplexityEstimate } from "./components/OutputPane";

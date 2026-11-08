@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "./Button";
 import { CodeEditor } from "./CodeEditor";
+import { LessonMarkdown } from "./LessonMarkdown";
 
 interface PlacementTaskProps {
   concept: { slug: string; title: string };
@@ -85,8 +86,8 @@ export function PlacementTask({
       </div>
 
       {taskPrompt && (
-        <div className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-3 text-sm text-[var(--color-text-secondary)] whitespace-pre-wrap">
-          {taskPrompt}
+        <div className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-3 text-sm">
+          <LessonMarkdown>{taskPrompt}</LessonMarkdown>
         </div>
       )}
 
@@ -101,7 +102,7 @@ export function PlacementTask({
           {isSubmitting ? "Running…" : "Submit"}
         </Button>
         <Button variant="ghost" onClick={onSkip} disabled={isSubmitting}>
-          Skip this concept
+          Go to the lessons
         </Button>
       </div>
     </div>

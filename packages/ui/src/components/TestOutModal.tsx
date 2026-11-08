@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Button } from "./Button";
 import { CodeEditor } from "./CodeEditor";
+import { LessonMarkdown } from "./LessonMarkdown";
 
 const TESTOUT_DURATION_SECONDS = 4 * 60;
 
@@ -85,10 +86,8 @@ export function TestOutModal({
               {/* Scrollable body */}
               <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-4">
                 {concept.taskPrompt && (
-                  <div className="rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] px-4 py-3">
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--color-text-secondary)]">
-                      {concept.taskPrompt}
-                    </p>
+                  <div className="rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] px-4 py-3 text-sm">
+                    <LessonMarkdown>{concept.taskPrompt}</LessonMarkdown>
                   </div>
                 )}
                 <CodeEditor value={code} onChange={setCode} />
@@ -97,7 +96,7 @@ export function TestOutModal({
               {/* Fixed footer */}
               <div className="flex shrink-0 items-center justify-between border-t border-[var(--color-border-subtle)] px-6 py-4">
                 <Button variant="ghost" onClick={onEscape} disabled={isSubmitting}>
-                  I&apos;d rather do the lesson
+                  Take the lesson
                 </Button>
                 <Button
                   variant="primary"
@@ -127,7 +126,7 @@ export function TestOutModal({
                       Stay and review
                     </Button>
                     <Button variant="primary" onClick={onNext ?? onClose}>
-                      Skip lesson →
+                      Next concept →
                     </Button>
                   </>
                 ) : (
