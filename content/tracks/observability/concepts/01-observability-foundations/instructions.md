@@ -1,73 +1,92 @@
-# Observability Foundations
+## What you build
 
-## What you'll learn
-
-"Observability" gets used as a buzzword for "we have a dashboard." The actual claim is narrower and more useful: a system is observable if you can answer new questions about its internal state *from the outside*, using only the telemetry it already emits — without shipping new code first. This lesson covers the three signal types (metrics, logs, traces), the pull-vs-push delivery models, and the single constraint that determines whether any of this scales: cardinality. Every later concept in this track assumes you understand these tradeoffs.
+You write a minimal Prometheus scrape configuration. It scrapes Prometheus itself and one application.
 
 ## Key concepts
 
-**The three signal types answer different questions.**
+### Observability means new questions without new code
 
-| Signal | Answers | Cost | Granularity |
-|---|---|---|---|
-| Metrics | "How much / how often / how fast, over time?" | Cheap — fixed cost regardless of traffic volume | Aggregated (numbers, not events) |
-| Logs | "What exactly happened on this one request/error?" | Expensive at volume — every event is stored | Per-event, full detail |
-| Traces | "Where did the time go, across services, for this one request?" | Expensive, usually sampled | Per-request, causal chain |
+A system is observable when you can answer new questions about its internal state from the outside. You use only the telemetry it already emits. "We have a dashboard" is not observability.
 
-A metric like `http_requests_total` tells you request volume went from 100/s to 100,000/s. It cannot tell you *which* request IDs were slow, or what the stack trace was for a specific 500. A log line has that detail but you can't cheaply ask "what's the p99 latency over the last 30 days" from a billion log lines without a log-analytics engine doing the aggregation work metrics do for free at write time. A trace shows you that a single slow request spent 400ms in a downstream `payments` service call — something no metric or log line, taken alone, tells you directly.
+### Each signal type answers a different question
 
-The practical rule: **metrics for "is something wrong and how bad,"logs for "what exactly happened," traces for "where, in a distributed call graph, did it happen."** Alert on metrics. Debug with logs and traces.
+| Signal | Answers | Cost |
+|---|---|---|
+| Metrics | How much, how often, how fast, over time? | Low, fixed |
+| Logs | What happened on this one request? | High at volume |
+| Traces | Where did the time go, across services? | High, sampled |
 
-**Pull vs push.**
+Metrics hold aggregates, not events. Their cost stays the same when traffic grows. Logs store every event with full detail. Traces follow one request through its causal chain, so systems usually sample them.
 
-Prometheus (and this track's default model) uses **pull**: the monitoring system scrapes an HTTP endpoint (`/metrics`) on your service at a fixed interval. Your application doesn't know or care who's scraping it — it just exposes current state whenever asked.
+`http_requests_total` tells you that volume went from 100/s to 100,000/s. It cannot tell you which request IDs were slow, or show the stack trace of one 500. A log line has that detail. But a p99 latency over 30 days from a billion log lines needs a log-analytics engine. Metrics do that aggregation at write time. A trace shows that one slow request spent 400 ms in a call to a downstream `payments` service. No metric or log line alone shows that.
 
-```
-Prometheus server --(GET /metrics every 15s)--> your service
-```
+Use metrics for "is something wrong, and how bad?" Use logs for "what happened?" Use traces for "where in the call graph did it happen?" Alert on metrics. Debug with logs and traces.
 
-Push systems (StatsD, most APM agents, OTLP metric export) have the application send data to a collector.
+### Prometheus pulls metrics
 
-```
-your service --(UDP/HTTP push)--> collector
-```
-
-Pull's advantages: the scraper can detect "target is down" as its own signal (a failed scrape *is* data), there's a natural single source of truth for "is this being monitored," and you don't need client-side batching/retry logic for delivery. Push's advantages: works for ephemeral jobs that don't live long enough to be scraped (cron jobs, Lambda), and works across network topologies where the monitoring system can't reach the target (the target can always reach the collector). Modern OpenTelemetry defaults to push (OTLP) precisely because it needs to work for both server and non-server workloads uniformly — you'll see this tension again in the OTel concepts later in this track.
-
-**Cardinality is the constraint that breaks systems, not disk space.**
-
-Cardinality = the number of unique time series a metric name can produce, where a "series" is the metric name plus every unique combination of label values.
+Prometheus uses pull. The server scrapes an HTTP endpoint, `/metrics`, on your service at a fixed interval. The application does not know who scrapes it. It shows its current state on each request.
 
 ```
-http_requests_total{method="GET", path="/users", status="200"}   <- one series
-http_requests_total{method="POST", path="/users", status="201"}  <- another series
-http_requests_total{method="GET", path="/users", status="500"}   <- another series
+Prometheus --GET /metrics every 15s-->
+  your service
 ```
 
-Three labels with 5, 20, and 6 possible values respectively gives 5 × 20 × 6 = 600 series for *one* metric name. Add a label with unbounded values — `user_id`, `request_id`, `session_id`, raw email addresses, full URLs with query strings — and that single metric can generate millions of series. Prometheus keeps every active series (and recently-active ones) in memory; a cardinality explosion is the single most common cause of a Prometheus server falling over or a hosted metrics bill exploding overnight. This is not a minor tuning detail — it is the design constraint that every later concept (label design, recording rules, alerting) is built around.
+A failed scrape is data: the scraper detects "target is down" as its own signal. Pull gives one source of truth for "is this target monitored". The application needs no client-side batching or retry logic.
 
-## vs other tools
+### Push systems send data to a collector
 
-Traditional APM tools (Datadog APM, New Relic) blur these lines deliberately — they auto-instrument and let you pivot between "signal types" in one UI, at the cost of vendor lock-in and much higher cost per unit of data. The pull/PromQL/Grafana stack this track teaches is the vendor-neutral, self-hostable foundation that OpenTelemetry is designed to feed — you can swap the backend (Prometheus → Mimir/Thanos, Jaeger → Tempo) without re-instrumenting application code, provided you instrumented with OTel or the Prometheus client libraries rather than a proprietary agent.
+StatsD, most APM agents and OTLP metric export use push. The application sends data to a collector.
+
+```
+your service --UDP/HTTP push-->
+  collector
+```
+
+Push works for jobs that end before a scrape, such as cron jobs and Lambda functions. It also works when the monitoring system cannot reach the target, because the target can always reach the collector. OpenTelemetry defaults to push (OTLP), because it must work the same way for server and non-server workloads. Later concepts in this track return to this choice.
+
+### Cardinality is the constraint that breaks systems
+
+Cardinality is the number of unique time series a metric name can produce. A series is the metric name plus one unique combination of label values.
+
+```
+# Three different series:
+http_requests_total{method="GET",
+  path="/users", status="200"}
+http_requests_total{method="POST",
+  path="/users", status="201"}
+http_requests_total{method="GET",
+  path="/users", status="500"}
+```
+
+Three labels with 5, 20 and 6 values give 5 × 20 × 6 = 600 series for one metric name. Add a label with unbounded values, and that one metric can produce millions of series. Examples are `user_id`, `request_id`, `session_id`, email addresses and full URLs with query strings.
+
+Prometheus keeps every active and recently active series in memory. A cardinality explosion is the most common cause of a Prometheus server crash or a sudden jump in a hosted metrics bill. Label design, recording rules and alerting in later concepts all follow from this constraint.
+
+### The open stack lets you change the backend
+
+APM tools such as Datadog APM and New Relic mix the signals in one UI, at a higher cost and with vendor lock-in. With OpenTelemetry or the Prometheus client libraries, you can change the backend without new instrumentation. For example, move from Prometheus to Mimir or Thanos, or from Jaeger to Tempo.
 
 ## Watch out
 
-- **"We added logging" is not "we added observability."** If you cannot answer a question you didn't anticipate when you wrote the log line, without deploying new code, you don't have observability for that question — you have a log line.
-- **Cardinality mistakes are invisible until they aren't.** A metric with a `user_id` label looks completely fine in a demo with 10 users and becomes an incident with 500,000 users. Review label cardinality at design time, not after the pager goes off.
-- **Pull requires the scraper to reach the target.** Firewalls, NAT, and short-lived batch jobs are the classic cases where pull breaks down and you need a push gateway or push-based OTLP export instead.
+- "We added logging" is not observability. Can you answer an unexpected question without a deploy? If not, you have only a log line.
+- A `user_id` label looks fine in a demo with 10 users. With 500,000 users, it causes an incident. Review label cardinality at design time.
+- Pull fails when the scraper cannot reach the target. Firewalls, NAT and short batch jobs need a Pushgateway or OTLP push export.
 
 ## The task
 
-Write a minimal Prometheus scrape configuration, `prometheus.yml`, that a Prometheus server would load to scrape itself and one application.
+Write a minimal Prometheus scrape configuration in `stub.yaml`. Prometheus loads it on startup as `prometheus.yml`.
 
-Requirements:
+1. Add a `global` block with `scrape_interval: 15s` and `evaluation_interval: 15s`.
+2. `scrape_interval` sets how often Prometheus scrapes targets.
+3. `evaluation_interval` sets how often Prometheus evaluates recording and alerting rules.
+4. Add a `scrape_configs` list with two jobs.
+5. Job `'prometheus'` scrapes Prometheus itself at `localhost:9090`, in `static_configs`.
+6. Job `'web-app'` scrapes `web-app:8080`, in `static_configs`.
+7. Job `'web-app'` sets `scrape_interval: 10s`. This overrides the global value for this job only.
+8. The `web-app:8080` targets get a `labels:` block with `env: production`.
+9. Remove every `TODO` comment.
 
-- A `global` block setting `scrape_interval: 15s` and `evaluation_interval: 15s` (how often Prometheus scrapes targets, and how often it evaluates recording/alerting rules — covered in depth later in this track).
-- A `scrape_configs` list with two jobs:
-  1. `job_name: 'prometheus'` — Prometheus scraping its own `/metrics` endpoint, `static_configs` with `targets: ['localhost:9090']`.
-  2. `job_name: 'web-app'` — scraping an application, overriding the interval to `scrape_interval: 10s` for this job only, `static_configs` with `targets: ['web-app:8080']` and a label attached to those targets: `labels:` block containing `env: production`.
-
-Expected shape (values must match exactly; key order does not matter):
+The values must match exactly. The key order does not matter.
 
 ```yaml
 global:
@@ -86,5 +105,3 @@ scrape_configs:
         labels:
           env: production
 ```
-
-This file is what `prometheus --config.file=prometheus.yml` loads on startup. Getting this shape right — global defaults, per-job overrides, static target lists, target-level labels — is the entry point for every scrape configuration you'll write in the rest of this track.

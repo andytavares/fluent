@@ -1,17 +1,17 @@
-# The OpenTelemetry Collector
+## What you build
 
-## What you'll learn
-
-The Collector is the piece that turns "every service exports OTLP somewhere" into an actual production pipeline: a standalone process that receives telemetry, transforms it, and fans it out to one or more backends — Prometheus for metrics, Tempo/Jaeger for traces, without your application code knowing or caring where data ultimately lands. This closing lesson covers the receiver/processor/exporter/pipeline model, the two processors every production config needs (`memory_limiter`, `batch`) and their required order, common transform processors, fan-out to multiple backends, and agent-vs-gateway deployment.
+You write an OpenTelemetry Collector configuration. It receives OTLP, transforms the data in a correctly ordered processor chain, and sends metrics to Prometheus and traces to Tempo. This lesson builds on **OpenTelemetry Fundamentals** and **OpenTelemetry Traces**.
 
 ## Key concepts
 
-**The model: receivers → processors → exporters, wired into pipelines.**
+### The Collector is a separate pipeline process
 
-- **Receivers** — how data gets *in*. `otlp` (gRPC/HTTP from instrumented services), `prometheus` (scrape existing `/metrics` endpoints, pulling them into the OTel pipeline instead of a separate Prometheus server).
-- **Processors** — transform data in flight: filter, batch, rate-limit, add/remove attributes.
-- **Exporters** — how data gets *out*: `prometheusremotewrite` (push to Prometheus/Mimir), `otlp` (forward to another Collector or a tracing backend), `otlphttp`, vendor-specific exporters.
-- **Pipelines** — named wiring of receivers → processors (ordered) → exporters, one pipeline per signal type (`traces`, `metrics`, `logs`).
+The Collector receives telemetry, transforms it and sends it to one or more backends. Your application code does not know where the data lands.
+
+- **Receivers** bring data in. `otlp` takes gRPC or HTTP from instrumented services. `prometheus` scrapes existing `/metrics` endpoints into the pipeline.
+- **Processors** transform data in flight: filter, batch, limit, add or remove attributes.
+- **Exporters** send data out. `prometheusremotewrite` pushes to Prometheus or Mimir. `otlp` forwards to another Collector or a trace backend. `otlphttp` and vendor exporters also exist.
+- **Pipelines** connect receivers, ordered processors and exporters. Each pipeline carries one signal type: `traces`, `metrics` or `logs`.
 
 ```yaml
 receivers:
@@ -30,7 +30,8 @@ processors:
 
 exporters:
   prometheusremotewrite:
-    endpoint: "http://prometheus:9090/api/v1/write"
+    endpoint: >-
+      http://prometheus:9090/api/v1/write
   otlp/tempo:
     endpoint: "tempo:4317"
 
@@ -38,22 +39,26 @@ service:
   pipelines:
     metrics:
       receivers: [otlp]
-      processors: [memory_limiter, batch]
+      processors:
+        [memory_limiter, batch]
       exporters: [prometheusremotewrite]
     traces:
       receivers: [otlp]
-      processors: [memory_limiter, batch]
+      processors:
+        [memory_limiter, batch]
       exporters: [otlp/tempo]
 ```
 
-**`memory_limiter` and `batch` — required in nearly every production pipeline, and order matters.** The official, load-bearing ordering rule: **`memory_limiter` first, `batch` last**, in every processor list.
+### `memory_limiter` goes first, `batch` goes last
 
-- **`memory_limiter`** protects the Collector process itself from OOMing under a traffic spike — it checks memory usage on an interval and starts refusing/dropping data before the process runs out of memory and crashes (which would lose *everything* in flight, a much worse outcome than dropping some data under backpressure). It must run first so it can reject data before any other processor spends memory/CPU on it.
-- **`batch`** groups individual spans/metrics/logs into larger batches before export, dramatically reducing the number of outbound network requests/connections to your backends. It should run *last*, immediately before exporters, so every other transform has already been applied to the data before it's batched and shipped.
+Almost every production pipeline needs both processors, in this order in every processor list.
 
-Putting `batch` before `memory_limiter`, or omitting `memory_limiter` entirely, is the single most common OTel Collector production misconfiguration — the collector has no backpressure protection and a traffic spike can OOM-kill it, taking down the telemetry pipeline exactly when you need it most (during an incident, which is usually when traffic/error volume spikes).
+- `memory_limiter` protects the Collector from running out of memory in a traffic spike. It checks memory use on an interval and refuses data before the process crashes. A crash loses all data in flight, which is worse than dropping some data. It runs first, so it rejects data before other processors spend memory or CPU on it.
+- `batch` groups spans, metrics and logs into larger batches before export. This cuts the number of outgoing requests and connections. It runs last, right before the exporters, so every other transform applies first.
 
-**Resource and attributes processors — the transform layer between "what the application sent" and "what actually lands in the backend":**
+The most common production mistake is `batch` before `memory_limiter`, or no `memory_limiter` at all. The Collector then has no backpressure protection. A traffic spike can kill it with an out-of-memory error during an incident, when you need telemetry most.
+
+### The resource and attributes processors transform data
 
 ```yaml
 processors:
@@ -64,67 +69,76 @@ processors:
         action: upsert
   attributes:
     actions:
+      # strip full URLs, which can hold
+      # sensitive data, before export
       - key: http.url
-        action: delete    # strip potentially sensitive full URLs before export
+        action: delete
       - key: team
         value: platform
         action: insert
 ```
 
-`resource` processor edits Resource-level attributes (the "who," from the fundamentals lesson) uniformly for everything passing through; `attributes` processor edits per-span/per-metric-point attributes. `action: upsert/insert/delete/update` controls whether it can add new, only add if absent, remove, or only modify existing keys — a common real use is stripping high-cardinality or sensitive attributes (raw URLs, query strings) at the Collector rather than trusting every instrumented service to never emit them, which is a natural place to *also* enforce the cardinality discipline from the second lesson of this track, centrally.
+The `resource` processor edits resource attributes, the "who", for all data that passes through. The `attributes` processor edits the attributes of each span or metric point. The `action` sets the behavior:
 
-**Fan-out to multiple backends** — one pipeline can list multiple exporters, and data is sent to *all* of them:
+- `upsert`: add the key, or change it if it exists.
+- `insert`: add the key only if it is absent.
+- `update`: change the key only if it exists.
+- `delete`: remove the key.
+
+A common use is to strip high-cardinality or sensitive attributes, such as raw URLs and query strings. The Collector then enforces the cardinality rules from **Observability Foundations** in one place. You do not trust every service to never emit them.
+
+### One pipeline can fan out to several backends
+
+A pipeline can list several exporters, and the Collector sends the data to all of them.
 
 ```yaml
 service:
   pipelines:
     metrics:
       receivers: [otlp]
-      processors: [memory_limiter, batch]
-      exporters: [prometheusremotewrite, otlp/vendor-backup]
+      processors:
+        [memory_limiter, batch]
+      exporters:
+        - prometheusremotewrite
+        - otlp/vendor-backup
 ```
 
-This is how you run Prometheus as your primary metrics backend while also forwarding a copy to a SaaS vendor for long-term retention or a secondary team, without instrumenting twice or standing up two competing agents on every host.
+Prometheus stays the main metrics backend, and a SaaS vendor gets a copy for long retention or another team. You do not instrument twice or run two agents on every host.
 
-**Agent vs gateway deployment** — two topologies, often used together:
+### Agents and gateways are two deployment tiers
 
-- **Agent** — a Collector instance per host/pod (sidecar or DaemonSet), close to the application, doing lightweight processing (batching, basic filtering) before forwarding onward. Minimizes network hops from the app and can enrich data with host-local context cheaply.
-- **Gateway** — a smaller number of centralized Collector instances (a Deployment behind a Service) that agents forward to, doing heavier processing (tail sampling requires seeing a trace's spans in one place, which usually means routing all spans for a given trace to the same gateway instance) and the actual fan-out to backends.
+- **Agent**: one Collector per host or pod, as a sidecar or DaemonSet. It does light work, such as batching and basic filtering, then forwards. It adds few network hops and can add host context cheaply.
+- **Gateway**: a few central Collectors, as a Deployment behind a Service, that agents forward to. They do the heavy work and the fan-out to backends.
 
-A common production topology: agents (DaemonSet) on every node doing `memory_limiter` + light `batch`, forwarding to a gateway tier doing tail sampling, attribute scrubbing, and the final export/fan-out to Prometheus and a tracing backend.
+Tail sampling must see all spans of a trace in one place. So all spans of one trace usually go to the same gateway instance. A common topology: agents on every node run `memory_limiter` and a light `batch`. They forward to a gateway tier that does tail sampling, attribute scrubbing and the final export.
 
-## vs other tools
-
-Fluent Bit/Fluentd solve the equivalent problem for logs specifically (receivers/parsers/outputs) but predate and aren't signal-unified with metrics/traces the way the OTel Collector is — one Collector binary handles all three signals with one config format. Vendor agents (Datadog Agent, New Relic Infrastructure Agent) bundle a similar receiver/processor/exporter pipeline internally but as a closed, vendor-specific black box; the OTel Collector's pipeline is config-driven and inspectable, which is why "run the OTel Collector, export wherever" has become the default architecture even for teams whose ultimate destination is a commercial vendor.
+Fluent Bit and Fluentd solve the same problem for logs only. One Collector binary handles all three signals with one configuration format.
 
 ## Watch out
 
-- **`batch` before `memory_limiter` in a processor list defeats the entire purpose of `memory_limiter`** — by the time data reaches it, it's already been batched (held in memory) by the processor that was supposed to run after it.
-- **Tail sampling requires every span of a trace to reach the same Collector instance** — if your agents fan out directly to backends without a gateway tier doing tail sampling, you cannot correctly implement tail sampling (a load balancer routing spans of the same trace to different Collector replicas breaks the "see the whole trace before deciding" requirement); this is the direct reason the gateway tier and its own dedicated load-balancing-by-trace-ID exporter exist in serious deployments.
-- **Missing `limit_mib` (or setting it above the container's actual memory limit) on `memory_limiter`** makes it useless — it needs a real ceiling below your container/host's actual available memory to trigger before an OOM kill, not an arbitrary large number.
+- `batch` before `memory_limiter` defeats `memory_limiter`. The data is already held in memory in batches when it arrives.
+- Tail sampling needs every span of a trace on the same Collector instance.
+- A load balancer that sends spans of one trace to different replicas breaks tail sampling.
+- That is why gateway tiers use an exporter that load-balances by trace ID.
+- `memory_limiter` with no `limit_mib` does not protect the process.
+- A `limit_mib` above the container memory limit also fails. Set it below the memory you have.
 
 ## The task
 
-Write `collector-config.yaml`: a complete OTel Collector configuration receiving OTLP, transforming, and fanning out metrics to Prometheus and traces to a tracing backend, with a correctly-ordered processor chain.
+Write `stub.yaml`: the Collector configuration `collector-config.yaml`. It receives OTLP, sends metrics to Prometheus and sends traces to Tempo.
 
-Requirements:
+1. Under `receivers:`, add an `otlp:` block with `protocols:` containing `grpc: {}` and `http: {}`.
+2. Under `processors:`, define exactly three processors, in this order in the file.
+3. `memory_limiter:` with `check_interval: 1s` and `limit_mib: 512`.
+4. `resource:` with an `attributes:` list of one entry: `key: deployment.environment`, `value: production`, `action: upsert`.
+5. `batch:` with `timeout: 5s` and `send_batch_size: 1024`.
+6. Under `exporters:`, add `prometheusremotewrite:` with `endpoint: "http://prometheus:9090/api/v1/write"`.
+7. Add `otlp/tempo:` with `endpoint: "tempo:4317"`.
+8. Under `service.pipelines:`, add a `metrics:` pipeline: `receivers: [otlp]`, exporter `prometheusremotewrite`.
+9. Add a `traces:` pipeline: `receivers: [otlp]`, exporter `otlp/tempo`.
+10. Both pipelines use `processors: [memory_limiter, resource, batch]`, on one line, in this order.
 
-Under `receivers:`, an `otlp:` block with `protocols: { grpc: {}, http: {} }`.
-
-Under `processors:`, exactly three processors, in this order in the YAML (order in the file should match the required pipeline order):
-1. `memory_limiter:` with `check_interval: 1s` and `limit_mib: 512`.
-2. `resource:` with `attributes:` a list containing one entry `{ key: deployment.environment, value: production, action: upsert }`.
-3. `batch:` with `timeout: 5s` and `send_batch_size: 1024`.
-
-Under `exporters:`, two exporters:
-1. `prometheusremotewrite:` with `endpoint: "http://prometheus:9090/api/v1/write"`.
-2. `otlp/tempo:` with `endpoint: "tempo:4317"`.
-
-Under `service.pipelines:`, two pipelines:
-1. `metrics:` with `receivers: [otlp]`, `processors: [memory_limiter, resource, batch]`, `exporters: [prometheusremotewrite]`.
-2. `traces:` with `receivers: [otlp]`, `processors: [memory_limiter, resource, batch]`, `exporters: [otlp/tempo]`.
-
-Expected shape:
+`memory_limiter` comes first, for backpressure before any other work. `batch` comes last, right before export. Do not leave `TODO` comments in the file.
 
 ```yaml
 receivers:
@@ -163,5 +177,3 @@ service:
       processors: [memory_limiter, resource, batch]
       exporters: [otlp/tempo]
 ```
-
-The `processors: [memory_limiter, resource, batch]` order in both pipelines is the load-bearing detail this task checks — `memory_limiter` must come first (backpressure before any other work) and `batch` must come last (batching happens after every other transform, immediately before export).

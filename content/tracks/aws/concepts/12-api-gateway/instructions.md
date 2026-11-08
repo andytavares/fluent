@@ -1,140 +1,233 @@
-# API Gateway
+## What you build
 
-## What you'll learn
-
-API Gateway is the front door most Lambda-backed APIs sit behind. This concept covers the REST vs HTTP API split, the resource/method/integration model (especially Lambda proxy integration, the pattern you'll use nearly every time), stages and deployments, usage plans/API keys for metering external consumers, and CORS. Builds on `lambda-functions`.
+You write `stub.sh`, a script that puts a REST API in front of a Lambda function, deploys it, meters a partner and allows CORS. Most Lambda-backed APIs sit behind API Gateway. This lesson builds on **Lambda Functions** and **Lambda Event Sources**.
 
 ## Key concepts
 
-### REST APIs vs HTTP APIs — two distinct products
+The examples leave out `--endpoint-url http://localhost:4566`. Add it to every call when you use LocalStack.
 
-API Gateway ships two genuinely separate API types, not just two "modes" of one:
+### REST APIs and HTTP APIs are two products
 
-| | REST API (`apigateway`) | HTTP API (`apigatewayv2`) |
+API Gateway has two separate API types, not two modes of one product.
+
+| | REST API | HTTP API |
 |---|---|---|
-| Feature set | Full: usage plans, API keys, request/response transformation, WAF integration, private VPC endpoints | Leaner: JWT/Lambda authorizers, simpler routing, no usage plans |
-| Latency/cost | Higher latency, higher per-request cost | Lower latency, up to ~70% cheaper |
-| Best for | API-key metering, complex request transformation, legacy feature needs | Simple Lambda/HTTP-backed APIs, cost-sensitive high-traffic services |
+| CLI | `apigateway` | `apigatewayv2` |
+| Features | Full | Lean |
+| Cost | Higher | Up to ~70% less |
+| Latency | Higher | Lower |
 
-Default to HTTP APIs for new Lambda-backed services unless you specifically need a REST-API-only feature (usage plans and API keys, covered below, are the most common reason to still reach for REST). This track uses the REST API commands (`aws apigateway ...`) since usage plans are part of the curriculum.
+- **REST API features:** usage plans, API keys, request and response transformation, WAF integration and private VPC endpoints. Use it for API-key metering, complex transformation or older feature needs.
+- **HTTP API features:** JWT and Lambda authorizers and simpler routing, with no usage plans. Use it for simple Lambda or HTTP backends and cost-sensitive, high-traffic services.
 
-### Resources, methods, integrations
+Use HTTP APIs for new Lambda-backed services, unless you need a REST-only feature. Usage plans and API keys are the most common reason to choose REST. This track uses the REST commands (`aws apigateway`) because it teaches usage plans.
 
-A REST API is a tree of **resources** (URL path segments), each with one or more HTTP **methods**, each method wired to an **integration** (what actually handles the request):
+### A REST API is a tree of resources, methods and integrations
+
+A resource is a URL path segment. Each resource has one or more HTTP methods. Each method connects to an integration: the thing that handles the request.
 
 ```bash
-aws --endpoint-url http://localhost:4566 apigateway create-rest-api --name orders-api
+aws apigateway create-rest-api \
+  --name orders-api
 
-# Every API starts with a root resource "/"; find its id to attach children
-ROOT_ID=$(aws --endpoint-url http://localhost:4566 apigateway get-resources \
-  --rest-api-id "$API_ID" --query 'items[0].id' --output text)
+# Every API starts with a root "/".
+# Get its id to attach children.
+ROOT_ID=$(aws apigateway get-resources \
+  --rest-api-id "$API_ID" \
+  --query 'items[0].id' --output text)
 
-aws --endpoint-url http://localhost:4566 apigateway create-resource \
-  --rest-api-id "$API_ID" --parent-id "$ROOT_ID" --path-part orders
+aws apigateway create-resource \
+  --rest-api-id "$API_ID" \
+  --parent-id "$ROOT_ID" \
+  --path-part orders
 
-aws --endpoint-url http://localhost:4566 apigateway put-method \
-  --rest-api-id "$API_ID" --resource-id "$RESOURCE_ID" \
-  --http-method POST --authorization-type NONE
+aws apigateway put-method \
+  --rest-api-id "$API_ID" \
+  --resource-id "$RESOURCE_ID" \
+  --http-method POST \
+  --authorization-type NONE
 ```
 
-### Lambda proxy integration
+### Lambda proxy integration passes the whole request
 
 ```bash
-aws --endpoint-url http://localhost:4566 apigateway put-integration \
-  --rest-api-id "$API_ID" --resource-id "$RESOURCE_ID" \
+aws apigateway put-integration \
+  --rest-api-id "$API_ID" \
+  --resource-id "$RESOURCE_ID" \
   --http-method POST \
   --type AWS_PROXY \
   --integration-http-method POST \
-  --uri arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:000000000000:function:create-order/invocations
+  --uri "$URI"
 ```
 
-`AWS_PROXY` ("Lambda proxy integration") is the pattern to default to: API Gateway forwards the **entire raw request** (headers, query string, path parameters, body) to your function as one JSON event object, and expects your function to return a specific shape back (`statusCode`, `headers`, `body`) — no request/response mapping templates to hand-write. The alternative, `AWS` (non-proxy), requires you to author Velocity Template Language (VTL) mapping templates on both the request and response side — significantly more setup for a benefit (fine-grained transformation) that most Lambda-backed APIs don't need. Always reach for `AWS_PROXY` unless you have a specific reason to transform the request/response inside API Gateway itself rather than in your function code.
+`$URI` has this format:
 
-### Stages and deployments
-
-Configuration changes to resources/methods/integrations don't take live effect until **deployed** to a **stage**:
-
-```bash
-aws --endpoint-url http://localhost:4566 apigateway create-deployment \
-  --rest-api-id "$API_ID" --stage-name prod
+```
+arn:aws:apigateway:{region}:lambda:path
+  /2015-03-31/functions/{function-arn}
+  /invocations
 ```
 
-A **deployment** is an immutable snapshot of the whole API's configuration at that moment; a **stage** (`prod`, `staging`, `dev`) is a named, addressable pointer to one deployment, with its own URL, its own stage variables, and (for REST APIs) its own throttling/logging settings. This split lets you deploy a new snapshot to `staging`, test it at its own URL, then point `prod` at that same deployment once verified — without redeploying twice.
+With `AWS_PROXY`, API Gateway sends the entire raw request to your function as one JSON event. The event holds headers, the query string, path parameters and the body. Your function returns `statusCode`, `headers` and `body`. You write no mapping templates.
 
-### Usage plans and API keys
+The `AWS` (non-proxy) type needs Velocity Template Language (VTL) mapping templates for the request and the response. That is much more setup, for fine-grained transformation that most Lambda-backed APIs do not need. Use `AWS_PROXY` unless you must transform inside API Gateway and not in your function.
 
-For metering/rate-limiting external API consumers (partner integrations, paid API tiers):
+### Changes go live only when you deploy to a stage
 
 ```bash
-aws --endpoint-url http://localhost:4566 apigateway create-usage-plan \
+aws apigateway create-deployment \
+  --rest-api-id "$API_ID" \
+  --stage-name prod
+```
+
+A deployment is an immutable snapshot of the whole API configuration. A stage, such as `prod`, `staging` or `dev`, is a named pointer to one deployment. Each stage has its own URL and stage variables. For REST APIs, it also has its own throttling and logging settings.
+
+You can deploy a snapshot to `staging` and test it at its own URL. Then you point `prod` at the same deployment, with no second deploy.
+
+### Usage plans meter API consumers
+
+Use a usage plan to meter and rate-limit external consumers, such as partner integrations or paid API tiers.
+
+```bash
+aws apigateway create-usage-plan \
   --name partner-tier \
   --throttle burstLimit=20,rateLimit=10 \
   --quota limit=10000,period=MONTH \
   --api-stages apiId="$API_ID",stage=prod
 
-aws --endpoint-url http://localhost:4566 apigateway create-api-key \
+aws apigateway create-api-key \
   --name partner-acme-corp --enabled
 
-aws --endpoint-url http://localhost:4566 apigateway create-usage-plan-key \
-  --usage-plan-id "$PLAN_ID" --key-id "$KEY_ID" --key-type API_KEY
+aws apigateway create-usage-plan-key \
+  --usage-plan-id "$PLAN_ID" \
+  --key-id "$KEY_ID" \
+  --key-type API_KEY
 ```
 
-A usage plan is attached to specific stages of specific APIs and enforces both a burst/steady-state throttle and a longer-period quota; an API key is issued per consumer and associated with the plan via `create-usage-plan-key`. The API key itself is not an authentication/authorization mechanism on its own (it's sent as a plain header, `x-api-key`) — it's purely for identifying which consumer's usage to meter and throttle; pair it with a real authorizer (IAM, Cognito, Lambda authorizer) if you need actual access control.
+A usage plan attaches to specific stages of specific APIs. It enforces a burst and steady-state throttle, and a quota over a longer period. You issue one API key per consumer and link it to the plan with `create-usage-plan-key`.
 
-### CORS
+An API key is not authentication. The client sends it as a plain header, `x-api-key`. It only identifies whose usage to meter and throttle. For access control, add a real authorizer: IAM, Cognito or a Lambda authorizer.
 
-A browser calling your API from a different origin needs the API to answer the browser's preflight `OPTIONS` request correctly, and to echo the right headers on the real response:
+### CORS needs an `OPTIONS` method and headers on the real response
+
+A browser that calls your API from another origin first sends a preflight `OPTIONS` request. The API must answer it, and must send the right headers on the real response too.
 
 ```bash
-aws --endpoint-url http://localhost:4566 apigateway put-method \
-  --rest-api-id "$API_ID" --resource-id "$RESOURCE_ID" \
-  --http-method OPTIONS --authorization-type NONE
+aws apigateway put-method \
+  --rest-api-id "$API_ID" \
+  --resource-id "$RESOURCE_ID" \
+  --http-method OPTIONS \
+  --authorization-type NONE
 
-aws --endpoint-url http://localhost:4566 apigateway put-method-response \
-  --rest-api-id "$API_ID" --resource-id "$RESOURCE_ID" \
-  --http-method OPTIONS --status-code 200 \
-  --response-parameters '{
-    "method.response.header.Access-Control-Allow-Origin": true,
-    "method.response.header.Access-Control-Allow-Methods": true,
-    "method.response.header.Access-Control-Allow-Headers": true
-  }'
+aws apigateway put-method-response \
+  --rest-api-id "$API_ID" \
+  --resource-id "$RESOURCE_ID" \
+  --http-method OPTIONS \
+  --status-code 200 \
+  --response-parameters "$CORS_HEADERS"
 ```
 
-Every method that needs CORS support requires both an `OPTIONS` method returning the `Access-Control-Allow-*` headers, **and** those same headers echoed on the actual `GET`/`POST`/etc. method's response — CORS failures are almost always one of these two halves being missing, not a fundamental misconfiguration.
+`$CORS_HEADERS` maps each header to `true`. It lists `Access-Control-Allow-Origin`, `Access-Control-Allow-Methods` and `Access-Control-Allow-Headers`, each with the prefix `method.response.header.`.
 
-## vs other tools
+Each method that needs CORS needs both halves. The `OPTIONS` method returns the `Access-Control-Allow-*` headers. The real `GET` or `POST` response sends the same headers. A CORS failure is almost always one missing half.
 
-| | API Gateway (Lambda proxy) | A traditional reverse proxy (nginx) in front of app servers | A framework's built-in router (Express, Flask) |
-|---|---|---|---|
-| Scaling | Fully managed, scales with Lambda concurrency | You scale the proxy and the backends | You scale the whole process |
-| Routing config | API definition (resources/methods) as infrastructure | Config file (`nginx.conf`) | Code (`app.get("/orders", ...)`) |
-| Auth/throttling/metering | Built-in (usage plans, authorizers, WAF) | Bolt-on (external modules/services) | Bolt-on (middleware) |
+### Your routes live in API Gateway, not in code
 
-The mental shift coming from Express/Flask: your routing table is API Gateway's `resources`/`methods`, not code — but with `AWS_PROXY` integration, the actual request handling still feels like a normal handler function, just invoked once per request instead of once per process lifetime.
+In Express or Flask, `app.get("/orders", ...)` defines a route in code. In API Gateway, resources and methods are infrastructure, and API Gateway adds throttling, metering and authorizers. With `AWS_PROXY`, your handler still feels like a normal handler, but it runs once per request, not once per process.
 
 ## Watch out
 
-- **Nothing you configure takes effect against real traffic until `create-deployment` (to a stage) is run again** — a common "I changed the integration but the API still does the old thing" bug is simply forgetting to redeploy.
-- **`AWS_PROXY`'s `--uri` must be the API Gateway–specific ARN format** (`arn:aws:apigateway:{region}:lambda:path/2015-03-31/functions/{function-arn}/invocations`), not the bare Lambda function ARN — a common copy-paste mistake when wiring integrations by hand.
-- **API Gateway also needs its own `lambda:InvokeFunction` permission on the target function** (via `lambda add-permission`, same mechanism as the S3 notification concept) — the integration URI alone doesn't grant invoke rights.
-- **A usage plan's quota/throttle only applies to stages it's explicitly attached to** (`--api-stages`) — creating a usage plan without attaching it to your API's stage silently does nothing.
+- Changes reach real traffic only after `create-deployment` to a stage. A forgotten redeploy keeps the old behavior.
+- The `AWS_PROXY` `--uri` uses the API Gateway ARN format, not the bare Lambda function ARN.
+- API Gateway needs `lambda:InvokeFunction` on the target function, through `lambda add-permission`.
+- The integration URI alone grants no invoke rights. This is the same mechanism as S3 notifications.
+- A usage plan applies only to stages in its `--api-stages`. A plan with no stage does nothing.
 
 ## The task
 
-Fill in `stub.sh` so it, in order (assume `API_ID`, `ROOT_ID`, and `RESOURCE_ID` are already exported as environment variables pointing at a real REST API/resource):
+Write `stub.sh` to build the `orders-api` REST API. `API_ID`, `ROOT_ID` and `RESOURCE_ID` are already exported. They point at a real REST API and resource. Pass `--endpoint-url "$ENDPOINT_URL"` on every `aws` call.
 
-1. Creates a REST API named `orders-api`.
-2. Creates a child resource `orders` under the root resource.
-3. Adds a `POST` method on that resource with `--authorization-type NONE`.
-4. Wires that method to a Lambda proxy integration (`--type AWS_PROXY`) targeting the function `create-order`.
-5. Deploys the API to a stage named `prod`.
-6. Creates a usage plan named `partner-tier` with `burstLimit=20,rateLimit=10` and a monthly quota of `10000`, attached to the `prod` stage of `$API_ID`.
-7. Creates an API key named `partner-acme-corp`, enabled.
-8. Adds an `OPTIONS` method on the `orders` resource (for CORS) with a method response exposing `Access-Control-Allow-Origin`, `Access-Control-Allow-Methods`, and `Access-Control-Allow-Headers`.
+The script does these steps, in order:
+
+1. Create a REST API with `--name orders-api`.
+2. Create a child resource with `--path-part orders` under the root resource.
+3. Add a `POST` method on that resource with `--authorization-type NONE`.
+4. Connect the method to a `--type AWS_PROXY` integration for the function `create-order`.
+5. Deploy the API with `--stage-name prod`.
+6. Create the usage plan `partner-tier` with `burstLimit=20,rateLimit=10` and a quota of `limit=10000,period=MONTH`.
+7. Attach the plan to `stage=prod` of `$API_ID`.
+8. Create the enabled API key `partner-acme-corp`.
+9. Add an `OPTIONS` method on the `orders` resource, for CORS.
+10. Give it a method response that exposes the three `Access-Control-Allow-*` headers.
+
+The function ARN is `arn:aws:lambda:us-east-1:000000000000:function:create-order`.
+
+The finished script makes these calls:
+
+```bash
+aws apigateway create-rest-api \
+  --name orders-api
+
+aws apigateway create-resource \
+  --rest-api-id "$API_ID" \
+  --parent-id "$ROOT_ID" \
+  --path-part orders
+
+aws apigateway put-method \
+  --rest-api-id "$API_ID" \
+  --resource-id "$RESOURCE_ID" \
+  --http-method POST \
+  --authorization-type NONE
+
+FN=arn:aws:lambda:us-east-1:000000000000
+URI=arn:aws:apigateway:us-east-1:lambda
+URI=$URI:path/2015-03-31/functions
+URI=$URI/$FN:function:create-order
+URI=$URI/invocations
+
+aws apigateway put-integration \
+  --rest-api-id "$API_ID" \
+  --resource-id "$RESOURCE_ID" \
+  --http-method POST \
+  --type AWS_PROXY \
+  --integration-http-method POST \
+  --uri "$URI"
+
+aws apigateway create-deployment \
+  --rest-api-id "$API_ID" \
+  --stage-name prod
+
+aws apigateway create-usage-plan \
+  --name partner-tier \
+  --throttle burstLimit=20,rateLimit=10 \
+  --quota limit=10000,period=MONTH \
+  --api-stages apiId="$API_ID",stage=prod
+
+aws apigateway create-api-key \
+  --name partner-acme-corp --enabled
+
+aws apigateway put-method \
+  --rest-api-id "$API_ID" \
+  --resource-id "$RESOURCE_ID" \
+  --http-method OPTIONS \
+  --authorization-type NONE
+
+aws apigateway put-method-response \
+  --rest-api-id "$API_ID" \
+  --resource-id "$RESOURCE_ID" \
+  --http-method OPTIONS \
+  --status-code 200 \
+  --response-parameters '{
+  "method.response.header.Access-Control-Allow-Origin": true,
+  "method.response.header.Access-Control-Allow-Methods": true,
+  "method.response.header.Access-Control-Allow-Headers": true
+}'
+```
 
 ### Run it for real
 
 ```bash
-docker run -d --name localstack -p 4566:4566 localstack/localstack
-bash stub.sh   # once filled in
+docker run -d --name localstack \
+  -p 4566:4566 localstack/localstack
+bash stub.sh
 ```

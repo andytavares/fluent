@@ -1,126 +1,191 @@
-# Secrets & Config
+## What you build
 
-## What you'll learn
-
-This closing concept ties the whole track together: where configuration and secrets actually belong in a production AWS system, and why. You'll compare Secrets Manager and SSM Parameter Store (they overlap, and choosing wrong is a common and avoidable cost/complexity mistake), use `SecureString` parameters, understand rotation conceptually, scope IAM access down to individual secrets, and finish with the 12-factor config checklist that every concept in this track has been building toward.
+You write `stub.sh`, a script that stores a database secret and an API key, scopes access to the secret and turns on rotation. This last concept ties the track together: where config and secrets belong in a production AWS system, and why. This lesson builds on **IAM Users & Policies**, **IAM Roles & STS** and **CloudWatch**.
 
 ## Key concepts
 
-### Secrets Manager vs SSM Parameter Store — when each
+The examples leave out `--endpoint-url http://localhost:4566`. Add it to every call when you use LocalStack.
 
-Both store key/value configuration, encrypted at rest, IAM-gated. The differences that actually matter for choosing:
+### Secrets Manager rotates, Parameter Store is cheap
 
-| | Secrets Manager | SSM Parameter Store |
+Both services store key/value config, encrypt it at rest and control access with IAM. These differences decide the choice:
+
+| | Secrets Manager | Parameter Store |
 |---|---|---|
-| Cost | Per-secret monthly charge + API call charges | Standard tier is free; Advanced tier has a small per-parameter charge |
-| Automatic rotation | Built-in, native (RDS, Redshift, DocumentDB have first-class rotation Lambda templates) | No native rotation — you'd build it yourself via an EventBridge-scheduled Lambda |
-| Cross-account sharing | Native resource policies | More limited |
-| Typical use | Database credentials, API keys to third parties, anything needing rotation | Application config, feature flags, non-rotating values, anything where the free tier's lack of rotation is fine |
+| Cost | Per secret per month, plus API calls | Standard tier free |
+| Rotation | Built in | None |
+| Cross-account | Resource policies | Limited |
 
-Rule of thumb: **if it needs to rotate, or it's a credential to something with native rotation support (RDS especially), use Secrets Manager.** For everything else — plain config values, endpoints, non-sensitive settings, or sensitive-but-static values you're fine rotating manually — Parameter Store is cheaper and simpler. Don't default to Secrets Manager for everything; the per-secret cost adds up fast across a large app's full configuration surface.
+- **Secrets Manager** has first-class rotation Lambda templates for RDS, Redshift and DocumentDB. Use it for database credentials, third-party API keys and anything that needs rotation.
+- **Parameter Store** has an Advanced tier with a small per-parameter charge. For rotation, you build your own Lambda on an EventBridge schedule. Use it for app config, feature flags and values that do not rotate.
+
+If a value must rotate, or it is a credential with native rotation support, use Secrets Manager. RDS is the main case. For everything else, Parameter Store is cheaper and simpler. That includes plain config, endpoints, and sensitive values that you rotate by hand. Do not use Secrets Manager for everything: the per-secret cost adds up fast across a large app.
 
 ```bash
-aws --endpoint-url http://localhost:4566 secretsmanager create-secret \
+aws secretsmanager create-secret \
   --name prod/orders-db/password \
-  --secret-string '{"username":"app_user","password":"correct-horse-battery-staple"}'
+  --secret-string '{"username":"app_user",
+"password":"correct-horse-battery-staple"}'
 
-aws --endpoint-url http://localhost:4566 secretsmanager get-secret-value \
+aws secretsmanager get-secret-value \
   --secret-id prod/orders-db/password
 ```
 
-### SSM Parameter Store and `SecureString`
+### `SecureString` encrypts a parameter with KMS
 
 ```bash
-aws --endpoint-url http://localhost:4566 ssm put-parameter \
+aws ssm put-parameter \
   --name /fluent/orders/api-key \
   --value "sk_live_abc123" \
   --type SecureString
 
-aws --endpoint-url http://localhost:4566 ssm get-parameter \
+aws ssm get-parameter \
   --name /fluent/orders/api-key \
   --with-decryption
 ```
 
-`--type SecureString` encrypts the value at rest with KMS; `--type String` (the default) stores it in plaintext. **Always use `SecureString` for anything sensitive** — plain `String` parameters are readable by anyone with `ssm:GetParameter` on that path, with no additional protection. `--with-decryption` is required to get the plaintext value back on read; without it, `SecureString` values are returned still encrypted (useful for auditing "who can see this exists" separately from "who can see the actual value," since `ssm:GetParameter` alone doesn't imply decrypt access if you scope KMS key policy separately).
+`--type SecureString` encrypts the value at rest with KMS. `--type String`, the default, stores plain text. Anyone with `ssm:GetParameter` on the path can read a `String` parameter. Always use `SecureString` for sensitive values.
 
-Parameter Store's hierarchical naming (`/fluent/orders/api-key`, `/fluent/orders/db-host`) also supports `get-parameters-by-path` — reading an entire config tree for a service in one call, which is the standard way applications load "all my config" at startup.
+Without `--with-decryption`, a read returns a `SecureString` value still encrypted. This lets you audit separately who can see that a value exists and who can read it. `ssm:GetParameter` alone does not give decrypt access when you scope the KMS key policy separately.
 
-### Rotation (concept)
+Parameter Store names form a hierarchy, such as `/fluent/orders/api-key` and `/fluent/orders/db-host`. `get-parameters-by-path` reads the whole config tree of a service in one call. Applications use it to load all their config at startup.
 
-Rotation means periodically replacing a secret's value **without downtime** — the hard part isn't storing the new value, it's coordinating "the secret changed" with every consumer so nothing breaks mid-rotation. Secrets Manager's native rotation works via a dedicated Lambda function (AWS provides templates for RDS/Redshift/DocumentDB) that:
+### Rotation replaces a secret with no downtime
 
-1. Creates a *new* credential/secret version (without invalidating the old one yet).
-2. Tests that the new credential actually works against the real service.
-3. Only then marks the new version as current and (after a safety window) retires the old one.
+Rotation replaces a secret value on a schedule. Storing the new value is easy. The hard part is to tell every consumer without breaking anything mid-rotation.
+
+Secrets Manager rotates with a dedicated Lambda function. AWS gives templates for RDS, Redshift and DocumentDB. The function does three steps:
+
+1. It creates a new credential and secret version. The old one stays valid.
+2. It tests the new credential against the real service.
+3. It marks the new version as current. After a safety window, it retires the old one.
 
 ```bash
-aws --endpoint-url http://localhost:4566 secretsmanager rotate-secret \
+FN=arn:aws:lambda:us-east-1:000000000000
+
+aws secretsmanager rotate-secret \
   --secret-id prod/orders-db/password \
-  --rotation-lambda-arn arn:aws:lambda:us-east-1:000000000000:function:rotate-db-password \
-  --rotation-rules AutomaticallyAfterDays=30
+  --rotation-lambda-arn \
+  "$FN:function:rotate-db-password" \
+  --rotation-rules \
+  AutomaticallyAfterDays=30
 ```
 
-The key insight: rotation is safe specifically *because* the old and new credentials briefly coexist — a consumer that read the secret slightly before rotation completed doesn't suddenly fail; it just uses the previous (still-valid) version until it re-reads.
+Rotation is safe because the old and new credentials exist together for a short time. A consumer that read the secret shortly before rotation does not fail. It uses the previous, still-valid version until it reads again.
 
-### IAM-scoped access to secrets
+### Scope secret access to one ARN
 
-Never grant `secretsmanager:GetSecretValue` on `Resource: "*"` — scope it to the specific secret ARN(s) a given role actually needs:
+Never grant `secretsmanager:GetSecretValue` on all resources. Scope it to the secret ARNs that the role needs:
 
 ```json
 {
   "Effect": "Allow",
-  "Action": "secretsmanager:GetSecretValue",
+  "Action":
+    "secretsmanager:GetSecretValue",
   "Resource": "arn:aws:secretsmanager:us-east-1:000000000000:secret:prod/orders-db/password-*"
 }
 ```
 
-(The trailing `-*` accounts for the random suffix Secrets Manager appends to every secret's ARN.) This is the same least-privilege principle from `iam-users-policies`, applied to the one resource type where over-broad access is most directly catastrophic — a role that can read *every* secret in the account turns any bug in that role's code (or any compromise of it) into a full-account secrets breach.
+The trailing `-*` matches the random suffix that Secrets Manager adds to every secret ARN. This is least privilege from **IAM Users & Policies**, on the resource where broad access does the most harm. A role that can read every secret turns any bug or compromise in its code into a breach of all secrets in the account.
 
 ### The 12-factor config checklist
 
-Pulling every concept in this track together, a production-ready AWS application's configuration should satisfy:
+Every concept in this track leads here. The config of a production-ready AWS application meets these rules:
 
-1. **No secrets in code or version control** — ever. (`iam-users-policies`, this concept)
-2. **No long-lived credentials where a role will do** — compute reaches AWS via an assumed role, not a static access key (`iam-roles-sts`).
-3. **Config varies by environment, not by code path** — the same deployable artifact reads different Parameter Store paths/Secrets Manager secrets per stage, rather than branching on `if (env === "prod")` (`lambda-functions`' environment variables, this concept's hierarchical paths).
-4. **Secrets that can rotate, do rotate** — on a schedule, automatically, with zero-downtime coordination (this concept).
-5. **Access to config/secrets is least-privilege and auditable per resource**, not blanket account-wide grants (`iam-users-policies`, this concept).
-6. **Everything is observable** — metrics/alarms/logs exist for the failure modes that matter, not bolted on after the first incident (`cloudwatch`).
-7. **Failure handling assumes redelivery/retries will happen** — idempotency is designed in from the start, not patched in after a duplicate-processing incident (`sqs`, `lambda-event-sources`).
+1. **No secrets in code or version control, ever.** See **IAM Users & Policies** and this concept.
+2. **No long-lived credentials where a role works.** Compute reaches AWS through an assumed role, not a static access key. See **IAM Roles & STS**.
+3. **Config varies by environment, not by code path.** One artifact reads different parameter paths and secrets per stage. It does not branch on `if (env === "prod")`. See the environment variables in **Lambda Functions** and the hierarchical paths here.
+4. **Secrets that can rotate, do rotate.** Rotation runs on a schedule, automatically, with no downtime. See this concept.
+5. **Access to config and secrets is least privilege and auditable per resource.** No blanket account-wide grants. See **IAM Users & Policies** and this concept.
+6. **Everything is observable.** Metrics, alarms and logs cover the failure modes that matter before the first incident. See **CloudWatch**.
+7. **Failure handling expects redelivery and retries.** You design idempotency in from the start. See **SQS** and **Lambda Event Sources**.
 
-## vs other tools
+### Kubernetes Secrets are not encrypted by default
 
-| | AWS Secrets Manager / Parameter Store | HashiCorp Vault | Kubernetes Secrets |
-|---|---|---|---|
-| Encryption at rest | Yes (KMS) | Yes (Vault's own encryption barrier) | Base64-encoded by default, not encrypted unless etcd encryption is configured |
-| Native rotation | Secrets Manager: yes, built-in | Yes, via dynamic secrets (even richer — can generate short-lived DB creds on demand) | No |
-| Access control | IAM policies | Vault policies + auth methods | Kubernetes RBAC |
-
-Kubernetes' default Secret object is the one most likely to surprise engineers moving between platforms — "Secret" in the name implies encryption at rest that isn't actually there without additional cluster configuration, unlike Secrets Manager/Parameter Store's `SecureString`, which is encrypted by default.
+A Kubernetes Secret is base64-encoded, not encrypted, unless you configure etcd encryption. Its name suggests encryption that is not there. Secrets Manager and `SecureString` encrypt by default. HashiCorp Vault encrypts too, and its dynamic secrets can generate short-lived database credentials on demand.
 
 ## Watch out
 
-- **`ssm get-parameter` without `--with-decryption` silently returns the encrypted ciphertext for a `SecureString`**, not an error — a script that forgets the flag doesn't fail loudly, it just gets garbage that looks like a value.
-- **Secrets Manager's per-secret monthly charge multiplies fast** if you create one secret per environment per credential per service without consolidating — a single JSON secret value (`{"username": ..., "password": ..., "host": ...}`) is usually better than five separate secrets for one database.
-- **Rotation Lambda failures fail *safe* by design** (the old credential stays valid) but a broken rotation function left unnoticed for months means the "automatic" rotation you thought was happening, wasn't — alarm on rotation failures specifically (via the `cloudwatch` concept), don't just trust the schedule silently.
-- **A resource ARN pattern that's too broad in an IAM policy** (`secret:prod/*` instead of `secret:prod/orders-db/password-*`) reintroduces the exact over-broad-access problem this concept exists to prevent — scope to the specific secret whenever the consumer only needs one.
+- `ssm get-parameter` without `--with-decryption` returns ciphertext for a `SecureString`, not an error.
+- A script that forgets the flag does not fail. It gets garbage that looks like a value.
+- The Secrets Manager per-secret charge grows fast with one secret per environment, credential and service.
+- Store one database as one JSON secret with username, password and host, not five secrets.
+- A failed rotation keeps the old credential valid. A broken rotation function can go unnoticed for months.
+- Alarm on rotation failures with **CloudWatch**. Do not trust the schedule alone.
+- A broad ARN pattern, such as `secret:prod/*`, brings back over-broad access. Scope to the one secret the consumer needs.
 
 ## The task
 
-Fill in `stub.sh` so it, in order:
+Write `stub.sh` to store the order service secrets and lock down access. Pass `--endpoint-url "$ENDPOINT_URL"` on every `aws` call.
 
-1. Creates a Secrets Manager secret named `prod/orders-db/password` with secret string `{"username":"app_user","password":"correct-horse-battery-staple"}`.
-2. Retrieves that secret's value.
-3. Puts an SSM parameter named `/fluent/orders/api-key` with value `sk_live_abc123` and `--type SecureString`.
-4. Retrieves that parameter with `--with-decryption`.
-5. Writes an IAM policy JSON (heredoc, `secret-access-policy.json`) granting `Effect: Allow` on `secretsmanager:GetSecretValue` scoped to `arn:aws:secretsmanager:us-east-1:000000000000:secret:prod/orders-db/password-*` (not `Resource: "*"`).
-6. Configures rotation on the secret via `secretsmanager rotate-secret`, with `--rotation-lambda-arn arn:aws:lambda:us-east-1:000000000000:function:rotate-db-password` and `--rotation-rules AutomaticallyAfterDays=30`.
-7. Adds a comment `# answer: <one sentence>` naming which 12-factor config checklist item (from the lesson) a hardcoded database password committed to a Git repo would violate, and why.
+The script does these steps, in order:
+
+1. Create the Secrets Manager secret `prod/orders-db/password` with the secret string below.
+2. Read the value with `get-secret-value --secret-id prod/orders-db/password`.
+3. Put the SSM parameter `/fluent/orders/api-key` with value `sk_live_abc123` and `--type SecureString`.
+4. Read the parameter with `--with-decryption`.
+5. Write `secret-access-policy.json` with a heredoc. It allows `secretsmanager:GetSecretValue` on the secret ARN below.
+6. The policy must not use `"Resource": "*"`.
+7. Run `secretsmanager rotate-secret` on the secret with `--rotation-lambda-arn` and `--rotation-rules AutomaticallyAfterDays=30`.
+8. Add a comment that starts with `# answer:`. Name the checklist item that a password committed to Git violates, and why.
+
+Use these values:
+
+- Secret string: `{"username":"app_user","password":"correct-horse-battery-staple"}`
+- Secret ARN: `arn:aws:secretsmanager:us-east-1:000000000000:secret:prod/orders-db/password-*`
+- Rotation function: `arn:aws:lambda:us-east-1:000000000000:function:rotate-db-password`
+
+The finished script makes these calls:
+
+```bash
+aws secretsmanager create-secret \
+  --name prod/orders-db/password \
+  --secret-string '{"username":"app_user",
+"password":"correct-horse-battery-staple"}'
+
+aws secretsmanager get-secret-value \
+  --secret-id prod/orders-db/password
+
+aws ssm put-parameter \
+  --name /fluent/orders/api-key \
+  --value "sk_live_abc123" \
+  --type SecureString
+
+aws ssm get-parameter \
+  --name /fluent/orders/api-key \
+  --with-decryption
+
+cat > secret-access-policy.json <<'EOF'
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action":
+    "secretsmanager:GetSecretValue",
+    "Resource": "arn:aws:secretsmanager:us-east-1:000000000000:secret:prod/orders-db/password-*"
+  }]
+}
+EOF
+
+FN=arn:aws:lambda:us-east-1:000000000000
+aws secretsmanager rotate-secret \
+  --secret-id prod/orders-db/password \
+  --rotation-lambda-arn \
+  "$FN:function:rotate-db-password" \
+  --rotation-rules \
+  AutomaticallyAfterDays=30
+
+# answer: it breaks "no secrets in code or
+# version control": Git keeps it forever.
+```
 
 ### Run it for real
 
 ```bash
-docker run -d --name localstack -p 4566:4566 localstack/localstack
-bash stub.sh   # once filled in
-aws --endpoint-url http://localhost:4566 secretsmanager get-secret-value --secret-id prod/orders-db/password
+docker run -d --name localstack \
+  -p 4566:4566 localstack/localstack
+bash stub.sh
+aws secretsmanager get-secret-value \
+  --endpoint-url http://localhost:4566 \
+  --secret-id prod/orders-db/password
 ```

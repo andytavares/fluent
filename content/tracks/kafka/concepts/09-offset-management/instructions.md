@@ -1,64 +1,78 @@
-# Offset Management
+## What you build
 
-## What you'll learn
-
-A consumer's "progress" is entirely captured by committed offsets — and where those offsets live, when they get committed, and what happens when there's no committed offset at all are the details that decide whether a restart replays everything, skips data, or resumes cleanly. This lesson covers the `__consumer_offsets` internal topic, the sync/async commit tradeoff, the at-least-once commit-ordering discipline, and `auto.offset.reset` — including the "earliest on a new group" surprise that catches almost everyone once.
+You configure the consumer group `payment-processors` in `stub.properties`. It reads the full history of a topic and commits with at-least-once discipline. Committed offsets decide whether a restart replays data, skips data or resumes cleanly. This lesson builds on **Retention and Compaction** and **Delivery Semantics**.
 
 ## Key concepts
 
-**Committed offsets live in `__consumer_offsets`, an internal Kafka topic — not in the consumer, not in ZooKeeper, not anywhere external.** Every commit (`commitSync`/`commitAsync`, or an auto-commit) is itself a produce to this internal, compacted topic, keyed by `(group.id, topic, partition)`. This is why offset commits survive consumer restarts and even total group membership changes — the state is durably stored in Kafka itself, replicated like any other topic, not held in a client's memory.
+### Committed offsets live in `__consumer_offsets`
 
-**Auto-commit vs manual commit is a tradeoff between simplicity and control.** `enable.auto.commit=true` (the default) commits the latest returned offsets on a timer (`auto.commit.interval.ms`) in the background, regardless of whether your application has actually finished processing those records — this is convenient but, as covered in the delivery-semantics lesson, silently risks at-most-once behavior (committing before processing completes) unless your processing is so fast the window rarely matters. `enable.auto.commit=false` puts commit timing entirely under your control — the correct choice whenever "did we actually finish processing this batch" matters for your durability guarantee.
+Offsets are not in the consumer, in ZooKeeper or in an external store. Each commit, manual or automatic, is a produce to the internal compacted topic `__consumer_offsets`. The key is `(group.id, topic, partition)`. Kafka replicates this topic like any other, so commits survive restarts and group membership changes.
 
-**The at-least-once commit discipline: commit *after* processing, never before.**
+### Auto-commit trades control for simplicity
+
+`enable.auto.commit=true` is the default. The consumer commits the latest returned offsets on a timer, `auto.commit.interval.ms`, in the background. It does not wait until your application finishes those records. A commit before processing ends is at-most-once behavior.
+
+`enable.auto.commit=false` gives you full control of commit timing. Use it when "did we finish this batch" matters for your guarantee.
+
+### Commit after processing, never before
 
 ```
 records = consumer.poll(timeout);
 for (record : records) {
-    process(record);          // do the work FIRST
+    // do the work first
+    process(record);
 }
-consumer.commitSync();        // THEN commit — only now is "progress" durable
+// then commit: progress is now durable
+consumer.commitSync();
 ```
 
-If the process crashes between `process()` and `commitSync()`, the next consumer to pick up that partition re-reads from the last *committed* offset — reprocessing some records (at-least-once, safe if processing is idempotent downstream) rather than silently skipping anything.
+A crash between `process()` and `commitSync()` is safe. The next consumer re-reads from the last committed offset. It reprocesses some records instead of skipping any. That is at-least-once, safe when downstream processing is idempotent.
 
-**`commitSync()` vs `commitAsync()` is a latency/reliability tradeoff, and the common production pattern uses both.** `commitSync()` blocks until the broker acknowledges the commit (or throws on failure) — safe, but adds latency to every poll loop iteration. `commitAsync()` fires the commit and moves on immediately, with a callback for failure — faster, but a failed async commit is easy to silently ignore if you don't handle the callback, and async commits can be reordered/overtaken by a later commit if you're not careful. The common pattern: use `commitAsync()` in the main loop for low-latency periodic commits, but call `commitSync()` once, in a `finally` block, right before the consumer shuts down — guaranteeing the *final* commit before exit is durable, even if it's the one time you pay the blocking cost.
+### Use `commitAsync()` in the loop and `commitSync()` at shutdown
 
-**`auto.offset.reset` only matters when there's no valid committed offset to resume from** — a brand-new group, or a committed offset that's aged out of the broker's `offsets.retention.minutes` window, or an offset for a partition the group has never touched. It does **not** apply once a group has a valid committed offset — it's purely the "where do I start from scratch" policy.
+`commitSync()` blocks until the broker acknowledges the commit, or throws on failure. It is safe but adds latency to each loop.
 
-| `auto.offset.reset` | Behavior when there's no valid offset |
-|---|---|
-| `latest` (default) | Start consuming from the **newest** record onward — anything already in the topic before the consumer's first poll is skipped entirely. |
-| `earliest` | Start consuming from the **oldest retained** record — the group sees the topic's entire retained history. |
-| `none` | Throw an exception instead of guessing — forces an explicit decision rather than silently picking a starting point. |
+`commitAsync()` sends the commit and continues at once, with a callback for failure. It is fast, but you can ignore a failed commit by accident. A later commit can also overtake an earlier async commit.
 
-**The classic surprise: `latest` (the default) means a brand-new consumer group silently skips all pre-existing data.** Spin up a new `group.id` against a topic that's had data flowing into it for days, and with the default `auto.offset.reset=latest`, that new group sees *nothing* until the next new record arrives — no error, no warning, just an empty consumer that looks broken but is behaving exactly as configured. Anyone building a new consumer of an existing topic and expecting to backfill from history needs `auto.offset.reset=earliest` explicitly.
+The common pattern: call `commitAsync()` in the main loop. Call `commitSync()` once, in a `finally` block, before the consumer closes. The final commit is then durable.
 
-**Seeking and replaying** use `consumer.seek(partition, offset)` (or `seekToBeginning`/`seekToEnd`) to move a partition's read position outside the normal poll flow — the mechanism behind manual reprocessing, disaster recovery replay, or debugging by rewinding to a known point in time (often combined with `offsetsForTimes()` to find the offset closest to a wall-clock timestamp).
+### `auto.offset.reset` applies only with no valid committed offset
 
-## vs other systems
+It applies to a new group and to an offset older than the broker's `offsets.retention.minutes`. It also applies to a partition the group never read. A group with a valid committed offset ignores it.
 
-Traditional queues (SQS, RabbitMQ) track acknowledgment per message, with the broker managing redelivery of unacked messages automatically. Kafka inverts this: the consumer explicitly manages and commits a position, and there's no broker-side "redeliver this specific unacked message" — replay means moving the position backward and re-reading everything from there forward, at the partition granularity, not the message granularity.
+- **`latest`** (default): start at the newest record. The consumer skips all records that exist before its first poll.
+- **`earliest`**: start at the oldest retained record. The group sees the full retained history.
+- **`none`**: throw an exception. You must make an explicit decision.
+
+### A new group with `latest` skips all existing data
+
+Start a new `group.id` on a topic with days of data. With the default `latest`, the group sees nothing until a new record arrives. There is no error and no warning. To backfill from history, set `auto.offset.reset=earliest`.
+
+### Seek to replay
+
+`consumer.seek(partition, offset)`, `seekToBeginning` and `seekToEnd` move a read position outside the normal poll flow. Use them for manual reprocessing, disaster recovery replay and debugging. `offsetsForTimes()` finds the offset closest to a wall-clock timestamp.
+
+SQS and RabbitMQ track an acknowledgment per message and redeliver unacknowledged messages. Kafka has no per-message redelivery: to replay, move the position back and re-read the partition from there.
 
 ## Watch out
 
-- **A new consumer group with the default `auto.offset.reset=latest` will appear to work (no errors) while silently missing all historical data** — this is one of the most common "why is my new consumer not seeing anything" support tickets in any Kafka shop.
-- **Auto-commit committing before processing finishes is a silent downgrade from at-least-once to at-most-once**, even though `enable.auto.commit=true` is often assumed to be "the safe default."
-- **`commitAsync()` without a final `commitSync()` on shutdown** can lose the last batch's progress — the async commit for the final batch might not have completed (or might have failed silently) before the process exits.
+- A new group with `auto.offset.reset=latest` shows no errors but misses all historical data.
+- Auto-commit before processing finishes silently turns at-least-once into at-most-once.
+- `commitAsync()` with no final `commitSync()` can lose the last batch's progress at shutdown.
 
 ## The task
 
-Configure a consumer group `payment-processors` that must process every historical record on a topic it's newly subscribing to (no data can be silently skipped), and that follows strict at-least-once commit discipline.
+The consumer group `payment-processors` subscribes to a topic for the first time. It must process every historical record and commit at-least-once.
 
-Write `stub.properties` with:
+Write `stub.properties` with these lines:
 
-- `group.id=payment-processors`
-- `enable.auto.commit=false` (manual commit control)
-- `auto.offset.reset=earliest` (a new group must see the topic's full retained history, not just new records)
-- A commented design-answer line stating the commit timing discipline: `# commit-timing=after-processing`
-- A commented design-answer line stating the shutdown commit pattern: `# shutdown-commit=sync-final-commit`
+1. `group.id=payment-processors`.
+2. `enable.auto.commit=false` for manual commit control.
+3. `auto.offset.reset=earliest`. The group must see the full retained history. Do not use `latest`.
+4. A comment with the commit timing: `# commit-timing=after-processing`.
+5. A comment with the shutdown pattern: `# shutdown-commit=sync-final-commit`.
 
-Use exactly this shape:
+Use exactly this content:
 
 ```properties
 group.id=payment-processors

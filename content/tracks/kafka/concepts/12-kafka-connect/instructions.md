@@ -1,16 +1,22 @@
-# Kafka Connect
+## What you build
 
-## What you'll learn
-
-Connect is Kafka's answer to "stop writing bespoke producer/consumer glue code to move data in and out of Kafka" — a framework for running reusable, configuration-driven connectors instead of custom applications. This lesson covers source vs sink connectors, the worker/task/distributed-mode execution model, the converter configuration that trips up nearly everyone, Single Message Transforms, and dead-letter-queue error handling.
+You configure a JDBC sink connector in `stub.properties` that writes the `orders` topic to Postgres. Kafka Connect runs reusable connectors from configuration. You stop writing custom producer and consumer glue code. This lesson builds on **Schema Management**.
 
 ## Key concepts
 
-**Source connectors pull data into Kafka; sink connectors push data out of Kafka.** A **source connector** reads from an external system (a database's CDC log, a filesystem, an API) and produces records to a Kafka topic. A **sink connector** consumes records from a Kafka topic and writes them to an external system (a database, Elasticsearch, S3, a data warehouse). Both are configuration, not code you write — you configure an existing connector plugin (JDBC, Debezium, S3, Elasticsearch, etc.) rather than hand-writing a producer or consumer application.
+### Source connectors write to Kafka; sink connectors read from it
 
-**A Connect cluster is workers running tasks, and distributed mode is how it scales and survives failure.** A **worker** is a JVM process running the Connect runtime. A **connector** (the logical job — "sink these Kafka topics into this Postgres table") is split into one or more **tasks** — the actual units of parallel work, up to `tasks.max`. In **distributed mode**, multiple workers form a cluster (coordinated the same way a consumer group is — via a group protocol), and Connect automatically distributes tasks across available workers and rebalances if a worker joins or leaves. This gives you horizontal scaling and failover without any custom orchestration code — a worker dying just means its tasks get reassigned to the surviving workers.
+A **source connector** reads from an external system and produces records to a Kafka topic. Examples: a database CDC log, a filesystem, an API. A **sink connector** consumes a topic and writes to an external system. Examples: a database, Elasticsearch, S3, a data warehouse. You configure an existing plugin, such as JDBC, Debezium or S3. You write no producer or consumer code.
 
-**Converters translate between Kafka's wire bytes and Connect's internal data format — this is the config almost everyone gets wrong at least once.** `key.converter` and `value.converter` are configured on the **worker** (or overridden per-connector) and control how Connect serializes/deserializes the actual Kafka record bytes — this is a different layer from a producer/consumer application's own serializers. A common mistake: a topic was written with an Avro serializer via the schema registry, but the sink connector's `value.converter` is left at the default `JsonConverter` — the connector doesn't error clearly, it just fails to correctly deserialize the bytes, because it's using the wrong format entirely.
+### Workers run tasks, and distributed mode scales them
+
+A **worker** is a JVM process that runs the Connect runtime. A **connector** is the logical job, for example "sink these topics into this Postgres table". Connect splits it into **tasks**, the units of parallel work, up to `tasks.max`.
+
+In **distributed mode**, several workers form a cluster. They coordinate with a group protocol, like a consumer group. Connect spreads tasks across workers and rebalances when a worker joins or leaves. When a worker dies, the other workers take its tasks.
+
+### Converters must match how the producer wrote the topic
+
+`key.converter` and `value.converter` turn Kafka record bytes into Connect's internal format and back. You set them on the worker or override them per connector. They are a separate layer from an application's serializers.
 
 ```properties
 key.converter=org.apache.kafka.connect.storage.StringConverter
@@ -18,16 +24,20 @@ value.converter=io.confluent.connect.avro.AvroConverter
 value.converter.schema.registry.url=http://schema-registry:8081
 ```
 
-Converters are configured independently for key and value, and must match whatever format actually produced the data on that topic — this is a topic-level fact, not a connector preference, so get it from how the topic is actually written, not from what's convenient to configure.
+The key and value converters are independent. Each must match the format of the data on the topic. That format is a fact of the topic, not a connector preference.
 
-**Single Message Transforms (SMTs) do lightweight, in-flight record modification without a full stream-processing job.** Configured as a chain on a connector (`transforms=<name1>,<name2>`, then per-transform config), SMTs handle things like renaming/masking a field, routing to a different topic based on a field value, or flattening a nested structure — small, stateless, single-record transformations. For anything stateful (joins, aggregations, windowing), that's Kafka Streams territory (covered in the next lesson), not an SMT.
+A common mistake: a producer writes the topic with the Avro registry serializer. The sink keeps the default `JsonConverter`. The connector gives no clear error; it reads the bytes in the wrong format.
 
-**Error tolerance and dead-letter queues decide what happens when a record can't be processed.** `errors.tolerance` controls the connector's reaction to a processing failure (a bad record that fails conversion, a downstream write rejection, etc.):
+### Single Message Transforms change one record in flight
 
-| `errors.tolerance` | Behavior on a failed record |
-|---|---|
-| `none` (default) | The connector task **fails and stops** on the first error — safest for catching problems immediately, but one bad record halts the whole task. |
-| `all` | The connector **logs and skips** the failed record, continuing with the rest — combined with a dead-letter queue, the bad record isn't silently lost, just routed elsewhere for later inspection. |
+You configure SMTs as a chain on a connector: `transforms=<name1>,<name2>`, then the settings for each one. An SMT renames or masks a field, routes to another topic by field value, or flattens a nested structure. SMTs are small, stateless and work on one record. Joins, aggregations and windows belong in Kafka Streams, the next lesson.
+
+### `errors.tolerance` decides what a bad record does
+
+A record can fail conversion, or the downstream system can reject the write:
+
+- **`none`** (default): the task fails and stops on the first error. You see problems at once, but one bad record stops the task.
+- **`all`**: the connector skips the failed record and continues. With a dead letter queue (DLQ), the bad record goes to another topic for later inspection.
 
 ```properties
 errors.tolerance=all
@@ -35,32 +45,47 @@ errors.deadletterqueue.topic.name=orders-sink-dlq
 errors.deadletterqueue.context.headers.enable=true
 ```
 
-The DLQ topic receives the raw failed record plus (with `context.headers.enable=true`) headers describing *why* it failed and which connector/task produced the failure — essential for actually debugging DLQ contents later rather than just accumulating an unexplained pile of rejected records.
+The DLQ topic gets the raw failed record. With `context.headers.enable=true`, headers say why it failed and which connector and task failed. Without them, the DLQ is a pile of rejected records with no explanation.
 
-## vs other systems
-
-Connect's worker/task/distributed-mode model is conceptually similar to a Kubernetes-style controller reconciling desired state (connector configs) against actual running work (tasks on workers), specifically for the "move data between Kafka and an external system" problem. Compared to hand-rolling a producer/consumer bridge application, Connect trades some flexibility for a large ecosystem of pre-built, battle-tested connectors and a standard operational model (REST API for connector management, standard offset tracking, standard error handling) that a bespoke bridge app would have to reimplement from scratch.
+Connect works like a Kubernetes controller: it matches running tasks to the connector configs you declare. Compared to a custom bridge application, you trade some flexibility for many tested connectors. You also get a REST API, offset tracking and error handling.
 
 ## Watch out
 
-- **A converter mismatch is usually a silent, confusing failure, not a clear error** — always match the converter to how the topic was actually serialized, never to "whatever's simplest to configure."
-- **`errors.tolerance=none` (the default) means one malformed record can halt an entire sink task**, which is often the wrong default for a high-volume production pipeline where a handful of bad records shouldn't block the other 99.99% of good ones — but `all` without a configured DLQ means those bad records are simply logged and dropped, not preserved for investigation.
-- **SMTs are for lightweight, single-record, stateless changes — reaching for them to do joins, aggregation, or anything needing state or multiple records is the wrong tool; that's Kafka Streams.**
+- A converter mismatch usually fails silently. Match the converter to the format on the topic.
+- With `errors.tolerance=none`, one malformed record stops a whole sink task.
+- `errors.tolerance=all` with no DLQ drops bad records. You cannot inspect them later.
+- Do not use SMTs for joins, aggregations or anything with state. Use Kafka Streams.
 
 ## The task
 
-Configure a sink connector that writes the `orders` topic (Avro-serialized values, string keys) into a Postgres table, tolerating individual bad records without halting the whole pipeline, routing failures to a dead-letter queue with enough context to debug them later.
+A sink connector writes the `orders` topic to a Postgres table. Values are Avro and keys are strings. A bad record must not stop the pipeline. Failures go to a DLQ with debug context.
 
-Write `stub.properties` with:
+Write `stub.properties` with these lines:
 
-- `name=postgres-orders-sink`
-- `connector.class=io.confluent.connect.jdbc.JdbcSinkConnector`
-- `tasks.max=4`
-- `topics=orders`
-- `connection.url=jdbc:postgresql://db:5432/orders`
-- `key.converter=org.apache.kafka.connect.storage.StringConverter`
-- `value.converter=io.confluent.connect.avro.AvroConverter`
-- `value.converter.schema.registry.url=http://schema-registry:8081`
-- `errors.tolerance=all`
-- `errors.deadletterqueue.topic.name=orders-sink-dlq`
-- `errors.deadletterqueue.context.headers.enable=true`
+1. `name=postgres-orders-sink`.
+2. `connector.class` set to the Confluent `JdbcSinkConnector`.
+3. `tasks.max=4`.
+4. `topics=orders`.
+5. `connection.url=jdbc:postgresql://db:5432/orders`.
+6. `key.converter` set to the Kafka `StringConverter`.
+7. `value.converter` set to the Confluent `AvroConverter`.
+8. `value.converter.schema.registry.url=http://schema-registry:8081`.
+9. `errors.tolerance=all`. Do not leave it at `none`.
+10. `errors.deadletterqueue.topic.name=orders-sink-dlq`.
+11. `errors.deadletterqueue.context.headers.enable=true`.
+
+Use exactly this content:
+
+```properties
+name=postgres-orders-sink
+connector.class=io.confluent.connect.jdbc.JdbcSinkConnector
+tasks.max=4
+topics=orders
+connection.url=jdbc:postgresql://db:5432/orders
+key.converter=org.apache.kafka.connect.storage.StringConverter
+value.converter=io.confluent.connect.avro.AvroConverter
+value.converter.schema.registry.url=http://schema-registry:8081
+errors.tolerance=all
+errors.deadletterqueue.topic.name=orders-sink-dlq
+errors.deadletterqueue.context.headers.enable=true
+```

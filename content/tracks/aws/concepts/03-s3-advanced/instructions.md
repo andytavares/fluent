@@ -1,146 +1,172 @@
-# S3 Advanced
+## What you build
 
-## What you'll learn
-
-Beyond put/get, S3 has a set of bucket-level controls production systems depend on: versioning (and the delete-marker trap that surprises almost everyone the first time), lifecycle rules that automatically age data into cheaper storage, policy-based access control, encryption at rest, and static website hosting. This concept builds on `s3-basics`.
+You write `stub.sh`, a script that sets the bucket-level controls production systems depend on. You turn on versioning, add a lifecycle rule, a bucket policy, encryption at rest and static website hosting. This lesson builds on **S3 Basics**.
 
 ## Key concepts
 
-### Versioning — and delete markers
+### Versioning keeps every past version of an object
 
-Once enabled, versioning keeps every past version of an object instead of overwriting it:
+After you turn on versioning, a write to a key does not overwrite it:
 
 ```bash
-aws --endpoint-url http://localhost:4566 s3api put-bucket-versioning \
-  --bucket fluent-s3-advanced --versioning-configuration Status=Enabled
+aws --endpoint-url "$ENDPOINT_URL" \
+  s3api put-bucket-versioning \
+  --bucket fluent-s3-advanced \
+--versioning-configuration Status=Enabled
 ```
 
-Every `PutObject` to the same key now creates a **new version** with its own version ID; nothing is overwritten or lost. Here's the part that trips people up: **`DeleteObject` on a versioned bucket does not delete anything.** It inserts a *delete marker* — a new, zero-byte "version" that makes the object appear gone from normal `GetObject`/`ListObjects` calls, while every real version still exists underneath.
+Each `PutObject` to the same key creates a **new version** with its own version ID. S3 overwrites nothing and loses nothing.
+
+### `DeleteObject` on a versioned bucket adds a delete marker
+
+On a versioned bucket, `DeleteObject` removes nothing. It inserts a *delete marker*: a new, zero-byte version. Normal `GetObject` and `ListObjects` calls then treat the object as gone. Every real version still exists underneath.
 
 ```bash
-aws --endpoint-url http://localhost:4566 s3api delete-object \
-  --bucket fluent-s3-advanced --key report.csv
-# object appears deleted, but nothing was actually removed
+aws --endpoint-url "$ENDPOINT_URL" \
+  s3api delete-object \
+  --bucket fluent-s3-advanced \
+  --key report.csv
+# The object looks deleted.
+# Nothing was removed.
 
-aws --endpoint-url http://localhost:4566 s3api list-object-versions \
-  --bucket fluent-s3-advanced --prefix report.csv
-# shows the original version AND the new delete marker
+aws --endpoint-url "$ENDPOINT_URL" \
+  s3api list-object-versions \
+  --bucket fluent-s3-advanced \
+  --prefix report.csv
+# Shows the original version
+# and the new delete marker.
 ```
 
-To *actually* remove data (and reclaim storage) from a versioned bucket, you must delete the delete marker itself and every real version, each by its specific `--version-id`. This is also exactly how you "undelete" something: delete the delete marker, and the underlying version becomes visible again.
+To remove the data and free the storage, delete the marker and every real version, each by its `--version-id`. To undelete an object, delete only the delete marker. The version below it becomes visible again.
 
-### Lifecycle rules
+### A lifecycle rule moves or expires objects by age
 
-A lifecycle configuration automatically transitions or expires objects based on age, without you writing a cron job:
+A lifecycle configuration moves objects to another storage class, or deletes them, by age. You do not write a cron job:
 
 ```bash
-aws --endpoint-url http://localhost:4566 s3api put-bucket-lifecycle-configuration \
+aws --endpoint-url "$ENDPOINT_URL" \
+  s3api \
+  put-bucket-lifecycle-configuration \
   --bucket fluent-s3-advanced \
   --lifecycle-configuration '{
-    "Rules": [{
-      "ID": "archive-old-logs",
-      "Status": "Enabled",
-      "Filter": {"Prefix": "logs/"},
-      "Transitions": [{"Days": 30, "StorageClass": "STANDARD_IA"}],
-      "Expiration": {"Days": 365}
-    }]
-  }'
+  "Rules": [{
+    "ID": "archive-old-logs",
+    "Status": "Enabled",
+    "Filter": {"Prefix": "logs/"},
+    "Transitions": [{
+      "Days": 30,
+      "StorageClass": "STANDARD_IA"
+    }],
+    "Expiration": {"Days": 365}
+  }]
+}'
 ```
 
-This says: anything under `logs/` moves to Standard-IA after 30 days, and is deleted outright after 365. Lifecycle rules also support `NoncurrentVersionTransitions`/`NoncurrentVersionExpiration` — the mechanism for cleaning up old versions in a versioned bucket, since versioning alone never deletes anything on its own.
+Objects under `logs/` move to Standard-IA after 30 days. S3 deletes them after 365 days. Versioning alone never deletes anything. To clean up old versions, use `NoncurrentVersionTransitions` and `NoncurrentVersionExpiration` in a lifecycle rule.
 
-### Bucket policies vs ACLs
+### Use bucket policies, not ACLs
 
-Two overlapping mechanisms control access, and one of them is legacy:
+Two mechanisms control access to a bucket:
 
-- **ACLs** (Access Control Lists) are a per-object or per-bucket grant list (`READ`, `WRITE`, `FULL_CONTROL` to specific accounts or predefined groups like `AllUsers`). They predate IAM and are AWS's oldest access-control mechanism.
-- **Bucket policies** are IAM-style JSON documents attached to the bucket — the same `Effect`/`Action`/`Resource`/`Condition` shape you'll use for IAM policies in the next concept, but scoped to one bucket and evaluated against *any* principal, not just your own account's users.
+- An **ACL** (access control list) is a grant list per object or per bucket. It grants `READ`, `WRITE` or `FULL_CONTROL` to accounts or predefined groups like `AllUsers`. ACLs are older than IAM and are the oldest access control in AWS.
+- A **bucket policy** is an IAM-style JSON document on the bucket. It has the same `Effect`, `Action`, `Resource` and `Condition` shape as IAM policies in the next concept. It applies to *any* principal, not only the users in your account.
 
-AWS's own guidance (and every production checklist) says: **use bucket policies, not ACLs.** ACLs can't express conditions, can't reference IAM roles cleanly, and modern S3 buckets have ACLs disabled by default (`ObjectOwnership: BucketOwnerEnforced`). Treat ACLs as something you'll encounter in old Terraform modules, not something to write yourself.
+AWS guidance and production checklists say the same: use bucket policies. ACLs cannot express conditions and cannot reference IAM roles cleanly. New buckets have ACLs off by default (`ObjectOwnership: BucketOwnerEnforced`). You find ACLs in old Terraform modules; do not write new ones.
 
 ```bash
-aws --endpoint-url http://localhost:4566 s3api put-bucket-policy \
+aws --endpoint-url "$ENDPOINT_URL" \
+  s3api put-bucket-policy \
   --bucket fluent-s3-advanced \
   --policy '{
-    "Version": "2012-10-17",
-    "Statement": [{
-      "Sid": "PublicReadGetObject",
-      "Effect": "Allow",
-      "Principal": "*",
-      "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::fluent-s3-advanced/public/*"
-    }]
-  }'
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Sid": "PublicReadGetObject",
+    "Effect": "Allow",
+    "Principal": "*",
+    "Action": "s3:GetObject",
+    "Resource":
+"arn:aws:s3:::fluent-s3-advanced/public/*"
+  }]
+}'
 ```
 
-### Encryption
+### Server-side encryption encrypts objects at rest
 
-Server-side encryption at rest — AWS encrypts objects before writing them to disk and decrypts on read, transparent to callers:
+S3 encrypts each object before it writes it to disk, and decrypts it on read. Callers see no difference.
 
 ```bash
-aws --endpoint-url http://localhost:4566 s3api put-bucket-encryption \
+aws --endpoint-url "$ENDPOINT_URL" \
+  s3api put-bucket-encryption \
   --bucket fluent-s3-advanced \
-  --server-side-encryption-configuration '{
-    "Rules": [{
-      "ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "aws:kms"}
-    }]
-  }'
+  --server-side-encryption-configuration \
+'{"Rules": [{
+  "ApplyServerSideEncryptionByDefault":
+    {"SSEAlgorithm": "aws:kms"}
+}]}'
 ```
 
-`AES256` (S3-managed keys, "SSE-S3") requires zero setup and is the sane default. `aws:kms` ("SSE-KMS") uses a customer-managed KMS key, giving you audit trails (every decrypt is a logged KMS API call) and the ability to revoke access by disabling the key — at the cost of a KMS API call per object access.
+`AES256` (SSE-S3) uses S3-managed keys. It needs no setup and is a good default. `aws:kms` (SSE-KMS) uses a customer-managed KMS key. Each decrypt is a logged KMS API call, so you get an audit trail. You can revoke access when you disable the key. The cost is one KMS API call per object access.
 
-### Static website hosting
+### S3 can serve a bucket as a static website
 
-S3 can serve a bucket's contents directly as a website (no origin server), useful for pure static sites or as a CDN origin behind CloudFront:
+S3 can serve the contents of a bucket as a website with no origin server. Use it for static sites, or as an origin behind CloudFront:
 
 ```bash
-aws --endpoint-url http://localhost:4566 s3api put-bucket-website \
+aws --endpoint-url "$ENDPOINT_URL" \
+  s3api put-bucket-website \
   --bucket fluent-s3-advanced \
   --website-configuration '{
-    "IndexDocument": {"Suffix": "index.html"},
-    "ErrorDocument": {"Key": "error.html"}
-  }'
+  "IndexDocument": {
+    "Suffix": "index.html"
+  },
+  "ErrorDocument": {"Key": "error.html"}
+}'
 ```
 
-This makes the bucket serve HTTP requests directly — it requires a public bucket policy allowing `s3:GetObject` (website hosting and "keep it private" are mutually exclusive for a given prefix).
+Website hosting needs a public bucket policy that allows `s3:GetObject`. A prefix cannot be both served as a website and private.
 
-## vs other tools
+### Versioning differs from Git and backups
 
-| | S3 versioning | Git | Traditional backups |
-|---|---|---|---|
-| Granularity | Per-object, automatic on every write | Per-commit, explicit | Per-snapshot, scheduled |
-| "Delete" semantics | Adds a marker; data stays until explicitly purged | `git rm` + commit; history still recoverable | Depends on retention policy |
-| Storage cost | Every version billed until expired via lifecycle | Compressed deltas | Deduplicated, policy-driven |
+Git records history per explicit commit. S3 versioning records a version on each write, automatically. You pay for every stored version until a lifecycle rule expires it.
 
 ## Watch out
 
-- **Versioning cannot be disabled once enabled** — only suspended (`Status=Suspended`). Existing versions remain; new writes stop creating new versions.
-- **A `DeleteObject` call "succeeding" on a versioned bucket tells you nothing about whether data was destroyed.** Always check `list-object-versions` if you need to confirm actual removal (e.g., for compliance/GDPR deletion requirements).
-- **Lifecycle transitions have minimum object size/age constraints** on real AWS (e.g., you can't transition to `GLACIER` before 30 days per some class combinations) — LocalStack is permissive, so don't assume something that works here is guaranteed to be schedulable exactly the same way on real AWS without checking current transition rules.
-- **A public bucket policy for website hosting is easy to accidentally make broader than intended** — scope `Resource` to the specific prefix (`arn:...:::bucket/public/*`), never the whole bucket, unless every object truly should be public.
+- You try to turn off versioning. You cannot. You can only suspend it with `Status=Suspended`. Old versions stay, and new writes stop creating versions.
+- You trust a successful `DeleteObject` on a versioned bucket. It does not prove that data is gone. For compliance or GDPR deletion, check `list-object-versions`.
+- You assume a lifecycle rule that works on LocalStack works on AWS. LocalStack does not enforce the AWS transition limits. By default, objects smaller than 128 KB do not transition. One rule cannot move an object out of a class before that class's minimum storage duration.
+- You scope a public website policy to the whole bucket. Scope `Resource` to one prefix, like `bucket/public/*`, unless every object must be public.
 
 ## The task
 
-Fill in `stub.sh` so it, in order, against a bucket named `fluent-s3-advanced`:
+Fill in `stub.sh`. Work on the bucket `fluent-s3-advanced` and do these steps in order:
 
-1. Creates the bucket.
-2. Enables versioning (`Status=Enabled`).
-3. Deletes the object `report.csv` and then lists all object versions under that prefix to show the delete marker — add a comment line `# answer: <your answer>` explaining in one sentence why the delete-object call didn't actually remove any data.
-4. Applies a lifecycle configuration with a rule `archive-old-logs` that transitions objects under prefix `logs/` to `STANDARD_IA` after 30 days and expires them after 365 days.
-5. Applies a bucket policy allowing public `s3:GetObject` on everything under `public/*`.
-6. Enables default server-side encryption using `aws:kms`.
-7. Configures static website hosting with `index.html` as the index document and `error.html` as the error document.
+1. Create the bucket with `aws s3 mb s3://fluent-s3-advanced`. Write the name in full: the test checks this literal, not `$BUCKET`.
+2. Turn on versioning with `Status=Enabled`.
+3. Delete the object `report.csv` with `s3api delete-object`.
+4. List all object versions under that prefix, to show the delete marker.
+5. Add a comment line `# answer: <your answer>`. In one sentence, say why the delete call removed no data. Use the word "delete".
+6. Add a lifecycle rule `archive-old-logs`. It moves objects under `logs/` to `STANDARD_IA` after 30 days. It expires them after 365 days.
+7. Add a bucket policy that allows public `s3:GetObject` on everything under `public/*`.
+8. Turn on default server-side encryption with `aws:kms`.
+9. Turn on static website hosting with `index.html` as the index document and `error.html` as the error document.
 
-### Run it for real
+Write the expiration as `"Days": 365` on one line. The commands look like the key concepts above. Steps 2 to 5 look like this:
 
 ```bash
-docker run -d --name localstack -p 4566:4566 localstack/localstack
-echo "a,b,c" > report.csv
-aws --endpoint-url http://localhost:4566 s3 mb s3://fluent-s3-advanced
-aws --endpoint-url http://localhost:4566 s3api put-bucket-versioning \
-  --bucket fluent-s3-advanced --versioning-configuration Status=Enabled
-aws --endpoint-url http://localhost:4566 s3 cp report.csv s3://fluent-s3-advanced/report.csv
-bash stub.sh   # once filled in
+aws --endpoint-url "$ENDPOINT_URL" \
+  s3api put-bucket-versioning \
+  --bucket fluent-s3-advanced \
+--versioning-configuration Status=Enabled
+aws --endpoint-url "$ENDPOINT_URL" \
+  s3api delete-object \
+  --bucket fluent-s3-advanced \
+  --key report.csv
+aws --endpoint-url "$ENDPOINT_URL" \
+  s3api list-object-versions \
+  --bucket fluent-s3-advanced \
+  --prefix report.csv
+# answer: delete-object only adds a
+# delete marker; old versions remain.
 ```
 
-Inspect `list-object-versions` output — you'll see both the original version and the delete marker.
+To run it against LocalStack, create the bucket, turn on versioning and upload `report.csv` first. Then run `bash stub.sh`. The `list-object-versions` output shows the original version and the delete marker.

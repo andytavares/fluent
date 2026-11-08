@@ -1,110 +1,126 @@
-# Recording Rules
+## What you build
 
-## What you'll learn
-
-The RED+USE queries from the last lesson are expensive to recompute on every dashboard load, and worse, if five different dashboards each write their own slightly-different version of "error ratio," you get five different numbers during an incident. Recording rules solve both: precompute expensive expressions on a schedule and store the result as a new, named time series — the single definition everyone's dashboards and alerts read from.
+You write a Prometheus recording rules file that stores the RED queries as named, precomputed series. Dashboards and alerts then read one shared definition. This lesson builds on **RED and USE Methods**.
 
 ## Key concepts
 
-**Why recording rules exist — two independent reasons.**
+### Recording rules make dashboards fast
 
-1. **Dashboard latency.** `histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket[5m])))` re-scans every raw bucket sample across every instance, every time any dashboard panel using it renders. At high cardinality (many routes × many instances × many buckets), this can take seconds — noticeable, and multiplied across every viewer of every dashboard. A recording rule computes it once, on Prometheus's own evaluation schedule, and a dashboard just reads the pre-aggregated series — a cheap, instant lookup.
-2. **Consistent definitions.** Without a recording rule, "error rate" gets redefined ad hoc in every dashboard/alert that needs it, and definitions drift (one dashboard uses `status=~"5.."`, another uses `status="500"` only, missing 502/503/504). A recording rule is the single named source of truth every consumer reads.
+A p99 query scans every raw bucket sample on every instance each time a panel renders. At high cardinality, that takes seconds, for every viewer of every dashboard. A recording rule computes the result once on a schedule, and the dashboard reads the stored series.
 
-**Rule groups and evaluation intervals** — rules are organized into named groups, each with its own `interval` (how often its rules are (re-)evaluated):
+```promql
+histogram_quantile(
+  0.99,
+  sum by (le) (rate(
+  http_request_duration_seconds_bucket[5m]
+  ))
+)
+```
+
+### Recording rules give one definition
+
+Without a rule, each dashboard and alert writes its own "error rate". The definitions drift. One uses `status=~"5.."`, another uses `status="500"` and misses 502, 503 and 504. A recording rule is the one named source that every consumer reads.
+
+### Rules live in groups with an interval
+
+Each group has a name and an `interval`: how often Prometheus evaluates its rules. Prometheus evaluates the rules in one group in order. A rule can read the output of an earlier rule in the same group. Groups run independently, so do not assume an order between groups.
 
 ```yaml
 groups:
-  - name: web-app-red
-    interval: 30s
-    rules:
-      - record: job:http_requests:rate5m
-        expr: sum by (job) (rate(http_requests_total[5m]))
+- name: web-app-red
+  interval: 30s
+  rules:
+  - record: job:http_requests:rate5m
+    expr: sum by (job) (rate(http_requests_total[5m]))
 ```
 
-Rules within a group are evaluated sequentially and can reference each other's *just-computed* output within the same evaluation cycle if ordered correctly — but rules across *different* groups run independently and shouldn't assume ordering.
+Keep each `expr` on one line. The task's checks read one line at a time.
 
-**Naming convention: `level:metric:operations`.** Prometheus's own style guide (and every serious production setup) names recording rules with this exact colon-delimited convention:
+### Names follow `level:metric:operations`
 
-- `level` — the aggregation level: `instance`, `job`, or a custom level like `route` or `job_route`.
-- `metric` — the base metric name, unit included, no `_total`/`_bucket` suffix.
-- `operations` — the operations applied, in application order, colon-separated: `rate5m`, `rate5m:avg`, `sum`.
+The Prometheus naming convention has three colon-separated parts:
+
+- `level`: the aggregation level, for example `instance`, `job`, `route` or `job_route`.
+- `metric`: the base metric name, with its unit and without `_total` or `_bucket`.
+- `operations`: the operations in the order applied, for example `rate5m` or `rate5m:avg`.
 
 ```
-job:http_requests:rate5m              # rate() then sum by (job)
-job_route:http_requests:rate5m        # rate() then sum by (job, route)
-job:http_request_errors:ratio_rate5m  # error ratio, aggregated by job
-instance:node_cpu:rate5m              # per-instance CPU rate
+# rate(), then sum by (job)
+job:http_requests:rate5m
+# rate(), then sum by (job, route)
+job_route:http_requests:rate5m
+# error ratio, aggregated by job
+job:http_request_errors:ratio_rate5m
+# per-instance CPU rate
+instance:node_cpu:rate5m
 ```
 
-This convention lets anyone reading a recorded metric name infer its aggregation level and derivation without opening the rule file — critical once you have dozens of recording rules across a large PromQL codebase.
+A reader can tell the level and the source of a recorded series from its name, without the rule file. This matters once you have dozens of rules.
 
-**Building SLI records.** Take the RED pack from the last lesson and turn each query into a recording rule:
+### Later rules reuse earlier rules
+
+An error-ratio rule can divide two recorded series by name. The expensive sub-expressions run once. Do not wrap the recorded series in `rate()` again: they are already rates.
 
 ```yaml
-groups:
-  - name: web-app-red
-    interval: 30s
-    rules:
-      - record: job:http_requests:rate5m
-        expr: sum by (job) (rate(http_requests_total[5m]))
-
-      - record: job:http_request_errors:rate5m
-        expr: sum by (job) (rate(http_requests_total{status=~"5.."}[5m]))
-
-      - record: job:http_request_errors:ratio_rate5m
-        expr: job:http_request_errors:rate5m / job:http_requests:rate5m
-
-      - record: job:http_request_duration_seconds:p99_rate5m
-        expr: histogram_quantile(0.99, sum by (job, le) (rate(http_request_duration_seconds_bucket[5m])))
+- record: >-
+    job:http_request_errors:ratio_rate5m
+  expr: >-
+    job:http_request_errors:rate5m
+    / job:http_requests:rate5m
 ```
 
-Note the third rule *references the first two rules' output by name* — a key benefit of recording rules: expensive sub-expressions get computed once and reused, rather than recomputed inline in a longer expression (and note it's written without `rate(...)` around it — it's already a rate, referencing a recorded rate-series directly).
+### The interval sets the cost
 
-**Evaluation cost thinking.** Every recording rule adds continuous evaluation load, proportional to `1/interval` times the cost of its expression — a rule with a 15s interval scanning a large cardinality range costs roughly 4x what the same rule at 60s costs, running continuously, whether or not anyone's looking at a dashboard right now. The tradeoff: shorter intervals reduce dashboard/alert staleness (data is at most `interval` old) but raise steady-state Prometheus CPU/memory cost. Match the interval to how fast the underlying value actually needs to be — 30s is a common default for RED-style SLIs; alerting-critical burn-rate inputs (next lesson) sometimes go tighter.
+Each rule adds load in proportion to its expression cost divided by its interval. A rule at 15s costs about four times the same rule at 60s, whether or not anyone looks at a dashboard. A shorter interval gives fresher data: the value is at most one interval old. Match the interval to how fast the value must update. 30s is a common default for RED series. Burn-rate inputs for alerts sometimes use a shorter interval.
 
-## vs other tools
-
-Materialized views in a data warehouse are the closest SQL analogy — precomputed, refreshed on a schedule, queried directly instead of recomputing the underlying joins/aggregations every time. Grafana's own query caching solves the dashboard-latency problem partially but not the consistent-definition problem — two different dashboards can still cache two different ad hoc "error rate" expressions. Recording rules solve both at the source.
+Recording rules are like materialized views in a data warehouse: precomputed on a schedule and queried directly. Grafana query caching speeds up a dashboard, but two dashboards can still cache two different "error rate" queries.
 
 ## Watch out
 
-- **A recording rule expression is still just PromQL — it inherits every mistake from earlier lessons.** A recording rule with a bad `ignoring`/`on` clause silently records an empty series forever, and because it looks like a normal metric to consumers, this is *harder* to notice than the same mistake in an ad hoc dashboard query.
-- **Don't rate() an already-recorded rate series.** If `job:http_requests:rate5m` is itself the output of a `rate()`, referencing it directly (not wrapping it in another `rate()`) in a dependent rule is correct — wrapping it again produces nonsense (rate of a rate).
-- **Group interval, not global `evaluation_interval`, controls a rule's actual cadence** if you set a per-group `interval:` — omitting it falls back to the global default from your `prometheus.yml`, which may be looser or tighter than you intend for a specific rule group.
+- A rule expression is still PromQL. A bad `ignoring` or `on` clause records an empty series forever.
+- That empty series looks like a normal metric, so it is harder to find than a bad dashboard query.
+- Do not wrap a recorded rate in another `rate()`. A rate of a rate is meaningless.
+- A group without `interval` uses the global `evaluation_interval` from `prometheus.yml`. That value can be wrong for the group.
 
 ## The task
 
-Write `red-recording-rules.yaml`: a Prometheus recording rules file implementing the RED pack from the last lesson as named, reusable series.
+Write `stub.yaml`: the recording rules file `red-recording-rules.yaml` for the RED queries. Prometheus loads it through a `rule_files:` entry.
 
-Requirements — a `groups:` list with one group:
+1. Add a `groups:` list with one group.
+2. Name the group `web-app-red`.
+3. Set `interval: 30s`.
+4. Add a `rules:` list with exactly four recording rules, in this order.
+5. Rule 1: `record: job:http_requests:rate5m`, `expr: sum by (job) (rate(http_requests_total[5m]))`.
+6. Rule 2: `record: job:http_request_errors:rate5m`, the same sum filtered to `status=~"5.."`.
+7. Rule 3: `record: job:http_request_errors:ratio_rate5m`, `expr: job:http_request_errors:rate5m / job:http_requests:rate5m`.
+8. Rule 4: `record: job:http_request_duration_seconds:p99_rate5m`, the p99 from `histogram_quantile(0.99, ...)` summed by `(job, le)`.
 
-- `name: web-app-red`
-- `interval: 30s`
-- `rules:` a list of exactly four recording rules, in this order (so later rules can reference earlier ones by name):
-  1. `record: job:http_requests:rate5m`, `expr: sum by (job) (rate(http_requests_total[5m]))`
-  2. `record: job:http_request_errors:rate5m`, `expr: sum by (job) (rate(http_requests_total{status=~"5.."}[5m]))`
-  3. `record: job:http_request_errors:ratio_rate5m`, `expr: job:http_request_errors:rate5m / job:http_requests:rate5m`
-  4. `record: job:http_request_duration_seconds:p99_rate5m`, `expr: histogram_quantile(0.99, sum by (job, le) (rate(http_request_duration_seconds_bucket[5m])))`
-
-Expected shape:
+The order matters: rule 3 reads the output of rules 1 and 2 by name. Rule 3 has no `rate()` around the recorded series. Do not leave `TODO` comments in the file.
 
 ```yaml
 groups:
-  - name: web-app-red
-    interval: 30s
-    rules:
-      - record: job:http_requests:rate5m
-        expr: sum by (job) (rate(http_requests_total[5m]))
+- name: web-app-red
+  interval: 30s
+  rules:
+  - record: job:http_requests:rate5m
+    expr: sum by (job) (rate(http_requests_total[5m]))
 
-      - record: job:http_request_errors:rate5m
-        expr: sum by (job) (rate(http_requests_total{status=~"5.."}[5m]))
+  - record: job:http_request_errors:rate5m
+    expr: |
+      sum by (job) (rate(
+        http_requests_total{
+          status=~"5.."
+        }[5m]
+      ))
 
-      - record: job:http_request_errors:ratio_rate5m
-        expr: job:http_request_errors:rate5m / job:http_requests:rate5m
+  - record: job:http_request_errors:ratio_rate5m
+    expr: job:http_request_errors:rate5m / job:http_requests:rate5m
 
-      - record: job:http_request_duration_seconds:p99_rate5m
-        expr: histogram_quantile(0.99, sum by (job, le) (rate(http_request_duration_seconds_bucket[5m])))
+  - record: job:http_request_duration_seconds:p99_rate5m
+    expr: |
+      histogram_quantile(0.99,
+        sum by (job, le) (rate(
+      http_request_duration_seconds_bucket[5m]
+        ))
+      )
 ```
-
-This is exactly the file `prometheus --config.file=prometheus.yml` would load via a `rule_files:` entry, and exactly what the alerting lesson's burn-rate rules will read from instead of recomputing the error ratio inline.

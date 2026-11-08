@@ -1,60 +1,101 @@
-# PromQL Aggregations
+## What you build
 
-## What you'll learn
-
-Individual series (one per pod, one per route) are rarely what you want on a dashboard — you want "total across all pods" or "worst route." This lesson covers aggregation operators (`sum`, `avg`, `count`, `by`/`without`), `topk`/`bottomk`, `quantile`, binary operators with vector matching, and `absent()` — the tools for turning per-series data into the operational answers people in this track actually ask for.
+You write seven annotated PromQL queries that turn per-series data into operational answers. They use `sum`, `by`, `without`, `topk`, vector matching and `absent()`. This lesson builds on **PromQL Basics**.
 
 ## Key concepts
 
-**Aggregation operators collapse multiple series into fewer series**, grouped by the labels you keep:
+### Aggregation operators collapse series
+
+A dashboard rarely needs one series per pod or per route. It needs "total across all pods" or "worst route". Aggregation operators group series by the labels you keep.
 
 ```promql
-sum(rate(http_requests_total[5m]))                          # one number: total request rate, all labels dropped
-sum by (route) (rate(http_requests_total[5m]))               # one number per route, everything else collapsed
-sum without (instance) (rate(http_requests_total[5m]))        # keeps every label except instance (collapses replicas)
+# One number: all labels dropped
+sum(rate(http_requests_total[5m]))
+
+# One number per route
+sum by (route) (
+  rate(http_requests_total[5m]))
+
+# Every label except instance
+sum without (instance) (
+  rate(http_requests_total[5m]))
 ```
 
-`by (labels...)` keeps *only* the named labels, dropping everything else. `without (labels...)` keeps every label *except* the named ones. Use `by` when you know exactly which dimension you're grouping on (route, status, method); use `without` when you want to collapse one specific dimension (instance/pod) while keeping everything else you didn't anticipate — `without (instance)` survives a schema change that adds a new label better than an equivalent `by (...)` listing every label except instance.
+`by (labels)` keeps only the named labels. `without (labels)` keeps every label except the named ones. Use `by` when you know the grouping dimension, such as route, status or method.
 
-**The other aggregation functions**, same `by`/`without` syntax:
+Use `without` to collapse one dimension, such as instance or pod, and keep all the others. `without (instance)` keeps working when someone adds a new label. A `by` list of every other label does not.
+
+### Other aggregations use the same syntax
 
 ```promql
-avg by (route) (http_request_duration_seconds_sum / http_request_duration_seconds_count)  # average latency per route
-max by (job) (process_resident_memory_bytes)                 # peak memory per job
-min by (job) (up)                                             # is every instance in a job up? (1 if all up, else 0 present but min catches any 0)
-count by (status) (http_requests_total)                       # how many distinct series (not requests!) per status
+# Average latency per route
+avg by (route) (
+  http_request_duration_seconds_sum
+  / http_request_duration_seconds_count)
+
+# Peak memory per job
+max by (job) (
+  process_resident_memory_bytes)
+
+# 0 if any instance in the job is down
+min by (job) (up)
+
+# Series per status, not requests
+count by (status) (http_requests_total)
 ```
 
-`count` counts the number of *series*, not a metric value — `count(up)` tells you how many targets exist, not anything about request volume.
+`count` counts series, not a metric value. `count(up)` tells you how many targets exist. It says nothing about request volume.
 
-**`topk` / `bottomk` — the N largest/smallest series by value**, essential for "which route is slowest" style panels:
+### `topk` and `bottomk` return the N largest or smallest series
+
+Use them for panels such as "which route is slowest".
 
 ```promql
-topk(5, sum by (route) (rate(http_requests_total{status=~"5.."}[5m])))   # top 5 routes by error rate
-bottomk(3, avg_over_time(up[1h]))                                        # 3 targets with the worst uptime ratio
+# Top 5 routes by error rate
+topk(5, sum by (route) (
+  rate(http_requests_total{
+    status=~"5.."}[5m])))
+
+# 3 targets with the worst uptime ratio
+bottomk(3, avg_over_time(up[1h]))
 ```
 
-Unlike `sum`/`avg`, `topk`/`bottomk` don't need `by`/`without` — they operate over whatever series the inner expression already produced and return that many full series (with all original labels intact), not a single collapsed number.
+`topk` and `bottomk` need no `by` or `without`. They work on the series the inner expression produced. They return that many full series with all their original labels, not one collapsed number.
 
-**`quantile()` — the *aggregation* function, not `histogram_quantile()`.** These are easy to confuse: `quantile(0.95, some_instant_vector)` computes a quantile *across a set of series* at one instant (e.g., "p95 memory usage across all pods, right now") using nearest-rank interpolation over the actual sample values. `histogram_quantile()` computes a quantile *within one (possibly summed) histogram's buckets* over time. They solve different problems and are not interchangeable.
+### `quantile()` is not `histogram_quantile()`
 
-**Binary operators and vector matching** — arithmetic between two instant vectors matches series by identical label sets, which is rarely what you want across two *different* metrics:
+`quantile(0.95, v)` computes a quantile across a set of series at one instant. An example is "p95 memory use across all pods, now". The result is the value that ranks at φ × N among the N sample values.
+
+`histogram_quantile()` computes a quantile from the buckets of one histogram, which you can sum first. The two solve different problems.
+
+### Binary operators match identical label sets
+
+Arithmetic between two instant vectors matches series with identical label sets. Across two different expressions, that is rarely what you want.
 
 ```promql
-rate(http_requests_total{status=~"5.."}[5m])
-  /
-sum without (status) (rate(http_requests_total[5m]))
+rate(http_requests_total{
+  status=~"5.."}[5m])
+/
+sum without (status) (
+  rate(http_requests_total[5m]))
 ```
 
-This divides error rate by total rate — but the numerator still has a `status` label the denominator doesn't. Prometheus's default matching requires identical label sets on both sides, so this needs `ignoring`:
+This divides the error rate by the total rate. But the left side still has a `status` label that the right side does not. Default matching needs identical label sets, so this returns no data. Remove `status` from both sides:
 
 ```promql
-sum without (status) (rate(http_requests_total{status=~"5.."}[5m]))
-  /
-sum without (status) (rate(http_requests_total[5m]))
+sum without (status) (
+  rate(http_requests_total{
+    status=~"5.."}[5m]))
+/
+sum without (status) (
+  rate(http_requests_total[5m]))
 ```
 
-Or, matching a many-to-one relationship (e.g., dividing a per-instance metric by a per-job total), you need `group_left`/`group_right` to tell Prometheus which side has the "extra" labels:
+SQL joins always name their join keys. PromQL joins on every label both sides have, so `ignoring` and `on` make the join keys explicit.
+
+### `on` and `group_left` match many-to-one
+
+`on (labels)` matches only on the named labels. It is the inverse of `ignoring`. `group_left` and `group_right` say which side can match more than one series on the other side. You need them when the two sides have no strict 1:1 label match, for example a per-instance metric divided by a per-job total.
 
 ```promql
 node_memory_MemAvailable_bytes
@@ -62,71 +103,82 @@ node_memory_MemAvailable_bytes
 node_memory_MemTotal_bytes
 ```
 
-`on (labels)` restricts matching to only the named labels (the inverse of `ignoring`); `group_left`/`group_right` says "the left/right side may match multiple series on the right/left" — required whenever the two sides don't have a strict 1:1 label correspondence.
+### `absent()` detects a missing series
 
-**`absent()` — detects the total absence of a series**, which is different from a series being present with value 0. Essential for "is anything even scraping this job" alerts:
+A missing series is not the same as a series with value 0.
 
 ```promql
 absent(up{job="critical-service"})
 ```
 
-Returns `1` if no series matches `up{job="critical-service"}` at all (the job doesn't exist / was never scraped / all instances vanished), and returns nothing if at least one matching series exists — regardless of that series' value. This catches a class of failure `up == 0` alerts miss entirely: total absence, e.g., service discovery lost every target so there's nothing to report `0` from.
+It returns `1` when no series matches `up{job="critical-service"}`. That happens when the job does not exist, was never scraped or lost all its instances. It returns nothing when one or more series match, whatever their value.
 
-## vs other tools
-
-SQL's `GROUP BY` is the closest analogy to `by (...)`, but PromQL's default binary-operator matching (exact label-set equality) has no SQL equivalent — SQL joins are always explicit about their join keys, while PromQL implicitly joins on "every label both sides have," which is exactly why `ignoring`/`on` exist: to make that implicit join explicit when it isn't what you want.
+An `up == 0` alert misses total absence. When service discovery loses every target, no series is left to report `0`.
 
 ## Watch out
 
-- **Forgetting `ignoring`/`on` on cross-metric division is the single most common PromQL error** — the query silently returns *no data* (not an error) because no series pair has an identical label set, and a panel with no data looks the same as a panel querying the wrong metric name. Always check: are both sides of a binary operator the same metric family? If not, expect to need `ignoring` or `on`.
-- **`count()` counts series, `sum()` counts values.** `count(http_requests_total)` is "how many distinct method/route/status combinations exist," not "how many requests happened" — a frequent misread on first exposure to PromQL.
-- **`topk`/`bottomk` on a live dashboard reorders which series are shown from one refresh to the next**, which can look like flickering/inconsistent data to someone unfamiliar with the query — this is expected: the top 5 by value at 10:00:00 may differ from the top 5 at 10:00:15.
+- Cross-metric division without `ignoring` or `on` returns no data, not an error. This is the most common PromQL error.
+- A panel with no data looks like a panel with a wrong metric name. Different metric families usually need `ignoring` or `on`.
+- `count()` counts series. `sum()` adds values. `count(http_requests_total)` is the number of method, route and status combinations.
+- `topk` and `bottomk` can show different series on each refresh. This is normal: the top 5 changes over time.
 
 ## The task
 
-Write `promql-aggregations.yaml`: an annotated set of aggregation queries answering real operational questions.
+Write `stub.yaml`, also named `promql-aggregations.yaml`. It holds seven aggregation queries that answer operational questions.
 
-Requirements — a `queries:` list, each entry with `name`, `promql`, `explains`:
-
-1. `name: total_request_rate` — `promql: 'sum(rate(http_requests_total[5m]))'` — total request rate across all series.
-2. `name: request_rate_by_route` — `promql: 'sum by (route) (rate(http_requests_total[5m]))'` — request rate grouped by route.
-3. `name: request_rate_collapse_instance` — `promql: 'sum without (instance) (rate(http_requests_total[5m]))'` — request rate collapsing only the instance label.
-4. `name: top5_error_routes` — `promql: 'topk(5, sum by (route) (rate(http_requests_total{status=~"5.."}[5m])))'` — the 5 routes with the highest error rate.
-5. `name: error_ratio` — `promql: 'sum without (status) (rate(http_requests_total{status=~"5.."}[5m])) / sum without (status) (rate(http_requests_total[5m]))'` — fraction of requests that errored.
-6. `name: memory_utilization_ratio` — `promql: 'node_memory_MemAvailable_bytes / on (instance) group_left node_memory_MemTotal_bytes'` — available memory as a fraction of total, matched by instance with group_left.
-7. `name: critical_service_missing` — `promql: 'absent(up{job="critical-service"})'` — fires 1 if the critical-service job has no series (not being scraped at all) present.
-
-Expected shape:
+1. Add a `queries:` list. Each entry has `name`, `promql` and `explains`.
+2. `total_request_rate`: the total request rate across all series.
+3. `request_rate_by_route`: the request rate grouped by route.
+4. `request_rate_collapse_instance`: the request rate with only the `instance` label collapsed.
+5. `top5_error_routes`: the 5 routes with the highest 5xx rate.
+6. `error_ratio`: the fraction of requests that returned a 5xx.
+7. Write `error_ratio` on one line. Use `sum without (status)` on both sides of `/`.
+8. `memory_utilization_ratio`: available memory over total memory, matched `on (instance) group_left`.
+9. `critical_service_missing`: returns 1 when job `critical-service` has no `up` series.
+10. Remove every `TODO` comment.
 
 ```yaml
 queries:
   - name: total_request_rate
     promql: 'sum(rate(http_requests_total[5m]))'
-    explains: "Total request rate across every series, all labels collapsed."
+    explains: >-
+      Total request rate, all labels
+      collapsed.
 
   - name: request_rate_by_route
     promql: 'sum by (route) (rate(http_requests_total[5m]))'
-    explains: "Request rate grouped by route, everything else collapsed."
+    explains: >-
+      Request rate per route.
 
   - name: request_rate_collapse_instance
     promql: 'sum without (instance) (rate(http_requests_total[5m]))'
-    explains: "Request rate with only the instance label collapsed, keeping every other label."
+    explains: >-
+      Request rate with only instance
+      collapsed.
 
   - name: top5_error_routes
     promql: 'topk(5, sum by (route) (rate(http_requests_total{status=~"5.."}[5m])))'
-    explains: "The 5 routes with the highest 5xx error rate right now."
+    explains: >-
+      The 5 routes with the highest 5xx
+      rate now.
 
   - name: error_ratio
     promql: 'sum without (status) (rate(http_requests_total{status=~"5.."}[5m])) / sum without (status) (rate(http_requests_total[5m]))'
-    explains: "Fraction of total requests that returned a 5xx, with status stripped from both sides so the division matches."
+    explains: >-
+      Fraction of requests that returned
+      a 5xx. Both sides drop status, so
+      the division matches.
 
   - name: memory_utilization_ratio
     promql: 'node_memory_MemAvailable_bytes / on (instance) group_left node_memory_MemTotal_bytes'
-    explains: "Available memory as a fraction of total memory, matched per instance with group_left for the many-to-one relationship."
+    explains: >-
+      Available over total memory, per
+      instance. group_left handles the
+      many-to-one match.
 
   - name: critical_service_missing
     promql: 'absent(up{job="critical-service"})'
-    explains: "Returns 1 only if no series for the critical-service job exists at all — catches total scrape/discovery loss, not just a 0 value."
+    explains: >-
+      1 only when the job has no series.
+      It catches total scrape loss.
 ```
-
-The `ignoring`-equivalent `without (status)` on both sides of `error_ratio`, and the `on (instance) group_left` on the memory ratio, are the load-bearing details — get either wrong and the query returns no data instead of an error.

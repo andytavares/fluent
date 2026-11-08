@@ -1,72 +1,90 @@
-# Consumers and Groups
+## What you build
 
-## What you'll learn
-
-Consumers don't have data pushed to them — they pull, on a loop, and that loop's timing interacts with group membership in ways that cause the two most common Kafka production incidents: unexpected rebalance storms and consumers being kicked out of a group mid-processing. This lesson covers the poll loop, how groups assign partitions, and the two timeout settings that fail in opposite ways.
+You write the configuration for a consumer group in `stub.properties`. Consumers pull records in a loop. The timing of that loop interacts with group membership and causes two common incidents: rebalance storms and consumers removed mid-processing. This lesson builds on **Producers**.
 
 ## Key concepts
 
-**The poll loop is the whole consumer API.** There's no callback-driven "message arrived" model — you call `poll(timeout)` in a loop, and it returns a batch of records (up to `max.poll.records`) pulled from whichever partitions this consumer is currently assigned.
+### The poll loop is the whole consumer API
+
+Kafka has no "message arrived" callback. You call `poll(timeout)` in a loop. It returns up to `max.poll.records` records from the partitions this consumer has.
 
 ```
 while (running) {
-    records = consumer.poll(Duration.ofMillis(500));
-    for (record : records) {
-        process(record);          // your code
-    }
-    consumer.commitSync();        // acknowledge progress (see the offset-management lesson)
+  records = consumer.poll(
+    Duration.ofMillis(500));
+  for (record : records) {
+    // your code
+    process(record);
+  }
+  // acknowledge progress
+  consumer.commitSync();
 }
 ```
 
-`poll()` is also how the consumer client sends heartbeats and detects that it needs to rejoin the group — which is exactly why *how long your processing takes between poll calls* matters so much (see `max.poll.interval.ms` below).
+`poll()` is also how the consumer finds out that it must rejoin the group. So the time your processing takes between `poll()` calls matters. See `max.poll.interval.ms` below. The offset management lesson covers commits.
 
-**A consumer group is a set of consumers sharing `group.id`, each partition assigned to exactly one member.** Kafka's **group coordinator** (a broker) tracks membership and triggers a **rebalance** — reassigning partitions — whenever membership changes: a consumer joins, leaves, crashes, or is kicked out for being unresponsive.
+### A group gives each partition to one member
 
-**Partition assignment strategy determines how partitions are divided among members**, set via `partition.assignment.strategy` (a list of assignor class names, first mutually-supported one wins):
+A consumer group is a set of consumers with the same `group.id`. Each partition goes to exactly one member. The **group coordinator**, a broker, tracks membership. It starts a **rebalance** when membership changes: a consumer joins, leaves or crashes, or the coordinator removes it for not responding. A rebalance reassigns partitions.
+
+### The assignor decides how to divide partitions
+
+`partition.assignment.strategy` is a list of assignor class names. The group uses the first one that all members support.
 
 | Assignor | Behavior |
 |---|---|
-| `RangeAssignor` (legacy default) | Assigns contiguous partition ranges per topic per consumer — can skew when a group consumes multiple topics with the same partition count. |
-| `RoundRobinAssignor` | Spreads partitions round-robin across all consumers, topic-agnostic — more even, but reshuffles almost everything on any membership change. |
-| `StickyAssignor` | Balances like round-robin but **minimizes partition movement** across rebalances — a consumer keeps most of its prior assignment. |
-| `CooperativeStickyAssignor` | Same stickiness, but uses **incremental cooperative rebalancing** instead of the eager protocol — the modern recommended default. |
+| `RangeAssignor` (legacy default) | Gives each consumer a contiguous range per topic. It can skew a group that reads several topics with the same partition count. |
+| `RoundRobinAssignor` | Spreads partitions round-robin over all consumers. More even, but it moves almost every partition on any change. |
+| `StickyAssignor` | Balances like round-robin but **moves as few partitions as possible**. A consumer keeps most of its old assignment. |
+| `CooperativeStickyAssignor` | The same stickiness, with **incremental cooperative rebalancing**. It is the modern recommended choice. |
 
-**Eager vs incremental (cooperative) rebalancing is about whether every consumer stops the world.** The original ("eager") protocol revokes *all* partitions from *all* members at the start of every rebalance, then reassigns — meaning every consumer in the group stops processing during every rebalance, even if its own assignment doesn't change. **Cooperative rebalancing** (via `CooperativeStickyAssignor`) only revokes the specific partitions that need to move, letting unaffected consumers keep processing through the rebalance, potentially across multiple rounds until assignment converges. For any group larger than a couple of consumers, cooperative rebalancing meaningfully reduces the "everyone pauses" blast radius of a single consumer restarting.
+### Eager rebalancing stops every consumer; cooperative does not
 
-**`session.timeout.ms` and `max.poll.interval.ms` police two different failure modes — and get confused constantly:**
+The original **eager** protocol revokes *all* partitions from *all* members at the start of each rebalance, then reassigns them. Every consumer stops, even when its assignment does not change.
 
-- **`session.timeout.ms`** — how long the group coordinator waits without a **heartbeat** before declaring a consumer dead and triggering a rebalance. Heartbeats are sent on a separate background thread at `heartbeat.interval.ms` intervals (convention: `heartbeat.interval.ms` ≈ 1/3 of `session.timeout.ms`, giving a few missed-heartbeat retries before the timeout fires). This detects **process/network failure** — the consumer process crashed, or is network-partitioned from the coordinator.
-- **`max.poll.interval.ms`** — the maximum time allowed **between calls to `poll()`**. If your processing logic (inside the loop, after `poll()` returns and before you call it again) takes longer than this, the coordinator treats the consumer as stuck and boots it from the group — *even though its heartbeat thread is still alive and beating on schedule*. This detects **application-level stalls** — slow processing, not process death.
+**Cooperative** rebalancing, through `CooperativeStickyAssignor`, revokes only the partitions that must move. Other consumers keep processing. It can take several rounds before the assignment settles. In a group of more than a few consumers, it limits the pause when one consumer restarts.
+
+### Two timeouts catch two different failures
+
+- **`session.timeout.ms`**: how long the coordinator waits without a **heartbeat** before it declares a consumer dead and starts a rebalance. A background thread sends heartbeats every `heartbeat.interval.ms`. The convention is about one third of `session.timeout.ms`, so a few heartbeats can fail first. This catches a crashed process or a network partition.
+- **`max.poll.interval.ms`**: the maximum time **between `poll()` calls**. If processing takes longer, the coordinator removes the consumer from the group. This happens *even when the heartbeat thread still runs on time*. It catches application stalls, not process death.
 
 ```
-heartbeat thread:  ♥────♥────♥────♥────♥────♥       (independent of your poll loop)
-main thread:       poll()...[slow processing]......poll()
-                                  ^ if this gap > max.poll.interval.ms, you're kicked
-                                    from the group even though heartbeats never stopped
+heartbeat: ♥───♥───♥───♥───♥───♥
+main:      poll()..[slow work]..poll()
+           ^ gap > max.poll.interval.ms:
+             removed from the group,
+             heartbeats or not
 ```
 
-Setting `max.poll.interval.ms` too low for genuinely slow per-batch processing (e.g., calling a slow downstream API per record) causes a group to rebalance repeatedly under normal load — the fix is either raising the limit, lowering `max.poll.records` so each batch takes less wall-clock time to process, or moving slow work off the poll thread.
+Slow processing per batch, such as a slow downstream API call per record, can exceed a low `max.poll.interval.ms`. The group then rebalances again and again under normal load. Three fixes: raise the limit, lower `max.poll.records` so each batch is shorter, or move slow work off the poll thread.
 
-## vs other systems
-
-Unlike a traditional message queue where a broker pushes to and tracks acknowledgment per-consumer per-message, Kafka's consumer group model divides *partitions*, not individual messages, among members — so parallelism within a group is capped by partition count (see the topics lesson), and there's no per-message ack/nack; progress is tracked via offset commits at the partition level (see the offset-management lesson).
+A traditional queue tracks an ack per message per consumer. A Kafka group divides *partitions*, so the partition count caps parallelism, and offset commits per partition track progress.
 
 ## Watch out
 
-- **Confusing the two timeouts is the single most common consumer-group production bug.** "My consumer keeps getting rebalanced even though it's clearly alive" is almost always `max.poll.interval.ms` being too tight for actual per-poll processing time — not a `session.timeout.ms`/heartbeat problem.
-- **`RangeAssignor` (the historical default) can badly skew multi-topic groups** — if a group consumes several topics with the same partition count, the same consumer tends to get the "first range" of every topic, concentrating load.
-- **Switching assignors on a running group requires a rolling upgrade, not just a config change** — all members need to support the new strategy during the transition, or the group falls back to the one common strategy (or fails to form). Deploy the new assignor to the whole group before removing the old one from the supported list.
+- People confuse the two timeouts more than any other consumer setting.
+- "My live consumer keeps rebalancing" almost always means `max.poll.interval.ms` is too low. It is rarely a heartbeat problem.
+- `RangeAssignor` can skew a group that reads several topics. One consumer gets the first range of every topic.
+- A config change alone cannot switch assignors on a running group. Use a rolling upgrade.
+- During the switch, every member must support the new strategy. Otherwise the group falls back to the common one, or fails to form.
+- Deploy the new assignor to the whole group before you remove the old one from the list.
 
 ## The task
 
-Write `stub.properties` for a consumer group named `clickstream-processors` that processes the `clickstream` topic. Requirements:
+Write `stub.properties` for the consumer group `clickstream-processors`. It reads the `clickstream` topic. Follow these rules:
 
-- The group uses **cooperative incremental rebalancing** so unaffected consumers keep processing through membership changes.
-- Per-record processing occasionally calls a downstream service that can be slow, so the group must tolerate up to **5 minutes** between poll calls without a spurious rebalance, but each batch pulled per `poll()` is capped at **500** records to keep any single processing pass bounded.
-- Heartbeat-based failure detection (real process/network death) should fire within **45 seconds**, with heartbeats sent roughly 3 times within that window.
-- Offsets are committed manually after processing (this consumer does not want auto-commit — covered fully in the offset-management lesson).
+1. Set `group.id` to `clickstream-processors`.
+2. Use `CooperativeStickyAssignor`, so unaffected consumers keep processing during rebalances. Do not use `RangeAssignor`.
+3. Allow up to **5 minutes** (`300000` ms) between `poll()` calls. A slow downstream service must not cause a rebalance.
+4. Cap each `poll()` at **500** records, to keep each processing pass short.
+5. Detect a dead process within **45 seconds** (`45000` ms).
+6. Send about 3 heartbeats in that window. The heartbeat interval times 3 must not exceed the session timeout.
+7. Turn off auto-commit. This consumer commits offsets by hand after processing.
 
-Use exactly these keys:
+The file must not contain the text `TODO`.
+
+Use exactly this content:
 
 ```properties
 group.id=clickstream-processors

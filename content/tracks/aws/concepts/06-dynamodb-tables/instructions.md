@@ -1,31 +1,36 @@
-# DynamoDB Tables
+## What you build
 
-## What you'll learn
-
-DynamoDB is a managed key-value/document store built for predictable, single-digit-millisecond access at any scale — in exchange, it demands that you design your key schema around your access patterns *before* you write data, not after. This concept covers partition/sort key design thinking, billing modes, basic item operations, and the single-table pattern that DynamoDB's model actively encourages.
+You write `stub.sh`, a script that creates a DynamoDB table with a composite key, writes one item and reads it back. DynamoDB gives predictable single-digit-millisecond access at any scale. In return, you design the key schema around your access patterns *before* you write data. This lesson builds on **IAM Roles & STS**.
 
 ## Key concepts
 
-### Partition key and sort key — design first, query later
+### The primary key is a partition key, with an optional sort key
 
-Every DynamoDB table has a **primary key**, which is either:
+Every DynamoDB table has a **primary key** of one of two kinds:
 
-- **Simple**: just a partition key (e.g., `UserId`) — one item per key value.
-- **Composite**: a partition key + a sort key (e.g., `UserId` + `OrderId`) — many items can share a partition key, ordered/queryable by sort key.
+- **Simple**: a partition key only, for example `UserId`. One item per key value.
+- **Composite**: a partition key and a sort key, for example `UserId` and `OrderId`. Many items share a partition key. The sort key orders them, and you can query by it.
 
-The partition key determines *which physical partition* an item lands on — DynamoDB hashes it internally to distribute load. This is why partition key choice is the single most important DynamoDB design decision: pick something with **high cardinality** and **even access distribution**. A partition key of `Status` (values: `PENDING`/`SHIPPED`/`DONE`) is a classic anti-pattern — three possible values means at most three partitions ever get traffic, no matter how much you scale.
+### The partition key decides where an item lives
 
-Unlike a relational schema (design the tables, then write whatever query you need), DynamoDB inverts this: **you must know your access patterns before you design the key schema**, because DynamoDB efficiently answers exactly one kind of question well — "give me the item(s) with this partition key [and this sort key / sort key range]." Anything else requires a scan (next concept) or a secondary index.
+DynamoDB hashes the partition key to pick a physical partition and spread the load. So the partition key is the most important design decision. Pick a key with **high cardinality** and **even access**.
 
-### On-demand vs provisioned capacity
+A partition key of `Status`, with values `PENDING`, `SHIPPED` and `DONE`, is a classic anti-pattern. Three values means at most three partitions ever get traffic, however much you scale.
 
-| Mode | Billing | Best for |
+### You design for access patterns first
+
+In a relational database, you design the tables, then write any query you need. DynamoDB inverts this. You **must know your access patterns before you design the key schema**. DynamoDB answers one kind of question well: "give me the items with this partition key, and this sort key or sort key range." Anything else needs a scan (next concept) or a secondary index.
+
+### The billing mode is on-demand or provisioned
+
+| Mode | Billing | Use |
 |---|---|---|
-| `PAY_PER_REQUEST` (on-demand) | Per read/write actually performed | Unpredictable or spiky traffic, new tables, prototypes |
-| `PROVISIONED` | Reserved read/write capacity units per second, billed whether used or not | Steady, predictable traffic where you can tune capacity and save cost |
+| `PAY_PER_REQUEST` | Per read and write | Spiky traffic, new tables, prototypes |
+| `PROVISIONED` | Capacity per second, used or not | Steady traffic you can tune |
 
 ```bash
-aws --endpoint-url http://localhost:4566 dynamodb create-table \
+aws --endpoint-url "$ENDPOINT_URL" \
+  dynamodb create-table \
   --table-name Orders \
   --attribute-definitions \
     AttributeName=PK,AttributeType=S \
@@ -36,13 +41,16 @@ aws --endpoint-url http://localhost:4566 dynamodb create-table \
   --billing-mode PAY_PER_REQUEST
 ```
 
-`KeyType=HASH` is the partition key; `KeyType=RANGE` is the sort key (DynamoDB's API still uses the original "hash/range" terminology internally, even though the console and docs mostly say "partition/sort" now). `--attribute-definitions` only declares the *types* of attributes used in keys/indexes — it is not a schema for the whole item; DynamoDB is schemaless beyond the key attributes.
+`KeyType=HASH` is the partition key, and `KeyType=RANGE` is the sort key. The API keeps the original "hash" and "range" names. The console and docs now mostly say "partition" and "sort".
 
-### Basic item operations
+`--attribute-definitions` declares only the *types* of key and index attributes. It is not a schema for the whole item. Beyond the key attributes, DynamoDB has no schema.
+
+### `put-item` writes, `get-item` reads one item
 
 ```bash
-# Write (creates or fully replaces) an item
-aws --endpoint-url http://localhost:4566 dynamodb put-item \
+# Create or fully replace an item
+aws --endpoint-url "$ENDPOINT_URL" \
+  dynamodb put-item \
   --table-name Orders \
   --item '{
     "PK": {"S": "CUSTOMER#123"},
@@ -51,65 +59,85 @@ aws --endpoint-url http://localhost:4566 dynamodb put-item \
     "Status": {"S": "SHIPPED"}
   }'
 
-# Read one exact item by full primary key
-aws --endpoint-url http://localhost:4566 dynamodb get-item \
+# Read one item by its full primary key
+aws --endpoint-url "$ENDPOINT_URL" \
+  dynamodb get-item \
   --table-name Orders \
-  --key '{"PK": {"S": "CUSTOMER#123"}, "SK": {"S": "ORDER#456"}}'
+  --key '{
+    "PK": {"S": "CUSTOMER#123"},
+    "SK": {"S": "ORDER#456"}
+  }'
 ```
 
-Every attribute value is a typed map: `{"S": "..."}` for string, `{"N": "..."}` for number (sent as a string, to avoid floating-point precision loss), `{"BOOL": true}`, `{"L": [...]}` for list, `{"M": {...}}` for nested map, `{"NULL": true}`, `{"B": "..."}` for binary. This verbose typed format is what the raw API always uses; SDK "document clients" in most languages convert to/from native types automatically, but the CLI speaks the raw format directly.
+### Every attribute value is a typed map
 
-### Item size limits
+| Type | Format |
+|---|---|
+| String | `{"S": "..."}` |
+| Number | `{"N": "..."}` |
+| Boolean | `{"BOOL": true}` |
+| List | `{"L": [...]}` |
+| Map | `{"M": {...}}` |
+| Null | `{"NULL": true}` |
+| Binary | `{"B": "..."}` |
 
-**400 KB per item, total, across all attributes.** This is a hard ceiling with no exceptions — there's no "large object" mode. Data that can exceed this (file contents, large blobs) belongs in S3, with DynamoDB storing just the S3 key/URL as a pointer. This limit is also *why* DynamoDB doesn't support complex joins or unbounded nested collections — every item has to fit in one bounded, independently-storable unit.
+A number travels as a string, so it keeps its precision. The raw API always uses this typed format, and the CLI speaks it directly. SDK "document clients" in most languages convert to and from native types for you.
 
-### Single-table design (introduction)
+### An item has a hard limit of 400 KB
 
-DynamoDB pricing and performance are per-table-independent of item count, and cross-table queries don't exist (no joins) — which pushes toward a pattern that looks bizarre coming from relational design: **one table holding multiple, unrelated-looking entity types**, disambiguated by generic key names and prefixed values:
+The **400 KB** limit covers all attributes of one item. It has no exceptions and no "large object" mode. Put large data, like file contents, in S3, and store only the S3 key or URL in DynamoDB. The limit is also why DynamoDB has no joins and no unbounded nested collections. Every item must fit in one bounded unit.
+
+### Single-table design keeps many entity types in one table
+
+DynamoDB has no joins and no cross-table queries. Performance per table does not depend on item count. This leads to a pattern that looks strange after relational design: **one table that holds many entity types**. Generic key names and prefixed values tell them apart:
 
 ```
-PK              SK                  (attributes...)
-CUSTOMER#123    METADATA            Name, Email
-CUSTOMER#123    ORDER#456           Total, Status
-CUSTOMER#123    ORDER#789           Total, Status
-PRODUCT#001     METADATA            Name, Price
+PK            SK         attributes
+CUSTOMER#123  METADATA   Name, Email
+CUSTOMER#123  ORDER#456  Total, Status
+CUSTOMER#123  ORDER#789  Total, Status
+PRODUCT#001   METADATA   Name, Price
 ```
 
-Naming the key attributes generically (`PK`/`SK` rather than `CustomerId`/`OrderId`) is deliberate — it lets one table host customers, orders, and products together, each with a different "shape" of value in the same two physical columns. A query for `PK = CUSTOMER#123` returns the customer's metadata *and* all their orders in one request — the join happened at write time (by choosing the key layout), not at query time. This is covered in depth in the next concept; for now, recognize the pattern when you see generic key names.
+The generic names `PK` and `SK`, not `CustomerId` and `OrderId`, are deliberate. One table can then hold customers, orders and products, each with a different value shape in the same two columns. A query for `PK = CUSTOMER#123` returns the customer metadata *and* all orders in one request. The join happens at write time, when you choose the key layout. The next concept covers this in depth.
 
-## vs other languages
+### New access patterns need new indexes
 
-| | DynamoDB | PostgreSQL / MySQL | MongoDB |
-|---|---|---|---|
-| Schema | Only key attributes are typed/required | Full schema, enforced | Schemaless, per-document |
-| Joins | None — denormalize at write time | Native, first-class | `$lookup` (limited, discouraged at scale) |
-| Query flexibility | Only via primary key or defined indexes | Arbitrary `WHERE` on any column (with cost) | Arbitrary filters (with cost) |
-| Scaling model | Horizontal, automatic, partition-key-driven | Usually vertical, or manual sharding | Horizontal via sharding, manual tuning |
-
-Coming from SQL, the adjustment is mental, not syntactic: you can't "just add a `WHERE` clause" for a new access pattern later without adding a new index (or a scan, which doesn't scale) — the schema-then-query workflow is inverted to query-then-schema.
+In SQL, you add a `WHERE` clause for a new access pattern. In DynamoDB, a new access pattern needs a new index, or a scan, which does not scale.
 
 ## Watch out
 
-- **`AttributeType` in `--attribute-definitions` must exactly match every attribute used as a key in the table or any index** — declaring `PK` as `S` (string) and then trying to `put-item` with `PK` as a number will fail validation.
-- **Choosing a low-cardinality partition key is the most common and hardest-to-fix DynamoDB mistake** — it's a physical data distribution problem, not something an index can patch after the fact. Think about your write/read pattern's spread across values *before* creating the table.
-- **`put-item` fully replaces the item** if the key already exists — there is no partial update via `put-item`; partial updates require `update-item` with an `UpdateExpression` (not covered here, but expect to reach for it in real work).
-- **On-demand mode has its own default scaling limits** (an item collection can only scale up so fast) — very bursty new traffic on a brand-new on-demand table can still throttle; this is rare in practice but not impossible.
+- The type of a key attribute does not match `--attribute-definitions`. The write fails validation, for example a number in a `PK` declared as `S`.
+- You choose a low-cardinality partition key. It is a physical distribution problem, and no index can fix it later. Check the spread of values first.
+- You use `put-item` for a partial update. It replaces the whole item when the key exists. Use `update-item` with an `UpdateExpression` instead.
+- You send very bursty traffic to a new on-demand table. On-demand mode has its own default scaling limits, so the table can throttle. This is rare.
 
 ## The task
 
-Fill in `stub.sh` so it, in order:
+Fill in `stub.sh` with these steps, in order:
 
-1. Creates a table named `Orders` with a composite primary key: partition key `PK` (string) and sort key `SK` (string), billing mode `PAY_PER_REQUEST`.
-2. Puts one item with `PK = CUSTOMER#123`, `SK = ORDER#456`, a numeric `Total` of `89.99`, and a string `Status` of `SHIPPED`.
-3. Gets that exact item back by its full primary key (`PK`/`SK`).
-4. Adds a comment `# answer: <one sentence>` explaining why `Status` (with only a handful of possible values) would be a poor choice of partition key for this table.
+1. Create the table `Orders` with billing mode `PAY_PER_REQUEST`.
+2. Give it a composite primary key: partition key `PK` (string) and sort key `SK` (string).
+3. Put one item with `PK` `CUSTOMER#123` and `SK` `ORDER#456`.
+4. Give the item a number `Total` of `89.99` and a string `Status` of `SHIPPED`.
+5. Get that item back by its full primary key, `PK` and `SK`.
+6. Add a comment `# answer: <one sentence>`. Say why `Status`, with a few possible values, is a poor partition key.
 
-### Run it for real
+The `create-table`, `put-item` and `get-item` calls look like the key concepts above. Keep each `AttributeName=...` pair on one line. The table setup looks like this:
 
 ```bash
-docker run -d --name localstack -p 4566:4566 localstack/localstack
-bash stub.sh   # once filled in
-aws --endpoint-url http://localhost:4566 dynamodb scan --table-name Orders
+aws --endpoint-url "$ENDPOINT_URL" \
+  dynamodb create-table \
+  --table-name Orders \
+  --attribute-definitions \
+    AttributeName=PK,AttributeType=S \
+    AttributeName=SK,AttributeType=S \
+  --key-schema \
+    AttributeName=PK,KeyType=HASH \
+    AttributeName=SK,KeyType=RANGE \
+  --billing-mode PAY_PER_REQUEST
+# answer: Status has few values, so all
+# traffic hits a few partitions.
 ```
 
-You should see the one item you wrote, with its typed attribute map.
+To run it against LocalStack, run `bash stub.sh`. Then run `dynamodb scan --table-name Orders`. You see the one item you wrote, with its typed attribute map.

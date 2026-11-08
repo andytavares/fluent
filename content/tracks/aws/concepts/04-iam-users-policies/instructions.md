@@ -1,130 +1,153 @@
-# IAM Users & Policies
+## What you build
 
-## What you'll learn
-
-IAM (Identity and Access Management) is AWS's authorization system — every single API call you've made so far in this track was implicitly checked against an IAM policy (LocalStack just doesn't enforce it by default). This concept teaches the policy JSON grammar, ARNs, and the evaluation logic AWS uses to decide allow/deny — the foundation every other AWS security concept builds on.
+You write `stub.sh`, a script that creates an IAM user and gives it read-only access to one bucket. IAM is the authorization system of AWS: it checks every API call against a policy. LocalStack does not enforce IAM by default. This lesson builds on **S3 Advanced**.
 
 ## Key concepts
 
-### Principals: who is asking
+### A principal is who makes the request
 
-A **principal** is whoever/whatever is making the API call: an IAM user, an IAM role (next concept), another AWS account, or `*` (anyone, including anonymous). Every request to AWS is signed by some principal's credentials, and every authorization decision starts with "who is this."
+A **principal** makes the API call. It is an IAM user, an IAM role (next concept), another AWS account, or `*` (anyone, also anonymous). The credentials of a principal sign every request. Every authorization decision starts with "who is this?"
 
 ```bash
-aws --endpoint-url http://localhost:4566 iam create-user --user-name deploy-bot
+aws --endpoint-url "$ENDPOINT_URL" \
+  iam create-user --user-name deploy-bot
 ```
 
-A user is a long-lived identity with its own credentials (password and/or access keys). Users are appropriate for humans and for systems outside AWS that can't assume a role — everything else should prefer roles (next concept).
+A user is a long-lived identity with its own credentials: a password, access keys, or both. Use users for humans and for systems outside AWS that cannot assume a role. Everything else must prefer roles.
 
-### Identity policies vs resource policies
+### Identity policies and resource policies attach in different places
 
-There are two places a permission can be attached:
+- An **identity-based policy** attaches to a user, group or role. It says "this principal can do X."
+- A **resource-based policy** attaches to the resource. S3 bucket policies from the last concept are the most common example. It says "X can access this resource."
 
-- **Identity-based policy**: attached to a user, group, or role. "This principal can do X."
-- **Resource-based policy**: attached to the resource itself (S3 bucket policies, from the last concept, are the most common example). "This resource can be accessed by X."
+In the same account, an identity policy or a resource policy is enough to grant access. Cross-account access usually needs both. The resource trusts the other account, and the caller has permission to act.
 
-A request is only allowed if **at least one attached policy explicitly allows it, and no policy explicitly denies it** — see evaluation order below. For same-account access, either an identity policy or a resource policy granting access is sufficient; cross-account access typically needs both (the resource must trust the other account, and the calling principal must be permitted to act).
+### A policy statement has Effect, Action, Resource and Condition
 
-### Policy JSON anatomy
-
-Every IAM policy is a JSON document with the same four-field statement shape:
+Every IAM policy is a JSON document with the same statement shape:
 
 ```json
 {
   "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "ReadOnlyOnOneBucket",
-      "Effect": "Allow",
-      "Action": ["s3:GetObject", "s3:ListBucket"],
-      "Resource": [
-        "arn:aws:s3:::fluent-data",
-        "arn:aws:s3:::fluent-data/*"
-      ],
-      "Condition": {
-        "StringEquals": { "aws:RequestedRegion": "us-east-1" }
+  "Statement": [{
+    "Sid": "ReadOnlyOnOneBucket",
+    "Effect": "Allow",
+    "Action": [
+      "s3:GetObject",
+      "s3:ListBucket"
+    ],
+    "Resource": [
+      "arn:aws:s3:::fluent-data",
+      "arn:aws:s3:::fluent-data/*"
+    ],
+    "Condition": {
+      "StringEquals": {
+        "aws:RequestedRegion": "us-east-1"
       }
     }
-  ]
+  }]
 }
 ```
 
 | Field | Meaning |
 |---|---|
-| `Effect` | `Allow` or `Deny` — nothing else |
-| `Action` | The API operation(s), as `service:Operation` (`s3:GetObject`, `dynamodb:PutItem`, `*` for everything — almost never appropriate) |
-| `Resource` | Which ARN(s) this applies to — supports wildcards (`arn:aws:s3:::fluent-data/*`) |
-| `Condition` | Optional extra constraints — IP range, MFA presence, time of day, tag values, etc. |
+| `Effect` | `Allow` or `Deny`, nothing else |
+| `Action` | API operations as `service:Operation` |
+| `Resource` | The ARNs it applies to; wildcards allowed |
+| `Condition` | Optional limits: IP range, MFA, time, tags |
 
-`Version: "2012-10-17"` is not a typo or a date you should ever change — it's a fixed string identifying the policy grammar version; every modern policy uses this exact value.
+`Action` examples are `s3:GetObject` and `dynamodb:PutItem`. `*` means every action, and it is almost never correct.
 
-### ARN structure
+`Version: "2012-10-17"` is not a date to change. It is a fixed string that names the policy grammar version. Every modern policy uses this value.
 
-Amazon Resource Names are the universal identifier for "this specific thing," used in `Resource` fields, cross-references, and API responses alike:
+### An ARN names one AWS resource
 
-```
-arn:aws:s3:::fluent-data/report.csv
-arn:aws:dynamodb:us-east-1:000000000000:table/Orders
-arn:aws:iam::000000000000:role/lambda-exec-role
- │   │   │        │              │
- │   │   │        │              └─ resource type/id (service-specific)
- │   │   │        └─ account ID (empty for S3 — bucket names are globally unique)
- │   │   └─ region (empty for global services like IAM, S3)
- │   └─ service
- └─ partition (aws, aws-cn, aws-us-gov)
-```
+An Amazon Resource Name (ARN) is the universal identifier for one resource. You find ARNs in `Resource` fields, cross-references and API responses:
 
-`arn:partition:service:region:account-id:resource`. Some services omit region and/or account (S3, IAM) because those services are either global or the bucket name is itself globally unique. Get comfortable reading these — you'll write them by hand constantly.
+- `arn:aws:s3:::fluent-data/report.csv`
+- `arn:aws:dynamodb:us-east-1:000000000000:table/Orders`
+- `arn:aws:iam::000000000000:role/lambda-exec-role`
 
-### Least privilege
+The format is `arn:partition:service:region:account-id:resource`:
 
-The operating principle: grant the minimum `Action`s on the minimum `Resource`s needed, nothing more. `"Action": "s3:*"` on `"Resource": "*"` "works" the same way leaving your front door unlocked "works" — the failure mode is just further away in time. Scope every policy to the specific actions and specific ARNs the workload actually needs; expand only when a real, observed need appears (CloudTrail logs of `AccessDenied` errors are the standard way to find out what's missing).
+- **partition**: `aws`, `aws-cn` or `aws-us-gov`.
+- **service**: for example `s3` or `iam`.
+- **region**: empty for global services like IAM and S3.
+- **account ID**: empty for S3, because bucket names are globally unique.
+- **resource**: the type and ID, specific to the service.
 
-### Policy evaluation: explicit deny always wins
+You write ARNs by hand all the time, so learn to read them.
 
-AWS evaluates all applicable policies (identity + resource + any permission boundaries/SCPs) as a set, using this order:
+### Least privilege grants only what the workload needs
 
-1. **Explicit `Deny` anywhere → request denied**, full stop, regardless of any `Allow` elsewhere.
-2. Otherwise, **at least one explicit `Allow` → request allowed**.
-3. Otherwise (no matching statement at all) → **implicit deny** (the default — IAM is deny-by-default).
+Grant the minimum actions on the minimum resources. `"Action": "s3:*"` on `"Resource": "*"` works the way an unlocked front door works: the failure comes later. Scope each policy to the actions and ARNs the workload needs. Add more only when you see a real need. CloudTrail logs of `AccessDenied` errors show what is missing.
 
-This is why "just add an Allow" doesn't fix an access problem if a broader Deny (e.g., an org-wide SCP blocking a region, or a permission boundary) is also in play — you have to find and narrow the Deny, not just add another Allow next to it.
+### Explicit deny always wins
 
-## vs other tools
+AWS evaluates all applicable policies together: identity, resource, permission boundaries and SCPs. It uses this order:
 
-| | AWS IAM | Kubernetes RBAC | Unix file permissions |
-|---|---|---|---|
-| Grammar | JSON statements, Effect/Action/Resource/Condition | Verbs + resources + API groups | rwx bits per owner/group/other |
-| Explicit deny | First-class, always wins | No native "deny" (only additive Roles/RoleBindings) | No deny concept — absence of a grant is denial |
-| Scope | Account-wide, cross-service | Namespace/cluster-scoped, Kubernetes API only | Single filesystem |
-| Attachment points | Identity AND resource | Identity (subjects) only | File/directory only |
+1. An explicit `Deny` anywhere denies the request, whatever any `Allow` says.
+2. Otherwise, one explicit `Allow` allows the request.
+3. Otherwise, the request gets an **implicit deny**. IAM denies by default.
 
-The explicit-deny-wins rule is IAM's sharpest edge relative to Kubernetes RBAC, which has no native deny — if you're coming from k8s, expect to reach for IAM's `Deny` statements as your first tool for "block this specific thing" rather than trying to express it as an absence of grants.
+So a new `Allow` does not fix access when a broader `Deny` applies. Examples are an organization SCP that blocks a region, or a permission boundary. Find the `Deny` and narrow it. Kubernetes RBAC has no native deny, so in IAM use a `Deny` statement to block one specific thing.
 
 ## Watch out
 
-- **`Resource: "*"` on a sensitive `Action` is the single most common security review finding.** Always ask "does this really need to touch every resource of this type in the account," not just "does this action exist."
-- **Policies attached ≠ policies that matter.** A user can have five managed policies attached and still be denied, if any one statement anywhere (including in a policy boundary you forgot about) has an explicit `Deny` matching the request.
-- **IAM is eventually consistent.** A newly created user or a newly attached policy can take a few seconds to be usable everywhere — don't be surprised by a transient `AccessDenied` immediately after a `create-user`/`attach-user-policy` call on real AWS (LocalStack is typically instant).
-- **`aws iam create-access-key` is the only time the secret access key is ever shown** — it cannot be retrieved again later, only regenerated as a brand-new key pair.
+- You put `Resource: "*"` on a sensitive action. It is the most common security review finding. Ask if the action needs every resource of that type.
+- You count attached policies to predict access. One explicit `Deny` in any policy or boundary still denies the request.
+- You use a new user or policy at once on real AWS. IAM is eventually consistent, so you can get a short `AccessDenied`. LocalStack is usually instant.
+- You lose the output of `aws iam create-access-key`. It is the only time AWS shows the secret key. You can only create a new key pair.
 
 ## The task
 
-Fill in `stub.sh` so it, in order:
+Fill in `stub.sh` with these steps, in order:
 
-1. Creates an IAM user named `deploy-bot`.
-2. Writes a policy document to `s3-read-policy.json` (via a heredoc) granting `Effect: Allow` on `s3:GetObject` and `s3:ListBucket` for `arn:aws:s3:::fluent-data` and `arn:aws:s3:::fluent-data/*`, with `Version: "2012-10-17"`.
-3. Creates a customer-managed policy named `s3-read-only` from that file (`--policy-document file://s3-read-policy.json`).
-4. Attaches that policy to `deploy-bot` by its ARN (`arn:aws:iam::000000000000:policy/s3-read-only` — LocalStack's default fake account ID is `000000000000`).
-5. Creates an access key for `deploy-bot`.
-6. Adds a comment `# answer: <one sentence>` explaining why least privilege means this policy should list specific actions/resources rather than `"Action": "s3:*"` / `"Resource": "*"`.
-
-### Run it for real
+1. Create an IAM user named `deploy-bot`.
+2. Write a policy document to `s3-read-policy.json` with a heredoc. Use `"Version": "2012-10-17"`.
+3. The policy has `"Effect": "Allow"` on `s3:GetObject` and `s3:ListBucket`.
+4. It covers `arn:aws:s3:::fluent-data` and `arn:aws:s3:::fluent-data/*`.
+5. Create a customer-managed policy named `s3-read-only` from that file, with `--policy-document file://s3-read-policy.json`.
+6. Attach that policy to `deploy-bot` by its ARN. LocalStack uses the fake account ID `000000000000`.
+7. Create an access key for `deploy-bot`.
+8. Add a comment `# answer: <one sentence>`. Say why least privilege needs specific actions and resources, not `s3:*` and `*`.
 
 ```bash
-docker run -d --name localstack -p 4566:4566 localstack/localstack
-bash stub.sh   # once filled in
-aws --endpoint-url http://localhost:4566 iam list-attached-user-policies --user-name deploy-bot
+aws --endpoint-url "$ENDPOINT_URL" \
+  iam create-user --user-name deploy-bot
+
+cat > s3-read-policy.json <<'EOF'
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": [
+      "s3:GetObject",
+      "s3:ListBucket"
+    ],
+    "Resource": [
+      "arn:aws:s3:::fluent-data",
+      "arn:aws:s3:::fluent-data/*"
+    ]
+  }]
+}
+EOF
+
+aws --endpoint-url "$ENDPOINT_URL" \
+  iam create-policy \
+  --policy-name s3-read-only \
+--policy-document file://s3-read-policy.json
+
+ACCOUNT=000000000000
+aws --endpoint-url "$ENDPOINT_URL" \
+  iam attach-user-policy \
+  --user-name deploy-bot \
+  --policy-arn \
+"arn:aws:iam::$ACCOUNT:policy/s3-read-only"
+
+aws --endpoint-url "$ENDPOINT_URL" \
+  iam create-access-key \
+  --user-name deploy-bot
 ```
 
-You should see `s3-read-only` attached to `deploy-bot`.
+To check it against LocalStack, run `bash stub.sh`. Then run `iam list-attached-user-policies --user-name deploy-bot`. You see `s3-read-only`.

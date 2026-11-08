@@ -1,29 +1,30 @@
-# CloudWatch
+## What you build
 
-## What you'll learn
-
-CloudWatch is AWS's metrics and logs backbone — every service you've used so far (Lambda invocations/errors/duration, DynamoDB throttles, SQS queue depth) already emits metrics into it automatically. This concept covers custom metrics, alarms (and the semantics that trip people up — evaluation periods and missing-data behavior), Logs, and turning a log pattern into an alarm.
+You write `stub.sh`, a script that publishes a custom metric, sets an alarm, writes a log event and turns a log pattern into a metric. CloudWatch holds the metrics and logs for AWS. Every service so far already sends metrics to it: Lambda invocations, DynamoDB throttles and SQS queue depth. This lesson builds on **Lambda Functions** and **SQS**.
 
 ## Key concepts
 
-### Metrics, namespaces, dimensions
+The examples leave out `--endpoint-url http://localhost:4566`. Add it to every call when you use LocalStack.
 
-A metric is a named, timestamped numeric data point. Every metric lives in a **namespace** (a top-level grouping — `AWS/Lambda`, `AWS/DynamoDB`, or your own custom namespace) and is further sliced by **dimensions** (key/value tags — `FunctionName=create-order`, `Environment=prod`) that let you query the same metric name at different granularities.
+### A metric lives in a namespace and has dimensions
+
+A metric is a named, timestamped number. Every metric lives in a namespace: a top-level group such as `AWS/Lambda`, `AWS/DynamoDB` or your own. Dimensions are key/value tags, such as `FunctionName=create-order` or `Environment=prod`. They let you query one metric name at different levels of detail.
 
 ```bash
-aws --endpoint-url http://localhost:4566 cloudwatch put-metric-data \
+aws cloudwatch put-metric-data \
   --namespace "Fluent/Orders" \
   --metric-name OrdersProcessed \
   --value 1 \
-  --dimensions Environment=prod,Service=order-processor
+  --dimensions \
+  Environment=prod,Service=order-processor
 ```
 
-Each unique combination of namespace + metric name + dimension set is effectively its own time series. Emitting the same metric name with different dimension sets (e.g., per-customer) is a common way to accidentally create thousands of unique time series — CloudWatch bills per unique metric, so keep dimension cardinality intentional.
+Each unique set of namespace, metric name and dimensions is its own time series. CloudWatch bills per unique metric. A dimension per customer can create thousands of series by accident, so choose dimensions with care.
 
-### Alarms — threshold, evaluation periods, missing-data semantics
+### An alarm needs consecutive breaches
 
 ```bash
-aws --endpoint-url http://localhost:4566 cloudwatch put-metric-alarm \
+aws cloudwatch put-metric-alarm \
   --alarm-name high-error-rate \
   --namespace "Fluent/Orders" \
   --metric-name OrderErrors \
@@ -31,88 +32,158 @@ aws --endpoint-url http://localhost:4566 cloudwatch put-metric-alarm \
   --period 60 \
   --evaluation-periods 3 \
   --threshold 5 \
-  --comparison-operator GreaterThanThreshold \
+  --comparison-operator \
+  GreaterThanThreshold \
   --treat-missing-data notBreaching
 ```
 
-- **`--period`**: the length of one evaluation window in seconds (here, 60s buckets).
-- **`--evaluation-periods`**: how many *consecutive* periods must breach the threshold before the alarm actually fires — `3` here means 3 straight minutes over threshold, not a single spike. This is the standard defense against a one-off blip triggering a page.
-- **`--threshold` / `--comparison-operator`**: `GreaterThanThreshold`, `LessThanThreshold`, `GreaterThanOrEqualToThreshold`, etc. — the actual condition.
-- **`--treat-missing-data`**: what to do when no data points arrived during a period at all (as opposed to data arriving but being below threshold) — `missing`, `notBreaching`, `breaching`, or `ignore`. This is the single most misunderstood alarm setting: the default historically has surprised people by treating "no data" as `missing` (which, combined with certain evaluation logic, can leave an alarm stuck in a state that doesn't reflect current reality). For most "did something bad happen" alarms, `notBreaching` (treat missing data as fine) is the sane choice — an alarm on error count shouldn't fire just because *no requests came in at all*. For an alarm that specifically needs to detect "this thing stopped reporting entirely" (a health-check style alarm), `breaching` is what you actually want.
+- `--period`: the length of one evaluation window, in seconds. Here, each window is 60 seconds.
+- `--evaluation-periods`: the number of consecutive periods that must breach before the alarm fires. Here, 3 means three full minutes over the threshold, not one spike. This setting stops a one-off blip from paging someone.
+- `--threshold` and `--comparison-operator`: the condition itself. Operators include `GreaterThanThreshold`, `LessThanThreshold` and `GreaterThanOrEqualToThreshold`.
 
-### CloudWatch Logs: groups, streams, filter patterns
+### `--treat-missing-data` decides what "no data" means
+
+Missing data means that no data points arrived in a period. That differs from data below the threshold. The values are `missing`, `notBreaching`, `breaching` and `ignore`. The default is `missing`.
+
+Many engineers misunderstand this setting. With `missing`, an alarm can stay in a state that does not match reality.
+
+- **`notBreaching`** treats missing data as healthy. Use it for most "something bad happened" alarms. An error-count alarm must not fire because no requests came in.
+- **`breaching`** treats missing data as a breach. Use it to detect a source that stopped reporting, as a health check does.
+
+### Log groups hold log streams
 
 ```bash
-aws --endpoint-url http://localhost:4566 logs create-log-group --log-group-name /fluent/order-processor
+GROUP=/fluent/order-processor
+MSG="ERROR: payment declined for order 456"
+TS=$(date +%s000)
 
-aws --endpoint-url http://localhost:4566 logs create-log-stream \
-  --log-group-name /fluent/order-processor --log-stream-name "2024-01-15"
+aws logs create-log-group \
+  --log-group-name "$GROUP"
 
-aws --endpoint-url http://localhost:4566 logs put-log-events \
-  --log-group-name /fluent/order-processor \
+aws logs create-log-stream \
+  --log-group-name "$GROUP" \
+  --log-stream-name "2024-01-15"
+
+aws logs put-log-events \
+  --log-group-name "$GROUP" \
   --log-stream-name "2024-01-15" \
-  --log-events timestamp=$(date +%s000),message="ERROR: payment declined for order 456"
+  --log-events \
+  "timestamp=$TS,message=$MSG"
 ```
 
-A **log group** is the top-level container (Lambda auto-creates one per function: `/aws/lambda/<function-name>`); a **log stream** within it is one sequence of ordered events (Lambda creates a new stream roughly per execution environment). A **filter pattern** is CloudWatch's syntax for matching structured or plain-text log content:
+A log group is the top-level container. Lambda creates one per function: `/aws/lambda/<function-name>`. A log stream is one ordered sequence of events inside a group. Lambda creates about one new stream per execution environment.
+
+### A filter pattern matches log content
 
 ```bash
-aws --endpoint-url http://localhost:4566 logs filter-log-events \
-  --log-group-name /fluent/order-processor \
+aws logs filter-log-events \
+  --log-group-name "$GROUP" \
   --filter-pattern "ERROR"
 ```
 
-Filter patterns support plain substring matches, JSON field matching (`{ $.level = "ERROR" }` for structured JSON logs), and boolean combinations — this is the same pattern language used for the metric filters below.
+A filter pattern matches plain text or structured logs. It supports substrings, JSON fields such as `{ $.level = "ERROR" }`, and boolean combinations. Metric filters use the same pattern language.
 
-### Metric filters → alarms
+### A metric filter turns log lines into a metric
 
-A **metric filter** turns a log filter pattern into a numeric CloudWatch metric — every matching log line increments (or extracts a value into) a metric, which you can then alarm on exactly like any other metric:
+A metric filter counts matching log lines into a CloudWatch metric, or extracts a value from them. You then alarm on that metric like any other.
 
 ```bash
-aws --endpoint-url http://localhost:4566 logs put-metric-filter \
-  --log-group-name /fluent/order-processor \
+aws logs put-metric-filter \
+  --log-group-name "$GROUP" \
   --filter-name payment-declined-count \
   --filter-pattern "\"payment declined\"" \
   --metric-transformations \
-    metricName=PaymentDeclinedCount,metricNamespace="Fluent/Orders",metricValue=1
+metricName=PaymentDeclinedCount,\
+metricNamespace=Fluent/Orders,\
+metricValue=1
 ```
 
-This is the standard way to alarm on unstructured application logs without changing your application code to `put-metric-data` directly: match the log line pattern, count matches into a metric, alarm on the metric. It's the bridge between "my app just logs to stdout/CloudWatch Logs" and "I have a real numeric alarm."
+This is the standard way to alarm on unstructured logs, with no `put-metric-data` call in your code. Match the line, count the matches into a metric and alarm on the metric. It connects an app that only writes logs to a real numeric alarm.
 
-## vs other tools
+### Dimensions work like Prometheus labels
 
-| | CloudWatch | Prometheus + Alertmanager | Datadog |
-|---|---|---|---|
-| Metric model | Namespace + name + dimensions | Metric name + labels | Metric name + tags |
-| Collection | Push (`put-metric-data`) or automatic per-service | Pull (scrape) | Agent push |
-| Log-derived metrics | Metric filters on Logs | `mtail`/log-exporter patterns, or structured logging + a scraper | Log-based metrics, similar concept |
-| Missing-data alarm semantics | Explicit `--treat-missing-data` setting per alarm | Absence handled via `absent()` in alert rules, opt-in | Configurable per monitor |
-
-CloudWatch's dimension model and Prometheus's label model solve the same problem (multi-dimensional time series) with different cardinality-management cultures — Prometheus users are trained to fear label cardinality explosions; the CloudWatch equivalent (unique dimension combinations driving cost and per-metric limits) is less discussed but just as real.
+CloudWatch dimensions and Prometheus labels solve the same problem: time series with many dimensions. Prometheus users learn to fear label cardinality. In CloudWatch, unique dimension sets drive cost and per-metric limits, and the risk is as real.
 
 ## Watch out
 
-- **High-cardinality dimensions (e.g., a dimension per user ID or per request ID) create one billed metric per unique combination** — this is the CloudWatch version of a Prometheus cardinality explosion, and it's easy to do by accident with a well-meaning "let's tag everything."
-- **`--treat-missing-data`'s default behavior has changed across AWS's own documentation revisions and is easy to get wrong by omission** — always set it explicitly rather than relying on whatever the current default happens to be; state your intent in the alarm definition.
-- **A metric filter only processes log events *after* it's created** — it does not retroactively scan existing log history, so creating the filter is not the same as "count how many times this already happened."
-- **`--evaluation-periods` with a low `--period` can make an alarm feel unresponsive to a real, sustained problem** if the periods required span longer than an on-call engineer expects — balance false-positive suppression against acceptable detection latency deliberately, don't just leave defaults.
+- A dimension per user ID or request ID creates one billed metric per value. This is easy to do by accident.
+- Always set `--treat-missing-data`. Do not rely on the default; state your intent in the alarm.
+- A metric filter processes only log events after you create it. It does not count past events.
+- Many `--evaluation-periods` can delay a real, sustained alarm. Balance false-alarm control against detection delay.
 
 ## The task
 
-Fill in `stub.sh` so it, in order:
+Write `stub.sh` to add metrics, an alarm and log processing for the order service. Pass `--endpoint-url "$ENDPOINT_URL"` on every `aws` call.
 
-1. Publishes a custom metric `OrdersProcessed` in namespace `Fluent/Orders` with value `1` and dimensions `Environment=prod,Service=order-processor`.
-2. Creates a metric alarm named `high-error-rate` on metric `OrderErrors` in namespace `Fluent/Orders`, with `--statistic Sum`, `--period 60`, `--evaluation-periods 3`, `--threshold 5`, `--comparison-operator GreaterThanThreshold`, and `--treat-missing-data notBreaching`.
-3. Creates a log group `/fluent/order-processor`.
-4. Creates a log stream named `2024-01-15` within that group.
-5. Writes a log event with message `ERROR: payment declined for order 456` to that stream.
-6. Creates a metric filter named `payment-declined-count` on that log group, matching the pattern `"payment declined"`, transforming into metric `PaymentDeclinedCount` in namespace `Fluent/Orders` with metric value `1`.
+The script does these steps, in order:
+
+1. Publish the metric `OrdersProcessed` with `--namespace "Fluent/Orders"` and value `1`.
+2. Give it the dimensions `Environment=prod,Service=order-processor`.
+3. Create the alarm `high-error-rate` on `OrderErrors` in `--namespace "Fluent/Orders"`.
+4. Give the alarm `--statistic Sum`, `--period 60`, `--evaluation-periods 3` and `--threshold 5`.
+5. Give it `--comparison-operator GreaterThanThreshold` and `--treat-missing-data notBreaching`.
+6. Create the log group `/fluent/order-processor`.
+7. Create the log stream `2024-01-15` in that group.
+8. Write the event `ERROR: payment declined for order 456` to that stream.
+9. Create the metric filter `payment-declined-count` on the group, with the pattern `"payment declined"`.
+10. The filter writes value `1` to the metric `PaymentDeclinedCount` in namespace `Fluent/Orders`.
+
+The finished script makes these calls:
+
+```bash
+aws cloudwatch put-metric-data \
+  --namespace "Fluent/Orders" \
+  --metric-name OrdersProcessed \
+  --value 1 \
+  --dimensions \
+  Environment=prod,Service=order-processor
+
+aws cloudwatch put-metric-alarm \
+  --alarm-name high-error-rate \
+  --namespace "Fluent/Orders" \
+  --metric-name OrderErrors \
+  --statistic Sum \
+  --period 60 \
+  --evaluation-periods 3 \
+  --threshold 5 \
+  --comparison-operator \
+  GreaterThanThreshold \
+  --treat-missing-data notBreaching
+
+GROUP=/fluent/order-processor
+MSG="ERROR: payment declined for order 456"
+
+aws logs create-log-group \
+  --log-group-name "$GROUP"
+
+aws logs create-log-stream \
+  --log-group-name "$GROUP" \
+  --log-stream-name "2024-01-15"
+
+aws logs put-log-events \
+  --log-group-name "$GROUP" \
+  --log-stream-name "2024-01-15" \
+  --log-events \
+  "timestamp=$(date +%s000),message=$MSG"
+
+aws logs put-metric-filter \
+  --log-group-name "$GROUP" \
+  --filter-name payment-declined-count \
+  --filter-pattern "\"payment declined\"" \
+  --metric-transformations \
+metricName=PaymentDeclinedCount,\
+metricNamespace=Fluent/Orders,\
+metricValue=1
+```
 
 ### Run it for real
 
 ```bash
-docker run -d --name localstack -p 4566:4566 localstack/localstack
-bash stub.sh   # once filled in
-aws --endpoint-url http://localhost:4566 logs filter-log-events \
-  --log-group-name /fluent/order-processor --filter-pattern "ERROR"
+docker run -d --name localstack \
+  -p 4566:4566 localstack/localstack
+bash stub.sh
+aws logs filter-log-events \
+  --endpoint-url http://localhost:4566 \
+  --filter-pattern "ERROR" \
+  --log-group-name /fluent/order-processor
 ```

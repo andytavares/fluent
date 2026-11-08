@@ -1,71 +1,95 @@
-# Transactions
+## What you build
 
-## What you'll learn
-
-Transactions are what turn Kafka's per-partition idempotent production into a guarantee that spans multiple partitions and topics — including the classic "consume from A, transform, produce to B, commit the input offset" loop atomically. This lesson covers `transactional.id` and fencing (how Kafka kills off a stale "zombie" producer instance), the read-committed consumer's isolation behavior, and when this machinery is actually worth its cost.
+You configure a transactional producer and a `read_committed` consumer in `stub.properties`. Transactions extend per-partition idempotence to atomic writes across partitions and topics. This lesson builds on **Offset Management** and **Delivery Semantics**.
 
 ## Key concepts
 
-**`transactional.id` is a stable identity that survives producer restarts, and that's the whole point.** Unlike the ephemeral PID assigned to any idempotent producer (covered in the delivery-semantics lesson), `transactional.id` is a string *you* choose and configure — typically tied to a logical role (`order-processor-1`), not a process instance. On `initTransactions()`, the broker's **transaction coordinator** looks up any prior PID registered under that same `transactional.id`, bumps an internal **epoch**, and — critically — **fences off the previous producer instance using that id**: any in-flight or future request from the old instance is rejected once the new epoch is active.
+### `transactional.id` survives producer restarts
 
-**Fencing is how Kafka kills "zombies" — old producer instances that are still alive but no longer should be trusted.** The classic zombie scenario: a producer process pauses (GC, network partition, a slow deploy that doesn't fully kill the old process) long enough that its orchestrator restarts a replacement with the same `transactional.id`. Without fencing, both the old ("zombie") and new instances could produce concurrently, corrupting a transaction. With fencing, the moment the new instance calls `initTransactions()`, the old instance's producer epoch is invalidated — any write it attempts afterward is rejected with a fencing error, even if the zombie has no idea it's been superseded.
+An idempotent producer gets a temporary PID. A `transactional.id` is a string that you choose, tied to a logical role such as `order-processor-1`. On `initTransactions()`, the broker's **transaction coordinator** finds any earlier PID for that id. It bumps an internal **epoch** and fences the earlier producer instance. The broker then rejects every request from the old instance.
 
-**The consume-transform-produce loop is where transactions earn their keep.** The canonical stream-processing pattern:
+### Fencing stops zombie producers
+
+A zombie is an old producer instance that is still alive but must not write. Example: a producer pauses for GC, a network partition or a slow deploy. Its orchestrator starts a replacement with the same `transactional.id`. Without fencing, both instances produce and corrupt the transaction. With fencing, the new `initTransactions()` invalidates the old epoch. The broker rejects any later write from the zombie with a fencing error, though the zombie does not know it.
+
+### Consume-transform-produce is the main use
 
 ```
 beginTransaction()
   records = consumer.poll(...)
   results = transform(records)
-  producer.send(results, to: outputTopic)
-  producer.sendOffsetsToTransaction(consumerOffsets, consumerGroupId)  // commit input offsets INSIDE the transaction
+  producer.send(results, outputTopic)
+  // input offsets commit in the txn
+  producer.sendOffsetsToTransaction(
+      offsets, groupId)
 commitTransaction()
 ```
 
-`sendOffsetsToTransaction` is the piece that makes this atomic end-to-end: the **input offset commit** and the **output records** are committed (or aborted) together, as one unit. Without it, you're back to two independent operations that can succeed/fail independently — e.g., the output write succeeds but the input offset commit fails, and a restart reprocesses input records that already produced output, duplicating downstream results.
+`sendOffsetsToTransaction` makes the loop atomic. The input offset commit and the output records commit or abort as one unit. Without it, the two operations succeed or fail independently. If the output write succeeds and the offset commit fails, a restart duplicates downstream results.
 
-**`isolation.level=read_committed` on the consumer is what makes the "commit" side of a transaction actually mean something to readers.** By default (`read_uncommitted`), a consumer sees every record as soon as it's written to the log — including records from a transaction that later **aborts**. `read_committed` withholds transactional records from consumers until the producer commits (or aborts, in which case they're never delivered) — implemented via the **Last Stable Offset (LSO)**, the point up to which all transactions are resolved (committed or aborted). A `read_committed` consumer never reads past the LSO, so it can never see uncommitted transactional writes.
+### `read_committed` hides open and aborted transactions
+
+With the default `read_uncommitted`, a consumer sees each record as soon as it reaches the log. That includes records from a transaction that later aborts.
+
+`read_committed` holds back transactional records until the producer commits. It never delivers records from an aborted transaction. It uses the **Last Stable Offset (LSO)**: the point before which every transaction has committed or aborted. A `read_committed` consumer never reads past the LSO.
 
 ```
-partition log:  [A][B][txn-start][C][D][E][txn-commit? or abort?]
-                                              ^ LSO sits here until resolved
-read_committed consumer: blocked from reading C, D, E until the transaction resolves
+log: A B [txn-start] C D E [commit?]
+              LSO stays here ^
+read_committed: C, D, E wait for the
+outcome of the transaction
 ```
 
-**A hung transaction stalls read_committed consumers, not just the producer.** If a transactional producer begins a transaction and then never commits or aborts it (crashes, hangs, network partition), the LSO can't advance past that transaction's first record — every `read_committed` consumer is blocked from reading *anything newer*, even on unrelated keys, until the transaction resolves. `transaction.timeout.ms` bounds this: the broker proactively aborts a transaction that's been open longer than this window, unblocking consumers.
+### A hung transaction stalls `read_committed` consumers
 
-**Transactions aren't free, and aren't always worth it.** They add: a round trip to the transaction coordinator per transaction (`beginTransaction`/`commitTransaction`), broker-side bookkeeping for the transaction log, and the LSO-stall risk above. For a single-partition, single-topic pipeline with no fan-out and no "read A, write B" coupling, plain idempotent production (`enable.idempotence=true`, no `transactional.id`) already gives exactly-once-per-partition without any of that overhead. Reach for full transactions specifically when you need atomicity **across** multiple partitions/topics — most commonly the consume-transform-produce pattern above, which is exactly what Kafka Streams uses under the hood for its `exactly_once_v2` processing guarantee (covered in the Kafka Streams lesson).
+A producer can begin a transaction and never commit or abort it, after a crash or a network partition. The LSO cannot move past that transaction's first record. Every `read_committed` consumer on the partition stops, even for unrelated keys. `transaction.timeout.ms` bounds this: the broker aborts a transaction that stays open longer.
 
-## vs other systems
+### Transactions have a cost
 
-Kafka's transaction model is narrower than a traditional ACID database transaction — it only spans Kafka writes (and the specific offset-commit API), not arbitrary external side effects. Writing to a database and a Kafka topic "transactionally" in the traditional two-phase-commit sense isn't what Kafka transactions do; that's a separate distributed-transaction or outbox-pattern problem. Kafka transactions solve the narrower (but very common) problem of atomically writing to multiple Kafka partitions/topics plus committing consumer offsets, in one unit.
+They add a coordinator round trip per transaction, broker bookkeeping for the transaction log, and the LSO stall risk. For one partition and one topic with no "read A, write B" coupling, use plain idempotence. `enable.idempotence=true` with no `transactional.id` already gives exactly-once per partition.
+
+Use transactions for atomicity across partitions or topics, mostly consume-transform-produce. Kafka Streams uses them for its `exactly_once_v2` guarantee.
+
+Kafka transactions cover only Kafka writes and the offset-commit API, unlike an ACID database transaction. A database write plus a Kafka write is a separate problem: two-phase commit or the outbox pattern.
 
 ## Watch out
 
-- **A stalled/hung transaction blocks every `read_committed` consumer on that partition from reading anything newer, not just the transaction's own records.** Set `transaction.timeout.ms` deliberately — too long and a stuck producer can stall consumers for a long time; too short and legitimately slow (but healthy) transactions get aborted.
-- **Reusing a `transactional.id` across genuinely different logical producers causes spurious fencing.** Fencing assumes "same `transactional.id` means same logical role, only one live instance at a time" — sharing an id across unrelated producers causes one to unintentionally fence out the other.
-- **`read_committed` doesn't retroactively hide already-consumed uncommitted records** — it only changes what a consumer is allowed to fetch going forward; it's a fetch-time filter, not a guarantee about what any consumer might have already read under `read_uncommitted` in the past.
+- A hung transaction blocks every `read_committed` consumer on that partition, not only its own records.
+- A long `transaction.timeout.ms` lets a stuck producer stall consumers for a long time.
+- A short `transaction.timeout.ms` aborts slow but healthy transactions.
+- Two different logical producers that share one `transactional.id` fence each other out by mistake.
+- `read_committed` filters at fetch time only. It does not hide records that a `read_uncommitted` consumer already read.
 
 ## The task
 
-Configure a transactional producer/consumer pair for the consume-transform-produce pattern: a service reads from an input topic, transforms records, and writes to an output topic, needing atomicity across the input offset commit and the output write.
+A service reads an input topic, transforms records and writes an output topic. The input offset commit and the output write must be atomic.
 
-Write `stub.properties` with two sections, exactly under these markers:
+Write `stub.properties` with two sections. Each section starts with its exact marker line.
+
+**Transactional producer**:
+
+1. `transactional.id=order-processor-1`.
+2. `enable.idempotence=true`.
+3. `acks=all`.
+4. `transaction.timeout.ms=60000`. The broker aborts a transaction open for more than 60 s.
+
+**Downstream consumer** (it reads the output topic):
+
+1. `isolation.level=read_committed`. Do not use `read_uncommitted`.
+2. `enable.auto.commit=false`.
+3. `group.id=order-processor-consumers`.
+
+Use exactly this content:
 
 ```properties
 # === transactional producer ===
-...
+transactional.id=order-processor-1
+enable.idempotence=true
+acks=all
+transaction.timeout.ms=60000
 
 # === downstream consumer ===
-...
+isolation.level=read_committed
+enable.auto.commit=false
+group.id=order-processor-consumers
 ```
-
-**Transactional producer**:
-- `transactional.id=order-processor-1`
-- `enable.idempotence=true`
-- `acks=all`
-- `transaction.timeout.ms=60000` (abort a transaction that's been open more than 60s, to avoid stalling consumers indefinitely)
-
-**Downstream consumer** (reads the output topic):
-- `isolation.level=read_committed`
-- `enable.auto.commit=false`
-- `group.id=order-processor-consumers`
