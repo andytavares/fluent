@@ -114,8 +114,8 @@ function checkLessonStructure(instructions: string): LintError[] {
     errors.push({ code: "E013", message: "task section has no fenced code block", file });
   }
   const firstLine = lines.find((line) => line.trim().length > 0) ?? "";
-  if (!firstLine.startsWith("# ")) {
-    errors.push({ code: "E014", message: "first line is not a '# ' heading", file });
+  if (firstLine.startsWith("# ")) {
+    errors.push({ code: "E014", message: "lesson starts with a '# ' title; the page header shows it", file });
   }
   const wideLines = findWideCodeLines(lines);
   if (wideLines.length > 0) {

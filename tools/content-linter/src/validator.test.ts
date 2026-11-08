@@ -5,8 +5,6 @@ import { join } from "node:path";
 import { checkBuildsOn, checkFolderBuildsOn, validateExerciseFolder } from "./validator.js";
 
 const VALID_INSTRUCTIONS = [
-  "# Test",
-  "",
   "This is a test concept with enough content to pass the linter validation check.",
   "",
   "## What you build",
@@ -139,16 +137,16 @@ describe("Content linter validator", () => {
     expect(errors.some((e) => e.code === "E013")).toBe(true);
   });
 
-  it("E014: reports error when the first non-empty line is not a level-1 heading", async () => {
+  it("E014: reports error when the first non-empty line is a level-1 title", async () => {
     const dir = await createValidFolder(tmpBase);
-    await writeFile(join(dir, "instructions.md"), "\n## Test\n" + VALID_INSTRUCTIONS);
+    await writeFile(join(dir, "instructions.md"), "\n\n# Test\n\n" + VALID_INSTRUCTIONS);
     const errors = await validateExerciseFolder(dir);
     expect(errors.some((e) => e.code === "E014")).toBe(true);
   });
 
-  it("E014: accepts a level-1 heading after leading blank lines", async () => {
+  it("E014: accepts a lesson that starts with a level-2 heading", async () => {
     const dir = await createValidFolder(tmpBase);
-    await writeFile(join(dir, "instructions.md"), "\n\n" + VALID_INSTRUCTIONS);
+    await writeFile(join(dir, "instructions.md"), VALID_INSTRUCTIONS);
     const errors = await validateExerciseFolder(dir);
     expect(errors.some((e) => e.code === "E014")).toBe(false);
   });
@@ -162,7 +160,7 @@ describe("Content linter validator", () => {
     const warnings = errors.filter((e) => e.code === "W002");
     expect(warnings).toHaveLength(1);
     expect(warnings[0]?.message).toContain("2 code line(s)");
-    expect(warnings[0]?.message).toContain("line 19");
+    expect(warnings[0]?.message).toContain("line 17");
   });
 
   it("W002: ignores wide lines outside fenced code blocks", async () => {
