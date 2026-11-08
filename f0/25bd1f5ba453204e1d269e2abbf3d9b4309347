@@ -1,0 +1,204 @@
+content/tracks/ruby/concepts/10-file-io-and-stdlib/instructions.md
+  s_4312bdd443949d::t_242449e4076aab 1,3,7-9,14-16,18-19,22-24,26,29,31-32,34,37,39,45-46,50-52,54-55,58-60,63-70,73,75,80,83-84,87-88,93-95,100-101,107-108,116,127,130,132,136-139,144,146-155,158-175,178-192
+  s_4312bdd443949d::t_1a0511ffb10e34 105-106,118,140
+content/tracks/cpp/concepts/06-inheritance-and-polymorphism/instructions.md
+  s_4312bdd443949d::t_38e6171bfe54c3 1,3,7-10,14-16,21-23,27,29,31-37,39,42-45,48,50,52-56,58,60,62-66,68,70,72-76,78,80,83-101,103-110,112-144,147-150
+content/tracks/shell/concepts/09-scripts-and-arguments/instructions.md
+  s_4312bdd443949d::t_22686ccf8bae71 1,3,7-9,15,17,20-27,31,33,48-51,54,60,62,75-77,93-101,105,107-116,119-129,132,134-136
+content/tracks/shell/concepts/08-file-operations/instructions.md
+  s_4312bdd443949d::t_3dff5ec5adeedc 1,3,7-9,12-23,26-28,31-34,37,39,42-50,53-55,58-63,66,69-76,79,81-94,96,98-105,109,111-119,122-125,133-135,137-139
+content/tracks/elixir/concepts/09-protocols/instructions.md
+  s_4312bdd443949d::t_3700cde4ad7de5 1,3,7-9,13,18,29-32,35-39,41,49-50,54-56,74,76,78,80-86,88,90,92-93,95,97-101,103,106-130
+content/tracks/shell/concepts/06-text-processing/instructions.md
+  s_4312bdd443949d::t_3dff5ec5adeedc 1,3,7-9,12-29,32-34,37-55,58-60,63-76,79-81,84-85,88,90,92-96,98,100-108,112,114-120,123-124,126-127,131,133-135,137-152
+content/tracks/elixir/concepts/03-lists-and-recursion/instructions.md
+  s_4312bdd443949d::t_3700cde4ad7de5 1,3,7-9,12-13,16-20,22,24-26,31-33,35,37,40-41,44-46,49,51,55-57,60,62,65-71,76-78,82,84-88,90,92,95-116
+content/tracks/cpp/concepts/09-concurrency/instructions.md
+  s_4312bdd443949d::t_209166383cad3d 1,3,7-10,16-17,20-23,31,36-39,43-47,50-52,58-61,64,66-74,78-83,87,89-99,103,106,108-124
+content/tracks/cpp/concepts/02-templates/instructions.md
+  s_4312bdd443949d::t_dc0e6d23ff5f50 1,3,7-10,17-19,22-25,30-31,41-44,53,55,57-61,63,65,67-78,81-83,86-97,99-107,110-115,117-131,136-138
+content/tracks/rust/concepts/01-variables-and-types/instructions.md
+  s_4312bdd443949d::t_22d8f1c5eac257 1,3,7-9,13-14,20-22,26-29,32-34,38-39,42-43,46-48,55-57,61-62,65-67,71-72,76,78,82-87,91,93-96,98,101-116
+content/tracks/elixir/concepts/08-enum-and-streams/instructions.md
+  s_4312bdd443949d::t_3700cde4ad7de5 1,3,7-9,12-25,27-28,31,33,38,40-41,44,46,49-56,59,61,63,65-67,69,71,75-79,83,85-92,94,96,99-110,112-113,115-120
+content/tracks/rust/concepts/04-structs-and-enums/instructions.md
+  s_4312bdd443949d::t_9b90a7688ded6a 1,3,7-9,21-23,31-33,39-41,49-52,57-59,63-66,71-73,76-79,83-85,88-91,97-101,105,107-114,116,120-136
+content/tracks/rust/concepts/08-error-handling/instructions.md
+  s_4312bdd443949d::t_010eda2e0f4b2c 1,7-9,12-13,15,22-24,27-32,37-39,42-43,46,50-51,56-59,61-63,69,72-77,79-80,83-85,88-92,95-97,100-102,111-116,120,122-131,133,136-147,150-163
+  s_4312bdd443949d::t_19488209ee1bf2 3,148-149
+content/tracks/cpp/concepts/05-lambda-expressions/instructions.md
+  s_4312bdd443949d::t_d94b5da6c77c31 1,3,7-10,12-14,18-21,24-35,38-41,44-45,49-52,55,59-66,69-72,75-80,83-86,88-90,95-100,104,106-114,117-120,122-132,134-143
+content/tracks/rust/concepts/05-pattern-matching/instructions.md
+  s_4312bdd443949d::t_88f1ec74d35901 1,3,7-9,17-19,23-25,32-33,42,49-51,58-63,67-69,75-76,81,85-86,91-93,101,112-116,120,122-129,131,134-162
+content/tracks/elixir/concepts/04-maps-and-structs/instructions.md
+  s_4312bdd443949d::t_3700cde4ad7de5 1,3,7-9,14-20,23,25,28-32,36-40,42,45-48,51,53,61-63,65-66,69,71,74-75,77-80,84-88,92,96-97,101-105,107,110-138
+content/tracks/cpp/concepts/01-classes-and-objects/instructions.md
+  s_4312bdd443949d::t_6cb25e1866cd0e 46
+  s_4312bdd443949d::t_cbf45d7675b4d7 1,3,7-10,16,24-45,47-51,53-64,71-78,82,84,86-96,100-103,107,109-112,114,124,127-130
+content/tracks/ruby/concepts/08-metaprogramming/instructions.md
+  s_4312bdd443949d::t_e369beee8d0043 1,3,7,9,12-14,17,20,22,30,32,53-54,60,65-67,69,71,85-86,89,104,106,122-125,129,131-138,140,143-147,153-165,168,173
+  s_4312bdd443949d::t_4ee1f7e0f078b2 51
+  s_4312bdd443949d::t_1a0511ffb10e34 83-84,91,148,170-172
+content/tracks/rust/concepts/10-concurrency/instructions.md
+  s_4312bdd443949d::t_8821c97f60d950 1,3,7-9,17-18,21-26,28,30-32,40-44,47-49,62-63,66-68,76-81,85-86,89,91,93,95,100-102,108-113,115,117,119-124,129-141
+  s_4312bdd443949d::t_2c687bfce49ff9 126,128
+content/tracks/kotlin/concepts/08-coroutines/instructions.md
+  s_4312bdd443949d::t_edfd1bd1e80f19 1,3,7-11,13,19-23,27-28,31,33,38,45,47,58-61,64,66,77,80,82,96-97,102-106,110,112-118,120,122-143
+content/tracks/kotlin/concepts/10-interfaces-and-delegation/instructions.md
+  s_4312bdd443949d::t_dfa157c14378c3 1,3,7-9,14-17,21-23,27,29,33,37,39,47-48,51-53,61,63,67-69,71-76,80,82,89-90,93,95,98-102,105,107,115-116,123-125,129-138,140-160
+content/tracks/ruby/concepts/05-enumerables/instructions.md
+  s_4312bdd443949d::t_1a0511ffb10e34 1,3,7,9,17,30-34,37,39,43-49,52-70,75-76,79-80,86,89-94,97,99,102-103,105-107,113-117,121,123-130,132,135-153
+content/tracks/cpp/concepts/07-move-semantics/instructions.md
+  s_4312bdd443949d::t_eb45ec2c1c66b4 1,3,7-35,38-41,44,46,51-54,59-61,74-82,84,86-110,114-119,123-134,136,138,142-144,147-150,152-181,183,185-188
+content/tracks/assembly/concepts/10-floating-point/instructions.md
+  s_4312bdd443949d::t_22686ccf8bae71 1,3,7-11,13-18,20,22,26-27,30-35,38,40,43-52,55,57,61-62,64-66,69,71,74-79,81-82,85,87,89-93,97-100,104-112,115-117,119-120,125-135
+content/tracks/rust/concepts/06-traits/instructions.md
+  s_4312bdd443949d::t_94bdde8a63247e 40,42,104
+  s_4312bdd443949d::t_9273e83f5f50ab 1,3,7-9,15,17-18,23-25,39,41,47-49,52-58,61-63,66-72,76-84,86,88,95,97,101-103,108,110-114,116,119-130,132-138
+content/tracks/ruby/concepts/04-classes-and-modules/instructions.md
+  s_4312bdd443949d::t_1a0511ffb10e34 1,3,7-9,14,29,32,34,38-41,44,55-57,61,67,77,79,90-91,100,102-106,109-110,120,122,136-137,146,148,150-158,162-166,170-172,174-178,180-184,188-193,196-197,200-208
+content/tracks/ruby/concepts/07-exception-handling/instructions.md
+  s_4312bdd443949d::t_1a0511ffb10e34 1,3,7-9,21,23,36-38,41-42,44-45,47-48,50-52,55-57,60-63,66,68,71,76-77,82-85,91-94,98,100,107,109-110,114-116,120,122-123,130,133,135,137,141-146,150,152-159,162-164,168-180,188,190-191,193-194
+content/tracks/cpp/concepts/04-smart-pointers/instructions.md
+  s_4312bdd443949d::t_1640ec290a0253 1,3,7-21,26-30,33-36,38-43,46-49,52-53,57-66,68,70-81,85-91,95,105,107-111,113,117-119,121-123,126-131
+content/tracks/rust/concepts/03-borrowing-and-references/instructions.md
+  s_4312bdd443949d::t_808a8fdc8a2c05 1,3,7-9,13-14,22-24,36-41,48-51,54-56,60-61,65-67,80-84,88,90-93,95,98-105,107-109,111-118
+content/tracks/rust/concepts/09-closures-and-iterators/instructions.md
+  s_4312bdd443949d::t_00f86a40861a1e 1,3,7-9,13-14,17-23,27-29,32-33,36-40,42-46,51-55,57-58,61-63,66,71-72,75,80-89,92,94,98-103,107,109-115,117,120-147
+content/tracks/ruby/concepts/09-modules-and-mixins/instructions.md
+  s_4312bdd443949d::t_e06343b7fb6d20 1,3,7,9,21,25-26,30,38-40,51,56,59,61,86-88,90,106,127-130,133,135,145-149,155-157,161,163-169,171,174-200
+  s_4312bdd443949d::t_1a0511ffb10e34 32,108,154
+  s_4312bdd443949d::t_9ecab461ef6866 107
+content/tracks/cpp/concepts/08-exception-handling/instructions.md
+  s_4312bdd443949d::t_b8a2ee5952de63 1,3,7-22,27-29,36,38,40-56,60-62,65-66,68-71,78,82-86,88,90,92-99,101,103,106-107,110,112-117,119,121,123-133,136-164
+content/tracks/rust/concepts/02-ownership/instructions.md
+  s_4312bdd443949d::t_cb04f321eec715 1,3,7-8,10-13,15,19-20,24-26,30-33,36,38,43-44,47-49,54,57-59,62-66,69,71,75-80,84,86-89,91,94-96,98-101,104-109
+content/tracks/cpp/concepts/03-stl-containers/instructions.md
+  s_4312bdd443949d::t_beacf621f3d849 1,3,7-10,15-16,19-22,28-31,34-37,42-43,46-49,55-59,62-65,68-71,74-77,80-81,87-91,95,97-101,103,106-123
+content/tracks/ruby/concepts/03-collections/instructions.md
+  s_4312bdd443949d::t_1a0511ffb10e34 1,3,7,9,13-25,28,30,33-34,37-39,42,45-47,51,53,57-59,65,67,74-75,78-80,88-90,93-94,97,100,104-106,110,113,118-122,127-134,136,139,142,144-167
+content/tracks/kotlin/concepts/07-generics/instructions.md
+  s_4312bdd443949d::t_48f963bde56fb8 1,3,7,13-14,18-19,22,24,27-28,30-31,33-35,38,40,42-43,55,57,59,62-69,72,76-78,82-92,94-115
+content/tracks/rust/concepts/07-generics-and-lifetimes/instructions.md
+  s_4312bdd443949d::t_4430c00e37ebfc 1,3,7-9,12-13,24-26,34,37-38,40-41,47-49,51-53,56-57,62-66,69-70,73-76,79,81-83,93-98,102,104-112,115-118,120-124,127-129,131-132,134-137
+content/tracks/shell/concepts/02-control-flow/instructions.md
+  s_4312bdd443949d::t_b4f5d9c73f2a98 1,3,7-9,17-19,21,33-52,54,57-61,64-66,69-71,74-76,94-101,105,107-112,118,120-125,130
+content/tracks/kotlin/concepts/09-higher-order-functions/instructions.md
+  s_4312bdd443949d::t_cc22dedf66e839 1,3,7,9,13-14,17-18,23,25,28-31,37,39-40,43-45,48-49,52-54,57-58,64,66,72-74,79-81,84-87,89-90,96,98,101-104,108-109,115-117,121,123-150
+content/tracks/kotlin/concepts/06-sealed-classes-and-when/instructions.md
+  s_4312bdd443949d::t_879e7b6ff8f288 36-37
+  s_4312bdd443949d::t_7742a6cf529358 1,3,7,9,13-21,25,27,29,35,38-40,44,46,50-51,55,57,66-68,73-76,80,82,86-89,94-96,100-108,110,113-129
+content/tracks/ruby/concepts/02-methods-and-blocks/instructions.md
+  s_4312bdd443949d::t_1a0511ffb10e34 1,3,7-9,17,19,30,32,36-38,40,43-46,49-50,53,55,62,66-68,75-76,79,81,91-93,97-98,100-101,106-109,113,115-122,124,127-140,143-152
+content/tracks/assembly/concepts/04-the-stack/instructions.md
+  s_4312bdd443949d::t_c46a74ce299804 92
+  s_4312bdd443949d::t_9a4833cc9b4e88 1,3,9,12-15,18-20,23-24,26-27,30,32,36-48,52,54,57-62,65,67,69,73-74,78,86,88,90-91,93-94,98-101,105,107-111,116-124,126-128
+content/tracks/cpp/concepts/10-raii-and-resource-management/instructions.md
+  s_4312bdd443949d::t_3d33b6e8374bf9 1,3,7-10,14-15,17-19,28,30-31,38-71,73,75,77-84,88-94,98-110,112,114,118-119,121,124-126,131-144,146-160
+content/tracks/elixir/concepts/06-error-handling/instructions.md
+  s_4312bdd443949d::t_3700cde4ad7de5 1,3,7-9,15,20-21,25,27,30-33,37,41,43,47-48,54-55,59,61,64-67,70,72,76-79,83,85-94,99-100,102-106,109-130
+content/tracks/assembly/concepts/01-registers-and-data-movement/instructions.md
+  s_4312bdd443949d::t_da324c5626061f 1,3,7,9,24-26,29-34,37,39,42-51,54,56,58,61-64,69-72,76-84,90-97
+content/tracks/assembly/concepts/02-arithmetic-and-flags/instructions.md
+  s_4312bdd443949d::t_d04ce7a9dbbb93 1,3,7-9,12-23,26,28,31-36,39,41,44-48,51,53,55,59-61,65-66,68-69,72,74,76-81,85-88,92,94-97,99,101,104-116
+content/tracks/assembly/concepts/03-control-flow/instructions.md
+  s_4312bdd443949d::t_62c76eb3c76c0d 1,3,7,9,12-15,18,20,22,26-29,37,40,42,47-48,56,58,61-62,74,76-84,86,88-96,100-104,108-116,119-120,123,125-130
+content/tracks/assembly/concepts/05-procedures/instructions.md
+  s_4312bdd443949d::t_9ea17b0cdcaf01 1,3,7,9,12-14,18-19,22,24,34,36,39,43,51,53,55-56,58,62-73,75,77-83,86-88,90-95,97,99,101-104,108-111,115,117-122,124,127-131,133-138
+content/tracks/assembly/concepts/06-memory-and-addressing/instructions.md
+  s_4312bdd443949d::t_df9c2f0e74fa36 1,3,7-9,12-19,22,24,33,44-45,49-52,55,57,60-67,70,72,74,77-80,83,85,88-95,98,100,102-105,109-113,117,119-123,125,128-142
+content/tracks/assembly/concepts/07-system-calls/instructions.md
+  s_4312bdd443949d::t_535d55d5c42c55 1,3,7,9,17,22-31,33,42,44,48-50,54-63,66-68,71-76,79,81,86-87,90,92,94-98,102-106,110-118,121-122,125,131-138
+content/tracks/assembly/concepts/08-arrays-and-loops/instructions.md
+  s_4312bdd443949d::t_72793b1ee537c8 1,3,7,9,12-20,23,25,28-33,36-37,44,46,49,51-53,55,58-61,65,67,70-71,74,76,78-81,85-88,92-100,103-104,107,109-110,113-121
+content/tracks/assembly/concepts/09-string-operations/instructions.md
+  s_4312bdd443949d::t_edb4bdb52d0891 1,3,7,9,13-16,19,22,24,26,28,30-41,44,46,49,51-52,54,59,61,64-65,68-71,73-78,83,85,88,92-95,97-98,102,104,106-109,113-118,122-130,136,138-139,142,144-149
+content/tracks/c/concepts/01-variables-and-types/instructions.md
+  s_4312bdd443949d::t_72ed2aed0f7f41 1,3,7-10,12-19,22-24,26-43,47-49,52-54,58-61,65,67-71,73,75-85
+content/tracks/c/concepts/02-functions/instructions.md
+  s_4312bdd443949d::t_fb2f52b10104d2 1,3,7-10,17-20,22,25-28,36,38,40-53,57-60,64,66-71,73,75-84,86-87
+content/tracks/c/concepts/03-pointers/instructions.md
+  s_4312bdd443949d::t_c1d9f11e7688a7 1,3,7-10,13-14,16-19,22-23,26-31,40,43-46,50-51,56-60,62,66-69,73,75-82,86-89,92-97,99-100,102-104
+content/tracks/c/concepts/04-arrays-and-strings/instructions.md
+  s_4312bdd443949d::t_3d33122e91ee52 1,3,7-10,13-17,20-23,25-26,29-30,33-45,48-49,53-54,56-57,60-62,66-69,73-79,81,84-99
+content/tracks/c/concepts/05-structs/instructions.md
+  s_4312bdd443949d::t_0f1d0e3f7b3b91 1,3,7-10,18-21,28,31-34,36-41,44-47,49,51,54-57,59-60,67-77,81-83,87-88,90-93,96,98-102,104,106-122
+content/tracks/c/concepts/06-control-flow/instructions.md
+  s_4312bdd443949d::t_159ab03c328841 1,3,7-10,21-24,29-32,37-38,44-49,52,56-59,61,65,68-71,75-78,85-89,93-106,109-127,130-132
+content/tracks/c/concepts/07-dynamic-memory/instructions.md
+  s_4312bdd443949d::t_f361ca46a2166f 1,3,7-10,14-17,20-23,26,29-32,34-35,37-38,44-47,50,53-57,62,66-68,70-72,76-82,86-99,101,104-105,108,110-112,114-115,117-129
+content/tracks/c/concepts/08-file-io/instructions.md
+  s_4312bdd443949d::t_56f156387d1196 1,3,7-10,14-16,24-35,39-41,45,48-49,53-56,59-60,63-64,67-68,70,74-76,80-87,91-101,103,106-113,115-116,118-119,121-122,124,126-127,129
+content/tracks/c/concepts/09-preprocessor/instructions.md
+  s_4312bdd443949d::t_9af3fafc2a0d55 1,3,7-14,20-23,29-32,42-45,52,54,60-63,65-72,75-76,78-81,84,88-93,97-106,108,111-115,117,120,123-126,128-131
+content/tracks/c/concepts/10-linked-lists/instructions.md
+  s_4312bdd443949d::t_58ca62571ff78c 1,3,7-10,18-21,32-35,41,45-48,50-51,56-59,70-72,76-80,84,86-101,105-111,117,120-123,126
+content/tracks/elixir/concepts/01-modules-and-functions/instructions.md
+  s_4312bdd443949d::t_d0121cfa467b0c 1,3,7-9,15-16,20-24,26,34,38-40,43-54,61,63,74,76,79-84,89-91,95,97-102,104,107-121
+content/tracks/elixir/concepts/02-pattern-matching/instructions.md
+  s_4312bdd443949d::t_677a65d0a04f2c 1,3,7-9,15,19-21,23-25,32,35-37,41-47,50-51,54,56,60-63,66,68,73,79-82,86,88-97,99,102-104,109-120
+content/tracks/elixir/concepts/05-processes/instructions.md
+  s_4312bdd443949d::t_8b2f93eea3e147 1,3,7-13,16-18,21,23,40,42-46,56,59-61,64-66,69,72,76,78,82-84,88,90-97,99,103,105-107,110-113
+content/tracks/elixir/concepts/07-genserver/instructions.md
+  s_4312bdd443949d::t_bab15ee93df103 1,3,7-13,21-22,25-29,36-37,40-41,45-47,49,51,53,55,58,60-61,63,65-66,69,71,73,75,79-83,87,89-95,99-101,105-113
+content/tracks/elixir/concepts/10-macros/instructions.md
+  s_4312bdd443949d::t_155b3cf4d4dd83 1,3,7-11,13,19-21,24-28,30,49,51,56-59,64,66,68,70,72,74,76,80-84,88,90-97,100-104,110-111,113,115,117-124
+content/tracks/kotlin/concepts/01-variables-and-types/instructions.md
+  s_4312bdd443949d::t_d1f903f5ed422f 1,3,7,9,12-15,17-18,21,23,31,33,35,37,41-44,47,50-56,59-61,65-67,70,72,76,82-84,88,90-109
+content/tracks/kotlin/concepts/02-functions/instructions.md
+  s_4312bdd443949d::t_cd0bc1f71fa95b 1,3,7-9,16,20,22,25-32,36,38,41-42,48,50,53-54,59,61,64-65,67,69,74-76,80-85,87-101
+content/tracks/kotlin/concepts/03-classes-and-data-classes/instructions.md
+  s_4312bdd443949d::t_c062b4f72fca75 1,3,7,9,21,23,26-29,31-33,38,40,47-50,53,55,62-64,72,75-77,83-84,94-98,102,104-111,116-127
+content/tracks/kotlin/concepts/04-null-safety/instructions.md
+  s_4312bdd443949d::t_321eaa4b3d57a2 1,3,7-9,12-13,15-17,20,22,25-28,31,33,36,40,42,45-46,49,51,55-56,60,62,64,66-70,72,76-77,85,89-92,96,98-121
+content/tracks/kotlin/concepts/05-collections/instructions.md
+  s_4312bdd443949d::t_42b00f1e0e7adb 1,3,7,9,12-15,18-21,25-27,32-51,54,62,64,67-78,83-85,89,91-117
+content/tracks/ruby/concepts/01-variables-and-types/instructions.md
+  s_4312bdd443949d::t_a96f9e5672d9cd 1,3,7,9,19,21,24-32,35,37,41,45-46,49,51,53,57-62,65,67,70-77,80,82,85-88,91-93,100-102,107-110,114-121,123,127-128,136-140,142-145
+content/tracks/ruby/concepts/06-blocks-procs-lambdas/instructions.md
+  s_4312bdd443949d::t_21af938b7caa05 1,3,7-9,11-14,16-18,21-22,24-25,27-30,33,35,41,47-48,55-57,61,64-65,68,70,81,83,88-89,91-93,95,97,100,103-104,109-114,118,120-125,133,135-138,140,142-144,147-152
+content/tracks/shell/concepts/01-variables-and-strings/instructions.md
+  s_4312bdd443949d::t_9caada24effaf0 1,3,7-9,14-23,26,28,31-33,36-38,41-44,47-49,54,57,59,62-64,66-67,70-72,75-85,90-95,99,101-105,107,110-125
+content/tracks/shell/concepts/03-loops/instructions.md
+  s_4312bdd443949d::t_c9793637db42b9 1,3,7-9,16,21-23,28,36-38,45-46,51,59-61,63-65,71,73,81,85-88,93,95,97,99-107,111,113-123,128,131-136,138,144-148
+content/tracks/shell/concepts/04-functions/instructions.md
+  s_4312bdd443949d::t_39dba312d93baf 1,3,7-9,12,23,25,33-37,39-41,44,48,51,53,56-57,60-61,63-64,68,70,75-76,84-85,88,96-98,103,105,107,109-117,121,123-128,130,133-136,138-142,148-149
+content/tracks/shell/concepts/07-pipes-and-redirection/instructions.md
+  s_7a27f124c1e8e3::t_8acf39b80f6744 1,3,7-13,16-29,32,34,38-41,44-46,49,52-54,62,67,73,77-78,81-83,87,93,95,98,100-104,106,108-112,117-123,127,129-137,140-152
+content/tracks/shell/concepts/10-process-management/instructions.md
+  s_4312bdd443949d::t_d4064d9f4a5616 1,3,7-9,12-13,18-20,23,25,27-32,40-42,47-49,51-59,62,64,72,75,77,80-87,90-92,95-97,102-109,113,115-123,125,128-133,135-136
+content/tracks/shell/concepts/05-arrays/instructions.md
+  s_c6d87dd5a77488::t_91706cf052adeb 1,3,7-9,13-16,18-25,28-30,33,36,42-44,46-48,51-54,57-59,62-64,67-69,77-82,85,89,93-98,102,104-108,113,116-117,121-122,128-130
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f025bd1f5ba453204e1d269e2abbf3d9b4309347",
+  "prompts": {},
+  "sessions": {
+    "s_4312bdd443949d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34ee8d8d-5ae0-4e48-8e14-e3d4c8e3f0af",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_7a27f124c1e8e3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2a59f4fb-4b55-4106-86e1-3343ce7a6038",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_c6d87dd5a77488": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-aa41adf5ae8a329f9",
+        "model": "unknown"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
