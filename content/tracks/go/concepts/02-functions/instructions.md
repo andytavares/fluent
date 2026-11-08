@@ -1,12 +1,12 @@
-# Functions
+## What you build
 
-## What you'll learn
-
-Building on the types from lesson 1: Go functions declare every parameter and return type explicitly, and — unlike most languages you've used — a function can return **multiple values**. This isn't a tuple hack; it's how Go does the `(result, error)` pattern that replaces exceptions, which you'll rely on constantly from here on.
+You write `Add`, which returns one value, and `Divide`, which returns a result and an error. Go uses the `(result, error)` pair in place of exceptions, and the rest of this track uses it. This lesson builds on **Variables & Types**.
 
 ## Key concepts
 
-**Single return:**
+### Every parameter and return has a type
+
+Go declares the type of each parameter and of the return value.
 
 ```go
 func double(n int) int {
@@ -14,23 +14,36 @@ func double(n int) int {
 }
 ```
 
-**Multiple returns** (the `(result, error)` pattern):
+### Parameters of one type share the type
+
+Write the type once after the last parameter of that type.
 
 ```go
-func divide(a, b float64) (float64, error) {
+// Same as (a int, b int)
+func Add(a, b int) int { return a + b }
+```
+
+### A function can return more than one value
+
+Multiple return values are part of the language, not a tuple. The `(result, error)` pattern uses them. The caller checks `err` first.
+
+```go
+func div(a, b float64) (float64, error) {
     if b == 0 {
-        return 0, fmt.Errorf("cannot divide by zero")
+        return 0, errors.New("b is zero")
     }
     return a / b, nil
 }
 
-result, err := divide(10, 2)
+result, err := div(10, 2)
 if err != nil {
-    // handle it
+    // handle the error
 }
 ```
 
-**Named returns** are declared in the signature and can be returned bare with `return`; useful for self-documenting multi-value returns:
+### Named returns document the values
+
+You can name the return values in the signature. A bare `return` then returns their current values.
 
 ```go
 func minMax(nums []int) (min, max int) {
@@ -39,44 +52,39 @@ func minMax(nums []int) (min, max int) {
         if n < min { min = n }
         if n > max { max = n }
     }
-    return // returns the current values of min and max
+    return
 }
-```
-
-**Multiple parameters of the same type** share one type annotation:
-
-```go
-func Add(a, b int) int { return a + b }   // same as (a int, b int)
 ```
 
 ## Watch out
 
-- Go has **no function overloading** — you cannot declare `Add(a, b int)` and `Add(a, b float64)` in the same package. Different input types need different function names (or, later, generics).
-- Go has **no default parameter values** and no named arguments. Every call site must supply every argument.
-- The `error` return is a convention, not compiler-enforced — nothing stops you from ignoring it with `result, _ := divide(10, 0)`. The compiler will complain about an unused variable, but never about a silently discarded error.
-- Returning `(0, nil)` when there's actually an error is a real bug pattern: callers check `err != nil` first, so if you forget to return a non-nil error, the zero-value result looks like a legitimate `0`.
+- Go has no function overloading. `Add(a, b int)` and `Add(a, b float64)` cannot share one package. Use two names, or generics later.
+- Go has no default parameter values and no named arguments. Every call supplies every argument.
+- The compiler does not force you to check an error. `result, _ := div(10, 0)` compiles and drops the error.
+- The compiler rejects an unused variable, but it never rejects a discarded error.
+- Returning `(0, nil)` on a failure is a bug. The caller sees no error and takes `0` as a real result.
 
 ## The task
 
-Implement two functions that establish the multi-return pattern used throughout this track.
+Write two functions that use the multiple-return pattern of this track.
 
-**`Add(a, b int) int`** — returns the sum of `a` and `b`.
+1. `Add(a, b int) int` returns the sum of `a` and `b`.
+2. `Divide(a, b float64) (float64, error)` returns `a / b` and a `nil` error.
+3. If `b` is `0`, `Divide` returns `0` and a non-nil error.
+4. That error message is exactly `"cannot divide by zero"`.
 
-```go
-Add(2, 3)      // 5
-Add(-1, 1)     // 0
-Add(100, 200)  // 300
-```
-
-**`Divide(a, b float64) (float64, error)`** — returns `a / b` and a `nil` error. If `b == 0`, instead returns `0` and a non-nil error whose message is exactly `"cannot divide by zero"`.
+Negative numbers follow the normal rules for both functions.
 
 ```go
-result, err := Divide(10, 2)
-// result == 5.0, err == nil
+Add(2, 3)     // 5
+Add(0, 0)     // 0
+Add(-1, 1)    // 0
+Add(100, 200) // 300
 
-result, err := Divide(10, 0)
-// result == 0, err.Error() == "cannot divide by zero"
-
-result, err := Divide(-9, 3)
-// result == -3.0, err == nil
+Divide(10, 2)
+// 5, nil
+Divide(-9, 3)
+// -3, nil
+Divide(10, 0)
+// 0, "cannot divide by zero"
 ```

@@ -1,20 +1,28 @@
-# Type Guards
+## What you build
 
-## What you'll learn
-
-Lesson 3 introduced narrowing through `typeof` checks and discriminated unions built into the language; this lesson covers writing your **own** narrowing functions. A type guard is an expression — often a function — that narrows a union type to a specific member within a conditional branch, and TypeScript tracks the narrowed type automatically once you've written the guard, no casts required.
+You write two type guards, `isString` and `isNumber`, and two functions that use them. A type guard is an expression, often a function, that narrows a union type inside a conditional branch. This lesson builds on **Union Types & Narrowing**.
 
 ## Key concepts
 
-**Built-in narrowing with `typeof`:**
+### `typeof` narrows primitive types
+
+Inside the `if`, TypeScript treats `value` as a `string`. After it, `value` is a `number`.
+
 ```ts
-function format(value: string | number): string {
-  if (typeof value === "string") return value.toUpperCase();
+function format(
+  value: string | number,
+): string {
+  if (typeof value === "string") {
+    return value.toUpperCase();
+  }
   return value.toFixed(2);
 }
 ```
 
-**`instanceof` narrowing:**
+### `instanceof` narrows class instances
+
+It checks the prototype chain at runtime.
+
 ```ts
 function handleError(e: unknown): string {
   if (e instanceof Error) return e.message;
@@ -22,90 +30,90 @@ function handleError(e: unknown): string {
 }
 ```
 
-**Custom type guard** — a function with a `value is T` return type:
+### A custom guard returns `value is T`
+
+When the function returns `true`, TypeScript narrows the argument to `T` in that branch. Java needs an explicit cast after `instanceof`, but TypeScript narrows with no cast.
+
 ```ts
-function isString(value: unknown): value is string {
+function isString(
+  value: unknown,
+): value is string {
   return typeof value === "string";
 }
 
-// TypeScript now knows value is string inside the if block:
-if (isString(value)) {
-  value.toUpperCase();  // ok — not possible without the guard
+if (isString(input)) {
+  // OK: input is a string here
+  input.toUpperCase();
 }
 ```
 
-**Exhaustiveness check with `never`:**
+### `never` checks that the cases cover every member
+
+In the `default` case, the value has type `never` when the cases cover every member. A missing case makes the assignment a compile error.
+
 ```ts
 type Color = "red" | "green" | "blue";
 
 function hex(c: Color): string {
   switch (c) {
-    case "red":   return "#ff0000";
+    case "red": return "#ff0000";
     case "green": return "#00ff00";
-    case "blue":  return "#0000ff";
+    case "blue": return "#0000ff";
     default:
-      const _: never = c;  // compile error if a case is missing
+      // Compile error if a case is missing
+      const _: never = c;
       return _;
   }
 }
 ```
 
-**vs other languages:** Java requires explicit `instanceof` checks and casts (`(Subtype) value`). TypeScript's narrowing is automatic — the type just changes within the branch, no cast needed. Go uses type switches (`switch v := x.(type)`) which are similar in intent but built into the language rather than user-defined.
-
 ## Watch out
 
-- A custom type guard is a **promise you make to the compiler**, not something it verifies. `function isString(v: unknown): v is string { return true; }` compiles fine and lies about every input — the unsoundness is entirely on you. Get the guard's body right; the compiler trusts the return type blindly.
-- `typeof null === "object"`, not `"null"`. A guard that only checks `typeof value === "object"` will treat `null` as an object unless you explicitly exclude it.
-- `NaN` has `typeof NaN === "number"` — a naive `isNumber` guard based purely on `typeof` will call `NaN` a number. Whether that's correct depends on your domain; this lesson's `isNumber` explicitly excludes it.
+- The compiler does not check a custom guard. It trusts the `value is T` return type.
+- A guard that always returns `true` compiles and lies about every input.
+- `typeof null` is `"object"`. A guard that checks only for `"object"` accepts `null`.
+- `typeof NaN` is `"number"`. A guard based only on `typeof` accepts `NaN`. This task's `isNumber` rejects it.
 
 ## The task
 
-Implement four functions:
+Write two type guards and two functions that use them.
 
-**`isString(value: unknown): value is string`** — type guard for strings.
+1. `isString(value: unknown): value is string` returns `true` only for strings.
+2. `isNumber(value: unknown): value is number` returns `true` only for numbers that are not `NaN`.
+3. `parseNumber(value: unknown): number` returns a number unchanged when `isNumber` accepts it.
+4. For a string that parses to a valid number, `parseNumber` returns the parsed number.
+5. For any other value, `parseNumber` throws a `TypeError`.
+6. `formatValue(value: string | number | boolean | null | undefined): string` formats each type differently.
+
+`formatValue` rules:
+
+- A string comes back in double quotes: `hi` gives `"hi"`.
+- A number comes back as its decimal string.
+- A boolean gives `"true"` or `"false"`.
+- `null` gives `"null"`, and `undefined` gives `"undefined"`.
 
 ```ts
-isString("hello");   // true
+isString("hello");    // true
 isString(42);         // false
 isString(null);       // false
 isString(undefined);  // false
-```
 
-**`isNumber(value: unknown): value is number`** — type guard for numbers, **excluding `NaN`**.
+isNumber(42);         // true
+isNumber(0);          // true
+isNumber(NaN);        // false
+isNumber("42");       // false
+isNumber(null);       // false
 
-```ts
-isNumber(42);    // true
-isNumber(0);     // true
-isNumber(NaN);   // false — excluded even though typeof NaN === "number"
-isNumber("42");  // false
-isNumber(null);  // false
-```
+parseNumber(42);      // 42
+parseNumber("99");    // 99
+parseNumber("3.14");  // 3.14
+parseNumber({});      // throws TypeError
+parseNumber("abc");   // throws TypeError
 
-**`parseNumber(value: unknown): number`** — if `value` is already a number (per `isNumber`), return it unchanged; if it's a string that parses to a valid number, parse and return it; otherwise **throw a `TypeError`**.
-
-```ts
-parseNumber(42);       // 42
-parseNumber("99");     // 99
-parseNumber("3.14");   // 3.14
-parseNumber({});        // throws TypeError
-parseNumber("abc");     // throws TypeError — not a numeric string
-```
-
-**`formatValue(value: string | number | boolean | null | undefined): string`** — format each type distinctly:
-
-| Input type | Output |
-|---|---|
-| `string` | wrapped in double quotes, e.g. `"hi"` → `'"hi"'` |
-| `number` | the number as a string, e.g. `42` → `"42"` |
-| `boolean` | `"true"` or `"false"` |
-| `null` | `"null"` |
-| `undefined` | `"undefined"` |
-
-```ts
-formatValue("hi");        // '"hi"'
-formatValue(42);          // "42"
-formatValue(true);        // "true"
-formatValue(false);       // "false"
-formatValue(null);        // "null"
-formatValue(undefined);   // "undefined"
+formatValue("hi");    // '"hi"'
+formatValue(42);      // "42"
+formatValue(true);    // "true"
+formatValue(false);   // "false"
+formatValue(null);    // "null"
+formatValue(undefined); // "undefined"
 ```

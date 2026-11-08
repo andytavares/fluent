@@ -1,46 +1,55 @@
-# Maps
+## What you build
 
-## What you'll learn
-
-Maps are Go's built-in hash map, giving O(1) average lookup, insert, and delete. Building on slices from the last lesson, maps are the other collection type you'll reach for constantly — and Go's "missing key returns the zero value" behavior (rather than throwing or returning `undefined`) shapes a lot of idiomatic Go code.
+You write `WordCount`, which counts each word in a string with a map. A Go map is a built-in hash map with O(1) average lookup, insert and delete. This lesson builds on **Arrays & Slices**.
 
 ## Key concepts
 
-**Creating:**
+### Three ways to create a map
+
+A `nil` map is the zero value. You can read from it, but a write panics.
 
 ```go
-m := map[string]int{"a": 1, "b": 2}   // literal
-m := make(map[string]int)              // empty, ready to write
-var m map[string]int                   // nil map — readable, panics on write
+// literal
+m := map[string]int{"a": 1, "b": 2}
+// empty, ready to write
+m := make(map[string]int)
+// nil map
+var m map[string]int
 ```
 
-**Get / set / delete:**
+### Get, set and delete use the key
+
+`delete` on a missing key does nothing. It never panics.
 
 ```go
 m["key"] = 42
 val := m["key"]
-delete(m, "key")   // no-op if key doesn't exist, never panics
+delete(m, "key")
 ```
 
-**Missing keys return the zero value** — there's no exception or `nil` for a missing `int` key:
+### A missing key returns the zero value
+
+There is no error and no `nil` for a missing `int` key. So `counts[word]++` works the first time: it reads `0` and stores `1`.
 
 ```go
 m := map[string]int{}
-m["missing"]   // 0 — not an error, not nil, just the zero value for int
+m["missing"] // 0
 ```
 
-This is exactly why the counting idiom `counts[word]++` works even the first time a word is seen: reading a missing key gives `0`, and `0 + 1 == 1`.
+### The comma-ok form tells absent from zero
 
-**Check existence explicitly** with the "comma-ok" idiom, when you need to distinguish "key absent" from "key present with the zero value":
+Use it when a stored zero value and a missing key must give different results.
 
 ```go
 val, ok := m["key"]
 if !ok {
-    // key not present at all
+    // the key is not in the map
 }
 ```
 
-**Iterate** — order is deliberately randomized by the runtime, so never depend on it:
+### Iteration order is random
+
+The runtime changes the order on purpose, so your code cannot depend on it.
 
 ```go
 for k, v := range m {
@@ -50,27 +59,25 @@ for k, v := range m {
 
 ## Watch out
 
-- **Writing to a `nil` map panics.** `var m map[string]int; m["x"] = 1` compiles fine and panics at runtime. Reading from a nil map is safe and returns zero values — only writes panic. Always initialize with `make` or a literal before writing.
-- **Iteration order is randomized on every run**, on purpose, to stop you from accidentally depending on it. If you need sorted output, collect the keys into a slice and `sort.Strings` them.
-- Map values obtained by indexing are **not addressable** — `m["key"].Field = 1` is a compile error if the value type is a struct. You must read the struct out, mutate the copy, and write it back, or store pointers in the map instead.
-- Struct and array keys work (they're comparable), but slice, map, and function keys don't — the compiler rejects `map[[]int]string`.
+- A write to a `nil` map compiles and then panics at runtime. Initialize with `make` or a literal first.
+- For sorted output, collect the keys into a slice and call `sort.Strings`.
+- `m["key"].Field = 1` is a compile error for a struct value. Copy it out, change it, write it back, or store pointers.
+- Struct and array keys work because they are comparable. The compiler rejects slice, map and function keys.
+- `strings.Split(s, " ")` returns `""` elements for consecutive spaces. Do not count `""` as a word.
 
 ## The task
 
-Implement `WordCount(s string) map[string]int` that counts how many times each word appears in `s`. Words are separated by one or more spaces; treat the input as already lowercase (do not transform case yourself).
+Write `WordCount(s string) map[string]int`. It returns how many times each word appears in `s`.
+
+1. One or more spaces separate the words.
+2. The input is already lowercase. Do not change the case.
+3. Extra spaces between words do not create empty words.
+4. An empty string returns a map of length 0.
 
 ```go
+// map[cat:1 mat:1 on:1 sat:1 the:2]
 WordCount("the cat sat on the mat")
-// map[string]int{"the": 2, "cat": 1, "sat": 1, "on": 1, "mat": 1}
-
-WordCount("")
-// map[string]int{} — empty input, empty (but non-nil) map, len == 0
-
-WordCount("hello")
-// map[string]int{"hello": 1}
-
-WordCount("a  a   a")
-// map[string]int{"a": 3} — repeated/extra spaces between words don't create empty "words"
+WordCount("")         // map[]
+WordCount("hello")    // map[hello:1]
+WordCount("a  a   a") // map[a:3]
 ```
-
-Splitting naively on a single space (`strings.Split(s, " ")`) produces empty-string elements when there are consecutive spaces — make sure your implementation doesn't count `""` as a word.

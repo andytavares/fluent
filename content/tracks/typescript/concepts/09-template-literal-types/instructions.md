@@ -1,37 +1,48 @@
-# Template Literal Types
+## What you build
 
-## What you'll learn
-
-Lesson 8 showed the type system branching and iterating; template literal types (TypeScript 4.1+) add string *construction* to that toolkit — the same backtick syntax you use at runtime, but operating entirely at the type level. They let you build string types programmatically, catching typos in event names, CSS property keys, and other string-based APIs at compile time instead of at runtime.
+You write four functions whose return types are template literal types, such as `` `${E}:${A}` ``. Template literal types, from TypeScript 4.1, build string types with the backtick syntax. They catch typos in event names, CSS property keys and other string APIs at compile time. This lesson builds on **Mapped Types & Conditional Types**.
 
 ## Key concepts
 
-**Basic template literal types** splice types into string patterns:
+### A template literal type splices types into a string pattern
+
+The compiler accepts only strings that match the pattern.
 
 ```ts
 type Greeting = `Hello, ${string}`;
-const a: Greeting = "Hello, world";   // ok
-const b: Greeting = "Hi, world";      // error
+// OK
+const a: Greeting = "Hello, world";
+// Error
+const b: Greeting = "Hi, world";
 ```
 
-**Union distribution** — when a union appears inside a template literal, TypeScript generates every combination:
+### A union inside the pattern gives every combination
+
+TypeScript expands each union member into its own string type.
 
 ```ts
-type Side = "top" | "bottom" | "left" | "right";
+type Side =
+  "top" | "bottom" | "left" | "right";
 type Padding = `padding-${Side}`;
-// "padding-top" | "padding-bottom" | "padding-left" | "padding-right"
+// "padding-top" | "padding-bottom"
+// | "padding-left" | "padding-right"
 ```
 
-**Event name patterns** are a common use case:
+### Event names are a common use
+
+Two unions of three members each give nine event names.
 
 ```ts
 type Entity = "user" | "post" | "comment";
-type Action = "created" | "updated" | "deleted";
+type Action =
+  "created" | "updated" | "deleted";
 type EventName = `${Entity}:${Action}`;
-// "user:created" | "user:updated" | ... (9 members)
+// "user:created" | "user:updated" | ...
 ```
 
-**Intrinsic string manipulation types** are built into the compiler:
+### The compiler has intrinsic string types
+
+`Uppercase`, `Lowercase`, `Capitalize` and `Uncapitalize` transform string literal types.
 
 ```ts
 type U = Uppercase<"hello">;     // "HELLO"
@@ -40,56 +51,64 @@ type C = Capitalize<"alice">;    // "Alice"
 type UC = Uncapitalize<"Alice">; // "alice"
 ```
 
-**vs JavaScript:** Template literals at runtime are just string interpolation. Template literal *types* exist only at compile time — no runtime cost. JavaScript has no equivalent for type-level string manipulation.
+### Template literal types exist only at compile time
+
+At runtime, a template literal is plain string interpolation. JavaScript has nothing for string manipulation at the type level.
 
 ## Watch out
 
-- Interpolating a non-literal type widens the whole pattern: `` `${number}` `` as a type matches *any* string that looks like a number ("3", "3.14", "-1"), not one specific literal — it's a shape constraint, not a fixed value.
-- Union distribution inside a template literal is combinatorial: crossing two unions of size 3 produces 9 members, three unions of size 4 produce 64. Large unions inside template literals can slow the type checker noticeably.
-- `Capitalize`/`Uppercase`/etc. only operate on **string literal types**. Given a plain `string`-typed value at runtime, calling `.toUpperCase()` still works, but you need an `as` assertion to tell the compiler the *type-level* relationship holds (see the exemplar) — the runtime call and the type-level guarantee are two separate things.
+- `` `${number}` `` matches any string that looks like a number, such as `"3"`, `"3.14"` or `"-1"`.
+- A non-literal type in the pattern is a shape constraint, not one fixed value.
+- Unions in a pattern multiply. Two unions of 3 give 9 members, and three unions of 4 give 64.
+- Large unions inside template literals can slow the type checker.
+- `Capitalize` and the other intrinsic types work only on string literal types.
+- `.toUpperCase()` returns `string`. You need an `as` assertion to return `Uppercase<S>`.
 
 ## The task
 
-Implement these functions. Their signatures use template literal types to enforce string shapes at compile time; tests check the runtime string values.
+Write four functions. Their signatures use template literal types to enforce string shapes, and the tests check runtime values. The stub declares these types:
 
 ```ts
-type CssProp = "margin" | "padding" | "border";
-type Side = "top" | "bottom" | "left" | "right";
+type CssProp =
+  "margin" | "padding" | "border";
+type Side =
+  "top" | "bottom" | "left" | "right";
+type CssProperty = `${CssProp}-${Side}`;
 type Entity = "user" | "post" | "comment";
-type EventAction = "created" | "updated" | "deleted";
+type EventAction =
+  "created" | "updated" | "deleted";
 ```
 
-**`type CssProperty = \`${CssProp}-${Side}\`​`** — define this type using the unions above (e.g. `"margin-top"`, `"border-left"` — 12 members total).
+`CssProperty` has 12 members, such as `"margin-top"` and `"border-left"`.
 
-**`formatEvent<E extends Entity, A extends EventAction>(entity: E, action: A): \`${E}:${A}\`​`** — joins entity and action with a colon.
+1. `formatEvent<E extends Entity, A extends EventAction>(entity: E, action: A): `` `${E}:${A}` `` joins its arguments with a colon.
+2. `toCssProperty<P extends CssProp, S extends Side>(prop: P, side: S): `` `${P}-${S}` `` joins its arguments with a hyphen.
+3. `capitalize<S extends string>(s: S): Capitalize<S>` uppercases the first character and keeps the rest.
+4. `toEventKey<S extends string>(s: S): Uppercase<S>` uppercases every character.
 
-```ts
-formatEvent("user", "created");     // "user:created"
-formatEvent("post", "deleted");     // "post:deleted"
-formatEvent("comment", "updated"); // "comment:updated"
-```
-
-**`toCssProperty<P extends CssProp, S extends Side>(prop: P, side: S): \`${P}-${S}\`​`** — joins prop and side with a hyphen.
+An empty string stays empty in `capitalize` and `toEventKey`. A capitalized word stays the same.
 
 ```ts
-toCssProperty("margin", "top");     // "margin-top"
-toCssProperty("padding", "left");   // "padding-left"
-toCssProperty("border", "bottom");  // "border-bottom"
-```
+formatEvent("user", "created");
+// "user:created"
+formatEvent("post", "deleted");
+// "post:deleted"
+formatEvent("comment", "updated");
+// "comment:updated"
 
-**`capitalize<S extends string>(s: S): Capitalize<S>`** — runtime implementation of the intrinsic `Capitalize` type: uppercases the first character, leaves the rest unchanged.
+toCssProperty("margin", "top");
+// "margin-top"
+toCssProperty("padding", "left");
+// "padding-left"
+toCssProperty("border", "bottom");
+// "border-bottom"
 
-```ts
 capitalize("hello");  // "Hello"
-capitalize("World");  // "World" — already capitalized
-capitalize("");       // ""      — empty string stays empty
+capitalize("World");  // "World"
+capitalize("");       // ""
 capitalize("a");      // "A"
-```
 
-**`toEventKey<S extends string>(s: S): Uppercase<S>`** — runtime implementation of the intrinsic `Uppercase` type: uppercases every character.
-
-```ts
-toEventKey("hello");       // "HELLO"
-toEventKey("helloWorld");  // "HELLOWORLD"
-toEventKey("");            // ""
+toEventKey("hello");      // "HELLO"
+toEventKey("helloWorld"); // "HELLOWORLD"
+toEventKey("");           // ""
 ```

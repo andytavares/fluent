@@ -1,12 +1,12 @@
-# Goroutines
+## What you build
 
-## What you'll learn
-
-Goroutines are Go's lightweight concurrency primitive — conceptually like threads, but scheduled by the Go runtime rather than the OS, and cheap enough (a few KB of stack, growing as needed) to spawn thousands of them. This lesson covers launching goroutines and the two `sync` primitives you need to coordinate them safely: `WaitGroup` and `Mutex`.
+You write `ConcurrentDouble`, which doubles each element in its own goroutine. A goroutine is like a thread, but the Go runtime schedules it, not the OS. This lesson builds on **Error Handling**.
 
 ## Key concepts
 
-**Launch a goroutine** with the `go` keyword — the call returns immediately, running concurrently:
+### `go` starts a goroutine
+
+A goroutine starts with a stack of a few KB that grows as needed. You can start thousands of them. The `go` statement returns at once.
 
 ```go
 go func() {
@@ -14,21 +14,28 @@ go func() {
 }()
 ```
 
-**`sync.WaitGroup`** blocks until a set of goroutines finish:
+### `sync.WaitGroup` waits for goroutines
+
+`Add` increments a counter, `Done` decrements it, and `Wait` blocks until it reaches 0.
 
 ```go
 var wg sync.WaitGroup
 for i := 0; i < 3; i++ {
-    wg.Add(1)              // increment the counter before launching
+    // increment before you launch
+    wg.Add(1)
     go func(n int) {
-        defer wg.Done()     // decrement when this goroutine finishes
+        // decrement when this one ends
+        defer wg.Done()
         doWork(n)
     }(i)
 }
-wg.Wait()                  // blocks until the counter reaches 0
+// blocks until the counter is 0
+wg.Wait()
 ```
 
-**`sync.Mutex`** protects shared state from concurrent writes:
+### `sync.Mutex` protects shared state
+
+A read-modify-write such as `sharedVar++` is not atomic. Without the mutex, two goroutines that increment at once cause a data race, and updates are lost.
 
 ```go
 var mu sync.Mutex
@@ -37,35 +44,42 @@ sharedVar++
 mu.Unlock()
 ```
 
-Without the mutex, concurrent increments to `sharedVar` from multiple goroutines is a data race — the read-modify-write isn't atomic, and updates can be lost.
-
 ## Watch out
 
-- **The classic loop-variable capture bug.** On Go **1.21 and earlier** (the version this track runs), a `for` loop reuses a single variable across iterations. If a goroutine closes over the loop variable directly instead of receiving it as a parameter, every goroutine can see the *same*, final value of the loop variable by the time it actually runs:
-  ```go
-  for i := 0; i < 3; i++ {
-      go func() {
-          fmt.Println(i)   // BUG on Go <1.22: likely prints 3, 3, 3 — not 0, 1, 2
-      }()
-  }
-  ```
-  Fix it by passing the loop variable as an argument (`go func(n int) { ... }(i)`) or by shadowing it inside the loop body (`i := i`). (Go 1.22+ changed the language so each iteration gets its own variable, but don't assume that here.)
-- **Goroutine leaks**: a goroutine blocked forever (e.g. sending on a channel nobody reads from) never gets garbage collected — it's a real, permanent leak. Always ensure there's a receiver, a `context` cancellation, or some other way for every goroutine to eventually return.
-- **`go test -race`** (the race detector) catches most data races in CI; a data race that "seems to work" in testing can still corrupt data in production under different timing. Never treat "the test passed" as proof a concurrent function is race-free without running with `-race`.
-- Forgetting `wg.Add(1)` before (not after) launching the goroutine is a race in itself — if the goroutine finishes and calls `Done()` before the main goroutine reaches `Add(1)`, the counter goes negative and `Wait()` panics.
+- This track runs Go 1.21. There, a `for` loop reuses one variable for all iterations.
+- A goroutine that reads the loop variable directly can see its final value.
+- Pass the variable as an argument, `go func(n int) {...}(i)`, or shadow it with `i := i`.
+- Go 1.22 gives each iteration its own variable. Do not depend on that here.
+- A goroutine that blocks forever is never garbage collected. Give each goroutine a way to return.
+- Run `go test -race` to find data races. A passing test does not prove that code is race-free.
+- Call `wg.Add(1)` before you launch the goroutine. If `Done` runs first, the counter goes negative and panics.
+
+```go
+for i := 0; i < 3; i++ {
+    go func() {
+        // Go 1.21 bug: can print 3, 3, 3
+        fmt.Println(i)
+    }()
+}
+```
 
 ## The task
 
-Implement `ConcurrentDouble(nums []int) []int` that returns a new slice where each element is the corresponding element of `nums` doubled, computed using one goroutine per element.
+Write `ConcurrentDouble(nums []int) []int`. It returns a new slice that holds each element of `nums` times 2.
 
-- Launch exactly one goroutine per index in `nums`.
-- Each goroutine computes `nums[i] * 2` and writes it to `result[i]` — write by index into a pre-sized result slice, not `append` (appending concurrently from multiple goroutines is itself a data race).
-- Use `sync.WaitGroup` to wait for every goroutine to finish before returning.
-- The result must preserve the original order — `result[i]` corresponds to `nums[i]`.
+1. Launch exactly one goroutine per index of `nums`.
+2. Each goroutine writes `nums[i] * 2` to `result[i]` in a pre-sized result slice.
+3. Do not use `append` from goroutines. Concurrent `append` is a data race.
+4. Use `sync.WaitGroup` to wait for every goroutine before you return.
+5. `result[i]` matches `nums[i]`, so the order stays the same.
+
+An empty input returns an empty slice.
 
 ```go
-ConcurrentDouble([]int{1, 2, 3, 4, 5})   // []int{2, 4, 6, 8, 10}
-ConcurrentDouble([]int{0})                // []int{0}
-ConcurrentDouble([]int{})                 // []int{}
-ConcurrentDouble([]int{-1, 0, 1})         // []int{-2, 0, 2}
+// []int{2, 4, 6, 8, 10}
+ConcurrentDouble([]int{1, 2, 3, 4, 5})
+ConcurrentDouble([]int{0})  // []int{0}
+ConcurrentDouble([]int{})   // []int{}
+// []int{-2, 0, 2}
+ConcurrentDouble([]int{-1, 0, 1})
 ```

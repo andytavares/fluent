@@ -1,12 +1,13 @@
-# Interfaces
+## What you build
 
-## What you'll learn
-
-Building on classes and objects (concept 1): a Java interface defines a contract — a set of method signatures that implementing classes must provide, with no state of their own. Interfaces enable polymorphism: code written against an interface works with any implementation, including ones that don't exist yet.
+You write two classes, `Circle` and `Rectangle`, that implement one `Shape` interface, and a method that compares any two shapes. This lesson builds on **Classes & Objects**.
 
 ## Key concepts
 
-**Defining an interface:**
+### An interface is a contract
+
+An interface lists method signatures that each implementing class must supply. It has no state of its own.
+
 ```java
 public interface Shape {
     double area();
@@ -15,7 +16,10 @@ public interface Shape {
 }
 ```
 
-**Implementing an interface:**
+### A class implements the interface
+
+The class writes `implements Shape` and gives a body to each method. `@Override` makes the compiler check the signature.
+
 ```java
 public class Circle implements Shape {
     private final double radius;
@@ -41,58 +45,89 @@ public class Circle implements Shape {
 }
 ```
 
-**A class can implement multiple interfaces** (unlike extending classes, where Java allows only one parent):
+### Interfaces give polymorphism
+
+Code written against an interface works with any implementation, also with implementations that do not exist yet.
+
 ```java
-public class Square implements Shape, Comparable<Square> { ... }
+Shape s = new Circle(5);
+// Works for every Shape
+double a = s.area();
 ```
 
-**Default methods** (Java 8+) let interfaces provide a default implementation so existing implementors aren't broken when new methods are added:
+### A class can implement many interfaces
+
+A class can extend only one parent class, but it can implement many interfaces.
+
+```java
+public class Square
+    implements Shape, Comparable<Square> {
+    // ...
+}
+```
+
+### Default methods
+
+Since Java 8, an interface can give a method a default body. You can then add a method to an interface and existing implementations still compile.
+
 ```java
 interface Shape {
     double area();
+    String name();
+
     default String describe() {
-        return name() + " with area " + area();
+        return name() + " with area "
+            + area();
     }
 }
 ```
 
-**vs other languages:** Java interfaces are nominal — a class must explicitly `implements` an interface. TypeScript and Go use structural typing (duck typing), where compatibility is inferred from the shape of the type alone, with no `implements` keyword required.
+### Java interfaces are nominal
+
+A class matches an interface only when it writes `implements`. TypeScript and Go use structural typing instead, where the shape of the type alone decides the match.
+
+```java
+// Compile error: Box does not say
+// "implements Shape"
+Shape s = new Box();
+```
 
 ## Watch out
 
-- **A variable declared with the interface type only exposes interface methods.** `Shape s = new Circle(5);` means `s.getRadius()` won't compile even though the underlying object has that method — you'd need to cast back to `Circle` first.
-- **Multiple interfaces can't have conflicting default methods** without you resolving the conflict explicitly — the compiler forces you to override and pick (or combine) the behavior.
-- **`implements` vs `extends`:** classes use `implements` for interfaces and `extends` for a superclass (singular). Interfaces use `extends` to inherit from other interfaces. Mixing these up is a common compile error for newcomers.
+- A variable of the interface type shows only the interface methods.
+- After `Shape s = new Circle(5);`, `s.getRadius()` does not compile. Cast to `Circle` first.
+- Two interfaces with the same default method cause a conflict. The compiler makes you override the method and choose.
+- Classes use `implements` for interfaces and `extends` for one superclass.
+- Interfaces use `extends` to inherit from other interfaces. A mix-up is a compile error.
 
 ## The task
 
-Two shapes need to satisfy a common `Shape` interface (already defined in `Solution.java`) so a caller can compare shapes without knowing their concrete type.
+The class `Solution` already defines a `Shape` interface. Write two shapes that implement it, so a caller can compare shapes without their concrete type.
 
-Implement two classes that both implement `Shape`:
+1. `Circle(double radius)`: `area()` returns `π * r²`.
+2. `Circle`: `perimeter()` returns `2πr`, and `name()` returns `"Circle"`.
+3. `Rectangle(double width, double height)`: `area()` returns `w * h`.
+4. `Rectangle`: `perimeter()` returns `2(w + h)`, and `name()` returns `"Rectangle"`.
+5. `static Shape larger(Shape a, Shape b)` returns the shape with the larger area.
 
-**`Circle(double radius)`** — `area()` returns `π * r²`, `perimeter()` returns `2πr`, `name()` returns `"Circle"`.
-
-**`Rectangle(double width, double height)`** — `area()` returns `w * h`, `perimeter()` returns `2(w+h)`, `name()` returns `"Rectangle"`.
-
-Also implement the utility method:
-
-**`static Shape larger(Shape a, Shape b)`** — returns whichever shape has the larger area; if the areas are equal, returns `a`.
+When the areas are equal, `larger` returns `a`. The order of the arguments does not change which larger shape wins.
 
 ```java
 Shape c = new Circle(5);
 Shape r = new Rectangle(4, 6);
 
-c.area();               // ~78.54  (π * 25)
-c.perimeter();           // ~31.42  (2π * 5)
-c.name();                // "Circle"
+c.area();       // ~78.54 (π * 25)
+c.perimeter();  // ~31.42 (2π * 5)
+c.name();       // "Circle"
 
-r.area();                // 24.0
-r.perimeter();            // 20.0
-r.name();                 // "Rectangle"
+r.area();       // 24.0
+r.perimeter();  // 20.0
+r.name();       // "Rectangle"
 
 Shape big   = new Circle(10);
 Shape small = new Rectangle(1, 1);
-larger(big, small).name();     // "Circle"    — big is the first arg and larger
-larger(small, big).name();     // "Circle"    — order of args doesn't change which shape wins
-larger(small, small).name();   // "Rectangle" — tie: returns the first argument (a)
+larger(big, small).name();  // "Circle"
+larger(small, big).name();  // "Circle"
+// Tie: returns a, the same object
+larger(small, small);       // small
 ```

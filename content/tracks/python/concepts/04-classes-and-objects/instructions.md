@@ -1,72 +1,108 @@
-# Classes & Objects
+## What you build
 
-## What you'll learn
-
-Python's class system — `__init__`, `@classmethod`, `@staticmethod`, `@property`, and the dunder (double-underscore) methods that make objects behave like built-in types.
+You write a `BankAccount` class with a constructor, a read-only property, a class method and `__repr__`. This lesson builds on **Lists & Dicts**.
 
 ## Key concepts
 
-**Basic class:**
+### `__init__` sets up a new object
+
+Python calls `__init__` after it creates the object. `self` is the new object. A leading `_` on a name marks it as internal, by convention only.
+
 ```python
 class Circle:
-    def __init__(self, radius: float) -> None:
-        self._radius = radius   # convention: _ prefix = "private"
+    def __init__(self, radius: float):
+        # _ prefix: "private" by convention
+        self._radius = radius
+```
+
+### `@property` turns a method into an attribute
+
+A property runs a method when you read the attribute. A `.setter` runs a method when you assign to it, so you can validate the value. Java and C++ use getter and setter methods for this.
+
+```python
+import math
+
+class Circle:
+    def __init__(self, radius: float):
+        self._radius = radius
 
     @property
     def radius(self) -> float:
         return self._radius
 
     @radius.setter
-    def radius(self, value: float) -> None:
+    def radius(self, value: float):
         if value < 0:
-            raise ValueError("radius must be non-negative")
+            raise ValueError("radius < 0")
         self._radius = value
 
     @property
     def area(self) -> float:
-        import math
         return math.pi * self._radius ** 2
 ```
 
-**`@classmethod` vs `@staticmethod`:**
+### `@classmethod` gets the class, and `@staticmethod` gets nothing
+
+A class method receives the class as `cls`. Use it for factory methods. A static method receives no `self` and no `cls`. It is a plain utility function inside the class.
+
 ```python
 class Temperature:
-    def __init__(self, celsius: float) -> None:
+    def __init__(self, celsius: float):
         self.celsius = celsius
 
     @classmethod
-    def from_fahrenheit(cls, f: float) -> "Temperature":
-        return cls((f - 32) * 5 / 9)   # factory — has access to cls
+    def from_fahrenheit(cls, f: float):
+        # Factory: has access to cls
+        return cls((f - 32) * 5 / 9)
 
     @staticmethod
     def is_valid(celsius: float) -> bool:
-        return celsius >= -273.15       # no self or cls — pure utility
+        return celsius >= -273.15
 ```
 
-**Dunder methods:**
+### Dunder methods make objects act like built-in types
+
+A dunder (double underscore) method hooks into Python syntax. `__add__` runs for `+`, `__eq__` for `==` and `__abs__` for `abs()`.
+
 ```python
 class Vector:
-    def __init__(self, x: float, y: float) -> None:
+    def __init__(self, x, y):
         self.x, self.y = x, y
 
     def __repr__(self) -> str:
-        return f"Vector({self.x}, {self.y})"
+        x, y = self.x, self.y
+        return f"Vector({x}, {y})"
 
-    def __add__(self, other: "Vector") -> "Vector":
-        return Vector(self.x + other.x, self.y + other.y)
+    def __add__(self, other):
+        return Vector(self.x + other.x,
+                      self.y + other.y)
 
-    def __eq__(self, other: object) -> bool:
+    def __eq__(self, other) -> bool:
         if not isinstance(other, Vector):
             return NotImplemented
-        return self.x == other.x and self.y == other.y
+        return (self.x == other.x
+                and self.y == other.y)
 
     def __abs__(self) -> float:
-        return (self.x ** 2 + self.y ** 2) ** 0.5
+        return (self.x**2
+                + self.y**2) ** 0.5
 ```
 
-**`__repr__` vs `__str__`:** `__repr__` is for developers (should be unambiguous, ideally `eval`-able). `__str__` is for end users. `print()` calls `__str__`; the REPL and `repr()` call `__repr__`. If you only define one, define `__repr__`.
+### `__repr__` is for developers, and `__str__` is for users
 
-**Dataclasses (3.7+):**
+`__repr__` must be unambiguous. If possible, `eval()` of its output rebuilds the object. `print()` calls `__str__`, and the REPL and `repr()` call `__repr__`. If you define only one, define `__repr__`.
+
+```python
+v = Vector(1, 2)
+repr(v)  # 'Vector(1, 2)'
+# No __str__, so print uses __repr__
+print(v)  # Vector(1, 2)
+```
+
+### `@dataclass` writes the boilerplate
+
+`@dataclass` (Python 3.7 or later) generates `__init__`, `__repr__` and `__eq__` from the field annotations. Use `field(default_factory=list)` for a mutable default.
+
 ```python
 from dataclasses import dataclass, field
 
@@ -74,53 +110,72 @@ from dataclasses import dataclass, field
 class Point:
     x: float
     y: float
-    tags: list[str] = field(default_factory=list)
+    tags: list[str] = field(
+        default_factory=list
+    )
 ```
-`@dataclass` auto-generates `__init__`, `__repr__`, and `__eq__` from field annotations.
 
-## vs other languages
+### Python has no true access control
 
-| Feature | Python | Java | C++ | JS |
-|---|---|---|---|---|
-| Constructor | `__init__` | constructor method | constructor | `constructor` |
-| Factory | `@classmethod` | static factory | static factory | static method |
-| Properties | `@property` | getters/setters | getters/setters | `get`/`set` |
-| Operator overloading | dunder methods | No (except equals) | Yes | No |
-| Privacy | Convention (`_`, `__`) | `private` keyword | `private` keyword | `#` private fields |
+`_name` means "internal use". `__name` triggers name mangling to `_ClassName__name`, but code outside the class can still read it. The community relies on convention, not enforcement.
 
-Python has no true access control — `_name` is a convention for "internal use", `__name` triggers name-mangling to `_ClassName__name`, but it's still accessible. The community relies on convention, not enforcement.
+```python
+class Account:
+    def __init__(self):
+        self.__pin = 1234
+
+Account()._Account__pin  # 1234
+```
 
 ## Watch out
 
-- Defining `__eq__` without `__hash__` makes instances **unhashable** — Python sets `__hash__` to `None` automatically whenever you override `__eq__`. Define `__hash__` explicitly (or accept the object can't go in a `set`/dict key) if equality is based on value.
-- Mutable class-level attributes (`class Foo: items = []`) are shared by every instance, the same trap as mutable default arguments. Initialize mutable state in `__init__`, not as a class attribute.
-- A `@property` with no setter makes the attribute genuinely read-only from outside the class — assigning to it raises `AttributeError`, not a silent no-op.
-- `__repr__` should not have side effects and should stay cheap — debuggers, loggers, and REPLs call it constantly and unpredictably.
+- If you define `__eq__` without `__hash__`, Python sets `__hash__` to `None`. The object then cannot go in a `set` or be a dict key.
+- For value-based equality in a set or dict, define `__hash__` too.
+- A mutable class attribute, such as `items = []`, is one list for every instance. Create mutable state in `__init__`.
+- Assignment to a `@property` with no setter raises `AttributeError`. It does not fail silently.
+- Keep `__repr__` cheap and free of side effects. Debuggers, loggers and the REPL call it often.
 
 ## The task
 
-Implement a `BankAccount` class that exercises constructors, properties, class methods, and dunder methods.
+Write a `BankAccount` class in `stub.py`. It uses a constructor, a property, a class method and a dunder method.
 
-- **`__init__(self, owner: str, balance: float = 0.0)`** — stores `owner` and `balance`.
-- **`deposit(self, amount: float) -> None`** — adds `amount` to the balance. Raises `ValueError` if `amount <= 0`.
-- **`withdraw(self, amount: float) -> None`** — subtracts `amount` from the balance. Raises `ValueError` if `amount <= 0`, or if `amount` exceeds the current balance (no overdrafts).
-- **`balance`** (read-only `@property`) — returns the current balance. Assigning to `account.balance` must raise `AttributeError` — there is no setter.
-- **`zero(cls, owner: str) -> "BankAccount"`** (`@classmethod`) — factory that returns a new `BankAccount` for `owner` with a balance of `0.0`.
-- **`__repr__(self) -> str`** — returns `"BankAccount(owner='<owner>', balance=<balance>)"` with the balance formatted to exactly two decimal places.
+1. `__init__(self, owner: str, balance: float = 0.0)` stores `owner` and `balance`.
+2. `deposit(self, amount: float) -> None` adds `amount` to the balance.
+3. `deposit` raises `ValueError` if `amount <= 0`.
+4. `withdraw(self, amount: float) -> None` subtracts `amount` from the balance.
+5. `withdraw` raises `ValueError` if `amount <= 0`.
+6. `withdraw` raises `ValueError` if `amount` is more than the balance. The account has no overdraft.
+7. `balance` is a read-only `@property` that returns the current balance.
+8. `balance` has no setter, so assignment to it raises `AttributeError`.
+9. `zero(cls, owner: str) -> "BankAccount"` is a `@classmethod`. It returns a new account for `owner` with balance `0.0`.
+10. `__repr__(self) -> str` returns `BankAccount(owner='<owner>', balance=<balance>)`. The balance has exactly two decimal places.
 
 ```python
-acct = BankAccount("Alice", 100.0)
-acct.deposit(50)
-acct.withdraw(30)
-repr(acct)          # "BankAccount(owner='Alice', balance=120.00)"
-acct.balance        # 120.0
+BankAccount("Alice").balance        # 0.0
+BankAccount("Alice", 50.0).balance  # 50.0
 
-acct.deposit(0)      # raises ValueError
-acct.withdraw(-5)    # raises ValueError
-acct.withdraw(9999)  # raises ValueError — insufficient funds
+a = BankAccount("Alice", 100.0)
+repr(a)
+# "BankAccount(owner='Alice', balance=100.00)"
+a.deposit(50.0)
+a.balance  # 150.0
 
-empty = BankAccount.zero("Bob")
-repr(empty)          # "BankAccount(owner='Bob', balance=0.00)"
+b = BankAccount("Bob", 200.0)
+b.withdraw(75.0)
+b.balance  # 125.0
 
-acct.balance = 999   # raises AttributeError — balance has no setter
+BankAccount("A").deposit(0)  # ValueError
+BankAccount("A").deposit(-10)
+# ValueError
+c = BankAccount("A", 100)
+c.withdraw(0)   # ValueError
+c.withdraw(-5)  # ValueError
+BankAccount("A", 10).withdraw(20)
+# ValueError: insufficient funds
+
+BankAccount.zero("Carol").balance  # 0.0
+repr(BankAccount.zero("Bob"))
+# "BankAccount(owner='Bob', balance=0.00)"
+
+a.balance = 999.0  # AttributeError
 ```

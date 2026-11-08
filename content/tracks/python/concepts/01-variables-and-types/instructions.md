@@ -1,19 +1,23 @@
-# Variables & Types
+## What you build
 
-## What you'll learn
-
-Python is dynamically typed — variables hold references to objects, and the type lives on the object, not the variable. You'll learn Python's core built-in types, how to annotate them without enforcing them at runtime, f-strings for formatting, and the walrus operator for inline assignment.
+You write three functions: `type_label`, `clamp` and `first_number`. They use Python's built-in types, type checks and the walrus operator.
 
 ## Key concepts
 
-**Dynamic typing — no declarations:**
+### A variable holds a reference, and the object holds the type
+
+Python has dynamic typing. You do not declare a variable. The type belongs to the object, so one name can refer to objects of different types.
+
 ```python
-x = 42          # int
-x = "hello"     # now str — perfectly legal
-x = None        # NoneType — Python's null
+x = 42       # int
+x = "hello"  # now str, and legal
+x = None     # NoneType: Python's null
 ```
 
-**Core built-in types:**
+### Type hints are not checked at run time
+
+Type hints (PEP 484) are annotations only. Python does not enforce them. Tools such as mypy and pyright read them, and they help the reader.
+
 ```python
 age: int = 30
 price: float = 9.99
@@ -22,87 +26,117 @@ active: bool = True
 nothing: None = None
 ```
 
-Type hints (PEP 484) are annotations only — Python does not enforce them at runtime. Use them for tooling (mypy, pyright) and readability.
+### Integers have arbitrary precision
 
-**f-strings (3.6+):**
+A Python `int` does not overflow, so `2 ** 1000` is a valid `int`. Java and C# use fixed-size integers, and JavaScript numbers are IEEE 754 doubles.
+
+```python
+2 ** 100
+# 1267650600228229401496703205376
+```
+
+### `bool` is a subclass of `int`
+
+`True` equals `1` and `False` equals `0`. `type()` still reports `bool`, not `int`.
+
+```python
+True == 1         # True
+type(True)        # <class 'bool'>
+isinstance(True, int)  # True
+```
+
+### f-strings format values inline
+
+An f-string (Python 3.6 or later) puts expressions inside `{}`. A format spec follows a colon. The `=` form (Python 3.8 or later) prints the name and the value.
+
 ```python
 user = "Alice"
 score = 42
-label = f"{user} scored {score:.1f} points"
-# debug format (3.8+)
+f"{user} scored {score:.1f} points"
+# 'Alice scored 42.0 points'
 print(f"{score=}")  # score=42
 ```
 
-**`type()` and `isinstance()`:**
+### `type()` gives the exact type, and `isinstance()` checks the family
+
+`type()` returns the class of an object. `isinstance()` also accepts subclasses and a tuple of types.
+
 ```python
-type(42)            # <class 'int'>
-isinstance(42, int) # True
-isinstance(42, (int, float))  # True — checks against a tuple of types
+type(42)             # <class 'int'>
+isinstance(42, int)  # True
+# A tuple of types: True
+isinstance(42, (int, float))
 ```
 
-**Walrus operator `:=` (3.8+):**
-Assigns and returns a value in a single expression. Useful inside `while` or `if` to avoid reading twice:
+### The walrus operator assigns inside an expression
+
+`:=` (Python 3.8 or later) assigns a value and returns it. Use it in an `if` or `while` condition, so you compute the value once.
+
 ```python
 import re
 if m := re.search(r"\d+", text):
-    print(m.group())   # m is bound here, no second call
+    # m is bound here: no second call
+    print(m.group())
 ```
 
-**`None` comparisons — always use `is`:**
+### Compare with `None` by identity
+
+Use `is None`. `== None` also works, but linters warn about it.
+
 ```python
-if result is None:   # correct
-if result == None:   # works but triggers linter warnings
+if result is None:  # correct
+    ...
 ```
-
-## vs other languages
-
-| Feature | Python | Java/C# | JS/TS |
-|---|---|---|---|
-| Type system | Dynamic, optional hints | Static, enforced | Dynamic (JS) / Static (TS) |
-| Null | `None` | `null` / `null` | `null` / `undefined` |
-| Integer size | Arbitrary precision | Fixed (int, long) | IEEE 754 double |
-| String interpolation | f-strings | String.format / interpolated strings | template literals |
-| Type check | `isinstance()` | `instanceof` | `typeof` / `instanceof` |
-
-Python integers have **arbitrary precision** — no overflow. `2 ** 1000` is a valid int. Booleans in Python are a subclass of `int`: `True == 1` and `False == 0`.
 
 ## Watch out
 
-- `==` vs `is`: `==` compares values; `is` compares identity. Never use `is` for value comparison except with singletons (`None`, `True`, `False`) — `x is 256` can be `True` by accident (CPython caches small ints -5..256) and `False` for larger ones. That's an implementation detail, not a guarantee.
-- Chained comparisons are real Python, not a typo: `0 < x < 10` is `(0 < x) and (x < 10)`, evaluated left to right with `x` computed once.
-- The walrus operator's binding leaks into the enclosing scope, not just the `if`/`while` block — `if (n := len(items)) > 5: ...` leaves `n` accessible afterward, same as a regular assignment.
-- Float equality is approximate: `0.1 + 0.2 == 0.3` is `False`. Compare with a tolerance (`abs(a - b) < 1e-9`) or use `decimal`/`fractions` for exact arithmetic.
+- `==` compares values, and `is` compares identity. Use `is` only for `None`, `True` and `False`.
+- CPython caches the small integers -5 to 256. So `x is 256` can be `True`, but larger values give `False`. Do not rely on it.
+- `0 < x < 10` is a chained comparison, not a typo. It means `(0 < x) and (x < 10)`, and Python computes `x` once.
+- The walrus binding stays in the enclosing scope after the `if` or `while` block. It acts like a normal assignment.
+- `0.1 + 0.2 == 0.3` is `False`, because float math is approximate. Compare with a tolerance such as `abs(a - b) < 1e-9`.
+- For exact arithmetic, use the `decimal` or `fractions` module.
 
 ## The task
 
-Implement three standalone functions.
+Write three functions in `stub.py`.
 
-**`type_label(value: object) -> str`** — returns the name of `value`'s type as a string, exactly as `type(value).__name__` would produce it.
+1. `type_label(value: object) -> str` returns the name of the type of `value`. The result equals `type(value).__name__`.
+2. `clamp(value: float, low: float, high: float) -> float` limits `value` to the closed range `[low, high]`.
+3. `first_number(text: str) -> int | None` returns the first integer in `text`, or `None`.
+
+Rules for `clamp`:
+
+- A value below `low` returns `low`.
+- A value above `high` returns `high`.
+- A value inside the range, or on a bound, returns unchanged.
+- You can assume `low <= high`.
+
+Rules for `first_number`:
+
+- An integer is a run of digits. An optional `-` directly before it makes it negative.
+- Text with no digits returns `None`. An empty string returns `None`.
+- Use `re.search` and the walrus operator (`:=`) to get the match in one expression.
+
+`type_label(True)` returns `"bool"`, not `"int"`.
 
 ```python
-type_label(42)        # "int"
-type_label("hello")   # "str"
-type_label(3.14)      # "float"
-type_label(True)      # "bool" — bool is its own type, distinct from int here
-type_label(None)      # "NoneType"
-type_label([])        # "list"
-```
+type_label(42)       # "int"
+type_label("hi")     # "str"
+type_label(3.14)     # "float"
+type_label(True)     # "bool"
+type_label(None)     # "NoneType"
+type_label([])       # "list"
 
-**`clamp(value: float, low: float, high: float) -> float`** — returns `value` restricted to the closed interval `[low, high]`: unchanged if already inside the range, `low` if below it, `high` if above it. Assume `low <= high`.
-
-```python
-clamp(15, 0, 10)     # 10   — above high, clamped down
-clamp(-5, 0, 10)     # 0    — below low, clamped up
-clamp(5, 0, 10)      # 5    — already in range, unchanged
-clamp(0, 0, 10)      # 0    — exactly at low
+clamp(-5, 0, 10)     # 0
+clamp(15, 0, 10)     # 10
+clamp(5, 0, 10)      # 5
+clamp(0, 0, 10)      # 0
+clamp(10, 0, 10)     # 10
 clamp(1.5, 1.0, 2.0) # 1.5
-```
 
-**`first_number(text: str) -> int | None`** — extracts the first run of digits (optionally preceded by a `-`) from `text` and returns it as an `int`. Returns `None` if no digits appear anywhere in the string. Implement it using a regex (`re.search`) combined with the walrus operator (`:=`) so the match is captured in a single expression.
-
-```python
 first_number("foo 42 bar")       # 42
-first_number("temp -7 celsius")  # -7   — leading minus sign is part of the number
+first_number("temp -7 celsius")  # -7
 first_number("99 bottles")       # 99
 first_number("no digits here")   # None
 first_number("")                 # None

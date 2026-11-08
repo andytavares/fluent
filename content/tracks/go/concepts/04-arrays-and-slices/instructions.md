@@ -1,26 +1,31 @@
-# Arrays & Slices
+## What you build
 
-## What you'll learn
-
-Go has two sequence types: fixed-size **arrays** (rarely used directly) and **slices** — a dynamically-sized view backed by an array, which is what you'll actually use everywhere. Understanding that a slice is a lightweight header (pointer, length, capacity) pointing at shared backing storage explains both `append`'s growth behavior and a family of aliasing bugs unique to Go.
+You write `Sum` and `Filter` over `[]int`. Go has fixed-size arrays, which you rarely use, and slices, which you use everywhere. This lesson builds on **Control Flow**.
 
 ## Key concepts
 
-**Creating slices:**
+### A slice is a view of an array
+
+A slice is a small header: a pointer, a length and a capacity. It points at a backing array that other slices can share.
 
 ```go
-nums := []int{1, 2, 3}          // slice literal
-s    := make([]int, 0, 10)      // length 0, capacity 10
-var zero []int                   // nil slice — zero value, len(zero) == 0
+// slice literal
+nums := []int{1, 2, 3}
+// length 0, capacity 10
+s := make([]int, 0, 10)
+// nil slice: the zero value, length 0
+var zero []int
 ```
 
-**Appending** — grows the slice, possibly reallocating:
+### `append` returns the slice to keep
+
+`append` grows the slice and can allocate a new backing array. Always assign the result.
 
 ```go
-s = append(s, 4, 5)   // always reassign the result of append
+s = append(s, 4, 5)
 ```
 
-**Ranging** gives you index and value:
+### `range` gives the index and the value
 
 ```go
 for i, v := range nums {
@@ -28,48 +33,57 @@ for i, v := range nums {
 }
 ```
 
-**Slicing a slice** — `s[low:high]` selects `[low, high)`, and the result **shares the same backing array** as `s`:
+### `s[low:high]` shares the backing array
+
+The result holds indexes `low` up to `high - 1`. It uses the same memory as `s`.
 
 ```go
-nums[1:3]   // elements at index 1, 2 (index 3 excluded)
-nums[:2]    // first two elements
-nums[2:]    // from index 2 to the end
+nums[1:3] // indexes 1 and 2
+nums[:2]  // first two elements
+nums[2:]  // index 2 to the end
 ```
 
-**`len` vs `cap`** — length is how many elements are in view; capacity is how much backing storage exists before a reallocation is needed:
+### Length and capacity differ
+
+The length is the number of elements in view. The capacity is the storage that exists before `append` must allocate.
 
 ```go
 s := make([]int, 3, 10)
-len(s)  // 3
-cap(s)  // 10
+len(s) // 3
+cap(s) // 10
 ```
 
 ## Watch out
 
-- **Slicing aliases the original array.** `sub := nums[1:3]; sub[0] = 99` also changes `nums[1]` — they share memory. Use `copy()` if you need an independent slice.
-- **`append` sometimes mutates the original, sometimes doesn't**, depending on whether capacity is exceeded. If `cap(s) > len(s)`, appending writes into the shared backing array (visible through other slices of it); if capacity is exceeded, `append` allocates a new array and the two slices diverge. Never rely on either behavior — always use the value `append` returns.
-- A **nil slice** and an **empty (non-nil) slice** both have `len() == 0` and behave identically in loops and `append`, but they are *not* equal under `reflect.DeepEqual` and marshal differently to JSON (`null` vs `[]`). Prefer `var s []T` (nil) unless you specifically need an empty-but-non-nil value.
-- Comparing two slices with `==` is a **compile error** — slices are not comparable (unlike arrays, which are, element by element, when their element type is comparable). Use `reflect.DeepEqual` or a loop.
+- A sub-slice shares memory. After `sub := nums[1:3]`, `sub[0] = 99` also changes `nums[1]`. Use `copy` for an independent slice.
+- If `cap(s) > len(s)`, `append` writes into the shared array. Other slices of that array see the change.
+- If `append` exceeds the capacity, it allocates a new array. The two slices then diverge. Always use the returned value.
+- A nil slice and an empty slice both have length 0. They work the same in loops and `append`.
+- They differ under `reflect.DeepEqual`. JSON encodes nil as `null` and empty as `[]`. Prefer `var s []T`.
+- `==` on two slices is a compile error. Arrays of comparable elements support `==`. Use `reflect.DeepEqual` or a loop.
 
 ## The task
 
-Implement two functions over `[]int`.
+Write two functions over `[]int`.
 
-**`Sum(nums []int) int`** — returns the sum of all elements. The sum of an empty slice is `0`.
+1. `Sum(nums []int) int` returns the sum of all elements.
+2. The sum of an empty slice or a `nil` slice is `0`.
+3. `Filter(nums []int, threshold int) []int` returns a new slice in the original order.
+4. It keeps only the elements strictly greater than `threshold`.
+5. If no element is greater, it returns a slice of length 0, such as `[]int{}`.
 
-```go
-Sum([]int{1, 2, 3, 4, 5})   // 15
-Sum([]int{})                // 0
-Sum([]int{-1, -2, 3})       // 0
-Sum([]int{10})              // 10
-Sum(nil)                    // 0 — a nil slice has zero elements, same as empty
-```
-
-**`Filter(nums []int, threshold int) []int`** — returns a new slice containing only the elements of `nums` that are **strictly greater than** `threshold`, preserving order. If no elements qualify, return a slice with length 0 (not `nil` — return `[]int{}` or equivalent).
+An element equal to `threshold` is not kept.
 
 ```go
-Filter([]int{1, 5, 3, 8, 2, 9}, 4)   // []int{5, 8, 9}
-Filter([]int{1, 2, 3}, 10)           // []int{} — nothing qualifies
-Filter([]int{}, 0)                   // []int{}
-Filter([]int{5, 5, 5}, 5)            // []int{} — threshold is exclusive, not inclusive
+Sum([]int{1, 2, 3, 4, 5}) // 15
+Sum([]int{})              // 0
+Sum([]int{-1, -2, 3})     // 0
+Sum([]int{10})            // 10
+Sum(nil)                  // 0
+
+// []int{5, 8, 9}
+Filter([]int{1, 5, 3, 8, 2, 9}, 4)
+Filter([]int{1, 2, 3}, 10) // []int{}
+Filter([]int{}, 0)         // []int{}
+Filter([]int{5, 5, 5}, 5)  // []int{}
 ```

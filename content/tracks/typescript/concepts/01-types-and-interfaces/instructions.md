@@ -1,24 +1,28 @@
-# Types & Interfaces
+## What you build
 
-## What you'll learn
-
-This is the first stop for engineers who already know JavaScript: TypeScript adds a compile-time type layer on top of the language you already write. Annotate variables, parameters, and return values with types, and the compiler rejects violations before your code ever runs — the runtime behavior underneath is unchanged JS.
+You write three functions for 2D points: `distance`, `midpoint` and `translate`. TypeScript adds a compile-time type layer on top of JavaScript. The compiler rejects type errors before the code runs, and the runtime behavior stays plain JavaScript.
 
 ## Key concepts
 
-**Basic annotations:**
+### Annotations give a value its type
+
+You annotate variables, parameters and return values with a type after a colon.
+
 ```ts
 const name: string = "Alice";
 const age: number = 30;
 const active: boolean = true;
 ```
 
-**Interfaces** describe the shape of an object:
+### An interface describes the shape of an object
+
+A `?` after a property name makes it optional. The property then has the type `string | undefined`.
+
 ```ts
 interface User {
   id: number;
   name: string;
-  email?: string;  // optional property — type is `string | undefined`
+  email?: string;
 }
 
 function greet(user: User): string {
@@ -26,50 +30,60 @@ function greet(user: User): string {
 }
 ```
 
-**Type aliases** name any type, including unions and object shapes:
+### A type alias names any type
+
+A `type` alias can name a union or an object shape. An `interface` and an object-shaped `type` alias are interchangeable for most uses. One difference: interfaces with the same name merge, and type aliases do not. Concept 10 covers merging.
+
 ```ts
 type Point = { x: number; y: number };
 type ID = string | number;
 ```
 
-An `interface` and an object-shaped `type` alias are interchangeable for most purposes — the difference that matters shows up later: interfaces of the same name **merge** (lesson 10), type aliases do not.
+### TypeScript uses structural typing
 
-**vs other languages:** TypeScript uses *structural* typing, not nominal. An object satisfies an interface if it has the right shape — no `implements` declaration is required at the call site. This is sometimes called "duck typing at compile time." Coming from Java or C#, this means two unrelated interfaces with identical fields are freely interchangeable; there's no `class Foo implements Bar` ceremony to opt in.
+An object satisfies an interface when it has the right shape. The call site needs no `implements` declaration. Unlike Java or C#, two unrelated interfaces with the same fields are interchangeable.
+
+```ts
+interface Named { name: string }
+const dog = { name: "Rex", age: 3 };
+// OK: dog has a name
+const n: Named = dog;
+```
 
 ## Watch out
 
-- **Excess property checks only fire on object literals passed directly.** `const p: Point = { x: 1, y: 2, z: 3 }` is a compile error (unknown property `z`), but `const obj = { x: 1, y: 2, z: 3 }; const p: Point = obj;` compiles fine — TypeScript only flags literals, not variables, because structural typing allows the variable to have *extra* properties.
-- **Optional (`?`) is not the same as nullable.** `email?: string` means the property may be absent or `undefined` — it does not allow `null` unless you write `string | null` explicitly.
-- Structural typing means a type mismatch you'd catch at a glance in Java (wrong class name) can slip through silently here if two unrelated shapes happen to line up — read error messages carefully, they show the expected shape, not a type name.
+- Excess property checks apply only to object literals. `const p: Point = { x: 1, y: 2, z: 3 }` is a compile error.
+- Assign the same object through a variable first, and it compiles. A variable can have extra properties.
+- Optional is not nullable. `email?: string` allows a missing value or `undefined`, but not `null`. Write `string | null` to allow `null`.
+- Two unrelated shapes that line up pass the type check silently. Error messages show the expected shape, not a type name.
 
 ## The task
 
-You're implementing three functions over a shared `Point` type — basic 2D coordinate math using the interface below.
+Write three functions that do 2D coordinate math. They use this interface:
 
 ```ts
 interface Point { x: number; y: number; }
 ```
 
-**`distance(a: Point, b: Point): number`** — the straight-line (Euclidean) distance between two points.
+1. `distance(a: Point, b: Point): number` returns the straight-line (Euclidean) distance between `a` and `b`.
+2. `midpoint(a: Point, b: Point): Point` returns the point halfway between `a` and `b`.
+3. `translate(p: Point, dx: number, dy: number): Point` returns a new point shifted by `dx` and `dy`.
+
+`translate` must not change `p`. The distance from a point to itself is 0. `distance(a, b)` equals `distance(b, a)`. The midpoint of a point with itself is that point. Negative deltas shift the point backward.
 
 ```ts
-distance({ x: 0, y: 0 }, { x: 3, y: 4 });                         // 5
-distance({ x: 1, y: 1 }, { x: 1, y: 1 });                         // 0 — same point
-distance({ x: 0, y: 0 }, { x: 3, y: 4 }) ===
-  distance({ x: 3, y: 4 }, { x: 0, y: 0 });                       // true — symmetric
-```
+const o = { x: 0, y: 0 };
+const p = { x: 3, y: 4 };
+distance(o, p);   // 5
+distance(o, o);   // 0
+distance(p, o);   // 5
+midpoint(o, p);   // { x: 1.5, y: 2 }
+midpoint(o, o);   // { x: 0, y: 0 }
 
-**`midpoint(a: Point, b: Point): Point`** — the point exactly halfway between a and b.
-
-```ts
-midpoint({ x: 0, y: 0 }, { x: 3, y: 4 });   // { x: 1.5, y: 2 }
-midpoint({ x: 2, y: 2 }, { x: 2, y: 2 });   // { x: 2, y: 2 } — a point's midpoint with itself is itself
-```
-
-**`translate(p: Point, dx: number, dy: number): Point`** — a new point shifted by `(dx, dy)`. Does not mutate `p`.
-
-```ts
-translate({ x: 1, y: 2 }, 3, 4);   // { x: 4, y: 6 }
-translate({ x: 5, y: 5 }, -3, -2); // { x: 2, y: 3 } — negative deltas shift backward
-translate({ x: 7, y: 9 }, 0, 0);   // { x: 7, y: 9 } — zero delta leaves coordinates unchanged
+translate({ x: 1, y: 2 }, 3, 4);
+// { x: 4, y: 6 }
+translate({ x: 5, y: 5 }, -3, -2);
+// { x: 2, y: 3 }
+translate({ x: 7, y: 9 }, 0, 0);
+// { x: 7, y: 9 }
 ```

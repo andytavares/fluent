@@ -1,93 +1,148 @@
-# Inheritance & Polymorphism
+## What you build
 
-## What you'll learn
-
-Building on interfaces (concept 2): Java supports single-class inheritance — one class extends exactly one parent. Interfaces handle multiple-type contracts; inheritance handles shared implementation. The combination of inheritance, method overriding, and runtime dispatch is the backbone of Java's classical OOP model.
+You write an abstract `Shape` class with two subclasses, a method that adds their areas and a method that names their type. Inheritance shares an implementation, and interfaces share a contract. This lesson builds on **Interfaces**.
 
 ## Key concepts
 
-**extends and constructor chaining:**
+### A class extends one parent
+
+Java has single-class inheritance: a class extends exactly one parent. Inheritance, method overriding and runtime dispatch are the base of Java's classical OOP model.
+
 ```java
 public class Animal {
     private final String name;
-    public Animal(String name) { this.name = name; }
-    public String getName() { return name; }
+
+    public Animal(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
     public String speak() { return "..."; }
 }
+```
 
+### `super(...)` calls the parent constructor
+
+Before Java 25, `super(...)` must be the first statement in the constructor. Java 25 allows statements before it that do not use `this`. When you leave out `super(...)` and the parent has no no-argument constructor, the code does not compile.
+
+```java
 public class Dog extends Animal {
     private final String breed;
+
     public Dog(String name, String breed) {
-        super(name);        // must be first statement in constructor
+        super(name);
         this.breed = breed;
     }
 
     @Override
-    public String speak() { return "Woof"; }
-}
-```
-
-`super(...)` invokes the parent constructor. If you omit it and the parent has no no-arg constructor, the code won't compile.
-
-**@Override:**
-Always annotate overridden methods. Without it, a typo silently creates a new overload instead of overriding — the annotation makes the compiler catch that.
-
-**Abstract classes:**
-```java
-public abstract class Shape {
-    public abstract double area();           // subclasses must implement
-    public String describe() {               // concrete method — inherited as-is
-        return "Shape with area " + area();
+    public String speak() {
+        return "Woof";
     }
 }
 ```
-An abstract class cannot be instantiated directly. Use it when you want to share implementation across subclasses while forcing them to fill in specific behavior.
 
-**Polymorphism and casting:**
+### Always write `@Override`
+
+Without the annotation, a typo in the method name creates a new method and overrides nothing. With `@Override`, the compiler reports the error.
+
 ```java
-Animal a = new Dog("Rex", "Lab");  // upcast — always safe
-a.speak();                          // calls Dog.speak() at runtime
+// Compile error: no speek() to override
+@Override
+public String speek() { return "Woof"; }
+```
 
-if (a instanceof Dog d) {           // pattern matching (Java 16+)
+### An abstract class shares code and forces gaps
+
+You cannot create an instance of an abstract class. Subclasses must implement each abstract method and inherit each concrete method as it is.
+
+```java
+public abstract class Shape {
+    // Subclasses must implement
+    public abstract double area();
+
+    // Inherited as it is
+    public String describe() {
+        return "Shape with area "
+            + area();
+    }
+}
+```
+
+### The runtime type picks the method
+
+The runtime type decides which method runs. The reference type decides which methods the compiler lets you call. An upcast to a parent type is always safe.
+
+```java
+// Upcast
+Animal a = new Dog("Rex", "Lab");
+// Runs Dog.speak()
+a.speak();
+
+// Pattern matching, Java 16+
+if (a instanceof Dog d) {
     System.out.println(d.getBreed());
 }
 ```
-The runtime type governs which method runs. The reference type governs what the compiler allows you to call.
 
-**vs other languages:** C++ requires `virtual` to opt into runtime dispatch — non-virtual methods are resolved at compile time. Java methods are virtual by default. Python has no formal syntax for overriding; `super()` works similarly but without compiler enforcement. Go does not have inheritance at all — it uses embedding and interface satisfaction instead.
+### Java methods are virtual by default
+
+C++ needs `virtual` for runtime dispatch, Python has no compiler check on overrides and Go has no inheritance, only embedding and interfaces. In Java, every method that is not `static`, `final` or `private` uses runtime dispatch.
+
+```java
+Animal a = new Dog("Rex", "Lab");
+a.speak();  // "Woof"
+```
 
 ## Watch out
 
-- **Calling an overridable method from a constructor is a footgun.** If `Animal`'s constructor calls `speak()` and `Dog` overrides it, `Dog`'s override runs *before* `Dog`'s own fields are initialized — you can observe default values (`0`, `null`) for fields you'd expect to be set.
-- **`instanceof` pattern matching narrows the type only inside the `if` block** (or after a `return`/`continue` that makes the negative branch unreachable) — outside that scope the variable reverts to the original static type.
-- **Abstract classes vs interfaces:** a class can extend only one abstract class but can implement many interfaces. Reach for an abstract class only when subclasses genuinely share field state or method implementation, not just a method signature.
+- Do not call an overridable method from a constructor.
+- If `Animal`'s constructor calls `speak()`, `Dog`'s override runs before `Dog` sets its own fields.
+- That override then sees default values such as `0` and `null`.
+- `instanceof` pattern matching narrows the type only inside the `if` block.
+- It also narrows after a `return` or `continue` that ends the negative branch. Elsewhere, the original type applies.
+- A class can extend one abstract class but implement many interfaces.
+- Use an abstract class only when subclasses share fields or method code, not only a signature.
 
 ## The task
 
-You're modeling shapes with a shared abstract base class instead of an interface, because they share a concrete `describe()` implementation. Implement the following inside `Solution.java`:
+Model shapes with a shared abstract base class, because they share a concrete `describe()` method. Write these types and methods inside the class `Solution`.
 
-**Abstract class `Shape`** — abstract `double area()`; concrete `String describe()` returning `"Shape with area <area>"` where `<area>` is formatted to exactly 2 decimal places (e.g. `"Shape with area 12.00"`).
+1. Abstract class `Shape` has an abstract `double area()`.
+2. `Shape` has a concrete `String describe()` that returns `"Shape with area <area>"`.
+3. `describe()` formats `<area>` with exactly 2 decimal places, for example `"Shape with area 12.00"`.
+4. `Circle extends Shape` has the constructor `Circle(double radius)`.
+5. `Circle.area()` returns `Math.PI * radius * radius`.
+6. `Rectangle extends Shape` has the constructor `Rectangle(double width, double height)`.
+7. `Rectangle.area()` returns `width * height`.
+8. `static double totalArea(Shape[] shapes)` returns the sum of `area()` over the array.
+9. `static String classifyShape(Shape s)` uses `instanceof` pattern matching.
+10. `classifyShape` returns `"circle"` for a `Circle` and `"rectangle"` for a `Rectangle`.
+11. For any other `Shape`, `classifyShape` returns `"unknown"`.
 
-**`Circle extends Shape`** — constructor `Circle(double radius)`; overrides `area()` returning `Math.PI * radius * radius`.
-
-**`Rectangle extends Shape`** — constructor `Rectangle(double width, double height)`; overrides `area()` returning `width * height`.
-
-**`static double totalArea(Shape[] shapes)`** — sums `area()` across every element of the array; an empty array returns `0.0`.
-
-**`static String classifyShape(Shape s)`** — uses `instanceof` pattern matching to return `"circle"` for a `Circle`, `"rectangle"` for a `Rectangle`, or `"unknown"` for any other `Shape`.
+An empty array gives a total area of `0.0`.
 
 ```java
 Shape c = new Circle(5);
 Shape r = new Rectangle(3, 4);
 
-c.area();       // ~78.5398
-c.describe();   // "Shape with area 78.54"
+c.area();      // ~78.5398
+// "Shape with area 78.54"
+c.describe();
 
-r.area();       // 12.0
-r.describe();   // "Shape with area 12.00"
+r.area();      // 12.0
+// "Shape with area 12.00"
+r.describe();
 
-totalArea(new Shape[]{ c, r });  // ~90.5398
-totalArea(new Shape[]{});        // 0.0
+// Polymorphic dispatch: ~3.14159
+new Circle(1).area();
+
+// ~90.5398
+totalArea(new Shape[]{ c, r });
+// 0.0
+totalArea(new Shape[]{});
 
 classifyShape(c);  // "circle"
 classifyShape(r);  // "rectangle"

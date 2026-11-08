@@ -1,89 +1,112 @@
-# Functions
+## What you build
 
-## What you'll learn
-
-Building on the values and types from lesson 1: in JavaScript, functions *are* values — they can be assigned, passed, and returned like any string or number. JavaScript has three syntaxes for functions. Arrow functions are the modern default for callbacks and short expressions. Function declarations are hoisted; `function` expressions are not. You'll also learn default parameters, rest parameters, and function composition — the building blocks the rest of this track uses constantly.
+You write `multiply`, `sum` and `compose`. They use default parameters, rest parameters and functions as values. This lesson builds on **Variables & Types**.
 
 ## Key concepts
 
-**Arrow functions** (preferred for most cases):
+### Functions are values
+
+You can assign a function, pass it as an argument and return it, like a string or a number. JavaScript has three syntaxes: declarations, `function` expressions and arrow functions. JavaScript hoists declarations, but not `function` expressions.
+
+### Arrow functions are the modern default
+
+Use arrow functions for callbacks and short expressions. An expression body returns its value. A block body needs an explicit `return`.
+
 ```js
-const double = (x) => x * 2;          // implicit return
-const add    = (a, b) => a + b;
-const greet  = (name) => {             // block body requires explicit return
+// Implicit return
+const double = (x) => x * 2;
+const add = (a, b) => a + b;
+// A block body needs return
+const greet = (name) => {
   return `Hello, ${name}`;
 };
 ```
 
-**Default parameters** fill in when an argument is missing *or* explicitly `undefined`:
+### A default parameter fills a missing argument
+
+The default applies when the argument is missing or is `undefined`.
+
 ```js
 function greet(name, greeting = "Hello") {
   return `${greeting}, ${name}`;
 }
-greet("Alice");              // "Hello, Alice"
-greet("Bob", "Hi");          // "Hi, Bob"
-greet("Eve", undefined);     // "Hello, Eve" — undefined triggers the default
+greet("Alice");          // "Hello, Alice"
+greet("Bob", "Hi");      // "Hi, Bob"
+// undefined uses the default
+greet("Eve", undefined); // "Hello, Eve"
 ```
 
-**Rest parameters** collect extra arguments into a real array:
+### Rest parameters collect extra arguments
+
+`...name` puts the remaining arguments into a real array. With no arguments, the array is empty. Python's `*args` is the same idea, but JavaScript has no `**kwargs`; pass an options object.
+
 ```js
 function sum(...nums) {
-  return nums.reduce((acc, n) => acc + n, 0);
+  return nums.reduce(
+    (acc, n) => acc + n, 0);
 }
-sum(1, 2, 3, 4);  // 10
-sum();            // 0 — nums is []
+sum(1, 2, 3, 4); // 10
+// nums is []
+sum();           // 0
 ```
 
-**Functions are first-class values** — you can pass them as arguments and return them:
+### Composition returns a new function
+
+`compose(f, g)` returns a function that runs `g` first, then `f` on the result.
+
 ```js
 function compose(f, g) {
-  return (x) => f(g(x));   // g runs first, then f
+  return (x) => f(g(x));
 }
 const double = (x) => x * 2;
-const inc    = (x) => x + 1;
-const doubleAfterInc = compose(double, inc);
-doubleAfterInc(3);  // double(inc(3)) = double(4) = 8
+const inc = (x) => x + 1;
+const incThenDouble = compose(double, inc);
+// double(inc(3)) = double(4) = 8
+incThenDouble(3); // 8
 ```
 
-**vs other languages:** No function overloading — a second declaration of the same name silently replaces the first. Use default parameters and rest instead. Python engineers: rest parameters are `*args`; there is no `**kwargs` equivalent (pass an options object instead).
+### JavaScript has no overloading
+
+A second declaration with the same name replaces the first, with no warning. Use default and rest parameters instead.
 
 ## Watch out
 
-- Defaults trigger on `undefined` only. `multiply(4, null)` does **not** use the default — `null` coerces to `0` in arithmetic, so you get `0`, not `4`.
-- Arrow functions have no `this` of their own and no `arguments` object — use rest parameters instead of `arguments`.
-- Composition order trips people up: `compose(f, g)` applies `g` first. Read it right-to-left, like math's `f ∘ g`.
+- A default applies on `undefined` only. `multiply(4, null)` gives `0`, because `null` becomes `0` in arithmetic.
+- Arrow functions have no own `this` and no `arguments` object. Use rest parameters in place of `arguments`.
+- `compose(f, g)` applies `g` first. Read it right to left, like `f ∘ g` in math.
 
 ## The task
 
-You're implementing three functions that exercise default parameters, rest parameters, and first-class functions.
+Write three functions in `stub.js` that use default parameters, rest parameters and functions as values.
 
-**`multiply(a, b = 1)`** — returns `a * b`. The second parameter defaults to `1`, so calling with one argument (or passing `undefined`) returns `a` unchanged.
+1. `multiply(a, b = 1)` returns `a * b`.
+2. `sum(...nums)` takes any count of numbers and returns their sum.
+3. `compose(f, g)` takes two functions of one argument each.
+4. `compose` returns a new function that computes `f(g(x))` for a given `x`.
 
-```js
-multiply(3, 4);          // 12
-multiply(5);             // 5   — b defaults to 1
-multiply(4, undefined);  // 4   — undefined also triggers the default
-multiply(0, 100);        // 0
-multiply(-2, 3);         // -6
-```
+`multiply` with one argument returns `a`. An explicit `undefined` for `b` also gives the default `1`.
 
-**`sum(...nums)`** — takes any number of numeric arguments and returns their sum. Called with no arguments, it returns `0`.
+`sum` with no arguments returns `0`.
 
-```js
-sum();              // 0
-sum(1);             // 1
-sum(1, 2, 3);       // 6
-sum(1, 2, 3, 4, 5); // 15
-sum(-1, -2, -3);    // -6
-```
-
-**`compose(f, g)`** — function composition: given two single-argument functions `f` and `g`, returns a **new function** that, given `x`, computes `f(g(x))` — i.e. it applies `g` first, then applies `f` to the result.
+`compose` applies `g` first, so the argument order changes the result.
 
 ```js
+multiply(3, 4)         // 12
+multiply(5)            // 5
+multiply(4, undefined) // 4
+multiply(0, 100)       // 0
+multiply(-2, 3)        // -6
+
+sum()              // 0
+sum(1)             // 1
+sum(1, 2, 3)       // 6
+sum(1, 2, 3, 4, 5) // 15
+sum(-1, -2, -3)    // -6
+
 const double = (x) => x * 2;
-const inc    = (x) => x + 1;
-
-compose(double, inc)(3);       // double(inc(3)) = double(4) = 8
-compose(inc, double)(3);       // inc(double(3)) = inc(6)    = 7  — order matters
-compose((x) => x, (x) => x)(42); // 42 — composing identities is identity
+const inc = (x) => x + 1;
+compose(double, inc)(3) // 8
+compose(inc, double)(3) // 7
+// Composing identities gives identity
+compose((x) => x, (x) => x)(42) // 42
 ```

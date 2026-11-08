@@ -1,88 +1,136 @@
-# Exception Handling
+## What you build
 
-## What you'll learn
-
-Building on inheritance (concept 6) — custom exceptions are just classes that extend `Exception` or `RuntimeException`: Java divides exceptions into two camps: **checked** exceptions (subclasses of `Exception` but not `RuntimeException`) that the compiler forces you to handle or declare, and **unchecked** exceptions (`RuntimeException` and its subclasses) that you can ignore. Modern Java code trends toward unchecked exceptions — checked exceptions often end up swallowed or wrapped, which is worse than not catching them.
+You write a custom exception that carries an HTTP-style status code, and three validation methods that throw it. A custom exception is a class that extends `Exception` or `RuntimeException`. This lesson builds on **Inheritance & Polymorphism**.
 
 ## Key concepts
 
-**try/catch/finally:**
+### Checked and unchecked exceptions
+
+A checked exception extends `Exception` but not `RuntimeException`, and the compiler makes you catch it or declare it. An unchecked exception extends `RuntimeException`, and the compiler does not check it.
+
+```java
+// Checked: must catch or declare
+void read() throws IOException { }
+// Unchecked: no declaration needed
+void parse() { Integer.parseInt("x"); }
+```
+
+### Modern Java prefers unchecked exceptions
+
+Code often swallows or wraps checked exceptions, which is worse than not catching them. C++, Python and JavaScript have only unchecked exceptions, and Go returns errors as values.
+
+```java
+// Swallowed: the error disappears
+try { read(); }
+catch (IOException e) { }
+```
+
+### `try`, `catch` and `finally`
+
+The `catch` block handles a matching exception. The `finally` block always runs, also when the code throws or catches an exception.
+
 ```java
 try {
     int result = Integer.parseInt(s);
 } catch (NumberFormatException e) {
-    // unchecked — compiler doesn't require you to catch this
-    System.err.println("bad input: " + e.getMessage());
+    // Unchecked: catching is optional
+    System.err.println(
+        "bad input: " + e.getMessage());
 } finally {
-    // always runs — even if an exception was thrown or caught
+    // Always runs
 }
 ```
 
-**Multi-catch (Java 7+):**
+### Multi-catch handles several types
+
+Since Java 7, one `catch` block can list several types with `|`.
+
 ```java
 try {
     // ...
-} catch (IllegalArgumentException | IllegalStateException e) {
-    // handles either
+} catch (IllegalArgumentException
+         | IllegalStateException e) {
+    // Handles either type
 }
 ```
 
-**Custom exceptions:**
+### A custom exception is a class
+
+Pass the message to `super(message)` and store any extra data in fields. Extend `RuntimeException` when callers usually cannot recover. Extend `Exception` only when callers must handle the error, as with `IOException`.
+
 ```java
-public class ValidationException extends RuntimeException {
+public class ValidationException
+        extends RuntimeException {
     private final String field;
 
-    public ValidationException(String field, String message) {
+    public ValidationException(
+            String field, String message) {
         super(message);
         this.field = field;
     }
 
-    public String getField() { return field; }
+    public String getField() {
+        return field;
+    }
 }
 ```
-Extend `RuntimeException` for exceptions callers usually cannot recover from. Extend `Exception` (checked) only when callers genuinely need to handle the error — e.g., `IOException`.
 
-**try-with-resources (Java 7+):**
+### `try`-with-resources closes for you
+
+Since Java 7, a resource that you open in the `try` header closes at the end of the block, also when the code throws.
+
 ```java
-try (var reader = new BufferedReader(new FileReader(path))) {
+try (var reader = new BufferedReader(
+        new FileReader(path))) {
     return reader.readLine();
-}  // reader.close() called automatically — even on exception
+}
+// reader.close() runs automatically
 ```
-
-**vs other languages:** C++ exceptions are unchecked — no compiler enforcement. Go returns errors as values — no try/catch at all. Python exceptions are unchecked. TypeScript/JavaScript: same as Python. Java's checked exceptions are unique and divisive — many engineers consider them a design mistake for most use cases.
 
 ## Watch out
 
-- **A custom `RuntimeException` still needs to call `super(message)`** if you want `getMessage()` to work — forgetting it silently leaves the message `null`.
-- **Catching `Exception` (or worse, `Throwable`)** swallows exceptions you didn't anticipate, including bugs like `NullPointerException`. Catch the most specific type your code can actually recover from.
-- **Re-throwing inside a loop:** when one item in a batch fails, decide deliberately whether to stop immediately (propagate the first failure, as this task does) or collect all failures and report them together — the two behave very differently for callers.
+- A custom exception must call `super(message)`. Without it, `getMessage()` returns `null`.
+- Catching `Exception` or `Throwable` also catches bugs such as `NullPointerException`.
+- Catch the most specific type that your code can recover from.
+- In a batch, choose: stop at the first failure, or collect all failures and report them together.
+- The two choices give callers very different results. This task stops at the first failure.
 
 ## The task
 
-You're building a small validation layer with a custom exception type that carries an HTTP-style status code. Implement the following in `Solution.java`:
+Build a small validation layer with a custom exception that carries an HTTP-style status code. Write these in the class `Solution`.
 
-**`class AppException extends RuntimeException`** — constructor `AppException(String message, int code)` that forwards `message` to `RuntimeException`'s constructor and stores `code`; getter `int getCode()`.
+1. `class AppException extends RuntimeException` has the constructor `AppException(String message, int code)`.
+2. The constructor passes `message` to `RuntimeException` and stores `code`.
+3. `int getCode()` returns the stored code.
+4. `static int parsePositiveInt(String s)` parses `s` and returns the integer when it is `> 0`.
+5. If `s` is not a valid integer, throw `new AppException("not a number", 400)`.
+6. If the value is `<= 0`, throw `new AppException("must be positive", 422)`.
+7. `static String safeRead(String input)` returns `input.trim()`.
+8. If `input` is `null`, throw `new AppException("null input", 400)`.
+9. If `input.trim()` is empty, throw `new AppException("blank input", 400)`.
+10. `static int sumInts(List<String> strs)` calls `parsePositiveInt` on each string and returns the sum.
 
-**`static int parsePositiveInt(String s)`** — parses `s` as an integer and returns it if it's `> 0`. Throws `new AppException("not a number", 400)` if `s` isn't a valid integer. Throws `new AppException("must be positive", 422)` if the parsed value is `<= 0`.
-
-**`static String safeRead(String input)`** — validates and trims `input`. Throws `new AppException("null input", 400)` if `input` is `null`. Throws `new AppException("blank input", 400)` if `input.trim()` is empty. Otherwise returns `input.trim()`.
-
-**`static int sumInts(List<String> strs)`** — calls `parsePositiveInt` on each string and sums the results; if any string fails to parse, that `AppException` propagates immediately (the sum is abandoned, not partially computed).
+If one string fails, `sumInts` lets that `AppException` propagate at once. It returns no partial sum.
 
 ```java
 parsePositiveInt("42");   // 42
 parsePositiveInt("1");    // 1
-parsePositiveInt("abc");  // throws AppException("not a number", 400)
-parsePositiveInt("0");    // throws AppException("must be positive", 422)
-parsePositiveInt("-5");   // throws AppException("must be positive", 422)
+// AppException("not a number", 400)
+parsePositiveInt("abc");
+// AppException("must be positive", 422)
+parsePositiveInt("0");
+parsePositiveInt("-5");
 
-safeRead("  hello  ");    // "hello"
-safeRead("ok");           // "ok"
-safeRead(null);           // throws AppException("null input", 400)
-safeRead("   ");          // throws AppException("blank input", 400)
-safeRead("");             // throws AppException("blank input", 400)
+safeRead("  hello  ");  // "hello"
+safeRead("ok");         // "ok"
+// AppException("null input", 400)
+safeRead(null);
+// AppException("blank input", 400)
+safeRead("   ");
+safeRead("");
 
-sumInts(List.of("1", "2", "3"));       // 6
-sumInts(List.of("10"));                // 10
-sumInts(List.of("1", "bad", "3"));     // throws AppException("not a number", 400)
+sumInts(List.of("1", "2", "3"));  // 6
+sumInts(List.of("10"));           // 10
+// AppException("not a number", 400)
+sumInts(List.of("1", "bad", "3"));
 ```

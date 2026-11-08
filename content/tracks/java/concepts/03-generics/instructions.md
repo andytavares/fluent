@@ -1,85 +1,120 @@
-# Generics
+## What you build
 
-## What you'll learn
-
-Building on classes and interfaces (concepts 1–2): Java generics let you write classes and methods that work with any type while preserving compile-time type safety. Instead of using `Object` (and casting everywhere), you parameterize over a type variable `T`, and the compiler checks that every use is consistent.
+You write a generic `Pair<A, B>` class and two generic methods, `min` and `repeat`. Generics let one class or method work with any type and keep the compile-time type checks. This lesson builds on **Interfaces**.
 
 ## Key concepts
 
-**Generic class:**
+### A type parameter replaces `Object`
+
+Without generics, you store `Object` and cast at each use. With a type parameter `T`, the compiler checks that each use is consistent.
+
 ```java
 public class Box<T> {
     private final T value;
 
-    public Box(T value) { this.value = value; }
+    public Box(T value) {
+        this.value = value;
+    }
 
     public T get() { return value; }
 
-    public <U> Box<U> map(java.util.function.Function<T, U> fn) {
+    public <U> Box<U> map(
+            Function<T, U> fn) {
         return new Box<>(fn.apply(value));
     }
 }
 
 Box<Integer> b = new Box<>(42);
-Box<String>  s = b.map(Object::toString);  // Box<String>
+Box<String> s = b.map(Object::toString);
 ```
 
-**Generic method:**
+### A generic method declares its own type
+
+Put the type parameter before the return type. The compiler infers `T` from the arguments.
+
 ```java
-public static <T extends Comparable<T>> T max(T a, T b) {
+static <T extends Comparable<T>>
+        T max(T a, T b) {
     return a.compareTo(b) >= 0 ? a : b;
 }
 
-max(3, 5);               // 5 (Integer)
-max("apple", "banana");  // "banana" (String)
+max(3, 5);               // 5
+max("apple", "banana");  // "banana"
 ```
 
-**Bounded type parameters** (`T extends Comparable<T>`) constrain `T` to types that implement `Comparable`. Without the bound, you can't call `compareTo` on a `T` — the compiler doesn't know it's available.
+### A bound limits the type
 
-**Wildcard `?`:**
+`T extends Comparable<T>` accepts only types that implement `Comparable`. Without the bound, you cannot call `compareTo` on a `T`, because the compiler does not know the method exists.
+
 ```java
-// reads from a list of any subtype of Number
-public static double sum(java.util.List<? extends Number> list) {
-    return list.stream().mapToDouble(Number::doubleValue).sum();
+// Compile error without the bound
+static <T> T max(T a, T b) {
+    return a.compareTo(b) >= 0 ? a : b;
 }
 ```
 
-**vs other languages:** Java generics use *type erasure* — the type parameter `T` is removed at compile time and replaced with `Object` (or the bound). At runtime there is no `T`. This means you cannot do `new T()`, `T.class`, or `instanceof T` in a generic context. This differs sharply from C++ templates (fully reified, one specialized copy of the code per type) and from C# generics (also reified via CLR support).
+### The wildcard `?` reads any subtype
+
+`List<? extends Number>` accepts a list of `Integer`, `Double` or any other subtype of `Number`.
+
+```java
+static double sum(
+        List<? extends Number> list) {
+    return list.stream()
+        .mapToDouble(Number::doubleValue)
+        .sum();
+}
+```
+
+### Type erasure removes `T` at runtime
+
+The compiler replaces `T` with `Object`, or with its bound. At runtime there is no `T`, so `new T()`, `T.class` and `instanceof T` do not compile. C++ templates and C# generics keep the type at runtime instead.
+
+```java
+// None of these compile:
+// new T()
+// new T[10]
+// x instanceof T
+```
 
 ## Watch out
 
-- **Type erasure bites at runtime.** You can't write `new T[10]` or `if (x instanceof T)` — the JVM has already forgotten what `T` was by the time your method runs. Work around it by passing a `Class<T>` token or a factory `Supplier<T>` when you truly need runtime type info.
-- **Autoboxing in bounded generics:** `T extends Comparable<T>` works with `Integer`, `Double`, `String`, etc., but primitives (`int`, `double`) can't be type arguments directly — they're boxed automatically (`min(3, 7)` boxes to `Integer`).
-- **Raw types compile but lose safety.** Using `Pair` instead of `Pair<A, B>` compiles with an "unchecked" warning and silently reintroduces the `ClassCastException` risk generics exist to prevent. Always specify the type arguments (or use `<>` diamond inference).
+- `new T[10]` and `x instanceof T` fail, because the JVM does not know `T` at runtime.
+- When you need the type at runtime, pass a `Class<T>` token or a `Supplier<T>` factory.
+- Primitives such as `int` and `double` cannot be type arguments. Java boxes them: `min(3, 7)` uses `Integer`.
+- A raw type such as `Pair` compiles with an "unchecked" warning. It brings back the `ClassCastException` risk.
+- Always give the type arguments, or use the `<>` diamond to infer them.
 
 ## The task
 
-You're building a generic `Pair` type and two type-safe utility methods, all inside `Solution.java`.
+Build a generic `Pair` type and two type-safe methods inside the class `Solution`.
 
-**`Pair<A, B>`** — an immutable container for two values of possibly different types.
-- Constructor `Pair(A first, B second)`.
-- `A getFirst()` / `B getSecond()` — accessors.
-- `Pair<B, A> swap()` — returns a **new** `Pair` with the elements swapped (does not mutate the original).
+1. `Pair<A, B>` is an immutable container for two values of different types.
+2. Its constructor is `Pair(A first, B second)`.
+3. `A getFirst()` and `B getSecond()` return the two values.
+4. `Pair<B, A> swap()` returns a new `Pair` with the values exchanged.
+5. `swap()` does not change the original pair.
+6. `static <T extends Comparable<T>> T min(T a, T b)` returns the smaller value by `compareTo`.
+7. `static <T> List<T> repeat(T value, int times)` returns `value` repeated `times` times.
 
-**`static <T extends Comparable<T>> T min(T a, T b)`** — returns whichever of `a` or `b` is smaller according to `compareTo`; if equal, either may be returned.
-
-**`static <T> java.util.List<T> repeat(T value, int times)`** — returns a `List<T>` containing `value` repeated `times` times; `times == 0` returns an empty list.
+When `min` gets equal values, it can return either one. When `times` is 0, `repeat` returns an empty list.
 
 ```java
-Pair<String, Integer> p = new Pair<>("hello", 42);
-p.getFirst();          // "hello"
-p.getSecond();          // 42
+Pair<String, Integer> p =
+    new Pair<>("hello", 42);
+p.getFirst();   // "hello"
+p.getSecond();  // 42
 
-Pair<Integer, String> swapped = p.swap();
-swapped.getFirst();     // 42
-swapped.getSecond();    // "hello"
+Pair<Integer, String> s = p.swap();
+s.getFirst();   // 42
+s.getSecond();  // "hello"
 
-min(3, 7);              // 3
-min(5, 5);              // 5   — equal inputs, either is acceptable
-min("apple", "banana"); // "apple"
-min(1.5, 2.5);          // 1.5
+min(3, 7);               // 3
+min(5, 5);               // 5
+min("apple", "banana");  // "apple"
+min(1.5, 2.5);           // 1.5
 
-repeat("x", 3);         // ["x", "x", "x"]
-repeat(99, 1);          // [99]
-repeat("z", 0);         // []  — zero repeats is an empty list, not an error
+repeat("x", 3);  // ["x", "x", "x"]
+repeat(99, 1);   // [99]
+repeat("z", 0);  // []
 ```

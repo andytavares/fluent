@@ -1,78 +1,135 @@
-# Optional
+## What you build
 
-## What you'll learn
-
-Building on streams (concept 4), which already returns `Optional` from operations like `findFirst`: `Optional<T>` is Java's way of making "possibly absent" values explicit in the type system. Instead of returning `null` and hoping the caller checks, you return `Optional<T>` — the caller is forced to handle the absent case, or the compiler nudges them toward it.
+You write three methods that return or consume `Optional` values in place of `null`. Streams already return `Optional` from operations such as `findFirst`. This lesson builds on **Streams API**.
 
 ## Key concepts
 
-**Creating an Optional:**
+### `Optional<T>` puts absence in the type
+
+A method that returns `null` relies on the caller to check. A method that returns `Optional<T>` shows in its type that the value can be absent, so the caller must handle that case.
+
 ```java
-Optional<String> present = Optional.of("hello");       // must not be null
-Optional<String> maybe   = Optional.ofNullable(null);  // null → empty
-Optional<String> empty   = Optional.empty();
+Optional<User> findUser(String id)
 ```
 
-**Checking and extracting:**
-```java
-present.isPresent();    // true
-present.isEmpty();      // false (Java 11+)
-present.get();          // "hello" — throws if empty, prefer orElse
+### Three ways to create one
 
-present.orElse("default");          // value if present, else "default"
-present.orElseGet(() -> compute()); // lazy default via supplier
-present.orElseThrow();              // get() or throw NoSuchElementException
+`Optional.of` needs a value that is not null. `Optional.ofNullable` turns `null` into an empty `Optional`.
+
+```java
+// Value must not be null
+Optional<String> present =
+    Optional.of("hello");
+// null gives an empty Optional
+Optional<String> maybe =
+    Optional.ofNullable(null);
+Optional<String> empty =
+    Optional.empty();
 ```
 
-**Transforming with map / flatMap:**
-```java
-Optional<String> upper = present.map(String::toUpperCase);  // Optional<"HELLO">
+### Check and extract the value
 
-// flatMap avoids Optional<Optional<T>>:
-Optional<String> nested = Optional.of("  hello  ");
-Optional<String> trimmed = nested.flatMap(s -> {
-    String t = s.trim();
-    return t.isEmpty() ? Optional.empty() : Optional.of(t);
-});
+Prefer `orElse` and `orElseThrow` to `get()`, which throws when the `Optional` is empty.
+
+```java
+present.isPresent();  // true
+// Java 11+
+present.isEmpty();    // false
+// "hello"; throws if empty
+present.get();
+
+// The value, or "default"
+present.orElse("default");
+// Lazy default from a supplier
+present.orElseGet(() -> compute());
+// The value, or NoSuchElementException
+present.orElseThrow();
 ```
 
-**filter:**
+### `map` and `flatMap` transform the value
+
+`map` applies a function to a present value. `flatMap` takes a function that returns an `Optional`, so you do not get `Optional<Optional<T>>`.
+
 ```java
-Optional<Integer> big   = Optional.of(42).filter(n -> n > 10);  // Optional.of(42)
-Optional<Integer> small = Optional.of(5).filter(n -> n > 10);   // Optional.empty()
+// Optional[HELLO]
+Optional<String> upper =
+    present.map(String::toUpperCase);
+
+Optional<String> nested =
+    Optional.of("  hello  ");
+Optional<String> trimmed =
+    nested.flatMap(s -> {
+        String t = s.trim();
+        return t.isEmpty()
+            ? Optional.empty()
+            : Optional.of(t);
+    });
 ```
 
-**vs other languages:** Kotlin uses nullable types (`String?`) at the language level — more ergonomic, checked everywhere by the compiler. Scala has `Option[T]`. Go returns `(T, error)` or `(T, bool)` tuples instead. Java's `Optional` is a library solution, not a language primitive — which is why it's verbose but still widely used.
+### `filter` keeps a value that matches
+
+When the predicate is false, `filter` returns an empty `Optional`.
+
+```java
+// Optional[42]
+Optional.of(42).filter(n -> n > 10);
+// Optional.empty
+Optional.of(5).filter(n -> n > 10);
+```
+
+### `Optional` is a library class
+
+Kotlin puts nullable types (`String?`) in the language, Scala has `Option[T]` and Go returns `(T, error)` or `(T, bool)`. Java's `Optional` is a class, not a language feature, so it is more verbose.
+
+```java
+// Kotlin: val name: String? = null
+Optional<String> name =
+    Optional.empty();
+```
 
 ## Watch out
 
-- **`Optional.get()` on an empty `Optional` throws `NoSuchElementException`.** Treat `get()` like `.unwrap()` in Rust — only call it after confirming `isPresent()`, or prefer `orElse`/`orElseThrow` with a meaningful message.
-- **`Optional.of(null)` throws `NullPointerException` immediately** — use `Optional.ofNullable` whenever the value might genuinely be null.
-- **Don't use `Optional` for fields or method parameters** — it's designed as a return type. Using it for fields adds serialization overhead and confusion; a plain nullable field with a null-check is idiomatic there.
+- `get()` on an empty `Optional` throws `NoSuchElementException`.
+- Treat `get()` like `unwrap()` in Rust. Call it only after `isPresent()`, or use `orElseThrow` with a clear message.
+- `Optional.of(null)` throws `NullPointerException` at once. Use `Optional.ofNullable` when the value can be null.
+- Do not use `Optional` for fields or method parameters. It is a return type.
+- An `Optional` field adds serialization cost and confusion. Use a plain field and a null check there.
 
 ## The task
 
-You're writing small utilities that use `Optional` to make "might not exist" explicit instead of returning `null` or a sentinel value. Implement three static methods in `Solution.java`:
+Write three methods that use `Optional` in place of `null` or a sentinel value. Put them as static methods in the class `Solution`.
 
-**`static Optional<Integer> parseIntSafe(String s)`** — parses `s` as an integer, returning `Optional.of(n)` on success or `Optional.empty()` if `s` cannot be parsed as an integer (including non-integer numeric strings like `"3.14"`).
+1. `static Optional<Integer> parseIntSafe(String s)` parses `s` as an integer.
+2. `parseIntSafe` returns `Optional.of(n)` on success and `Optional.empty()` on failure.
+3. `static Optional<String> firstLongWord(List<String> words, int minLen)` returns a word, in list order.
+4. `firstLongWord` returns the first word with length `>= minLen`, or `Optional.empty()`.
+5. `static int sumOptionals(List<Optional<Integer>> opts)` returns the sum of the present values.
 
-**`static Optional<String> firstLongWord(List<String> words, int minLen)`** — returns the first word in `words` (in list order) with length `>= minLen`, or `Optional.empty()` if none qualify.
-
-**`static int sumOptionals(List<Optional<Integer>> opts)`** — returns the sum of all present values in `opts`; absent (`empty`) entries contribute `0`.
+A decimal string such as `"3.14"` is not an integer. An empty list gives `Optional.empty()` from `firstLongWord` and `0` from `sumOptionals`. Empty entries add `0`.
 
 ```java
 parseIntSafe("42");    // Optional[42]
 parseIntSafe("-7");    // Optional[-7]
 parseIntSafe("abc");   // Optional.empty
-parseIntSafe("3.14");  // Optional.empty — not a valid integer
+parseIntSafe("3.14");  // Optional.empty
 
-List<String> words = List.of("a", "hi", "hello", "world", "greetings");
-firstLongWord(words, 5);   // Optional[hello]
-firstLongWord(words, 2);   // Optional[hi]     — "hi" has length exactly 2
-firstLongWord(words, 20);  // Optional.empty   — nothing that long
-firstLongWord(List.of(), 1); // Optional.empty — empty input
+List<String> words = List.of("a", "hi",
+    "hello", "world", "greetings");
+// Optional[hello]
+firstLongWord(words, 5);
+// Optional[hi]: length exactly 2
+firstLongWord(words, 2);
+// Optional.empty
+firstLongWord(words, 20);
+// Optional.empty
+firstLongWord(List.of(), 1);
 
-sumOptionals(List.of(Optional.of(1), Optional.empty(), Optional.of(3), Optional.of(5))); // 9
-sumOptionals(List.of(Optional.empty()));  // 0
-sumOptionals(List.of());                  // 0
+// 9
+sumOptionals(List.of(Optional.of(1),
+    Optional.empty(), Optional.of(3),
+    Optional.of(5)));
+// 0
+sumOptionals(List.of(Optional.empty()));
+// 0
+sumOptionals(List.of());
 ```

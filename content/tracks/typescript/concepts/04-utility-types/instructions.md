@@ -1,58 +1,92 @@
-# Utility Types
+## What you build
 
-## What you'll learn
-
-Building on the interfaces from lesson 1, TypeScript ships a collection of built-in generic utility types that *derive* new object shapes from an existing one. Instead of hand-writing variations of a type — a "create" shape, an "update" shape, a "listing" shape — you derive them all from a single source of truth, and they stay in sync automatically when the source changes.
+You write `createProduct`, `updateProduct` and `catalogEntry`, each typed with a utility type derived from one `Product` interface. Built-in utility types derive new object shapes from an existing one. The derived types stay in sync when the source type changes. This lesson builds on **Types & Interfaces**.
 
 ## Key concepts
 
-**`Partial<T>`** — makes all properties optional:
+### `Partial<T>` makes every property optional
+
+Use it for an update shape, where the caller sends only some fields.
+
 ```ts
-interface User { id: number; name: string; email: string; }
-type UserUpdate = Partial<User>;  // { id?: number; name?: string; email?: string }
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+// { id?: number; name?: string; ... }
+type UserUpdate = Partial<User>;
 ```
 
-**`Required<T>`** — makes all properties required (inverse of Partial):
+### `Required<T>` makes every property required
+
+It is the inverse of `Partial`.
+
 ```ts
-type FullUser = Required<UserUpdate>;  // back to { id: number; name: string; ... }
+// { id: number; name: string; ... }
+type FullUser = Required<UserUpdate>;
 ```
 
-**`Pick<T, K>`** — select a subset of properties:
+### `Pick<T, K>` keeps a subset of properties
+
+`K` is a union of the keys to keep.
+
 ```ts
-type UserPreview = Pick<User, "id" | "name">;  // { id: number; name: string }
+// { id: number; name: string }
+type Preview = Pick<User, "id" | "name">;
 ```
 
-**`Omit<T, K>`** — exclude certain properties:
+### `Omit<T, K>` removes properties
+
+`K` is a union of the keys to remove.
+
 ```ts
-type PublicUser = Omit<User, "email">;  // { id: number; name: string }
+// { id: number; name: string }
+type PublicUser = Omit<User, "email">;
 ```
 
-**`Record<K, V>`** — construct an object type with keys `K` and values `V`. Unlike an index signature, a `Record` with a literal-union key requires **every** key to be present:
+### `Record<K, V>` builds an object type from keys and values
+
+With a union of literal keys, `Record` requires every key. An index signature does not.
+
 ```ts
 type ScoreBoard = Record<string, number>;
-const scores: ScoreBoard = { Alice: 95, Bob: 87 };
+const s: ScoreBoard = { Alice: 95 };
 
-type Status = "pending" | "done" | "failed";
-type StatusCounts = Record<Status, number>;  // all three keys required
+type Status =
+  "pending" | "done" | "failed";
+// All three keys are required
+type Counts = Record<Status, number>;
 ```
 
-**`Readonly<T>`** — makes all properties `readonly`:
+### `Readonly<T>` makes every property `readonly`
+
+The compiler rejects an assignment to any property.
+
 ```ts
-const config: Readonly<Config> = { port: 3000 };
-config.port = 4000;  // compile error
+const config: Readonly<Config> = {
+  port: 3000,
+};
+// Compile error
+config.port = 4000;
 ```
 
-**vs other languages:** These are compile-time transformations only — no runtime overhead, and the emitted JS is identical to what you'd write without them. In Java or C# you'd need separate DTO classes or a code generator to get the same effect; here it's one line of type-level composition.
+### Utility types cost nothing at runtime
+
+They are compile-time transformations. The emitted JavaScript is the same as without them. In Java or C#, you need separate DTO classes or a code generator for the same result.
 
 ## Watch out
 
-- `Partial<T>` makes a property *optional* (`T[K] | undefined`), not *nullable*. `{ name?: string }` still rejects `name: null` unless the original type already allowed `null`.
-- `Omit<T, K>` does not require `K` to actually be a key of `T` — misspelling a key (`Omit<Product, "pric">`) does not produce a compile error; it silently omits nothing. `Pick` and mapped `K extends keyof T` constraints (used later) don't have this hole — prefer them when you want the compiler to catch typos.
-- Utility types compose: `Partial<Omit<Product, "id">>` reads right-to-left like function composition — first remove `id`, then make what's left optional. Misreading the order is a common mistake when nesting more than two.
+- `Partial<T>` makes a property optional, not nullable. `{ name?: string }` still rejects `name: null`.
+- `Omit<T, K>` does not check that `K` is a key of `T`. `Omit<Product, "pric">` compiles and removes nothing.
+- `Pick` requires `K extends keyof T`, so it catches a misspelled key. Use it when typos matter.
+- Nested utility types apply from the inside out. `Partial<Omit<Product, "id">>` removes `id` first, then makes the rest optional.
+- Misreading the order is a common mistake with more than two nested types.
 
 ## The task
 
-Given this interface:
+Write three functions over this interface. Each one uses a utility type in its signature.
+
 ```ts
 interface Product {
   id: number;
@@ -63,25 +97,36 @@ interface Product {
 }
 ```
 
-**`createProduct(draft: Omit<Product, "id">, id: number): Product`** — combine a draft (every field except `id`) with an id to build a full `Product`.
+1. `createProduct(draft: Omit<Product, "id">, id: number): Product` combines `draft` with `id` into a full `Product`.
+2. `updateProduct(product: Product, patch: Partial<Omit<Product, "id">>): Product` returns a new `Product` with the `patch` fields merged in.
+3. `updateProduct` keeps `id`. The type of `patch` excludes `id`.
+4. `updateProduct` must not change `product`.
+5. An empty `patch` returns an equal copy of `product`.
+6. `catalogEntry(product: Product): Pick<Product, "id" | "name" | "price">` returns only `id`, `name` and `price`.
+7. The `catalogEntry` result has exactly three keys.
 
 ```ts
-createProduct({ name: "Widget", price: 9.99, category: "hardware", inStock: true }, 1);
-// { id: 1, name: "Widget", price: 9.99, category: "hardware", inStock: true }
-```
+const draft = {
+  name: "Widget",
+  price: 9.99,
+  category: "hardware",
+  inStock: true,
+};
+const p = createProduct(draft, 1);
+// { id: 1, name: "Widget", price: 9.99,
+//   category: "hardware", inStock: true }
 
-**`updateProduct(product: Product, patch: Partial<Omit<Product, "id">>): Product`** — return a **new** `Product` with the patched fields merged in. `id` cannot be changed via `patch` (its type excludes `id`), and the original `product` is left untouched.
+updateProduct(p, {
+  price: 7.99,
+  inStock: false,
+});
+// { id: 1, name: "Widget", price: 7.99,
+//   category: "hardware", inStock: false }
+// p.price is still 9.99
 
-```ts
-const p = createProduct({ name: "Widget", price: 9.99, category: "hardware", inStock: true }, 1);
-updateProduct(p, { price: 7.99, inStock: false });
-// { id: 1, name: "Widget", price: 7.99, category: "hardware", inStock: false }
 updateProduct(p, {});
-// returns a copy of p, unchanged
-```
+// a copy equal to p
 
-**`catalogEntry(product: Product): Pick<Product, "id" | "name" | "price">`** — return only the fields needed for a catalog listing: `id`, `name`, and `price` — nothing else.
-
-```ts
-catalogEntry(p);   // { id: 1, name: "Widget", price: 9.99 } — no category or inStock keys
+catalogEntry(p);
+// { id: 1, name: "Widget", price: 9.99 }
 ```

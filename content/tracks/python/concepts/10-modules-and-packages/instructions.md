@@ -1,12 +1,13 @@
-# Modules & Packages
+## What you build
 
-## What you'll learn
-
-How Python's import system works under the hood — module objects, `sys.modules`, `__init__.py`, `__all__`, relative imports, and `importlib` for dynamic loading.
+You write `list_public_names`, `is_cached` and `safe_import`. They use `importlib` and `sys.modules`, the parts of the import system you can reach from code. This lesson builds on **Error Handling**.
 
 ## Key concepts
 
-**Every `.py` file is a module:**
+### Every `.py` file is a module
+
+A module is a file of Python code. `import` gives you the module object, and `from ... import` gives you names from it. In Go, a package is a directory, and in Java a class is the unit.
+
 ```python
 # mymodule.py
 PI = 3.14159
@@ -23,68 +24,85 @@ from mymodule import circle_area, PI
 from mymodule import circle_area as area
 ```
 
-**`sys.modules` — the import cache:**
+### `sys.modules` caches every imported module
+
+Python runs a module once, on its first import. Each later import returns the cached object from `sys.modules`. So a second import of the same module is safe and cheap.
+
 ```python
 import sys
 import json
 
-# Already imported? Returns the cached module object.
-id(sys.modules["json"]) == id(json)  # True
+# The same object as the cache entry
+sys.modules["json"] is json  # True
 ```
 
-Importing the same module twice is safe and cheap — Python caches the module object and returns the same reference every time.
+### `__all__` lists the public names for `import *`
 
-**`__all__` — public API:**
+`from mymodule import *` imports only the names in `__all__`. `__all__` does not block an explicit import. It is a convention and a hint for tools.
+
 ```python
 # mymodule.py
-__all__ = ["circle_area"]   # only this is exported by "from mymodule import *"
+# Only circle_area goes out with *
+__all__ = ["circle_area"]
 
 def circle_area(r): ...
-def _internal_helper(): ...   # won't be exported by *
+# Not exported by *
+def _internal_helper(): ...
+
+# This still works:
+# from mymodule import _internal_helper
 ```
 
-`__all__` has no effect on explicit imports (`from mymodule import _internal_helper` still works). It's a convention and tooling hint.
+### A package is a directory with `__init__.py`
 
-**Packages — directories with `__init__.py`:**
+`import mypackage` runs `mypackage/__init__.py`. That file decides what the package exposes.
+
 ```
 mypackage/
-    __init__.py     # runs on "import mypackage"
+    __init__.py   # runs on import
     utils.py
     models/
         __init__.py
         user.py
 ```
 
-`__init__.py` controls what `import mypackage` exposes:
 ```python
 # mypackage/__init__.py
-from .utils import helper       # relative import
-from .models.user import User   # re-export
+# Relative import
+from .utils import helper
+# Re-export
+from .models.user import User
 
 __all__ = ["helper", "User"]
 ```
 
-**Relative imports:**
+### Relative imports work only inside a package
+
+`.` is the current package and `..` is the parent package. A script you run directly has the `__name__` `"__main__"`, not a package path. So relative imports fail there.
+
 ```python
-# inside mypackage/models/user.py
-from ..utils import helper      # .. = parent package
-from . import constants         # . = current package
+# In mypackage/models/user.py
+from ..utils import helper   # parent
+from . import constants      # current
 ```
 
-Relative imports only work inside packages — not in scripts run directly (`python user.py`). The `__name__` of a directly-run script is `"__main__"`, not the package path.
+### `importlib` imports by name at run time
 
-**`importlib` — dynamic imports:**
+`importlib.import_module` takes the module name as a string. `importlib.reload` runs the module body again, which helps in development and plugin systems.
+
 ```python
 import importlib
 
 mod = importlib.import_module("json")
 mod.loads('{"key": 1}')
 
-# reload a module (useful in dev/plugin systems)
 importlib.reload(mod)
 ```
 
-**`if __name__ == "__main__"` guard:**
+### `__name__` tells a script from an import
+
+When Python runs a file directly, `__name__` is `"__main__"`. When another module imports it, `__name__` is the module name. With this guard, one file works as a library and as a script.
+
 ```python
 def main():
     print("running")
@@ -93,56 +111,47 @@ if __name__ == "__main__":
     main()
 ```
 
-When Python runs a file directly, `__name__` is `"__main__"`. When it's imported as a module, `__name__` is the module name. This guard is how you write files that work both as a library and as a runnable script.
-
-## vs other languages
-
-| Feature | Python | JavaScript (ESM) | Java | Go |
-|---|---|---|---|---|
-| Module = file | Yes | Yes | No (class-based) | Yes (package = directory) |
-| Import caching | `sys.modules` | ESM specifier cache | ClassLoader | compile-time |
-| Public API control | `__all__` | Named exports | `public` modifier | Capitalized identifiers |
-| Package init | `__init__.py` | `index.js` (convention) | No | `package` declaration |
-| Dynamic import | `importlib.import_module` | `await import()` | `Class.forName` | `plugin` patterns |
-| Circular imports | Partially supported (fragile) | Supported (live bindings) | Supported | Not allowed |
-
-Python's circular import handling is fragile — if module A imports B and B imports A at the top level, you get `ImportError` or partially-initialized modules. The fix is to move imports inside functions or restructure the package.
-
 ## Watch out
 
-- Circular imports (A imports B, B imports A) at module top level raise `ImportError` or hand you a half-initialized module — move the import inside a function, or restructure the dependency, rather than fighting the import order.
-- Relative imports (`from . import x`) only work inside a package that was itself imported — running `python user.py` directly makes `__name__ == "__main__"` and relative imports fail with `ImportError: attempted relative import with no known parent package`.
-- Module-level code runs exactly **once**, on first import, no matter how many times or where it's imported from afterward — don't rely on top-level side effects (like appending to a global list) running again on a second `import`.
-- `importlib.reload()` re-executes the module body but does **not** update references other modules already hold to the old objects (`from mod import func` keeps the old `func`) — reload is a development convenience, not a live-patching mechanism.
+- A top-level circular import (A imports B, B imports A) raises `ImportError` or gives a half-built module.
+- To fix a circular import, move the import into a function, or change the dependencies.
+- `python user.py` makes `__name__` equal `"__main__"`. Then a relative import fails.
+- That error says `ImportError: attempted relative import with no known parent package`.
+- Module-level code runs once, on the first import. Do not expect its side effects to run again on a second `import`.
+- `importlib.reload()` does not update references that other modules already hold. `from mod import func` keeps the old `func`.
+- Use `reload` in development only. It is not a way to patch live code.
 
 ## The task
 
-Implement three standalone functions around Python's import machinery. No package structure is needed for this exercise — everything operates on already-installed stdlib module names passed as strings.
+Write three functions in `stub.py` around the import system. You do not need a package. Each function takes the name of an installed standard library module as a string.
 
-**`list_public_names(module_name: str) -> list[str]`** — dynamically imports the module named `module_name` using `importlib.import_module`. If the module defines `__all__`, return a **sorted** list of that. Otherwise, return a sorted list of every name in the module's namespace that doesn't start with `_`.
+1. `list_public_names(module_name: str) -> list[str]` imports the module with `importlib.import_module`.
+2. If the module defines `__all__`, `list_public_names` returns `__all__` as a sorted list.
+3. Otherwise, it returns every name in the module namespace that does not start with `_`, sorted.
+4. `is_cached(module_name: str) -> bool` returns `True` if `module_name` is a key in `sys.modules`.
+5. `is_cached` returns `False` if the process has not imported the module yet.
+6. `safe_import(module_name: str) -> object | None` calls `importlib.import_module(module_name)` and returns the module object.
+7. If the module does not exist, `safe_import` catches `ModuleNotFoundError` and returns `None`.
+8. `safe_import` catches only `ModuleNotFoundError`. Any other exception from the import propagates.
 
 ```python
-list_public_names("os.path")
-# a sorted list of os.path's public names, e.g. ['abspath', 'altsep', 'basename', ...]
-
 list_public_names("json")
-# sorted(json.__all__) if json defines __all__, else its sorted public names
-```
+# ['JSONDecodeError', 'JSONDecoder',
+#  'JSONEncoder', 'dump', 'dumps',
+#  'load', 'loads']
+list_public_names("os.path")
+# Sorted, with no "_" names:
+# ['abspath', 'altsep', 'basename', ...]
 
-**`is_cached(module_name: str) -> bool`** — returns `True` if `module_name` is currently a key in `sys.modules` (i.e. has already been imported somewhere in the process), `False` otherwise.
-
-```python
-import sys
-sys.modules.pop("csv", None)   # ensure a clean slate for this example
+# Before any import of csv
 is_cached("csv")   # False
-import csv
-is_cached("csv")   # True
-is_cached("sys")   # True — sys itself is always loaded
-```
+import json
+is_cached("json")  # True
+is_cached("sys")   # True: always loaded
 
-**`safe_import(module_name: str) -> object | None`** — attempts `importlib.import_module(module_name)` and returns the resulting module object on success. If the module doesn't exist, catches **only** `ModuleNotFoundError` and returns `None` (let any other exception the module might raise on import propagate normally).
-
-```python
-safe_import("os")                      # <module 'os' ...>
-safe_import("no_such_module_xyz")      # None
+# A module object for csv
+safe_import("csv")
+safe_import("textwrap")  # has .dedent
+safe_import("no_such_module_fluent_xyz")
+# None
 ```

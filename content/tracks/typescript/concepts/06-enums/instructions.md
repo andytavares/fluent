@@ -1,100 +1,119 @@
-# Enums
+## What you build
 
-## What you'll learn
-
-The unions from lesson 3 and the guards from lesson 5 model "one of several values" as plain literal types with zero runtime footprint. Enums are TypeScript's other way to model a fixed set of named constants — but unlike almost everything else in this track, they exist at runtime as actual objects. That comes with trade-offs worth understanding before you reach for one over a union.
+You write four functions over three enums: `Direction`, `StatusCode` and `Color`. An enum is a fixed set of named constants. Unlike unions, enums exist at runtime as real objects, with trade-offs to know before you choose one. This lesson builds on **Union Types & Narrowing** and **Type Guards**.
 
 ## Key concepts
 
-**Numeric enums** start at 0 by default, incrementing automatically. You can override any value:
+### Numeric enums count up from 0
+
+Each member gets the next number. You can set any value.
 
 ```ts
 enum Direction {
-  Up,     // 0
-  Down,   // 1
-  Left,   // 2
-  Right,  // 3
+  Up,    // 0
+  Down,  // 1
+  Left,  // 2
+  Right, // 3
 }
 
 enum StatusCode {
-  OK      = 200,
+  OK = 200,
   Created = 201,
   NotFound = 404,
 }
 ```
 
-**Reverse mapping** is a numeric-enum-only feature. TypeScript emits an object that maps both name→value and value→name:
+### Numeric enums map in both directions
+
+TypeScript emits an object that maps name to value and value to name. This reverse mapping exists only for numeric enums.
 
 ```ts
-Direction[0]         // "Up"
-Direction["Up"]      // 0
-Direction[Direction.Up]  // "Up"
+Direction[0];            // "Up"
+Direction["Up"];         // 0
+Direction[Direction.Up]; // "Up"
 ```
 
-**String enums** have no reverse mapping, but are easier to read in logs and serialized payloads:
+### String enums map one way
+
+String enums have no reverse mapping. Their values are easier to read in logs and serialized payloads.
 
 ```ts
 enum Color {
-  Red   = "RED",
+  Red = "RED",
   Green = "GREEN",
-  Blue  = "BLUE",
+  Blue = "BLUE",
 }
 ```
 
-**Const enums** are erased entirely at compile time — every usage is replaced with the literal value inline. This means no runtime object exists, and you cannot use reverse mapping:
+### `const enum` disappears at compile time
+
+The compiler replaces each use with the literal value. No runtime object exists, so reverse mapping is not possible.
 
 ```ts
 const enum Axis { X, Y, Z }
-const a = Axis.X;  // compiles to: const a = 0;
+// Compiles to: const a = 0;
+const a = Axis.X;
 ```
 
-**vs JavaScript:** JavaScript has no native enum. Common JS patterns are `Object.freeze({...})` or plain constants. TypeScript enums compile to a self-referential IIFE object, which adds bundle weight. For simple cases, a union type like `type Direction = "up" | "down" | "left" | "right"` is often cleaner and more tree-shakeable — prefer union types for string values you control and enums when you need numeric codes, reverse mapping, or a shared runtime object.
+### Choose a union or an enum
+
+JavaScript has no enum. JavaScript code uses `Object.freeze({...})` or plain constants. A TypeScript enum compiles to a self-referencing IIFE object, which adds bundle weight. A union such as `"up" | "down"` is cleaner and easier to tree-shake. Use unions for string values you control. Use enums for numeric codes, reverse mapping or a shared runtime object.
 
 ## Watch out
 
-- `Object.keys(Direction)` on a **numeric** enum returns both the string names *and* the numeric-string keys the reverse mapping adds (`["0","1","2","3","Up","Down","Left","Right"]`) — iterating naively double-counts. String enums don't have this problem since they have no reverse mapping.
-- `const enum` is erased entirely by the TypeScript compiler (`tsc`), but tools that transpile file-by-file without full type information — Babel, esbuild, and by extension `tsx` (which this platform's sandbox uses) — cannot always erase them safely and may reject or mishandle `const enum` under isolated-modules mode. Prefer a regular `enum` unless you control the whole build pipeline.
-- Reverse mapping only exists on **numeric** enums. `Color["Red"]` gives you `"RED"` but there is no `Color["RED"]` — string enums map name → value in one direction only.
+- `Object.keys(Direction)` returns the names and the numeric-string keys. A naive loop counts each member twice.
+- The result is `["0","1","2","3","Up","Down","Left","Right"]`. String enums do not have this problem.
+- `tsc` erases `const enum`. Babel, esbuild and `tsx` compile one file at a time.
+- Under isolated-modules mode, those tools can reject or mishandle `const enum`. This platform's sandbox uses `tsx`.
+- Use a regular `enum` unless you control the whole build pipeline.
+- `Color["Red"]` gives `"RED"`, but `Color["RED"]` does not exist. Only numeric enums map in both directions.
 
 ## The task
 
-Implement the following, using the three enums already declared in the stub file:
+Write four functions. Use the three enums that the stub already declares:
 
 ```ts
-enum Direction { Up, Down, Left, Right }  // 0, 1, 2, 3
-enum StatusCode { OK = 200, Created = 201, NotFound = 404 }
-enum Color { Red = "RED", Green = "GREEN", Blue = "BLUE" }
+// Up = 0, Down = 1, Left = 2, Right = 3
+enum Direction { Up, Down, Left, Right }
+enum StatusCode {
+  OK = 200,
+  Created = 201,
+  NotFound = 404,
+}
+enum Color {
+  Red = "RED",
+  Green = "GREEN",
+  Blue = "BLUE",
+}
 ```
 
-**`directionLabel(d: Direction): string`** — a human-readable label for a `Direction`.
+1. `directionLabel(d: Direction): string` returns the member name, such as `"Up"`.
+2. `isValidDirection(value: number): boolean` returns `true` if `value` is one of the `Direction` values.
+3. Use the reverse mapping of `Direction` in `isValidDirection`.
+4. `statusMessage(code: StatusCode): string` returns the HTTP status text.
+5. The status texts are `"OK"`, `"Created"` and `"Not Found"`.
+6. `colorToHex(c: Color): string` returns the hex string for the color.
+
+Numbers outside 0 to 3, including negative numbers, are not valid directions.
 
 ```ts
-directionLabel(Direction.Up);     // "Up"
-directionLabel(Direction.Down);   // "Down"
-directionLabel(Direction.Left);   // "Left"
-directionLabel(Direction.Right);  // "Right"
-```
+directionLabel(Direction.Up);    // "Up"
+directionLabel(Direction.Down);  // "Down"
+directionLabel(Direction.Left);  // "Left"
+directionLabel(Direction.Right); // "Right"
 
-**`isValidDirection(value: number): boolean`** — `true` if `value` is one of `Direction`'s numeric values, using the enum's reverse mapping.
+isValidDirection(0);   // true
+isValidDirection(3);   // true
+isValidDirection(99);  // false
+isValidDirection(-1);  // false
 
-```ts
-isValidDirection(0);    // true  — Direction.Up
-isValidDirection(3);    // true  — Direction.Right
-isValidDirection(99);   // false — no such member
-isValidDirection(-1);   // false
-```
+statusMessage(StatusCode.OK);
+// "OK"
+statusMessage(StatusCode.Created);
+// "Created"
+statusMessage(StatusCode.NotFound);
+// "Not Found"
 
-**`statusMessage(code: StatusCode): string`** — the HTTP status text for a `StatusCode`.
-
-```ts
-statusMessage(StatusCode.OK);       // "OK"
-statusMessage(StatusCode.Created);  // "Created"
-statusMessage(StatusCode.NotFound); // "Not Found"
-```
-
-**`colorToHex(c: Color): string`** — the hex string for a `Color`.
-
-```ts
 colorToHex(Color.Red);   // "#ff0000"
 colorToHex(Color.Green); // "#00ff00"
 colorToHex(Color.Blue);  // "#0000ff"

@@ -1,40 +1,54 @@
-# Channels
+## What you build
 
-## What you'll learn
-
-Building on goroutines from the last lesson: channels are Go's typed pipes for passing values *between* goroutines, replacing shared-memory synchronization with communication ("don't communicate by sharing memory; share memory by communicating" is Go's own slogan). This lesson covers creating, sending, receiving, closing, and the direction-typed channel signatures idiomatic Go code uses at API boundaries.
+You write `Generate`, a function that streams values through a channel. A channel is a typed pipe that passes values between goroutines. Go's slogan: "share memory by communicating". This lesson builds on **Goroutines**.
 
 ## Key concepts
 
-**Create:**
+### `make` creates a channel
+
+On an unbuffered channel, a send blocks until a receiver is ready. On a buffered channel, a send blocks only when the buffer is full.
 
 ```go
-ch := make(chan int)        // unbuffered — send blocks until a receiver is ready
-ch := make(chan int, 10)    // buffered — send blocks only once 10 values are queued
+// unbuffered
+ch := make(chan int)
+// buffered: holds 10 values
+ch := make(chan int, 10)
 ```
 
-**Send / receive:**
+### `<-` sends and receives
+
+A receive blocks until a value is available.
 
 ```go
-ch <- 42      // send
-val := <-ch   // receive, blocks until a value is available
+ch <- 42    // send
+val := <-ch // receive
 ```
 
-**Close and range** — closing signals "no more values are coming":
+### `close` says no more values come
+
+`range` receives until the sender closes the channel and no values are left.
 
 ```go
-close(ch)               // producer signals it's done sending
-for v := range ch { }   // consumer receives until the channel is closed and drained
+// the producer is done
+close(ch)
+for v := range ch {
+}
 ```
 
-**Direction-typed channels** restrict a function to only sending or only receiving, enforced at compile time:
+### Direction types limit a channel
+
+The compiler stops a function from sending on a receive-only channel. APIs use direction types at their boundaries.
 
 ```go
-func producer() <-chan int { ... }   // returns a receive-only channel to callers
-func consumer(ch <-chan int)         // only receives, never sends
+// callers can only receive
+func producer() <-chan int
+// only receives, never sends
+func consumer(ch <-chan int)
 ```
 
-**The generator pattern** — a function launches a goroutine to produce values and returns a channel immediately, so callers can range over results as they arrive:
+### A generator returns its channel at once
+
+The function starts a goroutine that sends the values. It returns the channel before the goroutine finishes, so callers range over values as they arrive.
 
 ```go
 func Generate(nums ...int) <-chan int {
@@ -45,37 +59,45 @@ func Generate(nums ...int) <-chan int {
         }
         close(ch)
     }()
-    return ch   // returns before the goroutine finishes sending
+    return ch
 }
 ```
 
 ## Watch out
 
-- **Sending on a closed channel panics.** Only the sender should ever call `close`; a receiver must never close a channel it's reading from.
-- **Closing an already-closed channel panics.** If multiple goroutines might finish producing, coordinate so `close` is called exactly once (e.g. only the last producer closes, or use a dedicated closer goroutine with a `WaitGroup`).
-- **Receiving from a closed, drained channel doesn't block or panic** — it immediately returns the zero value. Use the two-value form `v, ok := <-ch` to distinguish "received a real (possibly zero) value" (`ok == true`) from "channel is closed and empty" (`ok == false`).
-- **An unbuffered send with no receiver deadlocks forever** — `ch := make(chan int); ch <- 1` on the same goroutine with no other goroutine to receive hangs the program (Go's runtime detects *some* whole-program deadlocks and panics, but a leaked goroutine blocked on a channel is a silent, permanent leak, not a crash).
-- Forgetting to launch the sender in its own goroutine turns a generator into a blocking call — the whole point of `Generate` returning a channel *before* all values are sent is that the goroutine does the sending concurrently.
+- A send on a closed channel panics. Only the sender closes a channel, never the receiver.
+- A second `close` panics. With many producers, let one closer goroutine with a `WaitGroup` close it.
+- A receive on a closed, empty channel returns the zero value at once. It does not block or panic.
+- Use `v, ok := <-ch`. `ok` is `false` after the sender closes the channel and no values are left.
+- An unbuffered send with no receiver blocks forever. `ch <- 1` alone in one goroutine hangs.
+- The runtime detects some whole-program deadlocks and panics. A blocked goroutine elsewhere is a silent, permanent leak.
+- Send from a new goroutine. Otherwise the generator blocks and never returns the channel.
 
 ## The task
 
-Implement `Generate(nums ...int) <-chan int`, a generator that streams a variadic list of ints through a channel.
+Write `Generate(nums ...int) <-chan int`. It streams a variadic list of integers through a channel.
 
-- Create an unbuffered `chan int`.
-- Launch a goroutine that sends each value from `nums`, in order, into the channel, then closes the channel once all values are sent.
-- Return the channel immediately — the function must not block waiting for the goroutine to finish.
-- The return type is `<-chan int` (receive-only from the caller's perspective).
+1. Create an unbuffered `chan int`.
+2. Launch a goroutine that sends each value of `nums` in order.
+3. The goroutine closes the channel after the last value.
+4. Return the channel at once. Do not wait for the goroutine.
+5. The return type is `<-chan int`, so callers can only receive.
+
+With no arguments, the channel closes with no values. After the last value, `v, ok := <-ch` gives `ok == false`.
 
 ```go
+// receives 1, 2, 3, 4, 5 in order
 for v := range Generate(1, 2, 3, 4, 5) {
-    fmt.Println(v)   // prints 1, 2, 3, 4, 5 in order
+    fmt.Println(v)
 }
 
+// no values: the loop body never runs
 for v := range Generate() {
-    fmt.Println(v)   // never runs — no values sent, channel closes immediately
+    fmt.Println(v)
 }
 
+// receives 42
 for v := range Generate(42) {
-    fmt.Println(v)   // prints 42
+    fmt.Println(v)
 }
 ```

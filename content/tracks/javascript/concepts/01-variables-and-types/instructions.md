@@ -1,86 +1,103 @@
-# Variables & Types
+## What you build
 
-## What you'll learn
-
-This is the track's starting point: how JavaScript declares variables and what its type system actually is. JavaScript has three ways to declare variables: `var` (function-scoped, legacy — avoid it), `let` (block-scoped, reassignable), and `const` (block-scoped, binding is not reassignable — but objects/arrays are still mutable). You'll also meet the seven primitive types, the `typeof` operator, and why `===` is the only equality operator worth reaching for.
+You write three small functions: `typeLabel`, `strictEquals` and `clamp`. They inspect types and compare values the JavaScript way.
 
 ## Key concepts
 
-**let and const:**
+### `let` and `const` are block-scoped
+
+`let` makes a binding you can reassign. `const` makes a binding you cannot reassign, but an object or array behind it stays mutable. `var` is function-scoped and legacy, so do not use it.
+
 ```js
-const name = "Alice";   // binding cannot be reassigned
-let count = 0;           // can be reassigned
-count = 1;               // ok
+// The binding cannot change
+const name = "Alice";
+// The binding can change
+let count = 0;
+count = 1;
 
 const user = { id: 1 };
-user.id = 2;             // ok — const freezes the binding, not the object
+// OK: const locks the binding,
+// not the object
+user.id = 2;
 ```
 
-**Primitive types:** `string`, `number`, `boolean`, `null`, `undefined`, `bigint`, `symbol`. Everything else — arrays, functions, dates, regexes — is an object.
+From Java or C++, `const` is closer to `final` or a const pointer than to deep immutability.
 
-**typeof** returns the type name as a string:
+### JavaScript has seven primitive types
+
+The primitives are `string`, `number`, `boolean`, `null`, `undefined`, `bigint` and `symbol`. Everything else is an object: arrays, functions, dates and regular expressions. There is one `number` type, an IEEE 754 double, with no `int` or `float`. You do not declare a type; the value carries it.
+
+### `typeof` returns the type name as a string
+
+`typeof` gives a string for any value. It tells functions apart from other objects, but not arrays.
+
 ```js
 typeof "hello"    // "string"
 typeof 42         // "number"
 typeof true       // "boolean"
 typeof undefined  // "undefined"
 typeof {}         // "object"
-typeof []         // "object"    ← arrays are objects; use Array.isArray
-typeof (() => {}) // "function"  ← the one non-primitive typeof distinguishes
-typeof null       // "object"    ← famous JS quirk, standardized forever
+// Arrays are objects
+typeof []         // "object"
+typeof (() => {}) // "function"
+// A known quirk, fixed in the standard
+typeof null       // "object"
 ```
 
-**Strict equality:** Always use `===` (strict) over `==` (loose). Loose equality coerces types and produces surprising results.
+### `===` compares without coercion
+
+`==` converts the types before it compares, and gives surprising results. `===` never converts: values of different types are never equal. Always use `===`.
+
 ```js
-0 == "0"    // true  — type coercion
-0 === "0"   // false — strict: different types are never equal
-0 == false  // true  — coercion again
+0 == "0"    // true: coercion
+0 === "0"   // false
+0 == false  // true: coercion
 0 === false // false
 ```
 
-**vs other languages:** There is no `int` vs `float` — JavaScript has a single `number` type (IEEE 754 double). No explicit type declaration is needed; the type is inferred from the value. Coming from Java/C++: `const` is closer to `final` / a const pointer than to deep immutability.
-
 ## Watch out
 
-- `typeof null` is `"object"`, not `"null"`. To check for null, compare directly: `value === null`.
-- `NaN === NaN` is `false` — NaN is the only value not strictly equal to itself. Use `Number.isNaN(x)` to detect it.
+- `typeof null` is `"object"`, not `"null"`. To check for null, use `value === null`.
+- `NaN === NaN` is `false`. No other value is unequal to itself. Use `Number.isNaN(x)` to detect it.
 - `typeof []` is `"object"`. Use `Array.isArray(x)` to detect arrays.
-- `const` prevents reassignment, not mutation: `const arr = []; arr.push(1)` is legal.
+- `const` stops reassignment, not mutation. `const arr = []; arr.push(1)` is legal.
 
 ## The task
 
-You're building three small utilities that exercise JavaScript's type inspection and comparison semantics.
+Write three functions in `stub.js` that use JavaScript type inspection and comparison.
 
-**`typeLabel(value)`** — returns the result of the `typeof` operator applied to `value`, as a string. Note the JavaScript quirks: `typeof null` is `"object"`, arrays are `"object"`, and functions are `"function"`.
+1. `typeLabel(value)` returns `typeof value` as a string.
+2. `strictEquals(a, b)` returns `true` if `a === b`, and `false` otherwise.
+3. `clamp(value, min, max)` returns `min` if `value < min`.
+4. `clamp` returns `max` if `value > max`.
+5. Otherwise, `clamp` returns `value` unchanged.
 
-```js
-typeLabel("hi");        // "string"
-typeLabel(42);          // "number"
-typeLabel(true);        // "boolean"
-typeLabel(undefined);   // "undefined"
-typeLabel(null);        // "object"   — typeof null is "object" in JavaScript
-typeLabel([]);          // "object"   — arrays are objects
-typeLabel(() => {});    // "function"
-```
+`typeLabel` keeps the JavaScript quirks. `null` and arrays give `"object"`, and functions give `"function"`.
 
-**`strictEquals(a, b)`** — returns `true` if `a === b` (strict equality: same type and same value, no type coercion), `false` otherwise.
+Strict equality means the same type and the same value, with no coercion. `NaN` is never strictly equal to anything, itself included.
+
+The range of `clamp` is inclusive at both ends. You can assume `min <= max`. Negative ranges work. When `min === max`, the range has one value.
 
 ```js
-strictEquals(1, 1);        // true
-strictEquals(1, "1");      // false — different types, no coercion
-strictEquals(0, false);    // false
-strictEquals(null, null);  // true
-strictEquals(NaN, NaN);    // false — NaN is never strictly equal to anything
-```
+typeLabel("hi")        // "string"
+typeLabel(42)          // "number"
+typeLabel(true)        // "boolean"
+typeLabel(undefined)   // "undefined"
+typeLabel(null)        // "object"
+typeLabel([])          // "object"
+typeLabel(() => {})    // "function"
 
-**`clamp(value, min, max)`** — returns `value` constrained to the inclusive range `[min, max]`: if `value < min` return `min`, if `value > max` return `max`, otherwise return `value` unchanged. Assume `min <= max`.
+strictEquals(1, 1)       // true
+strictEquals(1, "1")     // false
+strictEquals(0, false)   // false
+strictEquals(null, null) // true
+strictEquals(NaN, NaN)   // false
 
-```js
-clamp(-5, 0, 10);   // 0    — below the range
-clamp(15, 0, 10);   // 10   — above the range
-clamp(5, 0, 10);    // 5    — inside the range
-clamp(0, 0, 10);    // 0    — at min (inclusive)
-clamp(10, 0, 10);   // 10   — at max (inclusive)
-clamp(-3, -10, -1); // -3   — negative ranges work
-clamp(7, 7, 7);     // 7    — min === max collapses the range to one value
+clamp(-5, 0, 10)   // 0
+clamp(15, 0, 10)   // 10
+clamp(5, 0, 10)    // 5
+clamp(0, 0, 10)    // 0
+clamp(10, 0, 10)   // 10
+clamp(-3, -10, -1) // -3
+clamp(7, 7, 7)     // 7
 ```
