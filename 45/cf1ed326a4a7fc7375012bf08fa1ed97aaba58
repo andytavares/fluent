@@ -1,0 +1,24 @@
+tools/content-linter/src/validator.ts
+  s_4312bdd443949d::t_5017a965c1b227 117-118
+tools/content-linter/src/validator.test.ts
+  s_4312bdd443949d::t_5017a965c1b227 140,142,147,149
+  s_4312bdd443949d::t_4dc0e686659e6c 163
+tools/content-linter/tests/integration/linter.test.ts
+  s_4312bdd443949d::t_43b45d80127bc3 25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "45cf1ed326a4a7fc7375012bf08fa1ed97aaba58",
+  "prompts": {},
+  "sessions": {
+    "s_4312bdd443949d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34ee8d8d-5ae0-4e48-8e14-e3d4c8e3f0af",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}

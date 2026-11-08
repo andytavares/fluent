@@ -1,0 +1,136 @@
+content/tracks/kubernetes/concepts/16-autoscaling-production/instructions.md
+  s_4312bdd443949d::t_d4445cd61ca43d 1,3,7-9,35-38,40-42,56,58,67-68,71,73,86,88,90,92,94,96-106,110-113,117-132
+content/tracks/buildkite/concepts/05-env-and-secrets/instructions.md
+  s_4312bdd443949d::t_b40e9c1d771983 69
+  s_4312bdd443949d::t_81f3e96d9e23a6 1,3,7-9,17-18,21-23,30-31,34-43,45-47,52-53,56-60,62,70,73,75,79-82,86,88-92,94
+content/tracks/kubernetes/concepts/02-labels-selectors-annotations/instructions.md
+  s_4312bdd443949d::t_53e2716611fed5 1,3,7-9,19-21,23-27,37-39,41,43-45,52-54,69-70,77,79,81,85-86,88,92,94,96-99,101,103-106,108
+  s_4312bdd443949d::t_cc2699402a00fe 34,71,73,75-76,87
+content/tracks/buildkite/concepts/10-production-patterns/instructions.md
+  s_4312bdd443949d::t_e177102da89f3c 108
+  s_4312bdd443949d::t_1370af6fa84ef5 1,3,7-9,21,23-25,34,37-39,43,49,51-55,65-67,69,74,79-81,90-102,106-107,109,114-126,139,157,160
+content/tracks/helm/concepts/06-functions-and-pipelines/instructions.md
+  s_4312bdd443949d::t_09db42c62f732a 1,3,7-13,16-17,20,22,25-36,39-41,44-46,51-52,55-56,59-61,65-66,69,71,74-76,79,81,85,91,93,96-97,100,102,106-113,117,119-125,127,130-132,142,144,146
+  s_4312bdd443949d::t_cba684095304a1 37-38
+  s_4312bdd443949d::t_4abb197e1be3c8 149-151
+content/tracks/helm/concepts/08-dependencies/instructions.md
+  s_4312bdd443949d::t_c4ce5ccb3a5699 1,3,7-9,14-21,25-27,29,32-36,38-39,41,43,45,48-50,60-62,64,68,71,77,83-88,90,96-104,106,109,120-121
+  s_4312bdd443949d::t_1fb9407e61e0af 66-67,79,89,94
+content/tracks/kubernetes/concepts/07-configmaps-secrets/instructions.md
+  s_4312bdd443949d::t_669999fdc4e389 1,3,7,20-26,28-30,39-40,45-65,90-108,116,121-124,128,130,132-134,136,138-141,143,145-151,153
+  s_4312bdd443949d::t_cc2699402a00fe 115
+content/tracks/kubernetes/concepts/04-rollout-strategies/instructions.md
+  s_4312bdd443949d::t_b4bc57075685d3 1,3,7-9,13,15,21-66,70-73,77-90
+content/tracks/kubernetes/concepts/15-scheduling/instructions.md
+  s_4312bdd443949d::t_632d35b7b21deb 1,3,7-9,17-19,21,24-38,41-44,46-48,51-57,60,62-66,69-70,82-84,86,88,90,93-99,102,104,106,110-113,117-130
+content/tracks/buildkite/concepts/01-pipeline-basics/instructions.md
+  s_4312bdd443949d::t_32644b8c8e93c3 1,3,7-19,21-23,25,27-29,36-38,48-58,62-65,69,71-73,75
+content/tracks/buildkite/concepts/08-plugins/instructions.md
+  s_4312bdd443949d::t_b820badb32e7ea 1,3,7-9,20-22,24,36-40,52,59-69,73,75-77,83-84,86-87
+  s_4312bdd443949d::t_e177102da89f3c 74,85,99
+content/tracks/terraform/concepts/02-variables-and-outputs/instructions.md
+  s_4312bdd443949d::t_e3e183301850da 1,3,7,12,17-19,21,23,39,41,50,52,57,66,70-73,77-86,94,98
+  s_4312bdd443949d::t_75030b69e4a44d 31-34,61
+content/tracks/terraform/concepts/08-state-management/instructions.md
+  s_4312bdd443949d::t_caaa6817cbddc6 80
+  s_4312bdd443949d::t_fa3530c7e3dbdf 1,3,7,9,11-13,15,17,19,21,27,30-32,34,37,40-41,45,47,50-51,54,56,59-60,63,65,74,78-79,81,85-94
+content/tracks/terraform/concepts/10-workspaces-and-environments/instructions.md
+  s_4312bdd443949d::t_684e8fa657da2a 1,3,7,9,12,15,19,22-23,27,29,37-39,53,56-60,63-65,67-69,71,73-76,78,80-82,90-93,104,108,110-112,116-129,132-135,137-138,142-143,147
+  s_4312bdd443949d::t_6e5614ccc04d63 109
+content/tracks/kubernetes/concepts/05-services/instructions.md
+  s_4312bdd443949d::t_e39e76272aa5f8 1,3,7-11,13,21,29-59,74,78-82,86,88,90-93,95,97-100,102
+content/tracks/buildkite/concepts/02-agents-and-targeting/instructions.md
+  s_4312bdd443949d::t_6e5585d7f0608e 1,3,7-11,13-17,28-42,46-49,53,55-57,59
+content/tracks/helm/concepts/02-templates-and-values/instructions.md
+  s_4312bdd443949d::t_6b469dbe438133 29-32
+  s_4312bdd443949d::t_cafe79ac523f20 1,3,7-9,13-14,17-19,35-37,40-43,47-49,55,57,61-62,65,67,71,73-79,83,85-92,94,97-114
+  s_4312bdd443949d::t_374db751a2f9de 115-116
+content/tracks/terraform/concepts/01-providers-and-resources/instructions.md
+  s_4312bdd443949d::t_a7fcd35689ec3f 1,3,7,9,24,26,28,36,38,40,53-55,57,69,71,73,77-81,85-93,97,101,105,109
+  s_4312bdd443949d::t_75030b69e4a44d 60
+content/tracks/helm/concepts/10-production-patterns/instructions.md
+  s_4312bdd443949d::t_2ce347b4ee1987 1,3,7-13,16-17,22-26,28-34,37-38,43-45,64-68,76,78,81-84,88,91-93,95-96,100,102-104,107,109,115,117,119,123-131,135,137-142,145-148,150,153-156,163-164,167-169
+  s_4312bdd443949d::t_4a52be4610f515 143-144,170
+content/tracks/helm/concepts/01-chart-structure/instructions.md
+  s_4312bdd443949d::t_52e0dc5fcaa562 1,3,7-9,13-24,27-29,32-34,36-41,50-54,56,63-64,71-72,75,77,79,81,83,85,89-96,100,102-109,111,116,125
+  s_4312bdd443949d::t_ba61414b55df1c 45-46
+content/tracks/buildkite/concepts/07-matrix-and-parallelism/instructions.md
+  s_4312bdd443949d::t_f0dbc01c27b6b6 1,3,7-9,14,21,23-25,30-31,42-44,46,60-64,69-70,74-78,82-85,91-92,94-96,98,112-113
+  s_4312bdd443949d::t_b40e9c1d771983 29,93,110
+content/tracks/terraform/concepts/05-locals-and-depends-on/instructions.md
+  s_4312bdd443949d::t_054047b6209d41 63-64,129
+  s_4312bdd443949d::t_6659e9eb315f6e 1,3,7,9,13-14,18,24,38,43-45,47,49,51,54,56,65-68,72,74,76,80-83,87-101,104-107,109,113,117,121,125,130
+  s_4312bdd443949d::t_75030b69e4a44d 59
+content/tracks/helm/concepts/09-chart-tests/instructions.md
+  s_4312bdd443949d::t_2d152a5630fda1 1,3,7-13,16-17,24-25,32-34,37-43,45,47,50-52,54-57,59-60,63,65,67-73,76-77,81,83,87-95,99,101-110,112,115-116
+content/tracks/terraform/concepts/03-data-sources/instructions.md
+  s_4312bdd443949d::t_9ba86ea258f3d6 70-74
+  s_4312bdd443949d::t_371d90cd03e179 1,3,7,9-10,12,14,25,34,39-40,49,51,53,55,57,78,82-86,90-99,104,109,112,117,121
+content/tracks/terraform/concepts/04-expressions-and-functions/instructions.md
+  s_4312bdd443949d::t_7934d764e6dd4a 1,3,7,11-12,16,21,26,30-35,41,44-51,54,56,60,62-65,67,70,74,77,79,82,85-86,88-89,92,96-100,104-116,120-127,129,133,137,141-142
+  s_4312bdd443949d::t_e9df2b28b5d4a4 119
+content/tracks/buildkite/concepts/04-artifacts/instructions.md
+  s_4312bdd443949d::t_672c12ea8e8c2b 1,3,7-11,13,24,26-28,31-40,42-43,45,49-52,56,58-61,63
+  s_4312bdd443949d::t_b40e9c1d771983 41
+content/tracks/buildkite/concepts/09-dynamic-pipelines/instructions.md
+  s_4312bdd443949d::t_7e8c1a828f11a5 1,3,7-9,14-16,19-23,40-42,44,47-50,58-60,63-67,75,79-83,87,89-93,99-101,103
+content/tracks/helm/concepts/05-named-templates/instructions.md
+  s_4312bdd443949d::t_e773645aab57d2 1,3,7-9,19-23,25,28,32,37,39,48,56-58,60,62-66,75,77,81-88,92,94-101,103,106
+  s_4312bdd443949d::t_c50a2d1f0e87b3 107
+content/tracks/kubernetes/concepts/06-ingress/instructions.md
+  s_4312bdd443949d::t_75f6694d0b02d4 1,3,7-15,17,48-68,72-77,81,83-90,92
+content/tracks/buildkite/concepts/06-conditionals/instructions.md
+  s_4312bdd443949d::t_8ee1e40f59053b 1,3,7-9,18-26,28,38-40,43-45,54-56,65,69-73,77-79,83-91
+content/tracks/kubernetes/concepts/08-probes/instructions.md
+  s_4312bdd443949d::t_84121f8981c8c1 1,3,7-13,15,17,19-23,48-72,76-78,82,84-90,92
+content/tracks/terraform/concepts/09-backends-and-remote-state/instructions.md
+  s_4312bdd443949d::t_de151a4aafdd48 1,3,7,9,25-27,31-37,39,41,43-47,52,55-56,59,61,73-79,81,83,90,92,94-97,101-104,108-117,122-123,128,130,135-136
+  s_4312bdd443949d::t_75030b69e4a44d 17,48-49,68
+content/tracks/kubernetes/concepts/03-deployments/instructions.md
+  s_4312bdd443949d::t_c6db0529c496da 1,3,7-22,24,29-38,40-43,46-66,70-72,76,78-86,88
+content/tracks/terraform/concepts/06-count-and-for-each/instructions.md
+  s_4312bdd443949d::t_ed0fddba06614f 1,3,7,21-23,25,27,29,33-36,44-45,50,52,74,76,78,84,88-91,93,97-101,105-117,121,125,129-132,136-139,143-144
+content/tracks/kubernetes/concepts/10-volumes-persistence/instructions.md
+  s_4312bdd443949d::t_884e9bece3aa77 1,3,7-9,20-31,57,59,63-66,68,70,72-75,77,79,81-85,87,89,91-100
+content/tracks/kubernetes/concepts/09-resources-qos/instructions.md
+  s_4312bdd443949d::t_54dbd9453c2559 1,3,7-9,21-47,49-51,55-56,59-60,63,65,67-70,72,74,76-78,80,82,84-92,94
+content/tracks/kubernetes/concepts/14-network-policies/instructions.md
+  s_4312bdd443949d::t_2eb61303a72ba6 1,3,7-13,15,17,31,33-39,42-49,52,54,56,58-67,69,71,73,75,77-85,87-94
+content/tracks/helm/concepts/03-built-in-objects/instructions.md
+  s_4312bdd443949d::t_92ce5a9bf1e091 1,3,7-11,17,22,26,30,34,36,40-42,44-46,50-52,55,57,60-61,68,70,74,78,80,84-91,95,97-106,108
+  s_4312bdd443949d::t_1d1a4ab846f046 111-113,124-125,130-132
+content/tracks/helm/concepts/07-hooks/instructions.md
+  s_4312bdd443949d::t_4e4e42c6a001e9 1,3,7-13,23-24,27,31-34,36-39,41,43-45,48-53,56,58,60-64,66,68,72-75,78-79,82,84,88-96,100,102-112,114,117-119
+content/tracks/helm/concepts/04-control-flow/instructions.md
+  s_4312bdd443949d::t_ae36123d63f0d5 1,3,7,18-31,33,35,54-56,64-66,75,77,81-89,93,95-97,99-102,104,107-111,128-132
+  s_4312bdd443949d::t_69b25b29fdb5bf 133
+content/tracks/buildkite/concepts/03-step-dependencies-and-gates/instructions.md
+  s_4312bdd443949d::t_cb375bfd424883 1,3,7-9,11-13,19-20,23,27-28,31-32,35-37,50-51,55,58-64,66,68-69,79-80,91,93,97-100,104-117
+content/tracks/kubernetes/concepts/12-daemonsets-jobs-cronjobs/instructions.md
+  s_4312bdd443949d::t_2965f482cf74d1 1,3,7-9,30,32,52-58,79-81,83,85,87,89,91-94,96,98-112
+content/tracks/kubernetes/concepts/11-statefulsets/instructions.md
+  s_4312bdd443949d::t_edea01b5f024d9 1,3,7-11,13,28-30,65,67,69-70,72,74,76,78-81,83,85,87-95
+content/tracks/terraform/concepts/07-modules/instructions.md
+  s_4312bdd443949d::t_4440245eaf29c0 1,3,7,9,14-19,22,28,35,39-42,46,49,52-53,61,63,65-67,86,88-90,92,96-99,103-112,116,120,124-125,129-130
+  s_4312bdd443949d::t_1e2b8a70b64aa5 132
+content/tracks/kubernetes/concepts/13-rbac-serviceaccounts/instructions.md
+  s_4312bdd443949d::t_b66d8f0de34cb1 1,3,7-9,18,20,22-24,37-41,43,60,62,64,66,68-71,73,75-78,80,82,84-93
+content/tracks/kubernetes/concepts/01-pods/instructions.md
+  s_4312bdd443949d::t_8c2cc5d8c8b8e2 1,3,7-9,11-15,17,19-21,36-63,67-70,74,76-82,84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0f8586d77154fce9e46bc1baa253362af7eca894",
+  "prompts": {},
+  "sessions": {
+    "s_4312bdd443949d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34ee8d8d-5ae0-4e48-8e14-e3d4c8e3f0af",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}

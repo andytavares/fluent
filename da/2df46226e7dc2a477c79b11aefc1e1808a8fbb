@@ -1,0 +1,261 @@
+packages/ui/src/components/TestOutModal.tsx
+  s_4312bdd443949d::t_b3716a629507d9 7,89-90,99,129
+packages/ui/src/components/LessonMarkdown.tsx
+  s_4312bdd443949d::t_b3716a629507d9 1-29
+packages/ui/src/components/PlacementTask.tsx
+  s_4312bdd443949d::t_b3716a629507d9 6,89-90,105
+packages/ui/src/components/LessonMarkdown.stories.tsx
+  s_4312bdd443949d::t_b3716a629507d9 1-22
+packages/ui/src/components/PlacementTask.test.tsx
+  s_4312bdd443949d::t_f98c730f47af21 1-34
+packages/ui/src/components/LessonMarkdown.test.tsx
+  s_4312bdd443949d::t_f98c730f47af21 1-32
+packages/ui/src/components/TestOutModal.test.tsx
+  s_4312bdd443949d::t_db0d0fb9a8b09c 12,14
+  s_4312bdd443949d::t_83219dfdedf53b 1,3,7-8,10-11,13,15-37
+  s_4312bdd443949d::t_eb04b18cf348be 2,9
+  s_4312bdd443949d::t_f98c730f47af21 4
+  s_4312bdd443949d::t_4c3bbbfb0e5728 5-6,38-41
+apps/web/src/app/tracks/[trackSlug]/concepts/[conceptSlug]/page.tsx
+  s_4312bdd443949d::t_b3716a629507d9 5,97
+packages/ui/package.json
+  s_4312bdd443949d::t_59c1a0dee839e0 25,31,45-47
+packages/ui/src/index.ts
+  s_4312bdd443949d::t_b3716a629507d9 12
+packages/ui/vitest.config.ts
+  s_4312bdd443949d::t_604935855d40e3 3,5,7
+pnpm-lock.yaml
+  s_4312bdd443949d::t_6d79cb29e43bad 375-380
+  s_4312bdd443949d::t_68a459e748dc4c 233-235
+apps/web/src/lib/track-colors.ts
+  s_4312bdd443949d::t_06aa45aeb5a3fc 1-7
+apps/web/src/app/tracks/[trackSlug]/onboarding/page.tsx
+  s_4312bdd443949d::t_dbff96a8c2ab61 109,136
+  s_4312bdd443949d::t_400f38e8f29173 71
+apps/web/src/app/profile/page.tsx
+  s_4312bdd443949d::t_dbff96a8c2ab61 65
+apps/web/src/app/tracks/[trackSlug]/page.tsx
+  s_4312bdd443949d::t_dbff96a8c2ab61 66
+packages/ui/src/components/DashboardStats.tsx
+  s_4312bdd443949d::t_dbff96a8c2ab61 34
+content/tracks/go/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+apps/web/src/app/dashboard/page.tsx
+  s_4312bdd443949d::t_06aa45aeb5a3fc 7
+  s_4312bdd443949d::t_4cfa6b4f9c41d8 110
+content/tracks/shell/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/dsa-python/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/aws/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+packages/ui/src/components/ContinueBuildingCard.test.tsx
+  s_4312bdd443949d::t_9f485c4a9a1bf1 2-28
+  s_4312bdd443949d::t_c0c5bc20ca827a 1
+apps/web/src/app/auth/sign-up/page.tsx
+  s_4312bdd443949d::t_dbff96a8c2ab61 12
+packages/ui/src/components/ConfidenceSelector.tsx
+  s_4312bdd443949d::t_80fece5818e2f7 9,14,19
+packages/ui/src/components/ContinueBuildingCard.tsx
+  s_4312bdd443949d::t_80fece5818e2f7 4-5,14-15,31-32
+content/tracks/kubernetes/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+apps/web/src/components/navbar.tsx
+  s_4312bdd443949d::t_9075adcc752885 14-15,17,23-28
+content/tracks/observability/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/helm/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/kafka/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/dsa-javascript/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/python/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/assembly/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/rust/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/terraform/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/buildkite/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+packages/ui/src/components/ContinueBuildingCard.stories.tsx
+  s_4312bdd443949d::t_9f485c4a9a1bf1 8-9,23
+apps/web/src/app/page.tsx
+  s_4312bdd443949d::t_06aa45aeb5a3fc 17-18,23,68,79
+content/tracks/javascript/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/kotlin/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/ruby/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/c/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/cpp/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/elixir/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/dsa-java/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/typescript/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/dsa-typescript/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/java/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+packages/ui/src/components/ConfidenceSelector.test.tsx
+  s_4312bdd443949d::t_8c1cd73023e4f5 1-12
+apps/web/src/hooks/use-submission.ts
+  s_4312bdd443949d::t_fd397f06116f60 28
+apps/web/package.json
+  s_4312bdd443949d::t_fd397f06116f60 18-20,28,35
+content/tracks/javascript/concepts/10-modules/instructions.md
+  s_4312bdd443949d::t_22686ccf8bae71 1,3,7-14,17-19,24-25,28-31,34-36,39-41,43,46-47,49,51-52,55-56,58-59,62-63,65,68,72,74,76,78,80,82-86,88,90,92-98,100,102,104,106,109-113,115-119,121-131
+content/tracks/python/concepts/08-iterators-and-protocols/instructions.md
+  s_4312bdd443949d::t_d79a1423ad24b9 1,3,7-10,12-13,16,21-35,39,48,64-69,71-75,78-94,97,99,101-106,108-109,113-118,122,124,126-130,132,134-136,139-158
+  s_4312bdd443949d::t_b4f5d9c73f2a98 43-44,70
+content/tracks/typescript/concepts/03-union-types/instructions.md
+  s_4312bdd443949d::t_22686ccf8bae71 1,3,7-10,14-15,19-22,24-26,28-29,31-32,36-39,42-43,47-50,55-58,61-62,66-75,79-82,86,90,94-100,102,105-118
+content/tracks/javascript/concepts/07-async-javascript/instructions.md
+  s_4312bdd443949d::t_22686ccf8bae71 1,3,7-13,23-26,29-30,34-37,41-46,49-50,55-58,60,64-66,68-70,73-75,79-82,86,88-98,100,102,104,107-126,130-132,136-141,143-145,150-158
+content/tracks/typescript/concepts/05-type-guards/instructions.md
+  s_4312bdd443949d::t_ea05ba450e0972 50
+  s_4312bdd443949d::t_22686ccf8bae71 1,3,7-10,12-17,22-25,33-36,38-40,44-46,52-53,59,61,63-64,72-75,79-88,90-93,96,101-118
+  s_4312bdd443949d::t_71cab682790819 51
+content/tracks/javascript/concepts/08-classes/instructions.md
+  s_4312bdd443949d::t_ea05ba450e0972 1,3,7-14,17-18,28-29,36-38,41-44,54,57-60,72-73,80-81,87-90,93-94,97-99,103-106,110,112,114-119,121,123-130,132,135-151,154-156,158-163,166-169
+content/tracks/javascript/concepts/03-arrays-and-objects/instructions.md
+  s_4312bdd443949d::t_22686ccf8bae71 1,3,7-10,13-14,16,19-22,24-25,30,32-33,36-39,41-42,44,47-50,53-56,59-62,66-67,72-74,78-82,86,88-93,95,97,99,101,104-130
+content/tracks/java/concepts/10-functional-interfaces/instructions.md
+  s_4312bdd443949d::t_6da887a529ff55 1,3,7-19,23-40,43-45,47-60,63-66,68-69,71-75,78-81,86,89-90,93,97-101,103,105-110,112,114,116-123,125,128-146,148-149,152-159,161-165
+  s_4312bdd443949d::t_d46533fd0a2868 95
+content/tracks/python/concepts/10-modules-and-packages/instructions.md
+  s_4312bdd443949d::t_b39d4819ad3274 152-153
+  s_4312bdd443949d::t_5b2eb8fcdb227c 1,3,7-10,27-30,35-36,39-41,45-46,49-53,56-58,62,71-74,79-82,84-86,89-91,102-105,116-122,126,128-135,139-144,146,148-151,154-156
+content/tracks/python/concepts/09-async-await/instructions.md
+  s_4312bdd443949d::t_3cba39cbdb2317 1,3,7-10,15-16,20-22,26,29,32-35,43,47-49,54,61-64,67-70,74-89,92-93,100,102,104-107,109-111,113,115,117-120,122,124-130,132,134,136-143,145,148-162,165-167
+  s_4312bdd443949d::t_8be313a3e7e544 168
+content/tracks/typescript/concepts/02-functions-and-generics/instructions.md
+  s_4312bdd443949d::t_ea05ba450e0972 12-15
+  s_4312bdd443949d::t_22686ccf8bae71 1,3,7-10,19-20,23-26,28-31,36-39,45-47,50-53,55-59,61-62,65-68,70-73,77-80,82-83,87-89,93-97,101,103-108,110,113-128
+content/tracks/javascript/concepts/09-destructuring-and-spread/instructions.md
+  s_4312bdd443949d::t_ea05ba450e0972 83-84
+  s_4312bdd443949d::t_22686ccf8bae71 1,3,7-14,16-19,21-22,26-27,30,33-36,38-40,43-45,48-49,56-57,59-61,63-66,68-69,72-75,78-81,85,88-89,91,94,97,101,103-104,108,110-115,117,119,121,123,125,127,130-140,142-144,146-156,159-170
+content/tracks/javascript/concepts/06-control-flow/instructions.md
+  s_4312bdd443949d::t_22686ccf8bae71 1,3,7-14,16-18,21-24,30-31,38-43,46-47,51-54,58-59,63-66,77,79-80,84,86-93,95,97,99,102-118,120-127
+content/tracks/typescript/concepts/04-utility-types/instructions.md
+  s_4312bdd443949d::t_22686ccf8bae71 1,3,7-10,12-18,21-24,26-27,30-33,35-36,39-42,44-45,48-51,54,56-59,62-65,67-71,74-76,80-84,88-89,100-106,109-125,128,130-131
+content/tracks/java/concepts/09-concurrency/instructions.md
+  s_4312bdd443949d::t_ea05ba450e0972 1,3,7-10,14-15,17-19,21-22,26-29,31-35,37-49,52-55,60-66,70-73,78-81,85-90,95-100,104,106-112,114,118-134
+content/tracks/javascript/concepts/05-error-handling/instructions.md
+  s_4312bdd443949d::t_22686ccf8bae71 1,3,7-10,15,17,21-24,34-35,38-41,46-50,54-57,68-71,73-78,80-81,84-86,90-93,97,99-107,109,111,114-126,131-133,136-144
+content/tracks/javascript/concepts/02-functions/instructions.md
+  s_4312bdd443949d::t_22686ccf8bae71 1,3,7-14,16-20,25-28,33-36,39-42,45-46,48-50,53-56,59,62-65,68-70,74-76,80,82-85,87,89,91,94-104,106-111
+content/tracks/go/concepts/01-variables-and-types/instructions.md
+  s_4312bdd443949d::t_b397a9b936a17c 1,3,7-9,12-13,16-18,21-24,27,29,36-42,46-47,50,54,56-63,67-70,74,76-79,81,84-91
+content/tracks/go/concepts/02-functions/instructions.md
+  s_4312bdd443949d::t_eb942ec16c0f93 1,3,7-9,17-19,22-31,33,38,40,44-46,55,61-65,69,71-74,76,79-89
+content/tracks/go/concepts/03-control-flow/instructions.md
+  s_4312bdd443949d::t_83fcab246fe372 1,3,7-9,21-23,26-33,36-38,49-51,66-69,73-78,80,89-90
+content/tracks/go/concepts/04-arrays-and-slices/instructions.md
+  s_7a27f124c1e8e3::t_24bd3154905f51 1,3,7-9,12-17,20-22,25,28,36-38,41-43,46-48,52-53,58-63,67,69-73,75,78-88
+content/tracks/go/concepts/05-maps/instructions.md
+  s_4312bdd443949d::t_b36c1ebd8bf87c 1,3,7-9,12-17,20-22,27,30-32,36,39,41,46,50-52,62-66,70-75,80-82
+content/tracks/go/concepts/06-structs/instructions.md
+  s_4312bdd443949d::t_9dc55ec1737d24 1,3,7,16-18,21-24,27-29,37-39,42-44,48-50,54,61-67,71,73-74,76,80-81,83-85,88-94
+content/tracks/go/concepts/08-error-handling/instructions.md
+  s_4312bdd443949d::t_b11c5ac19a76e6 1,3,7,10-13,16,19-21,26,30-32,38,42-44,54-58,62-68,70,73-81
+content/tracks/go/concepts/09-goroutines/instructions.md
+  s_4312bdd443949d::t_160b8eac676135 1,3,7-9,17-19,24-25,27-28,32-33,36-38,49-64,68-74,76,79-84
+content/tracks/go/concepts/10-channels/instructions.md
+  s_4312bdd443949d::t_90993ce56ea3de 1,3,7-9,12-15,18-20,23-24,27-29,32-35,38-40,43-46,49-51,62,68-74,78-84,86,89,91,94,96,99,101
+content/tracks/java/concepts/01-classes-and-objects/instructions.md
+  s_4312bdd443949d::t_5fd06e66aba252 1,3,7-10,13-14,17,26,28-46,55,57,59-62,64,66-69,71,73,75-80,82,86-90,93-97,100-102
+content/tracks/java/concepts/02-interfaces/instructions.md
+  s_4312bdd443949d::t_e9eaa1f5de4220 1,3,7-10,19-22,48-61,63-66,69-72,76-77,79-80,85,87,89-93,95,97-101,103,105,107-111,113,119-121,123-125,129-132
+content/tracks/java/concepts/03-generics/instructions.md
+  s_4312bdd443949d::t_e29a59fc1013ea 1,3,7-10,15-17,21-22,28,31-34,36-37,41-42,45-47,50-52,56-78,82-86,90,92-98,100,103-119
+content/tracks/java/concepts/04-streams-api/instructions.md
+  s_4312bdd443949d::t_ef7c459fe630e5 1,3,7-10,14,16,19-22,25-33,36-39,41-55,58-61,63-69,72-80,84-89,93,95-99,101,104-116,119-124
+content/tracks/java/concepts/05-optional/instructions.md
+  s_4312bdd443949d::t_c2bf5a2157d1f7 1,3,7-10,12,15-18,20-32,34-46,49-52,54-66,69-72,74-77,80-88,92-96,100,102-106,108,114-134
+content/tracks/java/concepts/06-inheritance-and-polymorphism/instructions.md
+  s_4312bdd443949d::t_33a5365f26817a 1,3,7-10,14-22,25-27,29-31,34,36,41-43,47-57,59,63-69,74-77,79-82,84-85,90,92,94-97,99,101-107,109,111,113-123,125,131-137,139-140,142-145
+content/tracks/java/concepts/07-collections-framework/instructions.md
+  s_4312bdd443949d::t_56ae12ce49f75a 1,3,7-20,27,32-35,37-38,40-44,48-51,53-57,60-63,66-71,74-77,81-84,87,89,91-95,97,99-104,106,108,110-117,119,122-136,140,142-143,145-147
+content/tracks/java/concepts/08-exception-handling/instructions.md
+  s_4312bdd443949d::t_bbf020b5ad3700 1,3,7-31,36-38,40,44-47,51-53,57-60,62-63,66-67,72-74,78-81,83-84,86-87,92-96,100,102-111,113,118-135
+content/tracks/javascript/concepts/01-variables-and-types/instructions.md
+  s_4312bdd443949d::t_c06d01d15b2e28 1,3,7-10,12-16,19-21,24-32,40-44,47-50,52-54,60-61,63,67,69-73,75,77,79,82-102
+content/tracks/javascript/concepts/04-closures/instructions.md
+  s_7a27f124c1e8e3::t_5f1056b96c5a7a 1,3,7-14,18,27-30,35-36,39-42,45,53-56,62-64,70-72,76-77,79-86,88-91,95-102,104-106,110-112,114-118,121-124,127-134,137-138
+content/tracks/python/concepts/01-variables-and-types/instructions.md
+  s_4312bdd443949d::t_4006cc1a9b4e49 1,3,7-10,12-14,17-20,29-50,55-56,60-63,65-68,71-74,78-79,82-85,87-88,91,93-98,100,102,104-106,108,110-113,115,117-119,121,124-135,139
+content/tracks/python/concepts/02-functions/instructions.md
+  s_4312bdd443949d::t_626a226f499a49 1,3,7-24,26-28,33-44,47,52,60-63,65,71,74-76,81-83,85,89-92,105-110,114,116-122,125-129,131-134,138-145
+content/tracks/python/concepts/03-lists-and-dicts/instructions.md
+  s_4312bdd443949d::t_0d70f9fed92131 1,3,7-10,15-18,21-24,28-29,32-46,49-52,56-60,63-66,69-71,74-77,79-81,83,87-90,97-98,103-109,113,115-122,125-128,130-150
+content/tracks/python/concepts/04-classes-and-objects/instructions.md
+  s_4312bdd443949d::t_5015ec643b8579 1,3,7-10,13-27,34,36,44-47,50,54-56,60,63-66,69,73-74,76-78,80,83-84,87-88,91-104,113-115,118,120,122-128,132-136,140,142-151,154-180
+content/tracks/python/concepts/05-comprehensions-and-generators/instructions.md
+  s_4312bdd443949d::t_226df45e2b4e91 1,3,7-10,13-14,16-18,21-24,27,33-36,38-39,41-43,46-48,51-55,62-63,66-70,77-78,83-88,92,94-99,101,104-123
+content/tracks/python/concepts/06-decorators/instructions.md
+  s_4312bdd443949d::t_77fa2aa8627d61 1,3,7-10,16,23,26-29,41-44,49,51,59,62-65,71,74-76,81-82,91,93,95-99,103-107,111,113,115-119,121-125,127-136,141-142,145-147,152-155,157-164
+content/tracks/python/concepts/07-error-handling/instructions.md
+  s_4312bdd443949d::t_a35074fa3f624e 1,3,7-10,19,22,26-28,44-46,50,53-56,60-62,68-70,73-76,80,83-86,93-97,100-103,118-123,127,129,131-132,134,136-137,139,141-146,149-160,162-167,171,173,175
+content/tracks/typescript/concepts/01-types-and-interfaces/instructions.md
+  s_4312bdd443949d::t_f7e9a2013e4ffa 1,3,7-10,17-20,25,33-36,42,44-51,55-58,62,68-70,72,75-88
+content/tracks/typescript/concepts/06-enums/instructions.md
+  s_7a27f124c1e8e3::t_703609c84c2079 1,3,7-9,13-16,20,26-28,31-33,36-38,42,44,48-50,54-55,58-60,64-69,73,76-87,90-95,97,100-115
+content/tracks/typescript/concepts/07-classes-with-types/instructions.md
+  s_7a27f124c1e8e3::t_de1bb00378b2b1 1,3,7-9,20-21,24-31,33-35,47-52,56-58,66-68,72-74,77-79,81-83,89-93,97,99-107,109,112-115,117-119,121,125-134
+content/tracks/typescript/concepts/08-mapped-types/instructions.md
+  s_4312bdd443949d::t_043d2fcd9e7ec9 1,3,7-9,12-20,23-25,28-33,36-38,41-44,47-49,52-55,58-60,63-68,71-73,77-81,85,87-94,96,99-127
+content/tracks/typescript/concepts/09-template-literal-types/instructions.md
+  s_4312bdd443949d::t_fafe562eed6425 1,3,7-9,13-16,19-21,24-25,27-28,31-33,37-38,40,43-45,54-56,60-65,69,72-76,78-79,82,84-87,89,92-104,107-108,111-113
+content/tracks/go/concepts/07-interfaces/instructions.md
+  s_92e6a5f62d5de2::t_080cfb701d03d0 1,3,7,16-18,21-30,33,37-39,43-45,48-49,54,56,60-67,71-76,80,82-85,87,90-99
+content/tracks/typescript/concepts/10-declaration-merging-and-modules/instructions.md
+  s_6fb5a40e0d3587::t_3518201c053c75 1,3,7-9,15-19,22-24,27,30-31,36-38,42-49,53-55,58-59,63-65,70-72,76-78,81-83,87-92,96,98,101-104,108-118,122-148
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "da2df46226e7dc2a477c79b11aefc1e1808a8fbb",
+  "prompts": {},
+  "sessions": {
+    "s_4312bdd443949d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34ee8d8d-5ae0-4e48-8e14-e3d4c8e3f0af",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_6fb5a40e0d3587": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a9b1011eb1bbd9dfb",
+        "model": "unknown"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_7a27f124c1e8e3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2a59f4fb-4b55-4106-86e1-3343ce7a6038",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_92e6a5f62d5de2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a8b06c7425ccabf71",
+        "model": "unknown"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
