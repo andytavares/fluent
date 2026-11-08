@@ -1,25 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc/client";
-import { DashboardStats, ContinueBuildingCard } from "@fluent/ui";
+import { DashboardStats } from "@fluent/ui";
+import { CapstoneCard } from "@/components/capstone-card";
 import { LANG_COLORS } from "@/lib/track-colors";
 
 export default function DashboardPage() {
-  const router = useRouter();
   const dashboardQuery = trpc.dashboard.getDashboard.useQuery();
   const tracksQuery = trpc.tracks.listTracks.useQuery();
-  const primaryTrackSlug = dashboardQuery.data?.[0]?.track.slug ?? "";
-  const capstoneQueryOptions = { enabled: primaryTrackSlug !== "" };
-  const capstoneProjectQuery = trpc.capstone.getProject.useQuery(
-    { trackSlug: primaryTrackSlug },
-    capstoneQueryOptions,
-  );
-  const capstoneStepsQuery = trpc.capstone.getSteps.useQuery(
-    { trackSlug: primaryTrackSlug },
-    capstoneQueryOptions,
-  );
   const resetEnrollment = trpc.enrollments.resetEnrollment.useMutation({
     onSuccess: () => void dashboardQuery.refetch(),
   });
@@ -52,19 +41,7 @@ export default function DashboardPage() {
             capstoneProgress={primary.stats.capstoneProgress}
           />
 
-          {capstoneProjectQuery.data && (
-            <div className="mt-8">
-              <ContinueBuildingCard
-                capstoneTitle={capstoneProjectQuery.data.title}
-                stepCount={capstoneStepsQuery.data?.length ?? 0}
-                sessionId={primary.continueBuildingCard?.sessionId ?? null}
-                currentStep={primary.continueBuildingCard?.currentStep ?? null}
-                trackSlug={primary.track.slug}
-                onResume={() => router.push(`/tracks/${primary.track.slug}/capstone`)}
-                onStart={() => router.push(`/tracks/${primary.track.slug}/capstone`)}
-              />
-            </div>
-          )}
+          <CapstoneCard trackSlug={primary.track.slug} session={primary.continueBuildingCard} />
 
           <section className="mt-12">
             <h2 className="mb-4 text-lg font-semibold text-[var(--color-text-primary)]">
