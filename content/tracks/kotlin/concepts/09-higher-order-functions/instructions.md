@@ -1,119 +1,150 @@
-# Higher-Order Functions
+## What you build
 
-## What you'll learn
-
-Kotlin treats functions as first-class values. Function types, lambdas, closures, and `inline` functions are central to how the stdlib is designed — everything from `filter` to `use` to `buildString` is a higher-order function.
+You write `compose`, `memoize`, `pipeline` and `timed`: functions that take or return other functions. The standard library is built on such functions, from `filter` to `use` to `buildString`. This lesson builds on **Coroutines**.
 
 ## Key concepts
 
-**Function types**
+### A function type is `(Params) -> Result`
 
-Function types are written `(ParamTypes) -> ReturnType`:
+Store a lambda in a variable, or pass it as an argument.
 
 ```kotlin
 val double: (Int) -> Int = { x -> x * 2 }
-val greet: (String) -> String = { name -> "Hello, $name!" }
+val greet: (String) -> String =
+    { name -> "Hello, $name!" }
 val always42: () -> Int = { 42 }
-```
 
-Pass them as parameters:
-
-```kotlin
-fun applyTwice(f: (Int) -> Int, x: Int): Int = f(f(x))
+fun applyTwice(f: (Int) -> Int, x: Int) =
+    f(f(x))
 
 applyTwice({ n -> n + 3 }, 10)   // 16
 ```
 
-**Lambda syntax**
+### A trailing lambda goes outside the parentheses
 
-When a lambda is the last parameter, it can be placed outside the parentheses (trailing lambda syntax):
+When the last parameter is a function, you can write the lambda after the call. This makes DSL-style calls such as `buildString { append("hello") }` and every coroutine builder possible.
 
 ```kotlin
-fun withLogging(label: String, block: () -> Unit) {
+fun withLogging(
+    label: String,
+    block: () -> Unit,
+) {
     println("start: $label")
     block()
     println("end: $label")
 }
 
-// equivalent calls:
+// The same call, two ways
 withLogging("task", { doWork() })
-withLogging("task") { doWork() }   // trailing lambda — preferred
+// Preferred: trailing lambda
+withLogging("task") { doWork() }
 ```
 
-When the lambda has a single parameter, use `it` instead of naming it:
+### `it` names a single parameter
+
+A lambda with one parameter can skip the name and use `it`.
 
 ```kotlin
-listOf(1, 2, 3).map { it * 2 }   // [2, 4, 6]
+listOf(1, 2, 3).map { it * 2 }
+// [2, 4, 6]
 ```
 
-**Returning functions**
+### A function can return a function
+
+The returned lambda captures `factor`. It is a closure.
 
 ```kotlin
-fun multiplier(factor: Int): (Int) -> Int = { x -> x * factor }
+fun multiplier(factor: Int): (Int) -> Int =
+    { x -> x * factor }
 
 val triple = multiplier(3)
 triple(7)   // 21
 ```
 
-**`inline` functions**
+### `inline` removes the lambda object
 
-`inline` copies the function body and its lambda arguments at the call site, eliminating the object allocation that a normal higher-order function incurs. This matters in performance-sensitive code or when you need `return` from inside a lambda to return from the calling function (non-local return):
+`inline` copies the function body and its lambda arguments into each call site. This removes the object that a normal higher-order function allocates for each lambda.
 
 ```kotlin
 inline fun <T> measure(block: () -> T): T {
     val start = System.currentTimeMillis()
     val result = block()
-    println("Elapsed: ${System.currentTimeMillis() - start}ms")
+    val ms =
+        System.currentTimeMillis() - start
+    println("Elapsed: ${ms}ms")
     return result
 }
 ```
 
-Non-local return (only possible in `inline` lambdas):
+### `inline` allows a non-local return
+
+Inside a lambda passed to an `inline` function, `return` returns from the outer function.
 
 ```kotlin
-inline fun findFirst(list: List<Int>, predicate: (Int) -> Boolean): Int? {
+inline fun findFirst(
+    list: List<Int>,
+    predicate: (Int) -> Boolean,
+): Int? {
     for (item in list) {
-        if (predicate(item)) return item   // returns from findFirst, not just the lambda
+        // Returns from findFirst
+        if (predicate(item)) return item
     }
     return null
 }
 ```
 
-**Function composition**
+### You write function composition yourself
 
-Kotlin doesn't have a built-in compose operator, but it's straightforward to write:
+Kotlin has no built-in compose operator. A short generic function does the job.
 
 ```kotlin
-fun <A, B, C> compose(f: (B) -> C, g: (A) -> B): (A) -> C = { x -> f(g(x)) }
+fun <A, B, C> compose(
+    f: (B) -> C,
+    g: (A) -> B,
+): (A) -> C = { x -> f(g(x)) }
 
 val addOne: (Int) -> Int = { it + 1 }
 val double: (Int) -> Int = { it * 2 }
-val addOneThenDouble = compose(double, addOne)
+val addOneThenDouble =
+    compose(double, addOne)
 addOneThenDouble(3)   // 8
 ```
 
-## vs other languages
-
-| Language | Function type syntax | Trailing closure | `inline` |
-|----------|---------------------|-----------------|---------|
-| Java | `Function<A, B>` | No | No |
-| Swift | `(A) -> B` | Yes (trailing closure) | No |
-| Go | `func(A) B` | No | No |
-| TypeScript | `(a: A) => B` | No | No |
-
-The trailing lambda convention is Kotlin's way of making DSL-style APIs ergonomic. You see it in `buildString { append("hello") }`, `transaction { save(entity) }`, and every coroutine builder.
-
 ## Watch out
 
-- A non-`inline` higher-order function allocates a real object for every lambda passed to it — fine almost everywhere, but avoid it in hot loops if you control the function and can mark it `inline`.
-- Non-local `return` (returning from the enclosing function from inside a lambda) only works inside an `inline` function's lambda parameter. Do it inside a lambda passed to a non-inline function and it's a compile error.
-- `it` is only available when the lambda has exactly one parameter and you don't name it. Add a second parameter (or destructure) and you must name both — `it` disappears.
+- A non-`inline` higher-order function allocates an object for each lambda. In a hot loop, mark the function `inline` if you own it.
+- A bare `return` in a lambda works only if the receiving function is `inline`. Otherwise it is a compile error.
+- `it` exists only for a lambda with exactly one unnamed parameter. With two parameters, you must name both.
 
 ## The task
 
-Implement the following top-level functions in `stub.kt`:
+You write four tools that combine or wrap functions. Write these top-level functions in `stub.kt`:
 
-- `fun <A, B, C> compose(f: (B) -> C, g: (A) -> B): (A) -> C` — returns a function that applies `g` then `f`.
-- `fun <T> memoize(fn: (T) -> T): (T) -> T` — returns a memoized version of `fn` that caches results by input. Assume `T` is usable as a `Map` key.
-- `fun pipeline(vararg fns: (Int) -> Int): (Int) -> Int` — returns a function that applies each function in `fns` left-to-right to an `Int`. An empty pipeline returns the identity function.
-- `inline fun <T> timed(label: String, block: () -> T): T` — runs `block`, prints `"<label>: <ms>ms"` to stdout, and returns the result.
+1. `fun <A, B, C> compose(f: (B) -> C, g: (A) -> B): (A) -> C` returns a function that applies `g`, then `f`.
+2. `fun <T> memoize(fn: (T) -> T): (T) -> T` returns a function that caches the result of `fn` for each input.
+3. The memoized function calls `fn` at most once per distinct input. `T` works as a `Map` key.
+4. `fun pipeline(vararg fns: (Int) -> Int): (Int) -> Int` returns a function that applies `fns` from left to right.
+5. A pipeline with no functions returns its input unchanged.
+6. `inline fun <T> timed(label: String, block: () -> T): T` runs `block` and returns its result.
+7. `timed` also prints `"<label>: <ms>ms"` to standard output, where `<ms>` is the run time in milliseconds.
+
+```kotlin
+compose<Int, Int, Int>(
+    { it * 2 }, { it + 1 })(3)  // 8
+compose<Int, String, Int>(
+    { it.length }, { it.toString() })(100)
+// 3
+
+var calls = 0
+val sq = memoize<Int> { n ->
+    calls++; n * 2 }
+sq(3); sq(3); sq(3)
+calls       // 1
+
+pipeline({ it + 1 }, { it * 2 },
+    { it - 3 })(5)  // 9
+pipeline()(7)       // 7
+
+// Prints "mytask: 0ms", returns 42
+timed("mytask") { 42 }
+```

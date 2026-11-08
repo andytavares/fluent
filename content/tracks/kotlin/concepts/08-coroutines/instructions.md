@@ -1,44 +1,50 @@
-# Coroutines
+## What you build
 
-## What you'll learn
-
-"Coroutines" in Kotlin usually means the `kotlinx.coroutines` library (`suspend`, `launch`, `async`) — but that machinery is built on a simpler, language-level feature: **suspendable functions that yield values one at a time**, available in the standard library with no external dependency. This lesson teaches that foundation — coroutine fundamentals via the `sequence { }` builder — which is what `kotlinx.coroutines` itself compiles down to. Understanding it tells you what "suspend" actually means before you add a library on top.
+You write four lazy sequence generators with the `sequence { }` builder and `yield`. They teach what "suspend" means before you add the `kotlinx.coroutines` library. This lesson builds on **Generics**.
 
 ## Key concepts
 
-**A `sequence { }` builder pauses and resumes a block of code**
+### Coroutines start with suspending functions
 
-`sequence { ... }` returns a `Sequence<T>` whose body runs lazily, one step at a time, driven by whoever consumes it:
+In Kotlin, "coroutines" often means the `kotlinx.coroutines` library, with `launch` and `async`. That library builds on a language feature: suspending functions. The standard library's `sequence { }` builder uses the same feature and needs no dependency.
+
+### `yield` pauses the block
+
+`sequence { }` returns a `Sequence<T>`. Its body runs one step at a time, when the consumer asks for the next value.
 
 ```kotlin
 val naturals = sequence {
     var n = 1
     while (true) {
-        yield(n)   // suspends here — hands control back to the consumer
-        n++        // resumes here on the next request
+        // Pauses here, gives n to the
+        // consumer
+        yield(n)
+        // Resumes here on the next request
+        n++
     }
 }
 
-naturals.take(5).toList()   // [1, 2, 3, 4, 5]
+naturals.take(5).toList()
+// [1, 2, 3, 4, 5]
 ```
 
-`yield` is doing the same conceptual job `suspend`/`await` does in `kotlinx.coroutines`: it pauses execution at that exact point and returns control to the caller, resuming from the same spot (with the same local variables) the next time a value is requested. This is why the block above can hold an infinite loop — nothing runs until you ask for a value, and only as many steps run as you actually consume.
+`yield` does the conceptual job of a suspension point. It stops at that exact line and returns control to the caller. The next request resumes at the same line, with the same local variables. That is why the infinite loop is safe: only as many steps run as you consume.
 
-**`yield` vs `yieldAll`**
+### `yieldAll` yields each element of a collection
 
 ```kotlin
 val letters = sequence {
     yield("a")
-    yieldAll(listOf("b", "c"))   // yields each element in turn
+    yieldAll(listOf("b", "c"))
     yield("d")
 }
 
 letters.toList()   // [a, b, c, d]
 ```
 
-**Laziness is the whole point**
+### Nothing runs until you ask for a value
 
-Each element is computed only when requested. Side effects (like a `println`) prove the order of execution:
+Side effects show the order of execution. A `List`, and `map` or `filter` on a `List`, compute every element at once.
 
 ```kotlin
 val traced = sequence {
@@ -49,15 +55,15 @@ val traced = sequence {
 }
 
 val iter = traced.iterator()
-iter.next()   // prints "computing 1", returns 1
-iter.next()   // prints "computing 2", returns 2
+// Prints "computing 1", returns 1
+iter.next()
+// Prints "computing 2", returns 2
+iter.next()
 ```
 
-Nothing prints until `next()` is called — contrast with `listOf(...)` or `map`/`filter` on a `List`, which compute everything eagerly up front.
+### Sequence operations build a lazy pipeline
 
-**Building pipelines lazily**
-
-`map`, `filter`, and `take` on a `Sequence` are themselves lazy — chaining them builds a pipeline that only pulls as many source elements as needed:
+`filter`, `map` and `take` on a `Sequence` are lazy too. The pipeline pulls only as many source elements as it needs.
 
 ```kotlin
 val result = sequence {
@@ -68,13 +74,12 @@ val result = sequence {
     .map { it * it }
     .take(3)
     .toList()
-
-// result = [9, 36, 81] — computed from just enough of the infinite source
+// [9, 36, 81]
 ```
 
-**Generators that carry state between yields**
+### Local state survives between yields
 
-Because the block is a normal function body, you can maintain arbitrary local state across suspensions — this is how you write generator-style algorithms (Fibonacci, tree traversal, pagination) without manually threading an index:
+The block is a normal function body, so local variables keep their values across each pause. You write generators, such as Fibonacci, tree walks or pagination, without a manual index.
 
 ```kotlin
 val fibonacci = sequence {
@@ -88,35 +93,52 @@ val fibonacci = sequence {
     }
 }
 
-fibonacci.take(6).toList()   // [0, 1, 1, 2, 3, 5]
+fibonacci.take(6).toList()
+// [0, 1, 1, 2, 3, 5]
 ```
 
 ## Watch out
 
-- `sequence { }` bodies are **restricted suspend functions** — you can only call `yield`/`yieldAll` from directly inside the builder (or a helper explicitly written to accept that scope), not from an arbitrary callback or a different thread. This is a single-threaded, synchronous laziness tool, not a concurrency primitive.
-- Forgetting `take`/another terminal limit on an infinite sequence (like `naturals` above) will hang forever if you call `.toList()` on it directly.
-- A `Sequence` can only be iterated correctly for something that supports being computed repeatedly from scratch, or once, depending on the builder — recomputing a `sequence { println(...) }` from the start re-runs its side effects. If you need to reuse computed values, convert once with `.toList()` and reuse the list.
-- This is deliberately **not** `kotlinx.coroutines`. Real multithreaded suspension (`launch`, `async`, dispatchers) requires that separate library and its own runtime; nothing here starts a background thread.
+- You can call `yield` and `yieldAll` only inside the builder, or in a helper that takes its scope. Callbacks and other threads cannot call them.
+- `sequence { }` is single-threaded, synchronous laziness. It is not a concurrency tool.
+- `.toList()` on an infinite sequence never returns. Limit it first, for example with `take`.
+- Each new iteration of a `sequence { }` runs the block again from the start, with its side effects. To reuse values, call `.toList()` once and keep the list.
+- This is not `kotlinx.coroutines`. `launch`, `async` and dispatchers need that library. Nothing here starts a background thread.
 
 ## The task
 
-Implement the following top-level functions in `stub.kt`, all built on the `sequence { }` / `yield` machinery above — no external libraries.
+Write four top-level functions in `stub.kt`. Build each one with `sequence { }` and `yield`. Use no external library.
 
-- `fun fibonacciSequence(): Sequence<Long>` — an infinite lazy sequence of Fibonacci numbers starting `0, 1, 1, 2, 3, 5, ...`.
-- `fun <T> pairwise(seq: Sequence<T>): Sequence<Pair<T, T>>` — given a sequence `[a, b, c, d]`, lazily yields consecutive pairs `[(a, b), (b, c), (c, d)]`. An input with fewer than 2 elements yields nothing.
-- `fun countdown(from: Int): Sequence<Int>` — lazily yields `from, from - 1, ..., 1, 0` and then stops (finite — must terminate on its own, not rely on `take`).
-- `fun <T> interleave(a: Sequence<T>, b: Sequence<T>): Sequence<T>` — lazily yields elements alternating from `a` and `b` (`a[0], b[0], a[1], b[1], ...`). When one sequence runs out, yields the remainder of the other.
+1. `fun fibonacciSequence(): Sequence<Long>` yields the Fibonacci numbers `0, 1, 1, 2, 3, 5, ...` without end.
+2. `fun <T> pairwise(seq: Sequence<T>): Sequence<Pair<T, T>>` yields each pair of neighbouring elements.
+3. For input `[a, b, c, d]`, `pairwise` yields `(a, b)`, `(b, c)`, `(c, d)`. Fewer than 2 elements yield nothing.
+4. `fun countdown(from: Int): Sequence<Int>` yields `from`, `from - 1`, down to `0`, then stops.
+5. `countdown` must end on its own. A caller can call `toList()` on it with no `take`.
+6. `fun <T> interleave(a: Sequence<T>, b: Sequence<T>): Sequence<T>` yields `a[0]`, `b[0]`, `a[1]`, `b[1]`, and so on.
+7. When one input runs out, `interleave` yields the rest of the other.
+
+All four must be lazy. A filter on the infinite Fibonacci sequence, followed by `take`, must finish.
 
 ```kotlin
-fibonacciSequence().take(6).toList()                     // [0, 1, 1, 2, 3, 5]
+fibonacciSequence().take(6).toList()
+// [0, 1, 1, 2, 3, 5]
+fibonacciSequence()
+    .filter { it % 2 == 0L }
+    .take(3).toList()
+// [0, 2, 8]
 
-pairwise(sequenceOf(1, 2, 3, 4)).toList()                // [(1, 2), (2, 3), (3, 4)]
-pairwise(sequenceOf(1)).toList()                          // []
-pairwise(sequenceOf<Int>()).toList()                      // []
+pairwise(sequenceOf(1, 2, 3, 4))
+    .toList()
+// [(1, 2), (2, 3), (3, 4)]
+pairwise(sequenceOf(1)).toList()  // []
 
-countdown(3).toList()                                     // [3, 2, 1, 0]
-countdown(0).toList()                                      // [0]
+countdown(3).toList()  // [3, 2, 1, 0]
+countdown(0).toList()  // [0]
 
-interleave(sequenceOf(1, 3, 5), sequenceOf(2, 4)).toList() // [1, 2, 3, 4, 5]
-interleave(sequenceOf<Int>(), sequenceOf(1, 2)).toList()   // [1, 2]
+interleave(sequenceOf(1, 3, 5),
+    sequenceOf(2, 4)).toList()
+// [1, 2, 3, 4, 5]
+interleave(sequenceOf<Int>(),
+    sequenceOf(1, 2)).toList()
+// [1, 2]
 ```

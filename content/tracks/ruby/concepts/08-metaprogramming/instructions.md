@@ -1,27 +1,25 @@
-# Metaprogramming
+## What you build
 
-## What you'll learn
-
-Ruby's runtime introspection and code-generation APIs — `method_missing`, `define_method`, `send`, `respond_to_missing?`, open classes, and `class_eval`.
+You write a method check, a helper that defines accessors at runtime, and a proxy class that turns hash keys into methods. This lesson builds on **Exception Handling**.
 
 ## Key concepts
 
-### send — dynamic dispatch
+### `send` calls a method by name
 
-`send` calls any method by name (even private ones). `public_send` restricts to public methods.
+`send` calls any method, private ones too. `public_send` calls only public methods. Python uses `getattr` for the same job.
 
 ```ruby
-"hello".send(:upcase)           # => "HELLO"
-[1, 2, 3].send(:push, 4)        # => [1, 2, 3, 4]
-42.send(:+, 8)                  # => 50
+"hello".send(:upcase)     # => "HELLO"
+[1, 2, 3].send(:push, 4)  # => [1, 2, 3, 4]
+42.send(:+, 8)            # => 50
 
 method_name = :length
-"ruby".send(method_name)        # => 4
+"ruby".send(method_name)  # => 4
 ```
 
-### respond_to?
+### `respond_to?` checks for a method
 
-Check whether an object responds to a method before calling it:
+Check whether an object responds to a method before you call it.
 
 ```ruby
 "hello".respond_to?(:upcase)    # => true
@@ -29,9 +27,9 @@ Check whether an object responds to a method before calling it:
 42.respond_to?(:each)           # => false
 ```
 
-### method_missing
+### `method_missing` catches failed lookups
 
-Called when a method lookup fails. Override it to create proxy objects, dynamic accessors, or DSL syntax.
+Ruby calls `method_missing` when a method lookup fails. Override it for proxy objects, dynamic accessors or DSL syntax. Call `super` for every name you do not handle.
 
 ```ruby
 class FlexibleRecord
@@ -50,24 +48,27 @@ class FlexibleRecord
     end
   end
 
-  def respond_to_missing?(name, include_private = false)
+  def respond_to_missing?(name, all)
     key = name.to_s
-    key.end_with?("=") || @data.key?(key) || super
+    key.end_with?("=") ||
+      @data.key?(key) || super
   end
 end
 
 r = FlexibleRecord.new
 r.name = "Alice"
-r.age  = 30
+r.age = 30
 r.name  # => "Alice"
 r.age   # => 30
 ```
 
-Always override `respond_to_missing?` alongside `method_missing` — otherwise `respond_to?` lies, and `method(:name)` breaks.
+### Override `respond_to_missing?` with `method_missing`
 
-### define_method
+Without it, `respond_to?` returns `false` for a method that works, and `method(:name)` fails.
 
-Generate methods dynamically at class-definition time. This is how Rails generates `find_by_*` methods, serialization helpers, and more.
+### `define_method` generates methods
+
+`define_method` makes methods at class-definition time. Rails generates `find_by_*` methods and serialization helpers this way.
 
 ```ruby
 class Formatter
@@ -79,13 +80,15 @@ class Formatter
 end
 
 f = Formatter.new
-f.bold("hello")       # => "<bold>hello</bold>"
-f.italic("world")     # => "<italic>world</italic>"
+f.bold("hello")
+# => "<bold>hello</bold>"
+f.italic("world")
+# => "<italic>world</italic>"
 ```
 
-### Open classes (monkey patching)
+### You can reopen any class
 
-Any class, including built-ins, can be reopened and extended at any time:
+You can reopen and extend any class at any time, built-in classes too. Ruby developers call this monkey patching. Use it sparingly. In a gem or app, use refinements (`using`) to limit a patch to one file.
 
 ```ruby
 class Integer
@@ -98,11 +101,9 @@ end
 5.factorial  # => 120
 ```
 
-Use this sparingly. In a gem or app, prefer refinements (`using`) to scope monkey patches to a file.
+### `class_eval` runs code inside a class
 
-### class_eval / module_eval
-
-Evaluate a block or string in the context of a class — useful for dynamically generating method definitions when you need access to variables that aren't in the class's normal scope.
+`class_eval` (also `module_eval`) runs a block or string in the context of a class. Use it to define methods that need variables from outside the class scope. `instance_eval` does the same for a single object.
 
 ```ruby
 class MyClass; end
@@ -116,64 +117,58 @@ end
 MyClass.new.hello  # => "world"
 ```
 
-`instance_eval` does the same on a single object (rather than a class).
-
-## vs other languages
-
-| | Ruby | Python | JavaScript | Java |
-|---|---|---|---|---|
-| Dynamic dispatch | `send(:method, args)` | `getattr(obj, name)(args)` | `obj[name](args)` | `Method.invoke(obj, args)` |
-| Missing method hook | `method_missing` | `__getattr__` | `Proxy` (ES6) | No equivalent |
-| Generate methods | `define_method` | `setattr` + lambda | `obj[name] = fn` | Reflection / code gen |
-| Open classes | Yes — any class, any time | No (monkey patching has limits) | Yes (prototype) | No |
-| Metaprogramming cost | Runtime only | Runtime only | Runtime only | Compile-time (annotations) |
-
-The big risk with `method_missing` is silent failures. If you forget to call `super` at the end, any truly undefined method will return `nil` instead of raising `NoMethodError`. Always call `super` in `method_missing` for unhandled cases.
-
 ## Watch out
 
-- `respond_to?` does **not** automatically know about methods you handle in `method_missing` — you must also override `respond_to_missing?`, or `respond_to?` will report `false` for a method call that would actually work.
-- `method_missing(name, *args)` intercepts **every** unmatched method call, including typos. Always fall through to `super` for anything you don't explicitly handle, so real `NoMethodError`s still surface instead of being swallowed.
-- `define_method` accepts a block, and that block is a real closure — it captures variables from the surrounding scope (like the `style` loop variable above), unlike `def`, which cannot close over local variables.
-- `send(:method_name)` bypasses `private`/`protected` visibility — it can call private methods from outside the class. Use `public_send` if you want normal visibility rules enforced.
+- `respond_to?` does not see names that `method_missing` handles. Override `respond_to_missing?` too.
+- `method_missing` catches every unmatched call, typos too. Without `super`, a real `NoMethodError` becomes a silent `nil`.
+- The block of `define_method` is a closure, so it sees `style`. A `def` cannot see outer local variables.
+- `send` ignores `private` and `protected`. Use `public_send` to keep normal visibility rules.
 
 ## The task
 
-Implement two dynamic-dispatch helpers and a proxy class.
+Write two helpers and a proxy class in `stub.rb`. They use dynamic dispatch and runtime method definition.
 
-**`method_exists?(obj, method_name)`** — returns `true` if `obj` responds to `method_name`, which may be passed as either a `Symbol` or a `String`.
+1. `method_exists?(obj, method_name)` returns `true` if `obj` responds to `method_name`, else `false`.
+2. `method_name` can be a `Symbol` or a `String`.
+3. `dynamic_accessor(klass, *attr_names)` adds a getter and a setter to `klass` for each name.
+4. `dynamic_accessor` must use `define_method`, not `attr_accessor`.
+5. The getter for `name` reads `@name`. The setter `name=` writes `@name`.
+6. A getter for an unset variable returns `nil`.
+7. `HashProxy.new(hash)` wraps a `Hash`. Each key of the hash reads as a method call.
+8. `HashProxy` uses `method_missing` and `respond_to_missing?`. Keys can be symbols or strings.
+9. `respond_to?` returns `true` for a key. It returns `false` for a name that is neither a key nor a real method.
+10. A name that is not a key raises `NoMethodError`, from `super`.
 
 ```ruby
-method_exists?("hello", :upcase)       # => true
-method_exists?("hello", "length")      # => true
-method_exists?("hello", :nonexistent)  # => false
-method_exists?(42, :+)                 # => true
-method_exists?(42, :each)              # => false
-```
+method_exists?("hello", :upcase)  # => true
+method_exists?("hello", "length") # => true
+method_exists?("hello", :nonexistent)
+# => false
+method_exists?(42, :+)            # => true
+method_exists?(42, :each)        # => false
 
-**`dynamic_accessor(klass, *attr_names)`** — for each name in `attr_names`, adds a getter and setter method to `klass` using `define_method` (not `attr_accessor`). The getter reads from the instance variable `@name`; the setter writes to it.
-
-```ruby
 klass = Class.new
 dynamic_accessor(klass, :name, :age)
-
 obj = klass.new
-obj.name = "Bob"
-obj.name        # => "Bob"
-obj.age         # => nil  — never set
-klass.new.name  # => nil  — fresh instance, unset ivar
-```
+obj.name = "Alice"
+obj.name        # => "Alice"
+obj.age = 30
+obj.age         # => 30
+obj.name = "Alicia"
+obj.name        # => "Alicia"
+klass.new.name  # => nil
 
-**`HashProxy`** — wraps a `Hash` so any key can be read as a method call, via `method_missing` and `respond_to_missing?`. Keys may be symbols or strings in the underlying hash.
-
-```ruby
-hp = HashProxy.new({ name: "Alice", city: "Portland" })
-hp.name              # => "Alice"
-hp.city              # => "Portland"
+hp = HashProxy.new(
+  { name: "Bob", city: "Austin" }
+)
+hp.name                       # => "Bob"
+hp.city                       # => "Austin"
 hp.respond_to?(:name)         # => true
 hp.respond_to?(:missing_key)  # => false
-hp.totally_missing            # raises NoMethodError (falls through to super)
+hp.totally_missing  # NoMethodError
 
-hp2 = HashProxy.new({ "country" => "Canada" })
-hp2.country          # => "Canada"  — string keys work too
+hp2 = HashProxy.new(
+  { "country" => "Canada" }
+)
+hp2.country  # => "Canada"
 ```

@@ -1,113 +1,153 @@
-# Text Processing
+## What you build
 
-## What you'll learn
-
-So far you've manipulated data you already had in variables and arrays; now you'll pull data out of arbitrary text. `grep`, `sed`, and `awk` are the core text-processing triad. Together they handle 90% of the log parsing, data extraction, and transformation tasks you'll face in shell scripts.
+You write `extract_emails`, `remove_comments` and `sum_second_column`, which read text from stdin. `grep`, `sed` and `awk` do most log parsing and data extraction in shell scripts. This lesson builds on **Arrays**.
 
 ## Key concepts
 
-**`grep` — search for patterns:**
+### `grep` prints the lines that match a pattern
+
+`grep -E 'pattern'` does the work of `re.search` in Python. `-v` keeps the lines that do not match. `-o` prints only the matched text.
 
 ```bash
-grep "error" app.log                  # basic search
-grep -i "error" app.log               # case-insensitive
-grep -n "error" app.log               # show line numbers
-grep -c "error" app.log               # count matching lines
-grep -v "debug" app.log               # invert — lines NOT matching
-grep -E "error|warn" app.log          # extended regex (ERE)
-grep -P "\d{3}-\d{4}" contacts.txt   # Perl regex (not on all systems)
-grep -r "TODO" ./src/                 # recursive
-grep -l "TODO" ./src/*.sh             # print only filenames
+# Basic search
+grep "error" app.log
+# Ignore case
+grep -i "error" app.log
+# Show line numbers
+grep -n "error" app.log
+# Count matching lines
+grep -c "error" app.log
+# Lines that do NOT match
+grep -v "debug" app.log
+# Extended regular expressions (ERE)
+grep -E "error|warn" app.log
+# Perl regex (not on all systems)
+grep -P "\d{3}-\d{4}" contacts.txt
+# Search a directory tree
+grep -r "TODO" ./src/
+# Print only the file names
+grep -l "TODO" ./src/*.sh
 ```
 
-**`sed` — stream editor for substitution and transformation:**
+### `sed` edits a stream of text
+
+`sed 's/old/new/g'` does the work of `re.sub()` in Python. `\1` and `\2` insert capture groups.
 
 ```bash
-sed 's/foo/bar/' file.txt            # replace first match per line
-sed 's/foo/bar/g' file.txt           # replace all matches per line
-sed 's/foo/bar/gi' file.txt          # case-insensitive, global
-sed -n '5,10p' file.txt              # print lines 5–10
-sed '/^#/d' file.txt                 # delete comment lines
-sed -i 's/old/new/g' file.txt        # in-place edit (GNU sed)
-sed -i '' 's/old/new/g' file.txt     # in-place on macOS (BSD sed)
+# Replace the first match on each line
+sed 's/foo/bar/' file.txt
+# Replace all matches on each line
+sed 's/foo/bar/g' file.txt
+# All matches, ignore case
+sed 's/foo/bar/gi' file.txt
+# Print lines 5 to 10
+sed -n '5,10p' file.txt
+# Delete comment lines
+sed '/^#/d' file.txt
+# Edit in place (GNU sed)
+sed -i 's/old/new/g' file.txt
+# Edit in place (BSD sed, macOS)
+sed -i '' 's/old/new/g' file.txt
 
-# Capture groups with \1
-sed 's/\(first\) \(second\)/\2 \1/'     # BRE groups (default)
-sed -E 's/(first) (second)/\2 \1/'      # ERE groups (-E flag)
+# BRE groups (the default)
+sed 's/\(first\) \(second\)/\2 \1/'
+# ERE groups (-E)
+sed -E 's/(first) (second)/\2 \1/'
 ```
 
-**`awk` — field-based processing:**
+### `awk` works on fields
+
+`awk` splits each line into fields: `$1`, `$2`, and `$NF` for the last. `NR` is the line number. `-F:` splits like `line.split(':')` in Python.
 
 ```bash
-awk '{print $1}' file.txt            # print first field (whitespace-split)
-awk '{print $NF}' file.txt           # print last field
-awk -F: '{print $1}' /etc/passwd     # use : as field separator
-awk 'NR==3' file.txt                 # print line 3 (NR = record number)
-awk 'NR>=2 && NR<=5' file.txt        # print lines 2–5
-awk '/pattern/' file.txt             # print lines matching pattern
-awk '$3 > 100 {print $1, $3}' data   # conditional field printing
-
-# BEGIN/END blocks
-awk 'BEGIN {sum=0} {sum+=$2} END {print sum}' data.txt
+# First field
+awk '{print $1}' file.txt
+# Last field
+awk '{print $NF}' file.txt
+# Split on ":"
+awk -F: '{print $1}' /etc/passwd
+# Line 3
+awk 'NR==3' file.txt
+# Lines 2 to 5
+awk 'NR>=2 && NR<=5' file.txt
+# Lines that match a pattern
+awk '/pattern/' file.txt
+# Print fields when a condition is true
+awk '$3 > 100 {print $1, $3}' data
 ```
 
-**Combining them:**
+### `BEGIN` and `END` run before and after the input
+
+`awk` is a full language, with variables, arrays, loops and functions. It can do complex CSV-style work without Python.
 
 ```bash
-# Extract unique IPs from a log, count occurrences, sort by count
-grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' access.log \
+awk 'BEGIN {sum=0} {sum+=$2}
+     END {print sum}' data.txt
+```
+
+### Pipes combine the three tools
+
+`sort | uniq -c` counts repeated lines, like `Counter()` in Python.
+
+```bash
+# Count each IP, most frequent first
+grep -oE '[0-9]+(\.[0-9]+){3}' access.log \
   | sort | uniq -c | sort -rn | head -10
 ```
 
 ## Watch out
 
-- `grep` without `-o` prints the whole matching **line**, not the matched substring — a common surprise for people expecting `re.search().group()` semantics. Use `-o` (or `-oE`) to print just what matched.
-- BRE vs ERE: plain `grep`/`sed` use POSIX Basic Regular Expressions, where `(`, `)`, `|`, `+`, `{` are literal characters unless backslash-escaped. `grep -E`/`sed -E` (or `egrep`) switch to Extended syntax where those are metacharacters. Mixing the two up is the most common "my regex doesn't match" bug.
-- `sed -i` differs between GNU (Linux) and BSD (macOS) — GNU accepts `sed -i 's/a/b/' f`, BSD requires an explicit (possibly empty) backup extension: `sed -i '' 's/a/b/' f`. Scripts that need to run on both should detect the platform or use `perl -pi -e` instead.
-- `awk '{print $1}'` splits on **runs of whitespace** by default, not a single delimiter — two spaces between fields doesn't create an empty field like `str.split(" ")` would in Python. Set `-F` explicitly when the delimiter matters (e.g. `-F:` for `/etc/passwd`).
-
-## vs other languages
-
-| Task | Python | Bash triad |
-|------|--------|-----------|
-| Regex search | `re.search(pattern, line)` | `grep -E 'pattern' file` |
-| String replace | `str.replace()` / `re.sub()` | `sed 's/old/new/g'` |
-| Split on delimiter | `line.split(':')` | `awk -F: '{print $N}'` |
-| Filter lines | list comprehension + condition | `grep -v` / `awk '/pattern/'` |
-| Count occurrences | `Counter()` | `sort | uniq -c` |
-
-`awk` is Turing-complete — it has variables, arrays, loops, and functions. You rarely need all of that, but knowing it means you can handle complex CSV-style transformations without switching to Python.
+- `grep` prints the whole matching line, not the matched text. Use `-o` or `-oE` for the match only.
+- Plain `grep` and `sed` use POSIX Basic Regular Expressions (BRE).
+- In BRE, `(`, `)`, `|`, `+` and `{` are literal unless you escape them with `\`.
+- `grep -E`, `sed -E` and `egrep` use Extended syntax, where those characters are operators.
+- A mix-up between BRE and ERE is the most common cause of a regex that does not match.
+- GNU `sed -i 's/a/b/' f` works on Linux. BSD `sed` on macOS needs a backup suffix: `sed -i '' ...`.
+- For scripts that run on both, check the platform or use `perl -pi -e`.
+- `awk '{print $1}'` splits on runs of whitespace. Two spaces do not make an empty field.
+- Python's `str.split(" ")` does make one. Set `-F` when the delimiter matters.
 
 ## The task
 
-You're writing three functions that read text from **stdin** (not arguments) and print to stdout — call them as the right side of a pipe: `echo "..." | extract_emails`.
+Write three functions that read text from stdin, not from arguments, and print to stdout. Call each one after a pipe.
 
-**`extract_emails`** — reads stdin, prints every email address found, one per line, in the order encountered. Use `grep -oE` with an email pattern. If no email is found, prints nothing.
+1. `extract_emails` prints every email address in its input, one per line, in input order.
+2. Use `grep -oE` with an email pattern. With no address, it prints nothing.
+3. `remove_comments` removes each line that starts with `#`, after any leading whitespace.
+4. It prints the other lines unchanged. Use `grep -v`, `grep -E -v` or `sed`.
+5. `sum_second_column` reads lines of whitespace-separated columns.
+6. It prints the sum of the second column as an integer. Use `awk`.
+7. Empty input prints `0`.
 
 ```bash
-echo "contact user@example.com" | extract_emails
+echo "contact user@example.com" \
+  | extract_emails
 # user@example.com
-
-echo "send to a@b.com and x@y.org today" | extract_emails
+echo "send to a@b.com and x@y.org today" \
+  | extract_emails
 # a@b.com
 # x@y.org
-
 echo "no addresses here" | extract_emails
-# (nothing printed)
-```
+# (nothing)
 
-**`remove_comments`** — reads stdin, strips lines that start with `#` (allowing leading whitespace before the `#`), and prints the remaining lines unchanged. Use `grep -v`/`grep -E -v` or `sed`.
-
-```bash
-printf '# comment\nreal line\n  # indented comment\nanother line\n' | remove_comments
+printf '%s\n' '# comment' 'real line' \
+  '# skip' 'another' \
+  | remove_comments
 # real line
-# another line
-```
+# another
+printf '  # indented\ncode here\n' \
+  | remove_comments
+# code here
+printf 'a\nb\nc\n' | remove_comments
+# a
+# b
+# c
 
-**`sum_second_column`** — reads stdin with whitespace-separated columns, echoes the sum of the second column as an integer. Use `awk`. Empty input sums to `0`.
-
-```bash
-printf 'a 10\nb 20\nc 30\n' | sum_second_column   # 60
-printf 'item 42\n' | sum_second_column            # 42
-printf '' | sum_second_column                     # 0
+printf 'x 10\ny 20\nz 30\n' \
+  | sum_second_column
+# 60
+printf 'item 42\n' | sum_second_column
+# 42
+printf '' | sum_second_column
+# 0
 ```

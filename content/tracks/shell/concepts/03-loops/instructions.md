@@ -1,30 +1,31 @@
-# Loops
+## What you build
 
-## What you'll learn
-
-Lesson 2 covered branching on exit codes; loops reuse the same `[[ ]]`/`(( ))` conditions to repeat work. Bash has four loop forms: `for` (two flavors), `while`, and `until`. Each has a specific use case; knowing which to reach for saves time.
+You write three functions with Bash loops: a range sum, a line counter and FizzBuzz. Loops use the same `[[ ]]` and `(( ))` conditions as branches. This lesson builds on **Control Flow**.
 
 ## Key concepts
 
-**`for` over a list:**
+### `for` walks a list of words
+
+The list can be literal words, a glob or the output of a command.
 
 ```bash
 for fruit in apple banana cherry; do
   echo "$fruit"
 done
 
-# Over command output
+# Over the files that match a glob
 for file in *.log; do
   echo "processing $file"
 done
 
-# Over command substitution
-for user in $(cut -d: -f1 /etc/passwd); do
+# Over the output of a command
+for user in $(cut -d: -f1 /etc/passwd)
+do
   echo "$user"
 done
 ```
 
-**C-style `for` with arithmetic:**
+### C-style `for` counts with arithmetic
 
 ```bash
 for (( i = 0; i < 5; i++ )); do
@@ -32,19 +33,22 @@ for (( i = 0; i < 5; i++ )); do
 done
 ```
 
-**Brace expansion range:**
+### Brace expansion makes a range
+
+`{1..10}` expands to the numbers 1 to 10. A third number sets the step. Other languages write `range(10)` or `0..10`.
 
 ```bash
 for i in {1..10}; do
   echo "$i"
 done
 
-for i in {0..20..5}; do   # step of 5
+# Step of 5: 0 5 10 15 20
+for i in {0..20..5}; do
   echo "$i"
 done
 ```
 
-**`while` — runs while condition exits 0:**
+### `while` runs while its condition exits 0
 
 ```bash
 count=0
@@ -52,16 +56,21 @@ while [[ $count -lt 5 ]]; do
   echo "$count"
   ((count++))
 done
+```
 
-# Read lines from a file
+### `while IFS= read -r` reads a file line by line
+
+`IFS=` keeps leading and trailing whitespace. `-r` keeps backslashes as they are. This is the standard way to read a file one line at a time.
+
+```bash
 while IFS= read -r line; do
   echo "line: $line"
 done < input.txt
 ```
 
-`IFS=` prevents leading/trailing whitespace stripping. `-r` prevents backslash interpretation. This is the canonical way to read a file line by line.
+### `until` runs while its condition exits non-zero
 
-**`until` — runs while condition exits non-zero (the inverse of `while`):**
+`until` is the inverse of `while`.
 
 ```bash
 until [[ -f /tmp/ready ]]; do
@@ -69,67 +78,72 @@ until [[ -f /tmp/ready ]]; do
 done
 ```
 
-**`break` and `continue`:**
+### `break` leaves the loop, `continue` skips one pass
 
 ```bash
 for i in {1..10}; do
-  [[ $i -eq 5 ]] && break      # exit loop entirely
-  [[ $(( i % 2 )) -eq 0 ]] && continue  # skip even numbers
+  # Leave the loop
+  [[ $i -eq 5 ]] && break
+  # Skip even numbers
+  (( i % 2 == 0 )) && continue
   echo "$i"
 done
 ```
 
+### Loop variables are global
+
+Bash has no block scope. The loop variable keeps its last value after the loop ends.
+
 ## Watch out
 
-- `for x in $list` (unquoted) word-splits on every space **and** globs — a file named `report file.txt` becomes two loop iterations, and a value containing `*` expands to matching filenames. Quote list expansions you control (`"${arr[@]}"`); accept that raw word-splitting is the point for `for x in $(cmd)` only when you deliberately want word splits.
-- `while read line; do ...; done < file` (no `IFS=`, no `-r`) strips leading/trailing whitespace from each line and mangles any backslashes. Always write `while IFS= read -r line; do ... done < file`.
-- `i++` alone does nothing useful in Bash — it's parsed as a command name, not an operator. Increment with `((i++))` or `i=$((i + 1))`.
-- `((expr))` returns a **non-zero exit code when `expr` evaluates to `0`** — under `set -e`, `(( count = 0 ))` will abort the script even though the assignment "succeeded". Use `(( count = 0 )) || true` or `count=0` for plain assignment when this matters.
-
-## vs other languages
-
-| Concept | Python/JS/Go | Bash |
-|---------|-------------|------|
-| `for` over list | `for x in items` | `for x in item1 item2` (word-split) or `"${arr[@]}"` for arrays |
-| Range | `range(10)` / `0..10` | `{0..9}` brace expansion or C-style `(( ))` |
-| Increment | `i++` | `((i++))` or `i=$((i+1))` — `i++` alone does nothing |
-| Reading lines | file.readlines() | `while IFS= read -r line; do ... done < file` |
-| Loop variable scope | block-scoped in many languages | global — Bash has no block scope |
-
-The most common mistake: forgetting `IFS= read -r` when processing files. Bare `read line` mangles whitespace and backslashes.
+- Unquoted `for x in $list` splits on every space and expands globs.
+- So a file named `report file.txt` gives two passes, and a `*` expands to file names.
+- Quote the lists you control: `"${arr[@]}"`. Use unquoted `$(cmd)` only when you want the split.
+- `while read line` with no `IFS=` and no `-r` strips whitespace and changes backslashes.
+- Always write `while IFS= read -r line`.
+- `i++` alone does not increment. Bash runs it as a command named `i++`.
+- Write `((i++))` or `i=$((i + 1))`.
+- `((expr))` exits non-zero when `expr` is 0.
+- Under `set -e`, `(( count = 0 ))` stops the script. Write `count=0`, or add `|| true`.
 
 ## The task
 
-You're writing three functions that use Bash's loop forms.
+Write three functions, each with a different loop form.
 
-**`sum_range start end`** — echoes the sum of all integers from `start` to `end` inclusive. Use a C-style `for (( ))` loop.
+1. `sum_range start end` prints the sum of the integers from `start` to `end`, both included.
+2. In `sum_range`, use a C-style `for (( ))` loop.
+3. `count_lines filename` prints the number of lines in the file.
+4. In `count_lines`, use `while IFS= read -r`. Do not use `wc`.
+5. `fizzbuzz n` prints one line for each number from 1 to `n`.
+6. A multiple of 3 and 5 gives `FizzBuzz`.
+7. A multiple of 3 only gives `Fizz`.
+8. A multiple of 5 only gives `Buzz`.
+9. Any other number gives the number itself.
+
+A range with one number sums to that number. An empty file has 0 lines.
 
 ```bash
 sum_range 1 10   # 55
 sum_range 5 10   # 45
-sum_range 1 1    # 1   — single-element range
+sum_range 1 1    # 1
 sum_range 0 0    # 0
-```
 
-**`count_lines filename`** — echoes the number of lines in the file. Use `while IFS= read -r`; do not use `wc`.
+printf "line1\nline2\nline3\n" > "$f"
+count_lines "$f"   # 3
+printf "only one\n" > "$f"
+count_lines "$f"   # 1
+printf "" > "$f"
+count_lines "$f"   # 0
 
-```bash
-# file contains: line1\nline2\nline3\n
-count_lines "$file"   # 3
-
-# empty file
-count_lines "$empty_file"   # 0
-```
-
-**`fizzbuzz n`** — echoes FizzBuzz output for 1 through `n`, one result per line: `Fizz` for multiples of 3, `Buzz` for multiples of 5, `FizzBuzz` for multiples of both, otherwise the number itself.
-
-```bash
-fizzbuzz 5
+fizzbuzz 15
 # 1
 # 2
 # Fizz
 # 4
 # Buzz
-
-fizzbuzz 15   # 15th line is FizzBuzz (divisible by both 3 and 5)
+# Fizz
+# ...
+# Buzz (line 10)
+# ...
+# FizzBuzz (line 15)
 ```

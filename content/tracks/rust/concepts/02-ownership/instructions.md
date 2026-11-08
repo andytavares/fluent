@@ -1,99 +1,110 @@
-# Ownership
+## What you build
 
-## What you'll learn
-
-Rust's ownership system is what makes memory safety without a garbage collector possible. It is the single most important concept in the language — understanding it unlocks everything else.
+You write three functions that take, return and clone a `String`. Ownership gives Rust memory safety without a garbage collector, and the rest of the language depends on it. This lesson builds on **Variables & Types**.
 
 ## Key concepts
 
-**The three rules of ownership:**
-1. Every value has exactly one owner.
-2. When the owner goes out of scope, the value is dropped (memory freed).
-3. There can only be one owner at a time.
+### Ownership has three rules
 
-**Stack vs heap.** Scalar types (`i32`, `bool`, `f64`, `char`) and fixed-size composites live on the stack. They implement the `Copy` trait — assignments copy the value. Heap-allocated types like `String` and `Vec<T>` do not implement `Copy` by default.
+1. Every value has exactly one owner.
+2. When the owner goes out of scope, Rust drops the value and frees its memory.
+3. A value has only one owner at a time.
+
+### `Copy` types copy on assignment
+
+Scalar types (`i32`, `bool`, `f64`, `char`) live on the stack and implement the `Copy` trait. Tuples and arrays of `Copy` types are `Copy` too. Heap types such as `String` and `Vec<T>` do not implement `Copy`.
 
 ```rust
 let x: i32 = 5;
-let y = x;       // copy: x and y are independent
+// Copy: x and y are independent
+let y = x;
 println!("{}", x); // fine
 ```
 
-**Move semantics.** When you assign a heap type, ownership moves to the new variable. The original binding is invalidated.
+### Assignment moves a heap value
+
+When you assign a `String`, ownership moves to the new variable. The old binding becomes invalid. Rust does not copy the heap data. It copies only the pointer, length and capacity on the stack.
 
 ```rust
 let s1 = String::from("hello");
-let s2 = s1;              // s1 is moved into s2
-println!("{}", s1);       // error[E0382]: borrow of moved value: `s1`
+// s1 moves into s2
+let s2 = s1;
+// error[E0382]: borrow of moved value
+println!("{}", s1);
 ```
 
-This is not a shallow copy — it is a move. The allocation is not duplicated; only the pointer/length/capacity metadata on the stack is transferred.
+### `.clone()` makes a deep copy
 
-**`Clone` for an explicit deep copy.** When you actually need a duplicate heap allocation, call `.clone()`.
+When you need a second heap allocation, call `.clone()`. Both values stay valid.
 
 ```rust
 let s1 = String::from("hello");
 let s2 = s1.clone();
-println!("{} {}", s1, s2); // both valid
+// Both are valid
+println!("{} {}", s1, s2);
 ```
 
-**Drop.** When a value's owner goes out of scope, Rust calls `drop` automatically (the destructor). No `free`, no `delete`, no GC pause.
+### Rust drops a value at the end of its scope
+
+When the owner goes out of scope, Rust calls `drop`, the destructor. You write no `free` or `delete`, and no garbage collector pauses the program.
 
 ```rust
 {
     let s = String::from("owned");
-} // s is dropped here, heap memory freed
+} // Rust drops s and frees its memory
 ```
 
-**`String` vs `&str`.** `String` is an owned, heap-allocated, growable buffer. `&str` is a borrowed reference to a string slice — it does not own the data. String literals are `&'static str` baked into the binary.
+### `String` owns its text and `&str` borrows it
+
+A `String` is an owned, growable buffer on the heap. A `&str` is a reference to a string slice and owns no data. String literals are `&'static str` values stored in the binary.
 
 ```rust
-let owned: String = String::from("hello");
-let borrowed: &str = "world";            // static slice
-let slice: &str = &owned[0..3];         // slice of owned String
+let owned = String::from("hello");
+// A static slice
+let borrowed: &str = "world";
+// A slice of the owned String
+let slice: &str = &owned[0..3];
 ```
 
-## vs other languages
+### The compiler prevents double-free and use-after-free
 
-| | Rust | C++ | Go | Java/TS |
-|---|---|---|---|---|
-| Heap lifecycle | **compiler-enforced drop** | manual `delete` / RAII | GC | GC |
-| Copying heap data | explicit `.clone()` | implicit copy ctor | struct copy (all values) | reference semantics |
-| Double-free | **impossible** | classic bug | impossible (GC) | impossible (GC) |
-| Use-after-free | **impossible** | classic bug | impossible (GC) | impossible (GC) |
-
-C++ RAII gets you automatic destructors, but nothing prevents you from using a moved-from object. Rust makes that a compile error.
+C++ RAII also runs destructors automatically, but C++ lets you use a moved-from object. In Rust, that use is a compile error.
 
 ## Watch out
 
-- Passing a `String` (or any non-`Copy` type) by value to a function **moves** it — the caller loses access unless the function hands it back. If you only need to read the value, take a reference (`&String` or, better, `&str`) instead of taking ownership.
-- `.clone()` is a real heap allocation, not free. Reach for it when you genuinely need an independent copy; don't sprinkle it to silence the borrow checker without understanding why it's complaining.
-- Returning a value out of a function moves it to the caller — this is why `append_world` can take `s: String` and hand back a new `String` without needing `.clone()`: ownership transfers out, nothing is duplicated.
+- Passing a `String` by value moves it. The caller loses it unless the function returns it.
+- The same move happens for every type that is not `Copy`.
+- To only read a value, take a reference such as `&str`. Do not take ownership.
+- `.clone()` allocates heap memory. Use it only when you need an independent copy.
+- Do not add `.clone()` only to silence the borrow checker. First find out why it complains.
+- Returning a value moves it to the caller. So `append_world` can return a new `String` without `.clone()`.
 
 ## The task
 
-Implement three functions that exercise ownership and cloning:
+Write three functions that use ownership and cloning.
+
+1. `fn string_length(s: String) -> usize` takes ownership of `s`. It returns the length in bytes.
+2. `fn append_world(s: String) -> String` takes ownership of `s`. It returns `s` with `" world"` added at the end.
+3. `fn exclaim(s: &String) -> String` returns a clone of `s` with `"!"` added at the end.
+4. `exclaim` must not consume `s`. The caller can still use the original after the call.
+
+An empty string has length 0. `append_world` on an empty string returns `" world"`. `exclaim` on an empty string returns `"!"`.
 
 ```rust
-// Takes ownership of a String and returns its length (byte length).
-fn string_length(s: String) -> usize
+string_length(String::from("hello")) // 5
+string_length(String::from(""))      // 0
+string_length(String::from("Rust"))  // 4
 
-// Takes ownership of a String, appends " world", and returns the new String.
-fn append_world(s: String) -> String
-
-// Clones the input string and returns the clone with "!" appended.
-// The original must still be usable by the caller — do NOT consume it.
-fn exclaim(s: &String) -> String
-```
-
-```rust
-string_length(String::from("hello")); // 5
-string_length(String::from(""));      // 0
-
-append_world(String::from("hello"));  // "hello world"
-append_world(String::from(""));       // " world"
+append_world(String::from("hello"))
+// "hello world"
+append_world(String::from(""))
+// " world"
 
 let original = String::from("hey");
-exclaim(&original);  // "hey!"
-original;             // still "hey" — exclaim did not consume it
+exclaim(&original)  // "hey!"
+original            // still "hey"
+
+let empty = String::from("");
+exclaim(&empty)     // "!"
+empty               // still ""
 ```

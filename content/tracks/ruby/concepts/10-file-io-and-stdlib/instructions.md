@@ -1,111 +1,121 @@
-# File I/O & Stdlib
+## What you build
 
-## What you'll learn
-
-Reading and writing files, working with `JSON` and `CSV`, path manipulation with `Pathname`, and globbing with `Dir`.
+You write four functions that count file lines, read JSON keys, extract a CSV column and write lines to a file. This lesson builds on **Modules & Mixins**.
 
 ## Key concepts
 
-### Reading files
+### Three ways to read a file
+
+`File.read` reads the whole file. `File.foreach` reads one line at a time and uses less memory. `File.readlines` returns an array of lines.
 
 ```ruby
-# Slurp the whole file
 content = File.read("data.txt")
 
-# Read line by line (memory-efficient)
-File.foreach("data.txt") { |line| puts line.chomp }
+File.foreach("data.txt") do |line|
+  puts line.chomp
+end
 
-# Read all lines into an array
-lines = File.readlines("data.txt", chomp: true)
+lines = File.readlines("data.txt",
+                       chomp: true)
 ```
 
-`chomp: true` (Ruby 2.4+) strips the trailing newline from each line — almost always what you want.
+`chomp: true` (Ruby 2.4 or later) removes the trailing newline from each line.
 
-### Writing files
+### The block form of `File.open` closes the file
+
+`File.write` overwrites a file. `File.open` with a block closes the file when the block exits, even after an exception. It works like `try`-with-resources in Java or `defer f.Close()` in Go.
 
 ```ruby
-File.write("output.txt", "hello\n")  # overwrites
+File.write("output.txt", "hello\n")
 
-File.open("output.txt", "a") do |f|  # append mode
+# "a" opens in append mode
+File.open("output.txt", "a") do |f|
   f.puts "another line"
-end                                   # file is closed automatically
+end
 ```
 
-The block form of `File.open` closes the file when the block exits, even if an exception is raised — equivalent to `try-with-resources` in Java or a `defer f.Close()` in Go.
+### `Pathname` makes paths into objects
 
-### Pathname
-
-`Pathname` wraps a path string with a rich object API. It's more composable than `File.join` strings:
+`Pathname` wraps a path string in an object. It composes better than `File.join` strings.
 
 ```ruby
 require "pathname"
 
 base = Pathname.new("/var/log")
-log  = base / "app" / "errors.log"   # => #<Pathname:/var/log/app/errors.log>
+log = base / "app" / "errors.log"
+# => #<Pathname:/var/log/app/errors.log>
 
 log.exist?
 log.directory?
-log.extname    # => ".log"
-log.basename   # => #<Pathname:errors.log>
-log.parent     # => #<Pathname:/var/log/app>
+log.extname   # => ".log"
+log.basename  # => #<Pathname:errors.log>
+log.parent    # => #<Pathname:/var/log/app>
 
-Pathname.new("~/docs").expand_path   # resolves ~
+# Resolves ~
+Pathname.new("~/docs").expand_path
 ```
 
-### Dir.glob
+### `Dir.glob` finds files by pattern
+
+`Dir[]` is short for `Dir.glob`.
 
 ```ruby
-Dir.glob("**/*.rb")          # all .rb files recursively
-Dir.glob("data/*.{csv,tsv}") # CSV or TSV files in data/
-Dir["tmp/**/*"].each { |f| File.delete(f) if File.file?(f) }
+# All .rb files, recursively
+Dir.glob("**/*.rb")
+# CSV or TSV files in data/
+Dir.glob("data/*.{csv,tsv}")
+
+Dir["tmp/**/*"].each do |f|
+  File.delete(f) if File.file?(f)
+end
 ```
 
-`Dir[]` is a shorthand alias for `Dir.glob`.
+### `JSON` parses to string keys
 
-### JSON
+`JSON.parse` returns string keys. Pass `symbolize_names: true` for symbol keys, which Rails-style code often uses.
 
 ```ruby
 require "json"
 
-# Parse
-data = JSON.parse('{"name":"Alice","age":30}')
+data = JSON.parse('{"name":"Alice"}')
 data["name"]  # => "Alice"
 
-# With symbol keys (common in Rails-style code):
-data = JSON.parse('{"name":"Alice"}', symbolize_names: true)
+data = JSON.parse('{"name":"Alice"}',
+                  symbolize_names: true)
 data[:name]   # => "Alice"
 
-# Generate
-JSON.generate({ name: "Alice", scores: [1, 2, 3] })
-# => '{"name":"Alice","scores":[1,2,3]}'
+JSON.generate({ name: "Alice", n: [1, 2] })
+# => '{"name":"Alice","n":[1,2]}'
 
-# Pretty-print
 JSON.pretty_generate({ name: "Alice" })
 ```
 
-### CSV
+### `CSV` reads rows by header
+
+With `headers: true`, the first row is the header row. `row["col"]` looks up a value by header name.
 
 ```ruby
 require "csv"
 
-# Parse a CSV string
-CSV.parse("name,age\nAlice,30\nBob,25", headers: true) do |row|
+text = "name,age\nAlice,30\nBob,25"
+CSV.parse(text, headers: true) do |row|
   puts "#{row["name"]} is #{row["age"]}"
 end
 
-# Read a CSV file
-CSV.foreach("data.csv", headers: true) { |row| p row.to_h }
+CSV.foreach("data.csv",
+            headers: true) do |row|
+  p row.to_h
+end
 
-# Write a CSV file
 CSV.open("out.csv", "w") do |csv|
   csv << ["name", "score"]
   csv << ["Alice", 95]
 end
 ```
 
-### Tempfile for tests
+### `Tempfile` gives tests a real file
 
-When tests need real files, use `Tempfile` — it creates a temp file and deletes it on GC or explicit `unlink`:
+`Tempfile.create` with a block makes a temporary file and deletes it when the block exits. Ruby deletes a `Tempfile.new` file on `unlink` or at garbage collection.
 
 ```ruby
 require "tempfile"
@@ -114,69 +124,70 @@ Tempfile.create("prefix") do |f|
   f.write("data")
   f.rewind
   puts f.read
-end  # file deleted here
+end
 ```
 
-## vs other languages
+### File I/O is synchronous
 
-| | Ruby | Python | Go | Java |
-|---|---|---|---|---|
-| File slurp | `File.read` | `open(f).read()` | `os.ReadFile` | `Files.readString` |
-| Block-scoped file | `File.open(f) { |f| }` | `with open(f) as f:` | `defer f.Close()` | `try-with-resources` |
-| JSON parse | `JSON.parse(str)` | `json.loads(str)` | `json.Unmarshal` | `ObjectMapper.readValue` |
-| Path join | `Pathname.new(a) / b` | `Path(a) / b` | `filepath.Join(a, b)` | `Paths.get(a, b)` |
-| Glob | `Dir.glob("**/*.rb")` | `glob.glob("**/*.py")` | `filepath.Glob` | `Files.walk` |
-
-Ruby's stdlib has no async I/O — all file operations are synchronous. For high-concurrency I/O in Ruby, use threads (CRuby has a GVL but releases it for I/O) or Ractors (Ruby 3+).
+The standard library has no async I/O. For many concurrent I/O tasks, use threads or Ractors (Ruby 3 or later). CRuby has a GVL, but it releases the GVL during I/O.
 
 ## Watch out
 
-- `File.exist?` (and most `File` methods) accept either a `String` or anything that responds to `to_path`/`to_str` — but to be safe, call `.to_s` on a `Pathname` argument before passing it to older APIs that expect a plain string.
-- `JSON.parse` returns **string** keys by default (`data["name"]`, not `data[:name]`) — you need `symbolize_names: true` to get symbols. Mixing this up with a hash literal (which defaults to symbols) is a common source of `nil` lookups.
-- `File.foreach`/`File.readlines` without `chomp: true` leave the trailing `"\n"` on every line — don't forget it when counting or comparing lines.
-- `CSV.parse(str, headers: true)` treats the first row as headers, not data — iterating gives you one row per **data** row, and `row["col"]` looks up by header name, not by string content.
-- `Tempfile.create` requires an explicit `f.flush` (or closing the file) before another process/method reads it — writes are buffered and not guaranteed visible until flushed.
+- Most `File` methods accept a `String` or an object with `to_path`. For older APIs, call `.to_s` on a `Pathname`.
+- `JSON.parse` gives string keys, so `data[:name]` returns `nil`. Pass `symbolize_names: true` for symbols.
+- Without `chomp: true`, `File.foreach` and `File.readlines` keep the `"\n"` on every line.
+- With `headers: true`, `CSV.parse` treats the first row as headers. Each row you get is a data row.
+- Ruby buffers writes to a `Tempfile`. Call `f.flush`, or close the file, before another reader opens it.
 
 ## The task
 
-Implement four functions covering file reading/writing, JSON, and CSV.
+Write four functions in `stub.rb`. They read and write files, and parse JSON and CSV.
 
-**`count_lines(path)`** — returns the number of lines in the file at `path` (a `String` or `Pathname`). Returns `0` if the file does not exist.
-
-```ruby
-# file contains "alpha\nbeta\ngamma\n"
-count_lines("data.txt")               # => 3
-count_lines(Pathname.new("data.txt")) # => 3
-count_lines("/nonexistent/file.txt")  # => 0
-# file contains "no trailing newline" (no \n at end)
-count_lines("one_line.txt")           # => 1
-```
-
-**`parse_json_keys(json_string)`** — parses `json_string` and returns an `Array` of the top-level keys as strings, sorted alphabetically.
+1. `count_lines(path)` returns the number of lines in the file at `path`.
+2. `path` can be a `String` or a `Pathname`.
+3. `count_lines` returns `0` if the file does not exist. An empty file also has 0 lines.
+4. A last line with no trailing newline still counts as a line.
+5. `parse_json_keys(json_string)` parses a JSON object and returns its top-level keys as strings.
+6. `parse_json_keys` sorts the keys alphabetically.
+7. `csv_column(csv_string, column_name)` parses CSV text whose first row is the header row.
+8. `csv_column` returns the values of the column named `column_name`, as strings, exactly as they appear.
+9. `write_lines(path, lines)` writes each element of `lines` as one line to the file at `path`.
+10. `write_lines` overwrites any old content. An empty array leaves an empty file.
 
 ```ruby
-parse_json_keys('{"zebra":1,"apple":2,"mango":3}')  # => ["apple", "mango", "zebra"]
-parse_json_keys('{}')                                # => []
-parse_json_keys('{"x":null}')                        # => ["x"]
-```
+# File holds "alpha\nbeta\ngamma\n"
+count_lines(path)                # => 3
+count_lines(Pathname.new(path))  # => 3
+# File is empty
+count_lines(path)                # => 0
+# File holds "no trailing newline"
+count_lines(path)                # => 1
+count_lines("/nonexistent/path/file.txt")
+# => 0
 
-**`csv_column(csv_string, column_name)`** — parses `csv_string` (whose first row is a header row) and returns an `Array` of values from the column named `column_name`, as strings exactly as they appear in the CSV.
+parse_json_keys(
+  '{"zebra":1,"apple":2,"mango":3}'
+)
+# => ["apple", "mango", "zebra"]
+parse_json_keys('{"name":"Alice","id":1}')
+# => ["id", "name"]
+parse_json_keys('{}')          # => []
+parse_json_keys('{"x":null}')  # => ["x"]
 
-```ruby
 csv = "name,score\nAlice,95\nBob,87\nCarol,91"
-csv_column(csv, "name")   # => ["Alice", "Bob", "Carol"]
-csv_column(csv, "score")  # => ["95", "87", "91"]  — strings, not integers
-```
+csv_column(csv, "name")
+# => ["Alice", "Bob", "Carol"]
+csv_column(csv, "score")
+# => ["95", "87", "91"]
+csv_column("only\nrow1\nrow2", "only")
+# => ["row1", "row2"]
 
-**`write_lines(path, lines)`** — writes each element of the `lines` array as a separate line to the file at `path`, overwriting any existing content.
-
-```ruby
-write_lines("out.txt", ["hello", "world", "ruby"])
-File.readlines("out.txt", chomp: true)  # => ["hello", "world", "ruby"]
-
-write_lines("out.txt", ["overwritten"])
-File.readlines("out.txt", chomp: true)  # => ["overwritten"]  — old content gone
-
-write_lines("out.txt", [])
-File.read("out.txt")  # => ""
+write_lines(path, ["hello", "world"])
+File.readlines(path, chomp: true)
+# => ["hello", "world"]
+write_lines(path, ["overwritten"])
+File.readlines(path, chomp: true)
+# => ["overwritten"]
+write_lines(path, [])
+File.read(path)  # => ""
 ```

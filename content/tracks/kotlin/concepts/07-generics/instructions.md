@@ -1,47 +1,46 @@
-# Generics
+## What you build
 
-## What you'll learn
-
-Kotlin generics cover the same territory as Java generics but with cleaner syntax for variance (`out`/`in` instead of `? extends`/`? super`) and a unique feature — `reified` type parameters — that solves one of Java's biggest generic limitations.
+You write a generic `clamp`, a generic `Stack` class and a `partition` function that reads its type parameter at runtime. Kotlin writes variance as `out` and `in`, and adds `reified` type parameters. This lesson builds on **Sealed Classes & When**.
 
 ## Key concepts
 
-**Generic functions and classes**
+### Functions and classes take type parameters
 
 ```kotlin
 fun <T> identity(value: T): T = value
 
 class Box<T>(val value: T) {
-    fun map(transform: (T) -> T): Box<T> = Box(transform(value))
+    fun map(transform: (T) -> T) =
+        Box(transform(value))
 }
 
 val box = Box(42)
-val doubled = box.map { it * 2 }   // Box(84)
+// Box(84)
+val doubled = box.map { it * 2 }
 ```
 
-**Type bounds**
+### A bound limits what `T` can be
 
-Constrain what `T` can be with `:`:
+Write the bound after `:`. Write more than one bound with `where`. Java writes `<T extends A & B>`; Kotlin writes `where T : A, T : B`.
 
 ```kotlin
-fun <T : Comparable<T>> max(a: T, b: T): T = if (a > b) a else b
+fun <T : Comparable<T>> max(a: T, b: T) =
+    if (a > b) a else b
 
-max(3, 5)         // 5
-max("apple", "banana")  // "banana"
+max(3, 5)              // 5
+max("apple", "banana") // "banana"
+
+fun <T> process(item: T)
+    where T : Comparable<T>,
+          T : Cloneable { }
 ```
 
-Multiple bounds use `where`:
+### `out` and `in` declare variance on the type
 
-```kotlin
-fun <T> process(item: T) where T : Comparable<T>, T : Cloneable { ... }
-```
+Kotlin uses declaration-site variance. You mark the type parameter once, on the class, not at every use.
 
-**Variance: `out` and `in`**
-
-Kotlin uses declaration-site variance — you annotate the type parameter on the class, not at the call site.
-
-- `out T` (covariant) — the class only **produces** `T`. You can assign `Producer<Cat>` to `Producer<Animal>`.
-- `in T` (contravariant) — the class only **consumes** `T`. You can assign `Consumer<Animal>` to `Consumer<Cat>`.
+- `out T` (covariant): the class only produces `T`. A `Producer<Cat>` is a `Producer<Animal>`.
+- `in T` (contravariant): the class only consumes `T`. A `Consumer<Animal>` is a `Consumer<Cat>`.
 
 ```kotlin
 interface Producer<out T> {
@@ -53,47 +52,64 @@ interface Consumer<in T> {
 }
 ```
 
-This is equivalent to Java's `? extends T` and `? super T`, but declared on the interface rather than every call site.
+Java writes `? extends T` and `? super T` at each use. Kotlin declares `interface List<out E>` once.
 
-**`reified` type parameters**
+### `reified` keeps the type at runtime
 
-Java erases generic types at runtime — you can't write `T::class` inside a generic function. Kotlin solves this with `inline` + `reified`:
+The JVM erases generic types, so a normal generic function cannot check `T`. An `inline` function with a `reified` type parameter can. You then need no `Class<T>` parameter.
 
 ```kotlin
-inline fun <reified T> filterByType(list: List<Any>): List<T> =
-    list.filterIsInstance<T>()
+inline fun <reified T> filterByType(
+    list: List<Any>,
+): List<T> = list.filterIsInstance<T>()
 
-val mixed = listOf(1, "hello", 2.0, "world")
-filterByType<String>(mixed)   // ["hello", "world"]
+val mixed =
+    listOf(1, "hello", 2.0, "world")
+// ["hello", "world"]
+filterByType<String>(mixed)
 ```
 
-`inline` copies the function body at each call site. `reified` makes the actual type available at runtime, eliminating the need for `Class<T>` parameters.
-
-## vs other languages
-
-| Feature | Java | TypeScript | Kotlin |
-|---------|------|------------|--------|
-| Variance | Use-site (`? extends`, `? super`) | `extends` on call site | Declaration-site (`out`/`in`) |
-| Runtime type info | Erased, use `Class<T>` param | Erased | `reified` with `inline` |
-| Type bounds | `<T extends Foo>` | `<T extends Foo>` | `<T : Foo>` |
-| Multiple bounds | `<T extends A & B>` | `<T extends A & B>` | `where T : A, T : B` |
-
-Declaration-site variance is the bigger mental shift for Java developers. Instead of writing `List<? extends Animal>` everywhere you pass a list, you declare `interface List<out E>` once and it just works.
+`inline` copies the function body into each call site. The concrete type then exists in that copy.
 
 ## Watch out
 
-- `reified` type parameters only exist on functions also marked `inline` — the compiler needs to paste the function body (and thus the concrete type) at each call site. A non-`inline` generic function can never inspect its own `T` at runtime.
-- `out T` means `T` can only appear in "out" (return) positions in the class's public API — put it in an `in` position (e.g. a function parameter of type `T`) and the compiler rejects the declaration.
-- A type bound (`<T : Comparable<T>>`) restricts what callers can pass — it does not, by itself, make `T` comparable *to another type*; both operands of `<`/`>` must be the same `T`.
+- `reified` works only on an `inline` function. A function that is not `inline` can never inspect its own `T`.
+- With `out T`, `T` can appear only in out positions, such as return types. A parameter of type `T` is a compile error.
+- `<T : Comparable<T>>` compares a `T` only with another `T`. Both operands of `<` and `>` must be the same `T`.
 
 ## The task
 
-Implement the following in `stub.kt`:
+You write three generic building blocks in `stub.kt`.
 
-- `fun <T : Comparable<T>> clamp(value: T, min: T, max: T): T` — returns `value` clamped to the range `[min, max]`.
-- `class Stack<T>` — a generic LIFO stack with:
-  - `fun push(item: T)` — adds item to the top
-  - `fun pop(): T?` — removes and returns the top item, or `null` if empty
-  - `fun peek(): T?` — returns the top item without removing it, or `null` if empty
-  - `val size: Int` — number of items
-- `inline fun <reified T> partition(list: List<Any>): Pair<List<T>, List<Any>>` — splits `list` into items that are `T` (first) and items that are not `T` (second).
+1. `fun <T : Comparable<T>> clamp(value: T, min: T, max: T): T` returns `min` if `value` is below `min`.
+2. `clamp` returns `max` if `value` is above `max`. Otherwise it returns `value`.
+3. `class Stack<T>` is a last-in, first-out stack.
+4. `fun push(item: T)` adds `item` to the top.
+5. `fun pop(): T?` removes and returns the top item. On an empty stack it returns `null`.
+6. `fun peek(): T?` returns the top item without removing it. On an empty stack it returns `null`.
+7. `val size: Int` is the number of items.
+8. `inline fun <reified T> partition(list: List<Any>): Pair<List<T>, List<Any>>` splits `list` in two.
+9. The first list has the items that are a `T`. The second list has the other items. Both keep the input order.
+
+```kotlin
+clamp(5, 1, 10)       // 5
+clamp(-1, 0, 10)      // 0
+clamp(15, 0, 10)      // 10
+clamp("m", "a", "z")  // "m"
+clamp(-0.1, 0.0, 1.0) // 0.0
+
+val s = Stack<Int>()
+s.pop()     // null
+s.push(1)
+s.push(2)
+s.peek()    // 2
+s.size      // 2
+s.pop()     // 2
+s.pop()     // 1
+
+partition<String>(
+    listOf(1, "hello", 2, "world"))
+// ([hello, world], [1, 2])
+partition<Int>(listOf("a", "b"))
+// ([], [a, b])
+```

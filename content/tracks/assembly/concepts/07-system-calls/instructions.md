@@ -1,14 +1,12 @@
-# System Calls
+## What you build
 
-## What you'll learn
-
-How Linux system calls work at the instruction level: the syscall ABI register assignment, the `syscall` instruction, and how to use `write(2)` and `exit(60)` directly without libc.
+You write `print_message`, which writes bytes to stdout, and `exit_with_code`, which ends the process. Both call the Linux kernel directly with `syscall`, without libc. This lesson builds on **Memory & Addressing**.
 
 ## Key concepts
 
-### The Linux syscall ABI
+### The syscall ABI has its own registers
 
-The kernel exposes services through the `syscall` instruction. The ABI (separate from the user-space calling convention) uses:
+The kernel gives its services through the `syscall` instruction. This ABI is separate from the user-space calling convention.
 
 | Role | Register |
 |------|----------|
@@ -16,14 +14,23 @@ The kernel exposes services through the `syscall` instruction. The ABI (separate
 | Arg 1 | `rdi` |
 | Arg 2 | `rsi` |
 | Arg 3 | `rdx` |
-| Arg 4 | `r10` (not `rcx`!) |
+| Arg 4 | `r10` (not `rcx`) |
 | Arg 5 | `r8` |
 | Arg 6 | `r9` |
 | Return value | `rax` |
 
-Note that arg 4 is `r10`, not `rcx`. This is different from the user-space ABI because the kernel clobbers `rcx` and `r11` internally (it stores the return address in `rcx` and RFLAGS in `r11`).
+Argument 4 goes in `r10`, because `syscall` overwrites `rcx` and `r11`. It stores the return address in `rcx` and RFLAGS in `r11`.
 
-### Common syscall numbers (x86-64 Linux)
+```nasm
+; arg 4 of a syscall
+mov  r10, 0
+syscall
+; rcx and r11 now hold other values
+```
+
+### Each syscall has a number
+
+These are common numbers on x86-64 Linux. The full table is in `/usr/include/asm/unistd_64.h` and the `syscall(2)` man page.
 
 | Number | Name | Signature |
 |--------|------|-----------|
@@ -32,81 +39,101 @@ Note that arg 4 is `r10`, not `rcx`. This is different from the user-space ABI b
 | 60 | `exit` | `exit(status)` |
 | 231 | `exit_group` | `exit_group(status)` |
 
-Full table: `/usr/include/asm/unistd_64.h` or `syscall(2)` man page.
+### `write` sends bytes to a file descriptor
 
-### Writing to stdout
+File descriptor 1 is stdout. `$` is the current address, so `$ - msg` is the length of `msg`.
 
 ```nasm
 section .data
-    msg db "Hello, kernel!", 10    ; 10 = newline
-    msg_len equ $ - msg            ; $ is current address, so len = end - start
+    ; 10 = newline
+    msg db "Hello, kernel!", 10
+    msg_len equ $ - msg
 
 section .text
     ; write(1, msg, msg_len)
-    mov  rax, 1          ; syscall: write
-    mov  rdi, 1          ; fd: stdout
-    mov  rsi, msg        ; buf: address of message
-    mov  rdx, msg_len    ; count: bytes to write
-    syscall              ; returns bytes written in rax (or negative errno)
+    ; syscall: write
+    mov  rax, 1
+    ; fd: stdout
+    mov  rdi, 1
+    ; buf: address of the message
+    mov  rsi, msg
+    ; count: bytes to write
+    mov  rdx, msg_len
+    ; rax = bytes written, or -errno
+    syscall
 ```
 
-### Exiting cleanly
+### `exit` ends the calling thread
+
+`exit` (60) does not return. In a multi-threaded program, use `exit_group` (231) to end all threads.
 
 ```nasm
-    mov  rax, 60         ; syscall: exit
-    xor  rdi, rdi        ; status: 0
-    syscall              ; does not return
+    ; syscall: exit
+    mov  rax, 60
+    ; status: 0
+    xor  rdi, rdi
+    ; does not return
+    syscall
 ```
 
-Use `exit_group` (231) for multi-threaded programs — `exit` (60) only terminates the calling thread.
+### A negative return value is an error
 
-### Error handling
-
-On error, `syscall` returns a negative value in `rax` (specifically `-errno`). To check:
+On error, `syscall` returns `-errno` in `rax`.
 
 ```nasm
     syscall
     test  rax, rax
-    js    .error         ; SF=1 means rax is negative
+    ; SF=1: rax is negative
+    js    .error
 ```
 
-## vs other languages
+### libc and runtimes wrap the same instruction
 
-In C, `printf("hello\n")` ultimately calls `write(1, ...)` through the C runtime's stdio buffering layer. `exit(0)` in C calls destructors, flushes stdio, then calls `exit_group`. Here you call the kernel directly — no buffering, no cleanup.
+In C, `printf("hello\n")` buffers in stdio, then calls `write(1, ...)`. C `exit(0)` runs exit handlers, flushes stdio, then calls `exit_group`. The Go runtime wraps each `syscall` so the scheduler can park a goroutine during a blocking call. Here you call the kernel directly, with no buffer and no cleanup.
 
-Go's runtime also issues `syscall` instructions, but wraps them in goroutine-scheduler-aware wrappers so the scheduler can park goroutines during blocking calls. The raw kernel interface is the same.
+```nasm
+; no buffer: the bytes go to fd 1 now
+mov  rax, 1
+syscall
+```
 
 ## Watch out
 
-- Syscall argument 4 goes in `r10`, **not** `rcx` — the kernel's `syscall`/`sysret` mechanism uses `rcx` to hold the return address and `r11` to hold RFLAGS, so both are clobbered unconditionally by every `syscall` instruction. Never assume `rcx` or `r11` survive a syscall.
-- `write` can return fewer bytes than requested (a "short write"), even for small buffers, if the destination is a pipe under backpressure. Production code loops, calling `write` again with the remaining bytes, until everything is sent. This lesson's `print_message` does a single `write` call and does not need to handle that — but real code must.
-- `exit` (60) terminates only the calling thread; in a single-threaded program that looks identical to `exit_group` (231), but multi-threaded programs must use `exit_group` or other threads keep running.
-- The kernel truncates the exit status to its low 8 bits — `exit_with_code(256)` and `exit_with_code(0)` are indistinguishable to a shell checking `$?`.
+- Argument 4 goes in `r10`, not `rcx`. Every `syscall` overwrites `rcx` and `r11`.
+- `write` can write fewer bytes than you ask for, for example to a full pipe. Real code calls `write` again with the remaining bytes.
+- The task needs only one `write` call. Production code must handle the short write.
+- `exit` (60) ends only the calling thread. In a multi-threaded program, other threads keep running. Use `exit_group` (231).
+- The kernel keeps only the low 8 bits of the exit status. To a shell, `exit_with_code(256)` and `exit_with_code(0)` look the same.
 
 ## The task
 
-Implement `print_message`, which writes a buffer to stdout using the `write` syscall directly (no libc), and `exit_with_code`, which terminates the process via the `exit` syscall:
+Write two procedures that call the kernel with `syscall`, without libc.
+
+1. `print_message` takes `rdi = msg`, a byte pointer, and `rsi = len`, a byte count.
+2. `print_message` writes exactly `len` bytes from `msg` to stdout (file descriptor 1). Use `write` (syscall 1).
+3. `print_message` returns nothing.
+4. `exit_with_code` takes the exit status in `rdi`.
+5. `exit_with_code` ends the process with `exit` (syscall 60) and that status. It never returns.
+
+The `write` syscall needs `rdi = 1`, `rsi = msg` and `rdx = len`. Move `rsi` into `rdx` and `rdi` into `rsi` before you set `rdi`. Otherwise you overwrite an input. `syscall` overwrites `rax`, `rcx` and `r11`. A length of 0 is valid and writes nothing.
 
 ```nasm
-; void print_message(const char *msg, int64_t len)
-; rdi = pointer to bytes to write, rsi = byte count
-; Writes exactly `len` bytes from msg to stdout (fd=1) via syscall write(1)
+; void print_message(const char *msg,
+;     int64_t len)
 print_message:
     ; TODO
+    ret
 
 ; void exit_with_code(int64_t code)
-; rdi = exit status code
-; Calls syscall exit(60) with the given status. Never returns.
 exit_with_code:
     ; TODO
+
+print_message("hello", 5)
+; writes the 5 bytes "hello"
+print_message("X", 1)
+; writes 1 byte: "X"
+print_message(msg, 0)
+; writes nothing
+exit_with_code(0)
+; process ends with status 0
 ```
-
-Register contract for `print_message`: `rdi` and `rsi` are inputs; both are caller-saved so you may load them into the syscall argument registers (`rdi`=fd, `rsi`=buf, `rdx`=count) directly — just be careful about the order you move them, since the syscall's `rdi` (fd) and `rsi` (buf) don't line up with the incoming argument registers of the same name. The syscall clobbers `rax`, `rcx`, and `r11`; the procedure returns nothing (void).
-
-```nasm
-print_message("hello", 5);   // writes exactly the 5 bytes "hello" to fd 1
-print_message("X", 1);       // writes exactly 1 byte
-print_message(ptr, 0);       // a zero-length write is valid and writes nothing
-```
-
-`exit_with_code` takes the status in `rdi` and never returns — the syscall replaces the running process.

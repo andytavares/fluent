@@ -1,17 +1,19 @@
-# File I/O
+## What you build
 
-## What you'll learn
-
-C's file I/O is done through `FILE*` pointers — an opaque handle representing an open file. The standard library (`<stdio.h>`) provides functions for reading and writing text and binary data. There is no automatic resource management: every `fopen` must have a matching `fclose`.
+You write five functions that count lines, measure size, copy files, and write and read binary ints. C does file I/O through `FILE*` pointers from `<stdio.h>`. This lesson builds on **Dynamic Memory**.
 
 ## Key concepts
 
-**Opening and closing:**
+### A `FILE*` is a handle to an open file
+
+`fopen` returns an opaque handle, or `NULL` on failure. Every successful `fopen` needs a matching `fclose`.
+
 ```c
 #include <stdio.h>
 
-FILE *f = fopen("data.txt", "r");   // "r" read, "w" write, "a" append
-if (f == NULL) {                     // always check — fopen returns NULL on failure
+FILE *f = fopen("data.txt", "r");
+// Always check: NULL means failure
+if (f == NULL) {
     perror("fopen");
     return -1;
 }
@@ -19,74 +21,110 @@ if (f == NULL) {                     // always check — fopen returns NULL on f
 fclose(f);
 ```
 
-Mode strings: `"r"` (read), `"w"` (write/create/truncate), `"a"` (append), `"rb"`/`"wb"` (binary).
+### The mode string sets the access
 
-**Reading text:**
+| Mode | Meaning |
+|------|---------|
+| `"r"` | Read |
+| `"w"` | Write: create or truncate |
+| `"a"` | Append |
+| `"rb"`, `"wb"` | Binary read, binary write |
+
+### `fgets` reads one line
+
+`fgets` reads at most `n-1` characters and adds a `'\0'`. The line keeps its `'\n'`. It returns `NULL` at end of file or on error.
+
 ```c
 char line[256];
-while (fgets(line, sizeof(line), f) != NULL) {
-    // process line — includes the '\n'
+while (fgets(line, sizeof(line), f)
+       != NULL) {
+    // line includes the '\n'
 }
 ```
 
-`fgets` reads at most `n-1` characters and null-terminates. It returns `NULL` at EOF or on error.
+### `fprintf` and `fputs` write text
 
-**Writing text:**
 ```c
-fprintf(f, "Hello, %s! Count: %d\n", name, count);
+fprintf(f, "Hi, %s! Count: %d\n",
+        name, count);
 fputs("literal line\n", f);
 ```
 
-**Reading/writing binary:**
+### `fwrite` and `fread` move raw bytes
+
+`fread` returns the number of items it read.
+
 ```c
 int nums[4] = {1, 2, 3, 4};
-fwrite(nums, sizeof(int), 4, f);   // write 4 ints
+// Write 4 ints
+fwrite(nums, sizeof(int), 4, f);
 
 int buf[4];
-size_t n = fread(buf, sizeof(int), 4, f);  // returns items actually read
+size_t n =
+    fread(buf, sizeof(int), 4, f);
 ```
 
-**Error and EOF detection:**
+### `feof` and `ferror` tell end from error
+
 ```c
-if (feof(f))   { /* hit end of file */ }
+if (feof(f))   { /* end of file */ }
 if (ferror(f)) { perror("read error"); }
 ```
 
-**vs other languages:** Java and Python wrap files in objects with automatic close (try-with-resources / `with` statement). Go's `defer f.Close()` closes at function exit. C++ offers `std::fstream` with RAII. In C, you manage it yourself — leak the `FILE*` and the OS reclaims it at process exit, but that's not acceptable for long-running programs or repeated opens.
+### You close every file yourself
+
+Python's `with` statement, Java's try-with-resources, Go's `defer f.Close()` and C++ `std::fstream` with RAII all close files for you. In C, you close each `FILE*` yourself. The OS reclaims a leaked `FILE*` at process exit, but a long-running program cannot rely on that.
 
 ## Watch out
 
-- **Every successful `fopen` needs a matching `fclose`**, on every return path — including error paths. Forgetting to close on an early `return -1` leaks a file descriptor; the OS reclaims it at process exit, but a long-running program will eventually run out of descriptors.
-- `fopen` returning `NULL` is the normal way to signal "file doesn't exist" or "permission denied" — always check before dereferencing the `FILE*`.
-- Mixing up `"r"` vs `"w"`: opening for `"w"` **truncates an existing file to zero bytes immediately**, even if you never write anything. There is no "open for read, create if missing" single mode — use `"r"` and handle the `NULL` case, or `"a"` if append-or-create is what you want.
-- Binary I/O (`fwrite`/`fread` of raw `int`s) is **not portable across machines** with different endianness or `int` size — fine for a temp file your own program reads back, unsafe as a wire format between different systems.
-- None of these functions allocate memory that the caller must free — buffers (`arr` in `write_ints`/`read_ints`) are caller-owned; these functions only read or write bytes through the given `FILE*` handles, which they open and close themselves.
+- Close each opened file on every return path, error paths included. Else a descriptor leaks.
+- A long-running program that leaks descriptors runs out of them.
+- `fopen` returns `NULL` when the file does not exist or the program has no permission. Check before you use it.
+- `"w"` truncates an existing file to zero bytes at once, even if you write nothing.
+- No single mode reads and creates when missing. Use `"r"` and handle `NULL`, or use `"a"`.
+- Raw binary `int` files depend on the machine's endianness and `int` size. Do not use them between systems.
+- A binary file is fine as a temporary file that the same program reads back.
+- These functions do not allocate. The caller owns each buffer. Each function opens and closes its own `FILE*`.
 
 ## The task
 
-Implement the following functions. None of them allocate memory — they read/write through caller-owned buffers and manage their own `FILE*` handles (open and close internally).
+Write five functions. None of them allocates memory. Each one opens and closes its own files.
 
-- `int count_lines(const char *filename)` — return the number of newline-terminated lines in the file; return `-1` if the file can't be opened
-- `long file_size(const char *filename)` — return the file size in bytes using `fseek`/`ftell`; return `-1` if the file can't be opened
-- `int copy_file(const char *src, const char *dst)` — copy all bytes from `src` to `dst` (creating or truncating `dst`); return `0` on success, `-1` on error
-- `int write_ints(const char *filename, const int *arr, int n)` — write `n` ints from `arr` to `filename` in binary format; return `0` on success, `-1` on error
-- `int read_ints(const char *filename, int *arr, int max_n)` — read up to `max_n` ints from the binary file `filename` into the caller-provided buffer `arr`; return the number of ints actually read (may be less than `max_n` if the file is shorter), or `-1` if the file can't be opened
+1. `int count_lines(const char *filename)` returns the number of lines that end with `'\n'`.
+2. `long file_size(const char *filename)` returns the file size in bytes. Use `fseek` and `ftell`.
+3. `int copy_file(const char *src, const char *dst)` copies all bytes from `src` to `dst`.
+4. `copy_file` creates or truncates `dst`. It returns `0` on success and `-1` on error.
+5. `int write_ints(const char *filename, const int *arr, int n)` writes `n` ints from `arr` in binary.
+6. `write_ints` returns `0` on success and `-1` on error.
+7. `int read_ints(const char *filename, int *arr, int max_n)` reads binary ints into the buffer `arr`.
+8. `read_ints` reads at most `max_n` ints. It returns the number of ints it read.
+9. `count_lines`, `file_size` and `read_ints` return `-1` if `fopen` cannot open the file.
+
+An empty file has 0 lines and 0 bytes. A file with fewer ints than `max_n` gives a smaller count.
 
 ```c
-// file "notes.txt" contains: "alpha\nbeta\ngamma\n"
-count_lines("notes.txt");            // 3
-count_lines("/no/such/file");        // -1
+// notes.txt: "alpha\nbeta\ngamma\n"
+count_lines("notes.txt");      // 3
+// notes.txt: "single\n"
+count_lines("notes.txt");      // 1
+// notes.txt: ""
+count_lines("notes.txt");      // 0
+file_size("notes.txt");        // 0
+count_lines("/no/such/file");  // -1
 
-// file "notes.txt" contains: "hello" (5 bytes, no trailing newline)
-file_size("notes.txt");              // 5
+// notes.txt: "hello" (no newline)
+file_size("notes.txt");        // 5
 
-copy_file("notes.txt", "copy.txt");  // 0; copy.txt now has identical contents
+// copy.txt gets the same bytes
+copy_file("notes.txt", "copy.txt"); // 0
 
-int data[] = {10, 20, 30};
-write_ints("data.bin", data, 3);     // 0; data.bin now holds 3 binary ints
+int data[] = {10, 20, 30, 40, 50};
+write_ints("data.bin", data, 5);    // 0
 
+// buf starts {10, 20, 30, 40, 50}
 int buf[10] = {0};
-read_ints("data.bin", buf, 10);      // 3 — fewer ints existed than max_n; buf[0..2] == {10,20,30}
+read_ints("data.bin", buf, 10);     // 5
+// small is {10, 20}
 int small[2];
-read_ints("data.bin", small, 2);     // 2 — max_n caps the read; small == {10, 20}
+read_ints("data.bin", small, 2);    // 2
 ```

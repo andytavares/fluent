@@ -1,45 +1,56 @@
-# Maps & Structs
+## What you build
 
-## What you'll learn
-
-Elixir's `Map` is a hash map with immutable semantics — every "update" returns a new map. Structs layer a named schema with compile-time key checking on top of maps. Together they cover the full range from flexible key-value storage to typed domain models.
+You write an `Inventory` module that creates, reads and updates `%Item{}` structs. A map is an immutable hash map, and a struct adds a fixed set of keys to a map. This lesson builds on **Lists & Recursion**.
 
 ## Key concepts
 
-**Creating and accessing maps:**
+### A map stores keys and values
+
+Dot access raises `KeyError` for a missing key. Bracket access returns `nil`. Only atom keys such as `:name` support dot access. String keys such as `"name"` do not.
 
 ```elixir
 user = %{name: "Alice", age: 30}
 
-user.name          # => "Alice"   (dot access — raises KeyError if missing)
-user[:name]        # => "Alice"   (bracket access — returns nil if missing)
-Map.get(user, :name, "default")  # => "Alice"
-Map.fetch(user, :age)            # => {:ok, 30}
-Map.fetch(user, :email)          # => :error
+user.name     # => "Alice"
+user[:name]   # => "Alice"
+user[:email]  # => nil
+Map.get(user, :name, "default")
+# => "Alice"
+Map.fetch(user, :age)    # => {:ok, 30}
+Map.fetch(user, :email)  # => :error
 ```
 
-Atom keys (`:name`) support dot access. String keys (`"name"`) do not.
+### An update returns a new map
 
-**Updating maps** — always returns a new map:
+No map function changes its argument. In Python, JavaScript and Go, a map update changes the map in place.
 
 ```elixir
-updated = %{user | age: 31}            # update syntax — key must exist
-with_email = Map.put(user, :email, "alice@example.com")  # add new key
+# The key must exist
+updated = %{user | age: 31}
+# Adds a new key
+with_email =
+  Map.put(user, :email, "a@example.com")
 without_age = Map.delete(user, :age)
 ```
 
-The `%{map | key: val}` syntax is a compile-time assertion that the key already exists in the map. Typos become compile errors.
+### `%{map | key: val}` needs an existing key
 
-**Pattern matching on maps:**
+The update syntax raises `KeyError` when the key is not in the map. Use it to catch a misspelled key. Use `Map.put/3` to add a key.
+
+### A map pattern matches a subset
+
+A map pattern lists only the keys you need. The map can have other keys.
 
 ```elixir
-%{name: name} = user          # binds name = "Alice"; other keys are ignored
-%{role: "admin"} = user       # MatchError unless role is "admin"
+# Binds name = "Alice"
+%{name: name} = user
+# MatchError unless role is "admin"
+%{role: "admin"} = user
 ```
 
-Map patterns match a subset — you don't have to list every key.
+### A struct is a map with fixed keys
 
-**Structs:**
+`defstruct` declares the keys and their defaults. A struct is a map with a `__struct__` key set to the module name. A struct with an unknown key fails at compile time.
 
 ```elixir
 defmodule User do
@@ -47,86 +58,82 @@ defmodule User do
 end
 
 alice = %User{name: "Alice", age: 30}
-alice.name        # => "Alice"
-alice.email       # => compile error — unknown key
+alice.name  # => "Alice"
+# Compile error: unknown key
+%User{email: "a@example.com"}
 
-%User{name: name} = alice   # pattern matching works the same way
+# Pattern matching works the same way
+%User{name: name} = alice
 ```
 
-A struct is a map with a `__struct__` key set to the module name. It enforces that only declared keys are used, at compile time. You cannot add ad-hoc keys after the fact.
+### A struct pattern is stricter
 
-**Map vs struct pattern matching:**
+A `%User{}` pattern matches only `User` structs. A `%{}` pattern matches any map with the listed keys.
 
 ```elixir
-def greet(%User{name: name}), do: "Hello, #{name}"
-def greet(%{name: name}),     do: "Hello, #{name}"  # matches any map with :name
+def greet(%User{name: name}),
+  do: "Hello, #{name}"
+
+# Matches any map with :name
+def greet(%{name: name}),
+  do: "Hello, #{name}"
 ```
-
-The struct version is stricter — it only matches `%User{}` structs.
-
-## vs other languages
-
-| | Elixir | Python | JavaScript | Go |
-|---|---|---|---|---|
-| Dynamic map | `%{}` | `dict` | `{}` | `map[K]V` |
-| Typed struct | `defstruct` in module | `dataclass` / `TypedDict` | No native | `struct` |
-| Update semantics | Returns new map | Mutates in place | Mutates in place | Mutates in place |
-| Missing key | `nil` (bracket) / error (dot) | `KeyError` / `.get()` | `undefined` | zero value / `ok` idiom |
-
-Coming from Go: Elixir structs are closer to Go structs in that unknown fields are a compile error, but they live inside a module rather than being a standalone type.
-
-Coming from Python/JS: the immutable update `%{map | key: val}` looks like mutation but creates a new map. The original is unchanged.
 
 ## Watch out
 
-- `%{item | quantity: new_qty}` raises `KeyError` if `quantity` isn't already a key on `item` — it's an update, not an insert. Use `Map.put/3` (or set the field in `%Item{}` at construction) for new keys.
-- `restock`/`apply_discount`/etc. all **return a new struct** — they never mutate the argument. If a test still sees the old value on the original variable after calling one of these, that's expected: rebind the return value to see the change.
-- `Enum.find/2` (used for `find_by_name`) returns `nil`, not `{:error, ...}`, when nothing matches — Elixir's convention here is a plain nullable return, not a tagged tuple.
+- `%{item | quantity: n}` raises `KeyError` when `quantity` is not a key. It updates; it does not insert.
+- To add a key, use `Map.put/3` or set it when you build the struct.
+- `restock/2` and `apply_discount/2` return a new struct. The original variable keeps its old value.
+- Rebind the return value to see the change.
+- `Enum.find/2` returns `nil` when nothing matches, not an `{:error, ...}` tuple.
 
 ## The task
 
-Implement these functions in the `Inventory` module, which manages `%Item{}` structs:
+Write five functions in the `Inventory` module. They work on this struct:
 
 ```elixir
 defmodule Item do
-  defstruct name: "", price: 0.0, quantity: 0
+  defstruct name: "", price: 0.0,
+            quantity: 0
 end
 ```
 
-**`new_item(name, price, quantity)`** — returns a populated `%Item{}` struct.
+1. `new_item(name, price, quantity)` returns an `%Item{}` with these three fields.
+2. `total_value(item)` returns `item.price * item.quantity`.
+3. `restock(item, amount)` returns a new `%Item{}` with `quantity` increased by `amount`.
+4. `apply_discount(item, percent)` returns a new `%Item{}` with `price` reduced by `percent` percent.
+5. `find_by_name(items, name)` returns the first `%Item{}` in `items` with that `name`.
+
+`restock/2` and `apply_discount/2` keep all other fields. They do not change the original `item`. A `percent` of `10` means 10% off, and `0` means no change. `find_by_name/2` returns `nil` when no item matches, or when `items` is empty.
 
 ```elixir
-Inventory.new_item("Apple", 1.50, 100)
-# => %Item{name: "Apple", price: 1.50, quantity: 100}
-```
+apple =
+  Inventory.new_item("Apple", 1.50, 100)
+# => %Item{name: "Apple", price: 1.5,
+#          quantity: 100}
+banana =
+  Inventory.new_item("Banana", 0.75, 200)
 
-**`total_value(item)`** — returns `item.price * item.quantity`.
+Inventory.total_value(apple)   # => 150.0
+Inventory.total_value(banana)  # => 150.0
+x = Inventory.new_item("X", 5.0, 0)
+Inventory.total_value(x)       # => 0.0
 
-```elixir
-apple = Inventory.new_item("Apple", 1.50, 100)
-Inventory.total_value(apple)  # => 150.0
-Inventory.total_value(Inventory.new_item("X", 5.0, 0))  # => 0.0
-```
+Inventory.restock(apple, 50).quantity
+# => 150
+apple.quantity                 # => 100
 
-**`restock(item, amount)`** — returns a **new** `%Item{}` with `quantity` increased by `amount`; all other fields unchanged. The original `item` is untouched.
+Inventory.apply_discount(apple, 10).price
+# => 1.35 (within 0.0001)
+Inventory.apply_discount(apple, 0).price
+# => 1.5
 
-```elixir
-Inventory.restock(apple, 50).quantity  # => 150
-apple.quantity                          # => 100  — original unchanged
-```
-
-**`apply_discount(item, percent)`** — returns a new `%Item{}` with `price` reduced by `percent` percent (e.g. `10` means 10% off).
-
-```elixir
-Inventory.apply_discount(apple, 10).price  # => 1.35
-Inventory.apply_discount(apple, 0).price   # => 1.50  — no change
-```
-
-**`find_by_name(items, name)`** — given a list of `%Item{}` structs, returns the first one whose `name` matches, or `nil` if none do.
-
-```elixir
-banana = Inventory.new_item("Banana", 0.75, 200)
-Inventory.find_by_name([apple, banana], "Banana")  # => %Item{name: "Banana", ...}
-Inventory.find_by_name([apple, banana], "Orange")  # => nil
-Inventory.find_by_name([], "Apple")                # => nil
+Inventory.find_by_name([apple, banana],
+  "Banana")
+# => %Item{name: "Banana", ...}
+Inventory.find_by_name([apple, banana],
+  "Orange")
+# => nil
+Inventory.find_by_name([], "Apple")
+# => nil
 ```

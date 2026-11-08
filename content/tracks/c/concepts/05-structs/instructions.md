@@ -1,12 +1,13 @@
-# Structs
+## What you build
 
-## What you'll learn
-
-A `struct` is C's way of grouping related data into a single named type. Where a class bundles data and methods in OOP languages, a C `struct` holds only data — functions that operate on it are separate.
+You write three functions on a `Point` struct: distance, midpoint and translate. A `struct` groups related data into one named type. This lesson builds on **Pointers**.
 
 ## Key concepts
 
-**Defining a struct:**
+### A struct holds only data
+
+A class in an OOP language bundles data and methods. A C `struct` holds only data, and the functions that use it are separate.
+
 ```c
 struct Point {
     double x;
@@ -14,71 +15,109 @@ struct Point {
 };
 ```
 
-**typedef** removes the need to write `struct` everywhere:
+### `typedef` removes the `struct` keyword
+
+With a `typedef`, you write `Point` instead of `struct Point`.
+
 ```c
 typedef struct {
     double x;
     double y;
 } Point;
 
-Point p = {3.0, 4.0};  /* no `struct` keyword needed */
+Point p = {3.0, 4.0};
 ```
 
-**Initialization:**
+### Three ways to initialize
+
+Designated initializers need C99 or later. They are the preferred form. `{0}` sets every field to zero, not only the first.
+
 ```c
-Point p1 = {1.0, 2.0};               /* positional */
-Point p2 = {.x = 1.0, .y = 2.0};    /* designated (C99+, preferred) */
-Point p3 = {0};                       /* zero-initialize all fields */
+// Positional
+Point p1 = {1.0, 2.0};
+// Designated (C99+, preferred)
+Point p2 = {.x = 1.0, .y = 2.0};
+// Zero-initialize all fields
+Point p3 = {0};
 ```
 
-**Accessing fields:**
+### `.` for a value, `->` for a pointer
+
+`ptr->x` is the same as `(*ptr).x`.
+
 ```c
-p.x;             /* direct member access */
+p.x;
 Point *ptr = &p;
-ptr->x;          /* pointer member access — equivalent to (*ptr).x */
+ptr->x;
 ```
 
-**Passing structs:** Structs are passed by value (copied). For large structs, pass a pointer:
+### C passes structs by value
+
+A struct argument is a copy. For a large struct, pass a pointer instead.
+
 ```c
-double distance(const Point *a, const Point *b) {
+double distance(const Point *a,
+                const Point *b) {
     double dx = b->x - a->x;
     double dy = b->y - a->y;
     return sqrt(dx*dx + dy*dy);
 }
 ```
 
-**vs other languages:** C structs have no methods, no constructors, no destructors, and no access control. All fields are public. Use opaque pointer patterns and naming conventions to simulate encapsulation when needed.
+### A compound literal builds a struct value
+
+`return (Point){...};` builds a temporary struct and returns it by value. It needs C99 or later. It returns no pointer, so it is always safe, unlike a pointer to a local.
+
+```c
+return (Point){p.x + dx, p.y + dy};
+```
+
+### No methods and no access control
+
+C structs have no methods, constructors, destructors or access control. All fields are public. To simulate encapsulation, use opaque pointers and naming conventions.
 
 ## Watch out
 
-- `Point a, Point b` passed by value means the **whole struct is copied** into the function's stack frame on every call. For a two-`double` struct this is cheap; for a struct with a large array member, prefer a `const Point *` parameter to avoid the copy.
-- `return (Point){...};` — the compound literal syntax — only works in C99 and later. It builds a temporary struct value and returns it by value; there's no reference or pointer involved, so returning a local struct this way is always safe (unlike returning a pointer to a local).
-- `Point p3 = {0};` zero-initializes *all* fields, not just the first — a common shorthand, not a partial initialization.
-- There's no struct equality operator (`==` doesn't work on structs in C) — comparing two `Point`s means comparing `.x` and `.y` individually.
+- A struct parameter copies the whole struct on each call. For a large array member, use `const Point *`.
+- `{0}` sets all fields to zero. It is a full initialization, not a partial one.
+- `==` does not work on structs. Compare `.x` and `.y` one by one.
 
 ## The task
 
-Given this typedef (already in the stub):
+The stub already has this `typedef`:
+
 ```c
-typedef struct { double x; double y; } Point;
+typedef struct {
+    double x;
+    double y;
+} Point;
 ```
 
-Implement three functions. All three take `Point` arguments and return `Point` (or `double`) *by value* — there's no allocation and no pointer ownership to track.
+Write three functions. Each one takes `Point` values and returns its result by value. You allocate nothing.
 
-- `double point_distance(Point a, Point b)` — the Euclidean distance between two points: `sqrt((b.x - a.x)^2 + (b.y - a.y)^2)`
-- `Point point_midpoint(Point a, Point b)` — the point halfway between `a` and `b`: `((a.x + b.x) / 2, (a.y + b.y) / 2)`
-- `Point point_translate(Point p, double dx, double dy)` — `p` shifted by `(dx, dy)`: `(p.x + dx, p.y + dy)`
+1. `double point_distance(Point a, Point b)` returns the Euclidean distance between `a` and `b`.
+2. The distance is `sqrt((b.x - a.x)^2 + (b.y - a.y)^2)`.
+3. `Point point_midpoint(Point a, Point b)` returns the point halfway between `a` and `b`.
+4. The midpoint is `((a.x + b.x) / 2, (a.y + b.y) / 2)`.
+5. `Point point_translate(Point p, double dx, double dy)` returns `(p.x + dx, p.y + dy)`.
+
+The distance from a point to itself is `0.0`. The distance is the same in both directions. The midpoint of a point with itself is that point.
 
 ```c
-Point origin = {0.0, 0.0};
-Point p      = {3.0, 4.0};
+Point o = {0.0, 0.0};
+Point p = {3.0, 4.0};
+Point q = {6.0, 8.0};
 
-point_distance(origin, p);       // 5.0  — classic 3-4-5 triangle
-point_distance(origin, origin);  // 0.0  — distance to self
+point_distance(o, p);   // 5.0
+point_distance(p, o);   // 5.0
+point_distance(o, o);   // 0.0
+point_distance(o, q);   // 10.0
 
-point_midpoint(origin, p);       // {1.5, 2.0}
-point_midpoint(p, p);            // {3.0, 4.0} — midpoint of a point with itself is itself
+point_midpoint(o, p);   // {1.5, 2.0}
+point_midpoint(p, p);   // {3.0, 4.0}
 
-point_translate(p, 1.0, -1.0);   // {4.0, 3.0}
-point_translate(origin, -5.0, 2.5); // {-5.0, 2.5}
+// {4.0, 3.0}
+point_translate(p, 1.0, -1.0);
+// {-5.0, 2.5}
+point_translate(o, -5.0, 2.5);
 ```

@@ -1,74 +1,100 @@
-# Arrays & Strings
+## What you build
 
-## What you'll learn
-
-In C, a string is not a first-class type — it is a null-terminated array of `char`. Understanding this model is essential: every `char*` string ends with a `'\0'` byte that marks the end.
+You write `str_count`, `str_reverse` and `str_starts_with` on C strings. C has no string type: a string is an array of `char` that ends with a `'\0'` byte. This lesson builds on **Pointers**.
 
 ## Key concepts
 
-**Fixed-size arrays:**
+### An array has a fixed size
+
+`sizeof` on an array gives its size in bytes. Divide by the element size to get the length.
+
 ```c
 int nums[5] = {1, 2, 3, 4, 5};
-nums[0];           /* 1 */
-sizeof(nums);      /* 20 (5 * 4 bytes on most platforms) */
-int len = sizeof(nums) / sizeof(nums[0]);  /* 5 */
+nums[0];       // 1
+// 20: 5 * 4 bytes on most platforms
+sizeof(nums);
+// 5
+int len = sizeof(nums) / sizeof(nums[0]);
 ```
 
-**String literals** are read-only `char*` arrays:
+### A string ends with `'\0'`
+
+Every `char*` string ends with a `'\0'` byte that marks the end. A string literal is a read-only `char` array.
+
 ```c
-const char *greeting = "hello";  /* 6 bytes: h e l l o \0 */
+// 6 bytes: h e l l o \0
+const char *greeting = "hello";
 ```
 
-**`<string.h>` functions:**
+### `<string.h>` has the basic string functions
+
 ```c
 #include <string.h>
-strlen("hello");          /* 5  — does not count the \0 */
-strcmp("abc", "abc");     /* 0  — equal */
-strcmp("a", "b");         /* negative */
-strcpy(dest, src);        /* copies src into dest (dest must be big enough) */
-strcat(dest, src);        /* appends src to dest */
-strncpy(dest, src, n);    /* safer copy: at most n bytes */
+// 5: does not count the \0
+strlen("hello");
+// 0: equal
+strcmp("abc", "abc");
+// negative
+strcmp("a", "b");
+// Copies src into dest.
+// dest must be big enough.
+strcpy(dest, src);
+// Appends src to dest
+strcat(dest, src);
+// Safer copy: at most n bytes
+strncpy(dest, src, n);
 ```
 
-**String to number and back:**
+### Convert between strings and numbers
+
 ```c
 #include <stdlib.h>
 #include <stdio.h>
-int n  = atoi("42");         /* string → int */
+// string to int
+int n = atoi("42");
 char buf[32];
-sprintf(buf, "%d", 42);      /* int → string */
+// int to string
+sprintf(buf, "%d", 42);
 ```
 
-**vs other languages:** No `+` operator for strings, no `str.length` property, no bounds checking. Writing past the end of a buffer is undefined behavior — the basis of many security vulnerabilities. Prefer `snprintf` over `sprintf` to prevent buffer overflows.
+### C does no bounds checking
+
+C has no `+` operator for strings and no `length` property. A write past the end of a buffer is undefined behavior and the basis of many security holes. Use `snprintf` instead of `sprintf` to prevent buffer overflows.
 
 ## Watch out
 
-- **No allocation happens here.** `str_reverse` writes into a buffer the *caller* already owns — you never call `malloc` and there is nothing to `free`. Your job is only to write the right bytes and terminate with `'\0'`.
-- A forgotten `'\0'` is the #1 C string bug: every function in `<string.h>` (and `printf`'s `%s`) keeps reading past the end of the buffer until it happens to hit a zero byte somewhere in memory — undefined behavior, not a clean error.
-- `strlen` walks the whole string every call — it is O(n), not O(1) like `.length` in other languages. Calling it repeatedly in a loop condition (`for (i = 0; i < strlen(s); i++)`) makes the loop O(n²).
-- `str_count("hello", 'l')` counts `char`s, not "characters" in the Unicode sense — C's `char` is a byte. Multi-byte UTF-8 sequences are counted per-byte, not per-codepoint.
+- `str_reverse` writes into a buffer the caller owns. Do not call `malloc`, and do not free anything.
+- A missing `'\0'` is the most common C string bug. `<string.h>` and `%s` then read past the buffer.
+- `strlen` walks the whole string on each call, so it is O(n). In a loop condition, the loop becomes O(n²).
+- C's `char` is a byte. `str_count` counts bytes, so a multi-byte UTF-8 character counts as several bytes.
 
 ## The task
 
-Implement three functions. None of them allocate memory — `str_reverse` writes into a buffer the caller has already allocated large enough to hold the result; you own no memory and free nothing.
+Write three string functions. None of them allocates memory.
 
-- `int str_count(const char *s, char c)` — count how many times the byte `c` appears in the null-terminated string `s`
-- `void str_reverse(const char *src, char *dst)` — write `src` into `dst` reversed and null-terminated. **`dst` must already have room for at least `strlen(src) + 1` bytes** — the caller guarantees this; you do not allocate `dst`.
-- `int str_starts_with(const char *s, const char *prefix)` — return `1` if `s` begins with `prefix`, `0` otherwise; an empty `prefix` always matches
+1. `int str_count(const char *s, char c)` returns how many times the byte `c` occurs in `s`.
+2. `void str_reverse(const char *src, char *dst)` writes `src` reversed into `dst`, with a final `'\0'`.
+3. The caller gives `dst` room for at least `strlen(src) + 1` bytes. You do not allocate `dst`.
+4. `int str_starts_with(const char *s, const char *prefix)` returns `1` if `s` begins with `prefix`.
+5. Otherwise, `str_starts_with` returns `0`.
+
+All strings end with `'\0'`. An empty string has a count of `0` and reverses to itself. An empty `prefix` always matches. A `prefix` longer than `s` never matches.
 
 ```c
-str_count("hello", 'l');    // 2
-str_count("banana", 'a');   // 3
-str_count("hello", 'z');    // 0  — not present
-str_count("", 'a');         // 0  — empty string
+str_count("hello", 'l');   // 2
+str_count("banana", 'a');  // 3
+str_count("hello", 'z');   // 0
+str_count("", 'a');        // 0
 
-char buf[64];                        // caller-owned, big enough for any test input
-str_reverse("abcde", buf);           // buf == "edcba"
-str_reverse("", buf);                // buf == ""    — reversing empty is empty
-str_reverse("abba", buf);            // buf == "abba" — a palindrome reverses to itself
+char buf[64];
+str_reverse("abcde", buf); // "edcba"
+str_reverse("a", buf);     // "a"
+str_reverse("", buf);      // ""
+str_reverse("abba", buf);  // "abba"
 
-str_starts_with("foobar", "foo");    // 1
-str_starts_with("foobar", "bar");    // 0
-str_starts_with("foobar", "");       // 1  — empty prefix always matches
-str_starts_with("hi", "hillo");      // 0  — prefix longer than s
+str_starts_with("foobar", "foo"); // 1
+str_starts_with("foobar", "bar"); // 0
+str_starts_with("foobar", "");    // 1
+str_starts_with("hello", "hello");// 1
+str_starts_with("hi", "hillo");   // 0
 ```

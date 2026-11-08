@@ -1,109 +1,126 @@
-# Variables & Strings
+## What you build
 
-## What you'll learn
-
-How Bash stores and expands variables — including the quoting rules that trip up every newcomer coming from any typed language.
+You write three string functions: `greet`, `describe_file` and `repeat_word`. They use assignment, quoting and parameter expansion, the rules that trip up most newcomers to Bash.
 
 ## Key concepts
 
-**Assignment — no spaces around `=`:**
+### Assignment has no spaces around `=`
+
+Bash reads `name = "Alice"` as a command named `name` with the arguments `=` and `Alice`. A value with no spaces needs no quotes.
 
 ```bash
 name="Alice"
 count=42
-path=/usr/local/bin   # no quotes needed when no spaces
+path=/usr/local/bin
 ```
 
-Any space around `=` is a syntax error. Bash parses `name = "Alice"` as running a command called `name` with arguments `=` and `Alice`.
+### Every value is a string
 
-**Expansion — `$var` vs `${var}`:**
+Bash has no int, string or bool types. Arithmetic needs `$(( ))`. To join strings, put them next to each other.
 
 ```bash
-echo $name            # basic expansion
-echo ${name}          # explicit boundary — required before text: ${name}s → "Alices"
-echo "${name} wins"   # always double-quote expansions in strings
+count=$(( 3 + 4 ))   # 7
+full="${first}${last}"
 ```
 
-**Single vs double quotes:**
+### `${var}` marks where the name ends
+
+`$var` and `${var}` expand the same way. Use the braces when text follows the name. Always put double quotes around an expansion.
 
 ```bash
-greeting="Hello, $name"    # double: variables expand  → Hello, Alice
-literal='Hello, $name'     # single: nothing expands   → Hello, $name
+echo $name           # Alice
+echo ${name}s        # Alices
+echo "${name} wins"  # Alice wins
 ```
 
-**Command substitution — `$()`:**
+### Double quotes expand, single quotes do not
+
+Inside double quotes, Bash expands variables. Inside single quotes, Bash keeps every character as it is.
+
+```bash
+# Hello, Alice
+greeting="Hello, $name"
+# Hello, $name
+literal='Hello, $name'
+```
+
+### `$()` captures the output of a command
+
+Command substitution runs a command and gives its output as a string. Backticks do the same, but they do not nest cleanly. Always use `$()`.
 
 ```bash
 today=$(date +%Y-%m-%d)
 files=$(ls -1 | wc -l)
-echo "Today is $today, $files files here"
+echo "Today is $today, $files files"
 ```
 
-Backtick syntax `` `cmd` `` does the same thing but doesn't nest cleanly. Always use `$()`.
+### Special variables hold shell state
 
-**Special variables:**
+Bash sets these variables for you.
 
 ```bash
-$?   # exit code of last command (0 = success)
-$$   # PID of current shell
+$?   # exit code of the last command
+     # (0 = success)
+$$   # PID of the current shell
 $0   # name of the script
-$#   # number of arguments passed to the script
-$@   # all arguments as separate words
+$#   # number of arguments
+$@   # all arguments, as separate words
 ```
 
-**Parameter expansion tricks:**
+### Parameter expansion changes a value
+
+These forms read a variable and change the result. An unset variable acts as null. `${var:-}` gives an empty string and avoids an "unbound variable" error.
 
 ```bash
-${var:-default}    # use "default" if var is unset or empty
-${var:=default}    # assign and use "default" if var is unset or empty
-${#var}            # length of var's value
-${var^^}           # uppercase (Bash 4+)
-${var,,}           # lowercase (Bash 4+)
-${var#prefix}      # strip shortest prefix match
-${var%suffix}      # strip shortest suffix match
+# "default" if var is unset or empty
+${var:-default}
+# the same, and also assigns it to var
+${var:=default}
+${#var}         # length of the value
+${var^^}        # uppercase (Bash 4+)
+${var,,}        # lowercase (Bash 4+)
+${var#prefix}   # strip shortest prefix
+${var##prefix}  # strip longest prefix
+${var%suffix}   # strip shortest suffix
+${var%%suffix}  # strip longest suffix
 ```
 
 ## Watch out
 
-- **Unquoted expansion is the #1 shell bug.** `path=/tmp/my dir; ls $path` word-splits into `ls /tmp/my dir` — two arguments. Always write `"$path"`. The same applies to `"$@"` vs bare `$@` in function bodies.
-- `${var}` vs `$var`: `$var` alone stops at the first character that can't be part of an identifier, so `echo "$names"` is fine, but `echo "$names_backup"` silently looks up a variable named `names_backup`, not `names` followed by literal text. Use `${names}_backup` whenever a variable is followed by more identifier characters.
-- Arithmetic vs string context: `count="3" + "4"` does **not** add — that's still a string assignment (and a syntax error here). Arithmetic requires `$(( ))`: `count=$(( 3 + 4 ))`.
-- `${var:-default}` does **not** assign `default` back to `var` — only `${var:=default}` does. Mixing these up means the "default" silently doesn't stick for later reads of the same variable.
-
-## vs other languages
-
-| Concept | Other languages | Bash |
-|---------|----------------|------|
-| Assignment | `x = 1` (spaces fine) | `x=1` (no spaces — ever) |
-| Interpolation | `"Hello ${name}"` (JS/Ruby/etc.) | `"Hello ${name}"` (same syntax, but mandatory for adjacent text) |
-| Types | int, string, bool, etc. | Everything is a string; arithmetic needs `$(( ))` |
-| Null/None | explicit null type | unset variable; use `${var:-}` to avoid "unbound variable" errors |
-| String concat | `a + b` or template literals | Just put them next to each other: `"${a}${b}"` |
+- An unquoted expansion is the most common shell bug. `ls $path` splits `/tmp/my dir` into two arguments. Write `"$path"`.
+- The same rule applies to `$@` in a function body. Write `"$@"`.
+- `$var` stops at the first character that cannot be part of a name. `"$names_backup"` reads the variable `names_backup`.
+- To follow a variable with name characters, use braces: `${names}_backup`.
+- `count="3" + "4"` does not add. Bash runs a command named `+` with `count=3` in its environment.
+- `${var:-default}` does not assign to `var`. Only `${var:=default}` assigns, so later reads see the default.
 
 ## The task
 
-You're writing three small string-handling functions. Each takes its arguments positionally (`$1`, `$2`, ...) and prints its result with `echo`.
+You write three string functions. Each one reads its arguments as `$1`, `$2` and prints its result with `echo`.
 
-**`greet name`** — echoes `Hello, <name>!`.
+1. `greet name` prints `Hello, <name>!`.
+2. `describe_file path` prints `File: <basename> (ext: <extension>)`.
+3. The basename is the text after the last `/`. The extension is the text after the last `.`.
+4. In `describe_file`, use parameter expansion only. Do not use the `basename` or `dirname` commands.
+5. `repeat_word word n` prints `word` `n` times on one line, with one space between copies.
 
-```bash
-greet "Alice"        # Hello, Alice!
-greet "Bob Smith"    # Hello, Bob Smith!
-greet ""             # Hello, !
-```
-
-**`describe_file path`** — echoes `File: <basename> (ext: <extension>)`. Use parameter expansion only (`${var##pattern}` / `${var%%pattern}`) — no `basename`/`dirname` commands.
+An empty name gives `Hello, !`. When `n` is 0, `repeat_word` prints nothing or an empty line.
 
 ```bash
-describe_file "/tmp/report.txt"          # File: report.txt (ext: txt)
-describe_file "/home/user/scripts/deploy.sh"  # File: deploy.sh (ext: sh)
-describe_file "/var/backup/archive.tar.gz"    # File: archive.tar.gz (ext: gz)
-```
+greet "Alice"      # Hello, Alice!
+greet "Bob Smith"  # Hello, Bob Smith!
+greet ""           # Hello, !
 
-**`repeat_word word n`** — echoes `word` repeated `n` times on a single space-separated line.
+describe_file "/tmp/report.txt"
+# File: report.txt (ext: txt)
+describe_file \
+  "/home/user/scripts/deploy.sh"
+# File: deploy.sh (ext: sh)
+describe_file \
+  "/var/backup/archive.tar.gz"
+# File: archive.tar.gz (ext: gz)
 
-```bash
-repeat_word "hi" 3   # hi hi hi
-repeat_word "go" 1   # go
-repeat_word "go" 0   # (empty line — n=0 means no repetitions)
+repeat_word "hi" 3  # hi hi hi
+repeat_word "go" 1  # go
+repeat_word "go" 0  # (empty)
 ```

@@ -1,14 +1,12 @@
-# Registers & Data Movement
+## What you build
 
-## What you'll learn
-
-How x86-64 general-purpose registers are named and sized, how to move data between them with `mov`, and how to zero a register cheaply with `xor`.
+You write `set_registers`, a procedure that loads five registers with fixed values. You use `mov` to copy values and `xor` to zero a register.
 
 ## Key concepts
 
-### The register file
+### x86-64 has 16 general-purpose registers
 
-x86-64 has 16 general-purpose 64-bit registers. Each one has overlapping sub-register names that address 32, 16, or 8 bits of the same physical register:
+Each register is 64 bits wide. Other names address the low 32, 16 or 8 bits of the same physical register.
 
 | 64-bit | 32-bit | 16-bit | 8-bit (low) |
 |--------|--------|--------|-------------|
@@ -23,62 +21,78 @@ x86-64 has 16 general-purpose 64-bit registers. Each one has overlapping sub-reg
 | `r8`   | `r8d`  | `r8w`  | `r8b`       |
 | `r9`–`r15` | same pattern | | |
 
-**Critical side effect**: writing to a 32-bit register (e.g., `eax`) **zero-extends** into the full 64-bit register. Writing to a 16- or 8-bit register does **not** — the upper bits are unchanged. This is a frequent source of bugs.
+### A 32-bit write clears the upper 32 bits
+
+A write to a 32-bit register, such as `eax`, zero-extends into the full 64-bit register. A write to a 16-bit or 8-bit register leaves the upper bits unchanged. This rule exists only in x86-64: AMD kept compatibility with 32-bit x86 when it extended the instruction set.
 
 ```nasm
-mov rax, 0xFFFFFFFFFFFFFFFF   ; rax = all ones
-mov eax, 1                     ; rax = 0x0000000000000001 (zero-extended!)
-mov ax,  1                     ; rax = 0xFFFFFFFF00000001 (upper 48 bits unchanged)
+; rax = all ones
+mov rax, 0xFFFFFFFFFFFFFFFF
+; rax = 0x0000000000000001
+mov eax, 1
+; rax = 0xFFFFFFFF00000001
+mov ax,  1
 ```
 
-### The `mov` instruction
+### `mov dst, src` copies `src` into `dst`
 
-`mov dst, src` — copies src into dst. The operands must be the same size.
+The two operands must have the same size. A source in brackets reads memory at that address. A destination in brackets writes memory.
 
 ```nasm
-mov rax, 42          ; rax = 42  (immediate to register)
-mov rbx, rax         ; rbx = rax (register to register)
-mov rax, [rbx]       ; rax = memory at address rbx (load)
-mov [rbx], rax       ; memory at address rbx = rax  (store)
-mov rax, 0x1234ABCD  ; 32-bit immediate, zero-extended to 64 bits
+; immediate to register
+mov rax, 42
+; register to register
+mov rbx, rax
+; load: rax = memory at address rbx
+mov rax, [rbx]
+; store: memory at address rbx = rax
+mov [rbx], rax
+; 32-bit immediate, zero-extended
+mov rax, 0x1234ABCD
 ```
 
-There is no `mov mem, mem` — you cannot copy directly from one memory location to another. You must route through a register.
+There is no `mov mem, mem`. To copy from one memory location to another, go through a register.
 
-### Zeroing registers
+### `xor eax, eax` is the usual way to zero a register
 
-`mov rax, 0` works, but the encoding is 7 bytes. `xor eax, eax` encodes in 2 bytes and is the idiomatic way to zero a register. Because it writes a 32-bit result, it zero-extends into `rax`.
+`mov rax, 0` has a 7-byte encoding. `xor eax, eax` has a 2-byte encoding. It writes a 32-bit result, so it zero-extends into `rax`. Compilers emit it everywhere: in C, `int x = 0;` compiles to `xor eax, eax`.
 
 ```nasm
-xor eax, eax    ; rax = 0  (idiomatic, 2 bytes)
-mov rax, 0      ; rax = 0  (also correct, 7 bytes)
+; rax = 0, 2 bytes
+xor eax, eax
+; rax = 0, 7 bytes
+mov rax, 0
 ```
-
-Every compiler generates `xor eax, eax` — you'll see it constantly in disassembly.
-
-## vs other languages
-
-In C, `int x = 0;` compiles to `xor eax, eax`. In Go or Java the runtime may zero memory through memset-like loops. In assembly you pick the exact register and instruction yourself — the compiler's job is now yours.
-
-The 32-bit zero-extension rule is x86-64-specific. There is no equivalent in any high-level language; it exists because AMD chose backward-compatibility with 32-bit x86 when extending the ISA to 64 bits.
 
 ## Watch out
 
-- Writing a 16- or 8-bit sub-register (`ax`, `al`) leaves the upper bits of the full 64-bit register untouched — if you expect a clean value in `rax` afterward, write `eax` (or `rax`) instead.
-- `xor eax, eax` sets flags (ZF=1, SF=0, CF=0, OF=0) as a side effect of the XOR — if you were relying on flags from an earlier `cmp`, this instruction clobbers them.
-- `rbx` is normally callee-saved (lesson 5 covers this in full) — a real procedure that touches `rbx` must `push`/`pop` it before returning. This exercise's test inspects registers immediately after `call`, before any caller code resumes, so it deliberately lets you set `rbx` directly without saving it. Don't take this as license to skip callee-saved discipline in later lessons.
+- A write to `ax` or `al` keeps the upper bits of `rax`. To get a clean value in `rax`, write `eax` or `rax`.
+- `xor eax, eax` sets flags: ZF=1, SF=0, CF=0, OF=0. It destroys the flags from an earlier `cmp`.
+- `rbx` is callee-saved, and a real procedure that changes it must `push` and `pop` it. The concept on procedures explains this rule.
+- This task lets you set `rbx` without saving it, because the test reads it right after `call`. Later tasks do not allow this.
 
 ## The task
 
-Implement the procedure `set_registers`, which takes no arguments and returns nothing:
+Write the procedure `set_registers`. It takes no arguments and returns nothing. It only loads registers.
+
+1. Set `rax` to 1.
+2. Set `rbx` to 2.
+3. Set `rcx` to 3.
+4. Set `rdx` to 0. Use the usual form, `xor edx, edx`. The test checks only the value.
+5. Set `rsi` to 100.
+
+The test puts the sentinel `0xDEADBEEF` in all five registers before the call. A procedure that only does `ret` fails every check. The test does not read `rdi` or `r8`–`r15`, so their values do not matter.
 
 ```nasm
 ; void set_registers(void)
-; Sets: rax = 1, rbx = 2, rcx = 3, rdx = 0, rsi = 100
 set_registers:
     ; TODO
+    ret
+
+; After call set_registers:
+; rax = 1
+; rbx = 2
+; rcx = 3
+; rdx = 0
+; rsi = 100
 ```
-
-Register contract: on return, `rax`, `rbx`, `rcx`, `rdx`, `rsi` must hold the exact values above. `rdx` should be zeroed with `xor edx, edx` (the idiomatic form) — the test only checks the value, not which instruction produced it. Any register not listed (`rdi`, `r8`–`r15`) may be left in any state; the test does not inspect them.
-
-The test runner poisons all five registers with a sentinel value before calling `set_registers`, then reads each one immediately after it returns — so a no-op `ret` fails every check.

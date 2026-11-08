@@ -1,109 +1,122 @@
-# Arrays & Loops
+## What you build
 
-## What you'll learn
-
-How to traverse arrays using a register as a pointer, how to maintain loop counters, how scaled-index addressing maps directly to array indexing, and the `loop` instruction.
+You write `array_sum` and `array_max`, two procedures that loop over an array of `int64_t`. One uses the `loop` instruction, and one walks a pointer. This lesson builds on **System Calls**.
 
 ## Key concepts
 
-### Arrays are just contiguous memory
+### An array is a base address and a stride
 
-There is no array type. An array is a base address and a stride. To access `int64_t arr[i]` at runtime:
+There is no array type. To read `arr[i]`, use scaled-index addressing, or move a pointer by the element size each pass. `[rdi]` has a shorter encoding than `[rdi + rcx*8]`, so pointer walking often runs faster in tight loops.
 
 ```nasm
-; Option 1: base + index*scale in the address expression
-mov  rax, [rdi + rcx*8]    ; arr[rcx]  (8 bytes per element)
+; Option 1: base + index*scale
+; arr[rcx], 8 bytes per element
+mov  rax, [rdi + rcx*8]
 
-; Option 2: pointer walking (increment pointer each iteration)
-mov  rax, [rdi]             ; *ptr
-add  rdi, 8                 ; ptr++
+; Option 2: pointer walking
+; *ptr
+mov  rax, [rdi]
+; ptr++
+add  rdi, 8
 ```
 
-Pointer walking is often faster in tight loops because `[rdi]` has a shorter encoding than `[rdi + rcx*8]` and avoids the multiply.
+### A counter loop compares the index to `n`
 
-### Counter-based loop pattern
+In C, `for (int i = 0; i < n; i++) sum += arr[i]` compiles to this pattern or to the pointer walk.
 
 ```nasm
-; Sum int64_t arr[n]: rdi=arr, rsi=n, result in rax
-    xor  eax, eax          ; sum = 0
-    xor  ecx, ecx          ; i = 0
+; sum int64_t arr[n]
+; rdi = arr, rsi = n, result in rax
+    ; sum = 0
+    xor  eax, eax
+    ; i = 0
+    xor  ecx, ecx
 .loop:
     cmp  rcx, rsi
-    jge  .done             ; if i >= n, exit
+    ; exit if i >= n
+    jge  .done
     add  rax, [rdi + rcx*8]
     inc  rcx
     jmp  .loop
 .done:
 ```
 
-### The `loop` instruction
+### `loop` counts `rcx` down to zero
 
-`loop label` decrements `rcx` and jumps if `rcx != 0`. It's concise but has a subtle trap: it only checks `rcx`, so you must set it up as a down-counter, and it doesn't branch if `rcx` starts at 0 (which would underflow to UINT64_MAX and loop 2^64 times).
+`loop label` subtracts 1 from `rcx` and jumps if `rcx` is not 0. It checks only `rcx`, so `rcx` must count down. If `rcx` is 0 at entry, it wraps to 2^64 - 1, so always guard against 0. Compilers emit `dec rcx` and `jnz` instead, because `loop` is slower on modern CPUs.
 
 ```nasm
-; Same sum, using loop
+; the same sum, with loop
     xor   eax, eax
-    mov   rcx, rsi          ; rcx = n  (count)
+    ; rcx = n (count)
+    mov   rcx, rsi
+    ; guard: n == 0?
     test  rcx, rcx
-    jz    .done             ; guard: n == 0?
+    jz    .done
 .loop:
     add   rax, [rdi]
-    add   rdi, 8            ; advance pointer
-    loop  .loop             ; rcx--; jnz
+    ; advance the pointer
+    add   rdi, 8
+    ; rcx--; jump if not zero
+    loop  .loop
 .done:
 ```
 
-Always guard `loop` against `rcx == 0` on entry.
+### `lea` gives a one-past-the-end pointer
 
-### Pointer arithmetic with `lea`
+This is `&arr[n]` in C. It is useful as the end condition of a pointer-walk loop.
 
 ```nasm
-lea  rax, [rdi + rsi*8]    ; rax = &arr[n]  (one-past-end pointer)
+; rax = &arr[n], one past the end
+lea  rax, [rdi + rsi*8]
 ```
 
-This is exactly `&arr[n]` in C — the pointer to one past the last element, useful as a loop-termination sentinel.
+### Assembly has no bounds check
 
-## vs other languages
+Java and Go insert a bounds check on each array access. In assembly, `arr[-1]` or `arr[n]` reads nearby memory without a warning, or crashes with `SIGSEGV`.
 
-In C, `for (int i = 0; i < n; i++) sum += arr[i]` compiles to exactly the counter-based pattern above, or to the pointer-walk variant if the compiler auto-vectorizes with pointer bumps. GCC's `-O2` will often replace the `loop` instruction with `dec rcx; jnz` because `loop` is slower on modern CPUs despite being shorter.
-
-Java and Go iterate over slices/arrays with bounds checking inserted by the runtime. In assembly there is no bounds check — accessing `arr[-1]` or `arr[n]` silently reads adjacent memory or crashes with SIGSEGV.
+```nasm
+; rsi = n: reads past the end
+mov  rax, [rdi + rsi*8]
+```
 
 ## Watch out
 
-- `loop` decrements `rcx` and jumps if the result is nonzero. If `rcx` is 0 on entry, it wraps to `0xFFFFFFFFFFFFFFFF` and the CPU appears to hang — always test `n == 0` before the first `loop`.
-- Off-by-one at the loop bound: `cmp rcx, n` / `jge .done` correctly processes indices `0..n-1`; using `jg` instead runs one iteration past the end of the array.
-- Pointer-walking loops must advance the pointer by the element's size every iteration. Forgetting `add rdi, 8` for an `int64_t` array re-reads element 0 forever instead of advancing.
-- `array_max`'s precondition `n >= 1` is a real contract, not just documentation — calling it with `n == 0` dereferences `[rdi]` before the array has any valid elements, reading whatever memory happens to precede it.
+- If `rcx` is 0 when `loop` first runs, it wraps to `0xFFFFFFFFFFFFFFFF`. The CPU then seems to hang. Test `n == 0` first.
+- `cmp rcx, n` with `jge .done` covers indices 0 to n-1. A `jg` reads one element past the end.
+- A pointer-walk loop must add the element size each pass. Without `add rdi, 8`, it reads element 0 again and again.
+- `array_max` needs `n >= 1`. With `n == 0`, it reads `[rdi]`, which is not a valid element.
 
 ## The task
 
-Implement `array_sum` and `array_max`, both operating on arrays of `int64_t`:
+Write `array_sum` and `array_max`. Both take an array of `int64_t` and return a result in `rax`.
+
+1. Both take `rdi = arr`, a pointer to the first element, and `rsi = n`, the element count.
+2. `array_sum` returns the sum of all `n` elements. It returns 0 when `n` is 0.
+3. In `array_sum`, use `loop` with `rcx` as the down-counter. Test for `n == 0` before the first `loop`.
+4. `array_max` returns the largest element. It needs `n >= 1`.
+5. In `array_max`, walk the pointer: add 8 to `rdi` each pass.
+
+`rdi` and `rsi` are caller-saved, so you can change them. Negative elements are valid. Compare them as signed values. For a one-element array, `array_sum` returns that element.
 
 ```nasm
-; int64_t array_sum(int64_t *arr, int64_t n)
-; rdi=arr, rsi=n
-; Returns the sum of all n elements in rax. Returns 0 if n == 0.
+; int64_t array_sum(int64_t *arr,
+;     int64_t n)
 array_sum:
     ; TODO
+    ret
 
-; int64_t array_max(int64_t *arr, int64_t n)
-; rdi=arr, rsi=n
-; Returns the maximum element in rax. Precondition: n >= 1 (undefined for n == 0).
+; int64_t array_max(int64_t *arr,
+;     int64_t n)
 array_max:
     ; TODO
+    ret
+
+array_sum([1,2,3,4,5], 5)      ; 15
+array_sum([-10,0,10,5,-5], 5)  ; 0
+array_sum([], 0)               ; 0
+array_sum([42], 1)             ; 42
+array_sum([100,200,300], 3)    ; 600
+array_max([1,2,3,4,5], 5)      ; 5
+array_max([-10,0,10,5,-5], 5)  ; 10
 ```
-
-Register contract: `rdi` (array pointer) and `rsi` (count) are inputs, both caller-saved — clobber freely once read. Return the result in `rax`.
-
-```nasm
-array_sum([1,2,3,4,5], 5);        // 15
-array_sum([-10,0,10,5,-5], 5);    // 0
-array_sum([], 0);                 // 0   — empty array
-array_sum([42], 1);                // 42  — single element
-
-array_max([1,2,3,4,5], 5);        // 5
-array_max([-10,0,10,5,-5], 5);    // 10
-```
-
-Use a loop with `rcx` as the down-counter for `array_sum` (guard against `n == 0` before the first `loop`). Use pointer walking (advance `rdi` by 8 each iteration) for `array_max`.

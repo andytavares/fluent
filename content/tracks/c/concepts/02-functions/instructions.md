@@ -1,24 +1,31 @@
-# Functions
+## What you build
 
-## What you'll learn
-
-C functions must be declared before they are called. A **declaration** (prototype) tells the compiler the function's signature; a **definition** provides the body. In a single-file program these are often combined.
+You write `max`, a recursive `factorial` and `is_palindrome`. In C, you must declare a function before you call it. This lesson builds on **Variables & Types**.
 
 ## Key concepts
 
-**Function definition:**
+### A definition gives the body
+
+A definition states the return type, the name, the parameters and the body.
+
 ```c
 int square(int n) {
     return n * n;
 }
 ```
 
-**Function prototype** (declaration without body — place at the top of the file or in a header):
+### A prototype declares the signature
+
+A prototype is a declaration with no body. Put it at the top of the file or in a header. A single-file program often combines declaration and definition.
+
 ```c
-int square(int n);  /* prototype */
+int square(int n);
 ```
 
-**Recursive functions** call themselves — the base case prevents infinite recursion:
+### A recursive function needs a base case
+
+A recursive function calls itself. The base case stops the recursion.
+
 ```c
 int factorial(int n) {
     if (n <= 1) return 1;
@@ -26,39 +33,57 @@ int factorial(int n) {
 }
 ```
 
-**Multiple return values don't exist** — C functions return at most one value. Use output parameters (pointers) or a struct to return multiple values.
+### A function returns one value
 
-**Pass by value:** C passes arguments by value — the function receives a copy. Modifying a parameter inside the function has no effect on the caller's variable. Use pointers to mutate caller-side data (covered in the Pointers concept).
+C has no multiple return values. To give back more than one value, use output parameters (pointers) or a struct.
 
-**vs other languages:** No function overloading, no default parameters, no named arguments. If you want an optional parameter, use a separate function or pass a sentinel value (e.g., `NULL` or `-1`).
+### C passes arguments by value
+
+The function gets a copy of each argument. A change to a parameter does not change the caller's variable. The **Pointers** concept shows how to change caller data.
+
+```c
+void reset(int n) { n = 0; }
+
+int x = 5;
+reset(x);  // x is still 5
+```
+
+### No overloading and no default parameters
+
+C has no function overloading, default parameters or named arguments. For an optional parameter, write a separate function or pass a sentinel value, such as `NULL` or `-1`.
 
 ## Watch out
 
-- `factorial(n)` grows fast: `13!` already overflows a 32-bit `int`. This exercise assumes small, well-behaved inputs — production code would use `long long` or check for overflow before multiplying.
-- Every recursive call consumes stack frame space. There's no tail-call guarantee in C — a sufficiently deep recursion (tens of thousands of frames) can overflow the stack with no compiler warning.
-- `max` compares with `>`, not `>=`; when `a == b` either branch returns the same value, so the choice doesn't matter here, but it does the moment you compare non-numeric or floating-point values (NaN comparisons are always false).
-- A function without a `return` on every path has undefined behavior if the caller uses the return value — the compiler may warn (`-Wreturn-type`) but won't always stop you.
+- `13!` overflows a 32-bit `int`. Real code uses `long long` or checks before it multiplies.
+- C does not guarantee tail calls. Very deep recursion can overflow the stack with no warning.
+- `max` uses `>`. With `a == b` either branch is correct. With NaN, every comparison is false.
+- A path with no `return` gives undefined behavior if the caller uses the result. `-Wreturn-type` warns only sometimes.
 
 ## The task
 
-Implement three functions:
+Write three functions.
 
-- `int max(int a, int b)` — returns the larger of `a` and `b`
-- `int factorial(int n)` — returns `n!` for `n >= 0`, computed recursively (`factorial(0)` is `1` by definition)
-- `int is_palindrome(int n)` — returns `1` if the decimal representation of `n` reads the same forwards and backwards, `0` otherwise; assume `n >= 0`
+1. `int max(int a, int b)` returns the larger of `a` and `b`.
+2. If `a == b`, `max` returns that value.
+3. `int factorial(int n)` returns `n!` for `n >= 0`. Compute it recursively.
+4. `factorial(0)` returns `1`.
+5. `int is_palindrome(int n)` returns `1` if the decimal digits of `n` read the same in both directions.
+6. Otherwise, `is_palindrome` returns `0`. Assume `n >= 0`.
+
+A single digit, including `0`, is a palindrome. A trailing zero breaks the symmetry: `120` reversed is `021`.
 
 ```c
-max(3, 7);    // 7
-max(7, 3);    // 7
-max(5, 5);    // 5
-max(-1, -2);  // -1
-
-factorial(0);  // 1  — base case
-factorial(1);  // 1
-factorial(5);  // 120
-
+max(3, 7);           // 7
+max(7, 3);           // 7
+max(5, 5);           // 5
+max(-1, -2);         // -1
+factorial(0);        // 1
+factorial(1);        // 1
+factorial(5);        // 120
+factorial(7);        // 5040
+is_palindrome(0);    // 1
 is_palindrome(121);  // 1
-is_palindrome(0);    // 1  — a single digit is trivially a palindrome
-is_palindrome(120);  // 0  — trailing zero breaks symmetry (021 != 120)
+is_palindrome(1221); // 1
+is_palindrome(120);  // 0
 is_palindrome(123);  // 0
 ```

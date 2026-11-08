@@ -1,111 +1,140 @@
-# File Operations
+## What you build
 
-## What you'll learn
-
-You've been redirecting and piping data between commands; now you'll operate on the filesystem itself. The Unix file utilities — `find`, `xargs`, `stat`, `chmod`, `cp`, `rsync` — and how to compose them safely in scripts. The key skill is knowing when to use `-exec` vs `xargs` and how to handle filenames with spaces (the same word-splitting hazard from earlier lessons, now applied to paths).
+You write `find_by_extension`, `make_executable` and `ensure_dir` with `find`, `chmod` and `mkdir`. You also learn when to use `-exec` or `xargs`, and how to handle file names with spaces. This lesson builds on **Pipes & Redirection**.
 
 ## Key concepts
 
-**`find` — the right tool for filesystem searches:**
+### `find` searches the file system
+
+`find` walks a directory tree, like `os.walk()` in Python. Tests such as `-name`, `-type`, `-mtime` and `-size` select the results.
 
 ```bash
-find . -name "*.sh"                    # by name pattern
-find . -type f -name "*.log"           # regular files only
-find . -type d -name "node_modules"    # directories only
-find . -mtime -7                       # modified within 7 days
-find . -size +1M                       # larger than 1 MB
-find . -name "*.tmp" -delete           # delete in one pass
-
-# Execute a command on each result
-find . -name "*.sh" -exec chmod +x {} \;   # one invocation per file
-find . -name "*.log" -exec rm {} +         # batched (more efficient)
+# By name pattern
+find . -name "*.sh"
+# Regular files only
+find . -type f -name "*.log"
+# Directories only
+find . -type d -name "node_modules"
+# Changed in the last 7 days
+find . -mtime -7
+# Larger than 1 MB
+find . -size +1M
+# Delete in one pass
+find . -name "*.tmp" -delete
 ```
 
-**`xargs` — build and execute commands from stdin:**
+### `-exec` runs a command on the results
+
+`-exec cmd {} \;` runs `cmd` once for each file. `-exec cmd {} +` gives many files to each run of `cmd`, so it is faster on large trees.
 
 ```bash
-find . -name "*.log" | xargs rm                  # simple case
-find . -name "*.log" -print0 | xargs -0 rm       # safe with spaces in names
-find . -name "*.sh"  -print0 | xargs -0 chmod +x
-echo "a b c" | xargs -n1 echo                    # one arg per invocation
+# One chmod for each file
+find . -name "*.sh" -exec chmod +x {} \;
+# Batched
+find . -name "*.log" -exec rm {} +
 ```
 
-Always pair `-print0` with `-0` when filenames might contain spaces or newlines. This is the safe default.
+### `xargs` builds commands from stdin
 
-**`stat` — file metadata:**
+Pair `find -print0` with `xargs -0` when file names can contain spaces or newlines. This is the safe default.
 
 ```bash
-stat file.txt                          # full output (format varies by OS)
-stat -c "%s" file.txt                  # file size in bytes (GNU)
-stat -f "%z" file.txt                  # file size in bytes (BSD/macOS)
+# Simple case
+find . -name "*.log" | xargs rm
+# Safe with spaces in names
+find . -name "*.log" -print0 \
+  | xargs -0 rm
+find . -name "*.sh" -print0 \
+  | xargs -0 chmod +x
+# One argument for each run
+echo "a b c" | xargs -n1 echo
 ```
 
-**`chmod`/`chown` — permissions:**
+### `stat` shows file metadata
+
+The output format and the flags change between systems.
 
 ```bash
-chmod 755 script.sh           # rwxr-xr-x
-chmod +x script.sh            # add execute for all
-chmod u+w,g-w file.txt        # symbolic: user +write, group -write
-chown user:group file.txt     # change owner and group
+# Full output
+stat file.txt
+# Size in bytes (GNU)
+stat -c "%s" file.txt
+# Size in bytes (BSD/macOS)
+stat -f "%z" file.txt
 ```
 
-**`mkdir -p` / `cp -r` / `rsync`:**
+### `chmod` and `chown` set permissions and owners
 
 ```bash
-mkdir -p /path/that/may/not/exist        # create entire path, no error if exists
-cp -r src/ dest/                         # recursive copy
-cp -a src/ dest/                         # archive: preserves permissions, timestamps
-rsync -av src/ dest/                     # sync with progress, preserves metadata
-rsync -av --delete src/ dest/            # mirror: delete files not in src
-rsync -av src/ user@host:/remote/path/  # remote sync over SSH
+# rwxr-xr-x
+chmod 755 script.sh
+# Add execute for all
+chmod +x script.sh
+# User adds write, group loses write
+chmod u+w,g-w file.txt
+# Change owner and group
+chown user:group file.txt
+```
+
+### `mkdir -p`, `cp` and `rsync` create and copy trees
+
+```bash
+# Create the path; no error if it exists
+mkdir -p /path/that/may/not/exist
+# Recursive copy
+cp -r src/ dest/
+# Archive: keeps permissions and timestamps
+cp -a src/ dest/
+# Sync and keep metadata
+rsync -av src/ dest/
+# Mirror: delete files not in src
+rsync -av --delete src/ dest/
+# Sync to a remote host over SSH
+rsync -av src/ user@host:/remote/path/
 ```
 
 ## Watch out
 
-- `find . -name "*.log" | xargs rm` breaks on filenames containing spaces or newlines — each line gets word-split by `xargs`'s default delimiter. Pair `find -print0` with `xargs -0` whenever filenames aren't guaranteed to be simple.
-- `find ... -exec cmd {} \;` runs `cmd` once **per file** (slow for large trees); `find ... -exec cmd {} +` batches many files into fewer invocations, much closer to how `xargs` behaves. They are not interchangeable if `cmd` behaves differently when given multiple arguments (e.g. `echo` vs `rm`).
-- `mkdir somedir` fails if `somedir` already exists or if a parent is missing; `mkdir -p` does neither — silently succeeds if the directory is already there and creates missing parents. Reach for `-p` by default in scripts.
-- `stat`'s format flags differ between GNU (Linux, `-c`) and BSD (macOS, `-f`) — a `stat -c "%s" file` script that works in CI may fail on a contributor's Mac. Check with `[[ -s file ]]` for "non-empty" instead of parsing `stat` output when you only need a boolean.
-
-## vs other languages
-
-| Task | Python | Bash |
-|------|--------|------|
-| Walk directory tree | `os.walk()` | `find . -type f` |
-| Recursive copy | `shutil.copytree()` | `cp -r` or `rsync -a` |
-| File metadata | `os.stat()` | `stat` |
-| Permissions | `os.chmod()` | `chmod` |
-| Safe filenames | escape manually | `-print0 \| xargs -0` |
-
-`find -exec {} +` batches multiple files into one invocation (like `xargs`), while `-exec {} \;` calls once per file. The `+` form is almost always faster for large trees.
+- `find . -name "*.log" | xargs rm` fails on names with spaces or newlines.
+- `xargs` splits its input on whitespace. Use `find -print0` with `xargs -0` for names you do not control.
+- `-exec cmd {} \;` runs `cmd` once for each file, which is slow on large trees.
+- `-exec cmd {} +` is not always a drop-in change. Some commands act differently with many arguments.
+- `mkdir somedir` fails if `somedir` exists or a parent is missing.
+- `mkdir -p` does not fail in either case. Use `-p` by default in scripts.
+- `stat -c "%s"` works on GNU (Linux) but fails on BSD (macOS), which uses `-f`.
+- To test only if a file is not empty, use `[[ -s file ]]`, not `stat`.
 
 ## The task
 
-You're writing three functions built on `find`, `chmod`, and `mkdir`.
+Write three functions with `find`, `chmod` and `mkdir`.
 
-**`find_by_extension dir ext`** — echoes all **regular files** under `dir` (recursively) whose name ends in `.<ext>` (`ext` has no leading dot), one path per line, sorted. Use `find ... | sort`.
+1. `find_by_extension dir ext` prints every regular file under `dir`, at any depth, whose name ends in `.<ext>`.
+2. `ext` has no leading dot.
+3. It prints one path per line, sorted. Use `find ... | sort`.
+4. `make_executable dir` adds the execute bit to every `.sh` file under `dir`, at any depth.
+5. It does not change files with other extensions.
+6. Use one batched `find -exec ... +`, not one `chmod` for each file.
+7. `ensure_dir path` creates the directory `path` and any missing parents.
+8. It prints `created` if it made the directory, or `exists` if the directory was already there.
+9. A second call on the same path does not fail.
 
 ```bash
-# dir contains a.sh, b.sh, c.txt, d.sh
+dir=$(mktemp -d)
+touch "$dir/a.sh" "$dir/b.sh" \
+  "$dir/c.txt" "$dir/d.sh"
+
 find_by_extension "$dir" "sh"
 # .../a.sh
 # .../b.sh
 # .../d.sh
-
 find_by_extension "$dir" "txt"
 # .../c.txt
-```
 
-**`make_executable dir`** — makes every `.sh` file under `dir` (recursively) executable (`chmod +x`); files with other extensions are left untouched. Use `find -exec ... +` (batched) rather than one `chmod` call per file.
+make_executable "$dir"
+# a.sh, b.sh and d.sh are executable
+# c.txt is not
 
-```bash
-make_executable "$dir"   # every *.sh under $dir gains the execute bit; *.txt is unaffected
-```
-
-**`ensure_dir path`** — creates the directory at `path`, including any missing parent directories, if it doesn't already exist. Echoes `created` if it made the directory, or `exists` if the directory was already there. Never errors if called twice in a row on the same path.
-
-```bash
-ensure_dir "/tmp/work/nested"   # created  — didn't exist, now does (parents included)
-ensure_dir "/tmp/work/nested"   # exists   — second call finds it already there
-ensure_dir "/tmp"               # exists   — pre-existing directory
+ensure_dir "$dir/new/nested"   # created
+ensure_dir "$dir/new/nested"   # exists
+ensure_dir "$dir"              # exists
 ```

@@ -1,12 +1,12 @@
-# Control Flow
+## What you build
 
-## What you'll learn
-
-Building on the variables and quoting from lesson 1: Bash conditions are exit codes, not boolean expressions. Understanding that one fact unlocks all of `if`, `[[ ]]`, and `case`.
+You write three classifier functions with `[[ ]]` and `case`. In Bash, a condition is an exit code, not a boolean expression. That one fact explains `if`, `[[ ]]` and `case`. This lesson builds on **Variables & Strings**.
 
 ## Key concepts
 
-**`if` runs a command and branches on its exit code:**
+### `if` branches on an exit code
+
+`if` runs a command. Exit code 0 means true, and any other code means false. This is the opposite of C, where 0 is false.
 
 ```bash
 if grep -q "error" logfile.txt; then
@@ -14,9 +14,11 @@ if grep -q "error" logfile.txt; then
 fi
 ```
 
-`grep -q` exits 0 if found, 1 if not. `if` tests exit codes directly — no boolean conversion needed.
+`grep -q` exits 0 when it finds a match and 1 when it does not.
 
-**`[[ ]]` is the modern test construct:**
+### `[[ ]]` is the Bash test keyword
+
+`[[ ]]` is a keyword, not a command. It does not word-split or glob its operands. Always use `[[ ]]` in place of `[ ]` in Bash.
 
 ```bash
 if [[ "$status" == "ok" ]]; then
@@ -28,43 +30,50 @@ else
 fi
 ```
 
-`[[ ]]` is a Bash keyword (not a command), so it handles word-splitting and globbing safely. Always prefer `[[ ]]` over `[ ]`.
+### String tests use `==`, number tests use `-eq`
 
-**Common test operators:**
-
-```bash
-# String tests
-[[ -z "$var" ]]        # true if var is empty or unset
-[[ -n "$var" ]]        # true if var is non-empty
-[[ "$a" == "$b" ]]     # string equality
-[[ "$a" != "$b" ]]     # string inequality
-[[ "$a" =~ ^[0-9]+$ ]] # regex match (no quotes around pattern)
-
-# Numeric tests
-[[ $a -eq $b ]]   # equal
-[[ $a -ne $b ]]   # not equal
-[[ $a -lt $b ]]   # less than
-[[ $a -le $b ]]   # less than or equal
-[[ $a -gt $b ]]   # greater than
-[[ $a -ge $b ]]   # greater than or equal
-
-# File tests
-[[ -f "$path" ]]   # exists and is a regular file
-[[ -d "$path" ]]   # exists and is a directory
-[[ -r "$path" ]]   # readable
-[[ -x "$path" ]]   # executable
-[[ -s "$path" ]]   # exists and is non-empty (size > 0)
-```
-
-**Compound conditions:**
+Strings and integers have different operators. Do not put quotes around a regex pattern after `=~`.
 
 ```bash
-[[ -f "$f" && -r "$f" ]]   # AND
-[[ -z "$a" || -z "$b" ]]   # OR
-[[ ! -d "$dir" ]]           # NOT
+[[ -z "$var" ]]     # empty or unset
+[[ -n "$var" ]]     # not empty
+[[ "$a" == "$b" ]]  # strings equal
+[[ "$a" != "$b" ]]  # strings differ
+[[ "$a" =~ ^[0-9]+$ ]]  # regex match
+
+[[ $a -eq $b ]]  # equal
+[[ $a -ne $b ]]  # not equal
+[[ $a -lt $b ]]  # less than
+[[ $a -le $b ]]  # less than or equal
+[[ $a -gt $b ]]  # greater than
+[[ $a -ge $b ]]  # greater than or equal
 ```
 
-**`case` statement — cleaner than long if/elif chains:**
+### File tests check the file system
+
+Each file test is true or false for one path.
+
+```bash
+[[ -f "$path" ]]  # a regular file
+[[ -d "$path" ]]  # a directory
+[[ -r "$path" ]]  # readable
+[[ -x "$path" ]]  # executable
+[[ -s "$path" ]]  # exists, size > 0
+```
+
+### `&&`, `||` and `!` combine tests
+
+Inside `[[ ]]`, you can use these operators directly. Outside, `&&` and `||` join commands.
+
+```bash
+[[ -f "$f" && -r "$f" ]]  # AND
+[[ -z "$a" || -z "$b" ]]  # OR
+[[ ! -d "$dir" ]]         # NOT
+```
+
+### `case` matches glob patterns
+
+`case` replaces a long `if`/`elif` chain. Each clause ends with `;;`. Patterns are globs, for example `*.log)` or `[0-9]*)`.
 
 ```bash
 case "$extension" in
@@ -80,53 +89,44 @@ case "$extension" in
 esac
 ```
 
-Each pattern ends with `;;`. Patterns support globs: `*.log)`, `[0-9]*)`.
-
 ## Watch out
 
-- **`[ ]` vs `[[ ]]`:** `[ ]` is the POSIX `test` command — a real external-or-builtin program, so `$a` and `$b` are word-split and glob-expanded before `[` ever sees them. `[[ ]]` is a Bash keyword: it skips word-splitting/globbing on its operands and supports `&&`, `||`, and `=~` directly. Prefer `[[ ]]` in Bash scripts; reach for `[ ]` only when writing POSIX `sh`.
-- Numeric vs string comparison is a common mixup: `[[ "10" -lt "9" ]]` is false (numeric: 10 is not less than 9), but `[[ "10" < "9" ]]` inside `[[ ]]` is true — `<`/`>` do **lexicographic string** comparison there, not numeric. Always use `-lt`/`-gt`/etc. for numbers.
-- An unquoted empty variable inside `[ ]` throws `unary operator expected`: `[ -z $var ]` breaks if `$var` is empty and unquoted, because it collapses to `[ -z ]`. Quote it: `[ -z "$var" ]`. `[[ ]]` doesn't have this problem.
-- `case` falls through only with `;&` (next clause) or `;;&` (re-test) — plain `;;` does **not** fall through, unlike C's `switch`.
-
-## vs other languages
-
-| Concept | C/Python/JS | Bash |
-|---------|-------------|------|
-| Condition type | boolean expression | exit code (0 = true, non-zero = false) |
-| Equality | `==` for numbers and strings | `-eq` for integers, `==` for strings |
-| Truthiness | `0` is falsy in most languages | `0` is **success/true** in Bash |
-| Switch/match | `switch`/`match` with values | `case` with glob patterns |
-| Logical AND | `&&` inside an expression | `&&` between commands, or inside `[[ ]]` |
-
-The inverted truthiness catches everyone: exit code `0` means success (true), non-zero means failure (false). The opposite of C.
+- `[ ]` is the POSIX `test` command. Bash word-splits and globs `$a` before `[` sees it.
+- `[[ ]]` skips that expansion and supports `&&`, `||` and `=~`. Use `[ ]` only for POSIX `sh`.
+- `[[ "10" -lt "9" ]]` is false, because `-lt` compares numbers.
+- `[[ "10" < "9" ]]` is true, because `<` compares strings. Use `-lt` and `-gt` for numbers.
+- `[ -z $var ]` with an empty `$var` becomes `[ -z ]`. Quote it: `[ -z "$var" ]`.
+- An unquoted empty variable in `[ ]` can also give `unary operator expected`. `[[ ]]` does not have this problem.
+- Plain `;;` does not fall through. A C `switch` does.
+- `;&` runs the next clause. `;;&` tests the next patterns.
 
 ## The task
 
-You're writing three classifier functions using `[[ ]]` and `case`.
+You write three classifier functions. Use `[[ ]]` and `case`. Each function prints one word with `echo`.
 
-**`classify_number n`** — echoes `positive`, `negative`, or `zero`.
+1. `classify_number n` prints `positive`, `negative` or `zero`.
+2. `file_status path` prints `missing`, `directory`, `empty-file` or `file`.
+3. `file_status` checks in this order. A path that does not exist is `missing`.
+4. A directory is `directory`. A regular file of size 0 is `empty-file`. Any other path is `file`.
+5. `day_type day` takes a day name from `Monday` to `Sunday`. It prints `weekday` or `weekend`.
+6. In `day_type`, use a `case` statement. Use `Saturday|Sunday` and the five weekday names as patterns.
 
 ```bash
 classify_number 42     # positive
 classify_number -7     # negative
 classify_number 0      # zero
-```
+classify_number -1000  # negative
 
-**`file_status path`** — echoes `directory`, `file`, `empty-file`, or `missing`. Check in this order: does the path not exist → `missing`; is it a directory → `directory`; is it a regular file with size 0 → `empty-file`; otherwise → `file`.
+# $dir is a directory. $full holds
+# text. $empty has 0 bytes.
+file_status "$dir"          # directory
+file_status "$full"         # file
+file_status "$empty"        # empty-file
+file_status "$dir/nothere"  # missing
 
-```bash
-file_status "/tmp"                 # directory
-file_status "/tmp/report.txt"      # file          (non-empty regular file)
-file_status "/tmp/empty.txt"       # empty-file     (0-byte regular file)
-file_status "/tmp/does-not-exist"  # missing
-```
-
-**`day_type day`** — accepts a day name (`Monday`–`Sunday`) and echoes `weekday` or `weekend`. Use a `case` statement with `Saturday|Sunday` and the five weekday names as patterns.
-
-```bash
 day_type "Saturday"   # weekend
 day_type "Sunday"     # weekend
 day_type "Monday"     # weekday
+day_type "Friday"     # weekday
 day_type "Wednesday"  # weekday
 ```

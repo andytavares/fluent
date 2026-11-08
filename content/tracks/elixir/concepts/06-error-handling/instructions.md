@@ -1,122 +1,131 @@
-# Error Handling
+## What you build
 
-## What you'll learn
-
-Elixir has two error models that coexist intentionally. Tagged tuples (`{:ok, value}` / `{:error, reason}`) are for expected failure paths. Exceptions (`raise` / `rescue`) are for truly unexpected conditions. The `with` expression threads multiple tagged-tuple operations cleanly.
+You write a `SafeMath` module whose functions return `{:ok, value}` or `{:error, reason}`, and chain them with `with`. Elixir has two error models: tagged tuples for expected failures and exceptions for unexpected ones. This lesson builds on **Processes**.
 
 ## Key concepts
 
-**Tagged tuples — the primary pattern:**
+### Tagged tuples signal expected failures
+
+A function returns `{:ok, value}` on success and `{:error, reason}` on failure. The function raises no exception. The caller matches both shapes.
 
 ```elixir
 def parse_age(str) do
   case Integer.parse(str) do
     {n, ""} when n >= 0 -> {:ok, n}
-    _                   -> {:error, "invalid age: #{str}"}
+    _ -> {:error, "invalid age: #{str}"}
   end
 end
 
 case parse_age("30") do
-  {:ok, age}     -> "Age is #{age}"
-  {:error, msg}  -> "Failed: #{msg}"
+  {:ok, age} -> "Age is #{age}"
+  {:error, msg} -> "Failed: #{msg}"
 end
 ```
 
-This is the idiomatic Elixir way to signal recoverable errors. No exceptions involved. The caller is forced to handle both branches.
+### `with` chains fallible steps
 
-**`with` for chaining multiple fallible operations:**
+`with` runs each `<-` clause in order. At the first result that does not match its pattern, it stops and goes to `else`. Without `with`, the same code needs deeply nested `case` expressions.
 
 ```elixir
-with {:ok, raw}  <- File.read("config.json"),
-     {:ok, data} <- Jason.decode(raw),
-     {:ok, port} <- Map.fetch(data, "port") do
+with {:ok, raw} <- File.read("c.json"),
+     {:ok, cfg} <- Jason.decode(raw),
+     {:ok, port} <-
+       Map.fetch(cfg, "port") do
   {:ok, port}
 else
   {:error, reason} -> {:error, reason}
-  :error           -> {:error, "missing key"}
+  :error -> {:error, "missing key"}
 end
 ```
 
-`with` short-circuits at the first clause that doesn't match its left-hand pattern and falls through to `else`. Without `with`, the equivalent nested `case` is deeply indented.
+### Exceptions signal unexpected conditions
 
-**Exceptions for unexpected conditions:**
+`raise` throws an exception. `rescue` catches exceptions by type. Use exceptions for programmer errors and unexpected states, not for control flow.
 
 ```elixir
 raise ArgumentError, "n must be positive"
-raise "something broke"   # raises RuntimeError
+# Raises RuntimeError
+raise "something broke"
 
 try do
   risky_operation()
 rescue
   ArgumentError -> "bad argument"
-  e in RuntimeError -> "runtime: #{Exception.message(e)}"
+  e in RuntimeError ->
+    "runtime: #{Exception.message(e)}"
 end
 ```
 
-`rescue` catches exceptions by type. Use exceptions for programmer errors and truly unexpected states — not for control flow.
+### A `!` function raises on failure
 
-**Bang functions (`!` suffix):**
-
-By convention, `File.read!/1` raises on failure where `File.read/1` returns `{:error, reason}`. Most standard library modules follow this pattern: the `!` variant is for "I expect this to succeed — crash if not."
+By convention, `File.read!/1` raises where `File.read/1` returns `{:error, reason}`. Most standard library modules follow this pattern. Use the `!` form when failure means a bug.
 
 ```elixir
-content = File.read!("known_file.txt")  # raises on error
-{:ok, content} = File.read("maybe.txt") # pattern-match to handle
+# Raises on error
+content = File.read!("known_file.txt")
+# Match to handle the result
+{:ok, content} = File.read("maybe.txt")
 ```
 
-## vs other languages
+### Let it crash
 
-| | Elixir | Go | Python | Java |
-|---|---|---|---|---|
-| Expected failures | `{:ok, v}` / `{:error, r}` | `(T, error)` | exception or `Optional` | checked exception / `Optional` |
-| Unexpected failures | `raise` / `rescue` | `panic` / `recover` | exception | unchecked exception |
-| Chaining fallible ops | `with` | manual `if err != nil` | nested `try` | method chaining |
-| "Crash is fine" mindset | yes — processes are isolated | no | no | no |
-
-The philosophical difference: Elixir encourages "let it crash" for unexpected failures. Because processes are isolated, a crash doesn't take down the system — a supervisor restarts the failed process. This means you should write less defensive code, not more.
+Each process runs alone, so a crash does not stop the system. A supervisor restarts the failed process. You write less defensive code for unexpected failures, not more. Go uses `(T, error)` returns and `panic` for the same two roles.
 
 ## Watch out
 
-- `with`'s `<-` clauses only short-circuit on **pattern mismatch**, not on any falsy value — `false <- some_call()` does *not* short-circuit if `some_call()` returns `false` and the pattern is a bare variable (it would just bind). Always match a specific shape like `{:ok, _}` to get short-circuiting behavior.
-- Mixing tagged-tuple returns with exceptions inconsistently is worse than picking one: if `divide/2` can fail with `{:error, _}`, don't also let it raise `ArithmeticError` for some inputs — callers need one contract to pattern-match against.
-- `Integer.parse/1` is lenient: `Integer.parse("42abc")` succeeds and returns `{42, "abc"}` rather than failing — you must check that the leftover string is `""` if you want to reject trailing garbage.
+- `<-` stops only on a pattern mismatch. A bare variable matches any value, including `false` and `nil`.
+- Match a specific shape such as `{:ok, _}` to make `with` stop on failure.
+- Do not mix contracts. If `divide/2` returns `{:error, _}`, it must not also raise `ArithmeticError`.
+- `Integer.parse("42abc")` returns `{42, "abc"}`. Check that the rest is `""` to reject trailing text.
 
 ## The task
 
-Implement these functions in the `SafeMath` module, all following the `{:ok, value}` / `{:error, reason}` convention.
+Write four functions in the `SafeMath` module. Each one returns `{:ok, value}` or `{:error, reason}`.
 
-**`divide(a, b)`** — returns `{:ok, a / b}`, or `{:error, "division by zero"}` when `b` is `0`.
+1. `divide(a, b)` returns `{:ok, a / b}`.
+2. When `b` is `0`, `divide/2` returns `{:error, "division by zero"}`.
+3. `sqrt(n)` returns `{:ok, result}` for `n` of 0 or more.
+4. For negative `n`, `sqrt/1` returns `{:error, "cannot take sqrt of negative number"}`.
+5. `safe_pipeline(a, b, c)` divides `a` by `b`, takes the square root, then divides by `c`.
+6. Chain the three steps in `safe_pipeline/3` with `with`. Return the first error unchanged.
+7. `parse_positive_int(str)` returns `{:ok, n}` when all of `str` is an integer greater than 0.
+8. Otherwise, it returns `{:error, reason}`. `reason` is a string that says what went wrong.
+
+`/` always returns a float. `parse_positive_int/1` rejects zero, negative numbers, words and decimal strings.
 
 ```elixir
 SafeMath.divide(10, 2)  # => {:ok, 5.0}
-SafeMath.divide(10, 0)  # => {:error, "division by zero"}
 SafeMath.divide(-6, 2)  # => {:ok, -3.0}
-```
+SafeMath.divide(10, 0)
+# => {:error, "division by zero"}
 
-**`sqrt(n)`** — returns `{:ok, result}` for non-negative `n`, or `{:error, "cannot take sqrt of negative number"}` otherwise.
+SafeMath.sqrt(9.0)  # => {:ok, 3.0}
+SafeMath.sqrt(0)    # => {:ok, 0.0}
+SafeMath.sqrt(-1.0)
+# => {:error,
+#  "cannot take sqrt of negative number"}
 
-```elixir
-SafeMath.sqrt(9.0)   # => {:ok, 3.0}
-SafeMath.sqrt(0)     # => {:ok, 0.0}
-SafeMath.sqrt(-1.0)  # => {:error, "cannot take sqrt of negative number"}
-```
-
-**`safe_pipeline(a, b, c)`** — divides `a` by `b`, takes the square root of that result, then divides by `c`, using `with` to chain the three fallible steps. Returns `{:ok, result}`, or the first `{:error, reason}` encountered along the way (from whichever step failed).
-
-```elixir
 # 100 / 4 = 25, sqrt(25) = 5, 5 / 2 = 2.5
-SafeMath.safe_pipeline(100.0, 4.0, 2.0)   # => {:ok, 2.5}
-SafeMath.safe_pipeline(100.0, 0, 2.0)     # => {:error, "division by zero"}   — b is 0
-SafeMath.safe_pipeline(100.0, 4.0, 0)     # => {:error, "division by zero"}   — c is 0
-SafeMath.safe_pipeline(-100.0, 4.0, 2.0)  # => {:error, "cannot take sqrt of negative number"}
-```
+SafeMath.safe_pipeline(100.0, 4.0, 2.0)
+# => {:ok, 2.5}
+SafeMath.safe_pipeline(100.0, 0, 2.0)
+# => {:error, "division by zero"}
+SafeMath.safe_pipeline(100.0, 4.0, 0)
+# => {:error, "division by zero"}
+SafeMath.safe_pipeline(-100.0, 4.0, 2.0)
+# => {:error,
+#  "cannot take sqrt of negative number"}
 
-**`parse_positive_int(str)`** — parses a string to an integer. Returns `{:ok, n}` only if the entire string is a valid integer and `n > 0`; otherwise `{:error, reason}` with a reason describing what went wrong (non-integer string, zero, or negative).
-
-```elixir
-SafeMath.parse_positive_int("42")     # => {:ok, 42}
-SafeMath.parse_positive_int("0")      # => {:error, "must be positive, got 0"}
-SafeMath.parse_positive_int("-5")     # => {:error, "must be positive, got -5"}
-SafeMath.parse_positive_int("abc")    # => {:error, "not a valid integer: abc"}
-SafeMath.parse_positive_int("3.14")   # => {:error, "not a valid integer: 3.14"}
+SafeMath.parse_positive_int("42")
+# => {:ok, 42}
+SafeMath.parse_positive_int("1")
+# => {:ok, 1}
+SafeMath.parse_positive_int("0")
+# => {:error, reason}
+SafeMath.parse_positive_int("-5")
+# => {:error, reason}
+SafeMath.parse_positive_int("abc")
+# => {:error, reason}
+SafeMath.parse_positive_int("3.14")
+# => {:error, reason}
 ```
