@@ -25,7 +25,7 @@ export interface CompletionMeta {
 interface UseSubmissionOptions {
   conceptId: string;
   enrollmentId: string;
-  language?: string;
+  language?: string | undefined;
   /**
    * Called with the server's verdict once the submission is finalized. The
    * meta is bound to the submission that completed — not to component state —
