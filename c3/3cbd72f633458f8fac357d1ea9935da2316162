@@ -1,0 +1,98 @@
+apps/web/src/lib/track-colors.ts
+  s_4312bdd443949d::t_06aa45aeb5a3fc 1-7
+apps/web/src/app/tracks/[trackSlug]/onboarding/page.tsx
+  s_4312bdd443949d::t_dbff96a8c2ab61 109,136
+  s_4312bdd443949d::t_400f38e8f29173 71
+apps/web/src/app/profile/page.tsx
+  s_4312bdd443949d::t_dbff96a8c2ab61 65
+apps/web/src/app/tracks/[trackSlug]/page.tsx
+  s_4312bdd443949d::t_dbff96a8c2ab61 66
+packages/ui/src/components/DashboardStats.tsx
+  s_4312bdd443949d::t_dbff96a8c2ab61 34
+content/tracks/go/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+apps/web/src/app/dashboard/page.tsx
+  s_4312bdd443949d::t_06aa45aeb5a3fc 7
+  s_4312bdd443949d::t_4cfa6b4f9c41d8 13-22,55-56,58-59,62,66-67,133
+  s_4312bdd443949d::t_400f38e8f29173 60-61
+content/tracks/shell/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/dsa-python/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/aws/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+packages/ui/src/components/ContinueBuildingCard.test.tsx
+  s_4312bdd443949d::t_9f485c4a9a1bf1 2-28
+  s_4312bdd443949d::t_c0c5bc20ca827a 1
+apps/web/src/app/auth/sign-up/page.tsx
+  s_4312bdd443949d::t_dbff96a8c2ab61 12
+packages/ui/src/components/ConfidenceSelector.tsx
+  s_4312bdd443949d::t_80fece5818e2f7 9,14,19
+packages/ui/src/components/ContinueBuildingCard.tsx
+  s_4312bdd443949d::t_80fece5818e2f7 4-5,14-15,31-32
+content/tracks/kubernetes/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+apps/web/src/components/navbar.tsx
+  s_4312bdd443949d::t_2c426ee747ab15 19-23
+  s_4312bdd443949d::t_9075adcc752885 7-8,11,24-31
+content/tracks/observability/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/helm/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/kafka/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/dsa-javascript/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/python/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/assembly/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/rust/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/terraform/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/buildkite/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+packages/ui/src/components/ContinueBuildingCard.stories.tsx
+  s_4312bdd443949d::t_9f485c4a9a1bf1 8-9,23
+apps/web/src/app/page.tsx
+  s_4312bdd443949d::t_06aa45aeb5a3fc 2-3,5,20-21,25-31,76,87,91,94,96,101,103
+content/tracks/javascript/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/kotlin/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/ruby/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/c/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/cpp/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/elixir/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/dsa-java/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/typescript/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/dsa-typescript/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+content/tracks/java/config.json
+  s_4312bdd443949d::t_104c92fc4550f4 4
+packages/ui/src/components/ConfidenceSelector.test.tsx
+  s_4312bdd443949d::t_8c1cd73023e4f5 1-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c33cbd72f633458f8fac357d1ea9935da2316162",
+  "prompts": {},
+  "sessions": {
+    "s_4312bdd443949d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34ee8d8d-5ae0-4e48-8e14-e3d4c8e3f0af",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
