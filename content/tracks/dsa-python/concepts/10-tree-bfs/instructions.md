@@ -1,28 +1,16 @@
-# Tree BFS
+## What you build
 
-## What you'll learn
-
-Tree DFS gave you recursion down paths; this concept gives you the other traversal: breadth-first, level by level, with a queue. The one idea that matters is the **level-size snapshot** — freeze the queue length before draining a level so you know exactly where one depth ends and the next begins. With that loop in hand, level order traversal, right side view, per-level averages, and zigzag ordering are each a one-line variation on the same template.
+You write three breadth-first traversals of a binary tree: level order, right side view and zigzag level order. Each one visits the tree level by level with a queue. This lesson builds on **Binary Tree**.
 
 ## Key concepts
 
-### `collections.deque` — Python's actual queue
+### BFS visits nodes in order of distance from the root
 
-Python has no built-in queue type backed by a list — `list.pop(0)` is O(n), just like JavaScript's `Array.shift()`. The standard library fix is `collections.deque`, a doubly linked list with O(1) `popleft()` and `append()`:
+Breadth-first search (BFS) visits the root, then its children, then its grandchildren. A queue gives this order. Depth-first search follows one path down; BFS covers one whole level before the next.
 
-```python
-from collections import deque
+### A level-size snapshot marks where each level ends
 
-queue = deque([root])
-node = queue.popleft()  # O(1) — this is the whole reason to reach for deque
-queue.append(node.left)
-```
-
-This replaces the "head index into a growing array" trick you'd use in a language without a deque — in Python you just use the real thing.
-
-### The queue and the level-size snapshot
-
-BFS visits nodes in order of distance from the root: the root, then both its children, then all four grandchildren, and so on. A plain queue gives you that order for free — but it does *not* tell you where level boundaries fall. The fix: at the top of each outer iteration, snapshot how many nodes are currently queued. That count is exactly one complete level, because every node queued so far is from the current depth and everything you push while draining it is from the next.
+A queue alone does not show where one level ends. At the top of each outer loop, store the queue length. That count is exactly one level. Every node in the queue is at the current depth. Each child you push belongs to the next depth.
 
 ```python
 from collections import deque
@@ -33,7 +21,9 @@ def level_order(root):
     result = []
     queue = deque([root])
     while queue:
-        level_size = len(queue)          # snapshot: exactly one level
+        # The next level_size nodes
+        # are one level
+        level_size = len(queue)
         level = []
         for _ in range(level_size):
             node = queue.popleft()
@@ -46,73 +36,105 @@ def level_order(root):
     return result
 ```
 
-Invariant: children pushed during the inner loop land at the *back* of the deque, so they are never drained as part of the current level's `for _ in range(level_size)` loop. That's the whole trick.
+The invariant: children pushed in the inner loop land behind the first `level_size` nodes. The inner loop never reads them as part of the current level.
 
-### Every level problem is this template plus one line
+### Each level problem is the template plus one change
 
 | Problem | Change to the template |
 |---------|------------------------|
-| Level order traversal | none — collect each level list |
-| Right side view | keep only the value drained last in each level |
+| Level order traversal | none: collect each level list |
+| Right side view | keep only the last value of each level |
 | Average of levels | sum the level, divide by the snapshot size |
 | Zigzag level order | reverse the level list on odd depths |
 
-Recognize this in interviews: if the problem statement says "per level", "by depth", "visible from the side", or "top to bottom", reach for the snapshot loop before anything else.
+In an interview, look for "per level", "by depth", "visible from the side" or "top to bottom". These words point to the snapshot loop.
 
-### Complexity of the flagship problems
+### A queue needs O(1) removal from the front
+
+A Python `list` is not a good queue. `list.pop(0)` moves every remaining element, so it costs O(n) per call and O(n²) for the traversal. Two alternatives keep the traversal O(n).
+
+```python
+# 1. collections.deque (used above):
+#    append() and popleft() are O(1).
+
+# 2. Level swap: hold the current level in
+#    one list, collect the children into
+#    the next one, then swap.
+current = [root]
+while current:
+    next_level = []
+    for node in current:
+        if node.left:
+            next_level.append(node.left)
+        if node.right:
+            next_level.append(node.right)
+    current = next_level
+```
+
+The level-swap form makes the snapshot implicit, because the whole list is one level. Many solutions to these problems use it.
+
+### Complexity of the main problems
 
 | Problem | Time | Space |
 |---------|------|-------|
-| Level Order Traversal | O(n) | O(w) queue, w = max level width |
+| Level Order Traversal | O(n) | O(w) |
 | Right Side View | O(n) | O(w) |
 | Zigzag Level Order | O(n) | O(w) |
 
-The queue peaks at the widest level — up to ⌈n/2⌉ nodes for a complete tree, so O(n) worst case.
+`w` is the largest level width. The queue peaks at the widest level. A complete tree has up to ⌈n/2⌉ nodes in its last level, so the worst case is O(n).
 
 ## Watch out
 
-- **Snapshot before draining.** `level_size = len(queue)` must be captured before the inner loop starts; reading `len(queue)` inside a `while` condition instead lets it grow as you push children, and levels bleed into each other.
-- **`list.pop(0)` is quadratic.** Reach for `collections.deque` from the start; don't build a queue out of a plain `list`.
-- **Guard the empty tree.** Return `[]` before touching the queue; a `None` in the queue crashes on `.left`.
-- **Right side view is not the right spine.** In the tree `1 → (2, 3)` with `2.left = 4` and nothing below `3`, the view is `[1, 3, 4]` — once the right side runs out of depth, a left-subtree node becomes visible. Walking `node.right` pointers gives the wrong answer; the last node per BFS level is always right.
-- **Zigzag reverses the collected level, not the queue.** Keep enqueueing left-then-right at every depth; flip only the output list. Reordering the queue corrupts every level below.
-- **Push only non-`None` children.** Enqueueing `None` and filtering at dequeue works but doubles queue traffic and invites crashes.
+- An inner loop condition on `len(queue)` re-reads a length that grows as you push. Levels then mix. Store `level_size` first.
+- `list.pop(0)` costs O(n) per call. At interview scale it works, but say so and use `collections.deque`.
+- A `None` root in the queue crashes on `.left`. Return `[]` for an empty tree before you use the queue.
+- The right side view is not the right spine. Following `right` pointers misses left-subtree nodes that are visible below a short right side.
+- In the tree `1 → (2, 3)` with `2.left = 4`, the view is `[1, 3, 4]`. The last node of each BFS level is always correct.
+- Zigzag reverses the collected level, not the queue. Reordering the queue corrupts every level below it.
+- Push only non-`None` children. Pushing `None` and filtering at removal doubles queue traffic and invites crashes.
 
 ## Problem walkthroughs
 
 ### Binary Tree Level Order Traversal ★
 
-**Problem.** Given the root of a binary tree, return a list of lists: the node values at each depth, top to bottom, left to right within a level.
+**Problem.** Given the root of a binary tree, return a list of lists. Each inner list holds the values at one depth, top to bottom, left to right.
 
 **Example.**
 
-    tree 3 → (9, 20), 20 → (15, 7)  →  [[3], [9, 20], [15, 7]]
-    empty tree                       →  []
+```text
+3 → (9, 20), 20 → (15, 7)
+  → [[3], [9, 20], [15, 7]]
+empty tree → []
+```
 
 **Steps.**
-1. Return `[]` for a `None` root. Otherwise queue the root.
-2. While the queue is non-empty: snapshot `level_size = len(queue)`, drain exactly that many nodes into a `level` list, pushing each node's non-`None` children as you go.
-3. Append `level` to the result after the inner loop.
-4. The snapshot is the correctness argument: everything queued at the top of an iteration is one full level, and children land at the back, beyond the current drain count.
+1. Return `[]` for a `None` root. Otherwise, put the root in the queue.
+2. While the queue is not empty, store `level_size = len(queue)`. Remove exactly that many nodes into a `level` list. Push each node's non-`None` children as you go.
+3. After the inner loop, push `level` onto the result.
+4. The snapshot is the proof of correctness. The queue at the top of an iteration is one full level, and children land after `level_size`.
 
-**Complexity.** O(n) time / O(w) space — each node is queued and drained exactly once.
+**Complexity.** O(n) time, O(w) space. Each node enters and leaves the queue exactly once.
 
 ### Binary Tree Right Side View ★
 
-**Problem.** Standing to the right of a binary tree, return the values you can see, top to bottom — the rightmost node at each depth.
+**Problem.** You stand to the right of a binary tree. Return the values you can see, top to bottom: the rightmost node at each depth.
 
 **Example.**
 
-    tree 1 → (2, 3), 2.right = 5, 3.right = 4  →  [1, 3, 4]
-    tree 1 → (2, 3), 2.left = 4 (3 is a leaf)  →  [1, 3, 4]
+```text
+1 → (2, 3), 2.right = 5, 3.right = 4
+  → [1, 3, 4]
+1 → (2, 3), 2.left = 4, 3 is a leaf
+  → [1, 3, 4]
+```
 
 **Steps.**
-1. Run the level loop; you don't need the `level` list — just the values.
-2. Inside the inner loop, when draining the last node of the level (the `level_size`-th one drained, i.e. `i == level_size - 1`), append its value to the result.
-3. Children are enqueued left-to-right, so within a level the queue preserves left-to-right order — the last drained node is the rightmost one at that depth, whichever subtree it lives in.
-4. Note the second example: the deepest visible node (`4`) hangs off the *left* child. That's why this is a BFS problem, not a walk down `right` pointers.
+1. Run the level loop. You do not need the `level` list, only the values.
+2. In the inner loop, push the value of the node at position `i == level_size - 1`, the last of the level.
+3. Children enter the queue left to right, so the queue keeps left-to-right order within a level. The last node removed is the rightmost at that depth, in either subtree.
+4. In the second example, the deepest visible node (`4`) hangs off the left child. That is why this is a BFS problem, not a walk down `right` pointers.
 
-**Complexity.** O(n) time / O(w) space.
+**Complexity.** O(n) time, O(w) space.
 
 ### Average of Levels in Binary Tree
 
@@ -120,88 +142,91 @@ The queue peaks at the widest level — up to ⌈n/2⌉ nodes for a complete tre
 
 **Example.**
 
-    tree 3 → (9, 20), 20 → (15, 7)  →  [3, 14.5, 11]
+```text
+3 → (9, 20), 20 → (15, 7)
+  → [3, 14.5, 11]
+```
 
 **Steps.**
-1. Same level loop; instead of collecting values, keep a running `total` across the inner loop.
-2. After draining the level, append `total / level_size` — the snapshot doubles as the divisor, which is exactly why you took it.
-3. Python integers are arbitrary precision, so overflow isn't a concern the way it is in fixed-width languages — but `/` always produces a `float`, which is what you want here.
+1. Use the same level loop. In place of the value list, keep a running `sum` in the inner loop.
+2. After the level, push `sum / level_size`. The snapshot is also the divisor.
+3. In languages with fixed-width integers, sum into a 64-bit accumulator to avoid overflow. Python integers have no fixed width, so they do not overflow.
 
-**Complexity.** O(n) time / O(w) space.
+**Complexity.** O(n) time, O(w) space.
 
 ### Binary Tree Zigzag Level Order Traversal ★
 
-**Problem.** Return the level order traversal, but alternate direction per level: level 0 left-to-right, level 1 right-to-left, level 2 left-to-right, and so on.
+**Problem.** Return the level order traversal with alternating direction. Level 0 goes left to right, level 1 right to left, level 2 left to right, and so on.
 
 **Example.**
 
-    tree 3 → (9, 20), 20 → (15, 7)  →  [[3], [20, 9], [15, 7]]
+```text
+3 → (9, 20), 20 → (15, 7)
+  → [[3], [20, 9], [15, 7]]
+```
 
 **Steps.**
-1. Run the plain level loop, always enqueueing children left-then-right — traversal order never changes.
-2. Track the depth (or a `left_to_right` boolean you flip each level).
-3. On right-to-left levels, reverse the collected `level` list before appending it — `level[::-1]`.
-4. The insight: zigzag is a *presentation* change, not a *traversal* change. Solutions that mess with queue order break because children of a reversed level would be discovered in the wrong order for the level after it.
+1. Run the plain level loop. Always push children left, then right. The traversal order never changes.
+2. Track the depth, or a `left_to_right` flag that you flip at each level.
+3. On right-to-left levels, reverse the `level` list before you push it. To skip the reverse, write each value into a pre-sized list at index `level_size - 1 - i`.
+4. Zigzag is a change to the output, not to the traversal. If you change the queue order, the next level comes out in the wrong order.
 
-**Complexity.** O(n) time / O(w) space — the reverse costs O(level size), already paid for by draining it.
+**Complexity.** O(n) time, O(w) space. The reverse costs O(level size), which the level already costs.
 
 ## Interview follow-ups
 
-- After **Right Side View**: "Left side view?" (keep the first node drained, `i == 0`, instead of the last). "Do it with DFS?" (visit right child first, record a value whenever `depth == len(result)` — the first arrival at each depth is the rightmost node.)
-- After **Level Order**: "Bottom-up level order?" (collect normally, reverse the result — don't traverse upside down.)
-- After **Zigzag**: "Avoid the reverse?" (write into a pre-sized list back-to-front.)
-- General: "Why BFS over DFS here?" — DFS with a depth parameter can group by level too (append to `result[depth]`), but BFS finds level boundaries without bookkeeping and its memory is bounded by tree *width* instead of *height*, which matters for deep, narrow trees.
+- After **Right Side View**: "Left side view?" Keep the node at `i == 0` in place of the last one.
+- After **Right Side View**: "Do it with DFS?" Visit the right child first. Record a value when `depth == len(result)`, because the first visit to each depth is the rightmost node.
+- After **Level Order**: "Bottom-up level order?" Collect the levels normally, then reverse the result.
+- After **Zigzag**: "Avoid the reverse?" Write into a pre-sized list from back to front.
+- General: "Why BFS over DFS here?" DFS with a depth parameter can also group by level, with `result[depth]`. BFS finds level boundaries without this bookkeeping.
+- BFS memory depends on the tree width, and DFS memory on the tree height. For deep, narrow trees, this difference matters.
 
 ## The task
 
-Three level-by-level traversals over binary trees. Every node is `TreeNode(val, left, right)`; missing children are `None`, and an empty tree is `None` itself. All three functions must run in O(n) time.
+Write three level-by-level traversals of a binary tree.
+
+1. Each node is a `TreeNode(val, left, right)`.
+2. `left` and `right` are child nodes or `None`. An empty tree is `None`.
+3. `level_order(root)` returns a list of lists: the values at each depth.
+4. Depths go top to bottom. Values in a depth go left to right.
+5. `right_side_view(root)` returns the rightmost value at each depth, top to bottom.
+6. `zigzag_level_order(root)` returns the level order with alternating direction.
+7. Level 0 goes left to right, level 1 right to left, and so on.
+8. Each function runs in O(n) time.
+
+Each function returns `[]` for an empty tree. A left-subtree node is visible from the right when no node at its depth is further right. A level with one node is the same in both directions.
+
+In the examples, `tree([...])` builds a tree from a level-order list. `None` marks an absent child. The list omits the children of absent nodes.
 
 ```python
-# The tree used in the samples below:
-#        3
-#       / \
-#      9  20
-#         / \
-#        15  7
-t = TreeNode(3,
-    TreeNode(9),
-    TreeNode(20, TreeNode(15), TreeNode(7)))
+level_order(
+    tree([3, 9, 20, None, None, 15, 7]))
+# [[3], [9, 20], [15, 7]]
+level_order(tree([1]))
+# [[1]]
+level_order(tree([1, None, 2, None, 3]))
+# [[1], [2], [3]]
+level_order(None)
+# []
+
+right_side_view(
+    tree([1, 2, 3, None, 5, None, 4]))
+# [1, 3, 4]
+# 2.left = 4, and 3 is a leaf:
+right_side_view(tree([1, 2, 3, 4]))
+# [1, 3, 4]
+right_side_view(tree([1, 2, None, 3]))
+# [1, 2, 3]
+right_side_view(None)
+# []
+
+zigzag_level_order(
+    tree([3, 9, 20, None, None, 15, 7]))
+# [[3], [20, 9], [15, 7]]
+zigzag_level_order(
+    tree([1, 2, 3, 4, 5, 6, 7]))
+# [[1], [3, 2], [4, 5, 6, 7]]
+zigzag_level_order(None)
+# []
 ```
-
-### `level_order(root)`
-
-Return a list of lists: the node values at each depth, top to bottom, left to right within each level. An empty tree returns `[]`.
-
-```python
-level_order(t)              # [[3], [9, 20], [15, 7]]
-level_order(TreeNode(1))    # [[1]]
-level_order(None)           # []
-```
-
-Edge cases: empty tree, single node, skewed trees (every level has one node), negative values.
-
-### `right_side_view(root)`
-
-Return the values visible from the right side of the tree, top to bottom — the rightmost node at each depth. A node in a *left* subtree is visible when nothing at its depth exists further right. An empty tree returns `[]`.
-
-```python
-right_side_view(t)     # [3, 20, 7]
-right_side_view(None)  # []
-
-# 1 → (2, 3), where 2.left = 4 and 3 is a leaf: depth 2 only contains 4
-u = TreeNode(1, TreeNode(2, TreeNode(4)), TreeNode(3))
-right_side_view(u)     # [1, 3, 4]
-```
-
-Edge cases: empty tree, single node, right-only and left-only chains, deeper nodes hanging off left subtrees (the `[1, 3, 4]` case above — do not just follow `right` pointers).
-
-### `zigzag_level_order(root)`
-
-Return the level order traversal with alternating direction: level 0 left-to-right, level 1 right-to-left, and so on. An empty tree returns `[]`.
-
-```python
-zigzag_level_order(t)     # [[3], [20, 9], [15, 7]]
-zigzag_level_order(None)  # []
-```
-
-Edge cases: empty tree, single node, levels with one node (reversing changes nothing), trees deep enough to flip direction several times.

@@ -1,68 +1,78 @@
-# Math
+## What you build
 
-## What you'll learn
-
-Integer arithmetic as an interview topic: pulling a number apart digit by digit without converting it to a string, propagating carries through a digit array, binary-searching a numeric answer space (integer square root), and binary exponentiation. These techniques appear standalone and as building blocks inside bigger problems — fast pow powers matrix exponentiation, digit extraction powers base-conversion and checksum problems. The binary search here reuses the "search on the answer" idea you'll formalize in the Binary Search concept. Throughout, Python's `//` and `%` have a specific behavior — floor division toward negative infinity — that you have to account for the moment negative numbers enter the picture.
+You write four integer arithmetic functions: a palindrome check without strings, an increment of a digit list, an integer square root and fast exponentiation. Fast exponentiation powers matrix exponentiation, and digit extraction powers base conversion and checksums. This lesson builds on **Binary Search**.
 
 ## Key concepts
 
-### Digit manipulation — no strings required
+### `% 10` reads a digit and `// 10` drops it
 
-`x % 10` reads the last decimal digit; `x // 10` drops it (for non-negative `x`, floor division is the same as truncation). Repeating both walks the number right to left. To *build* a number from digits left to right, multiply-and-add:
+`x % 10` reads the last decimal digit. `x // 10` drops it. Repeat both to walk the number from right to left. To build a number from digits left to right, multiply and add.
 
 ```python
-rev, n = 0, x          # x >= 0
+# x >= 0
+rev, n = 0, x
 while n > 0:
-    rev = rev * 10 + n % 10   # append n's last digit to rev
-    n //= 10                   # drop it from n
+    # append the last digit of n to rev
+    rev = rev * 10 + n % 10
+    # drop it from n
+    n //= 10
 # rev is x with its digits reversed
 ```
 
-Converting to a string also works, but it allocates, and the interviewer's real question is whether you can do the arithmetic. Digit loops run in O(log₁₀ x) — the number of digits.
+A string conversion also works, but it allocates memory. In fixed-width languages, the real interview question is whether you can do the arithmetic. Digit loops run in O(log₁₀ x), the number of digits.
 
-### `//` floors toward negative infinity — this is not the same as truncation
+### `//` floors toward negative infinity
 
-For non-negative operands, `//` and truncating division agree. They diverge the moment either operand is negative: `-7 // 2` is `-4`, not `-3` — Python rounds *down* (toward −∞), not toward zero. `%` is defined to match: `-7 % 2` is `1` (always same sign as the divisor), not `-1`. This is the single biggest source of off-by-one bugs porting arithmetic code from a language that truncates (C, Java, JavaScript's `Math.trunc`). The fix in every algorithm below is the same: **keep the value non-negative before you divide**, by handling sign once up front (as `my_pow` does) rather than repeatedly inside a loop.
+For non-negative operands, `//` and truncating division agree. With a negative operand, they differ: `-7 // 2` is `-4`, not `-3`. `%` matches it: `-7 % 2` is `1`, with the sign of the divisor. Keep values non-negative before you divide, and handle the sign once, up front.
 
 ```python
--7 // 2    # -4  (floors down, not toward zero)
--7 % 2     # 1   (sign follows the divisor)
-7 // -2    # -4
+-7 // 2  # -4: floors, not toward zero
+-7 % 2   # 1: sign follows the divisor
 ```
 
-### Half reversal — palindrome check without full reversal
+### Reverse only half to check a palindrome
 
-To test whether a number reads the same both ways, you don't need to reverse all of it: reverse digits from the back **until the reversed part catches up with what's left**. At that point the front half sits in `x` and the reversed back half sits in `rev`:
+To test whether a number reads the same both ways, reverse digits from the back until the reversed part catches up. Then the front half is in `x`, and the reversed back half is in `rev`.
 
 ```python
-# requires the guards below: x >= 0 and (x % 10 != 0 or x == 0)
+# Needs the guards: x >= 0 and
+# (x % 10 != 0 or x == 0)
 rev = 0
 while x > rev:
     rev = rev * 10 + x % 10
     x //= 10
-return x == rev or x == rev // 10   # even / odd digit count
+# even or odd digit count
+return x == rev or x == rev // 10
 ```
 
-Odd digit counts leave the middle digit at the end of `rev`; `rev // 10` discards it — a middle digit never breaks symmetry. Two guards make the loop condition sound: negatives are never palindromes (the sign reads on one side only — and would also make `//`/`%` floor unexpectedly), and a number ending in 0 (other than 0 itself) can't be one either — its reversal would need a leading zero.
+An odd digit count leaves the middle digit at the end of `rev`. `rev // 10` discards it, because a middle digit never breaks symmetry.
 
-### Carry propagation in a digit array
+Two guards make the loop condition sound. A negative number is never a palindrome, because the sign is on one side only. A number that ends in 0, other than 0, is never one either, because its reversal needs a leading zero.
 
-When a number is given as a list of digits (because it's too big for a numeric type, or the problem insists on the array representation), increment it the way you'd do it on paper — from the last digit, carrying nines:
+In fixed-width languages, half reversal also avoids overflow. The full reversal of a valid 32-bit int can exceed 32 bits; the half never does.
+
+### Carry through a digit list like on paper
+
+A number too big for a numeric type can come as a list of digits. Increment it from the last digit, and carry through the nines.
 
 ```python
-for i in range(len(digits) - 1, -1, -1):
+last = len(digits) - 1
+for i in range(last, -1, -1):
     if digits[i] < 9:
+        # carry absorbed: done
         digits[i] += 1
-        return digits          # carry absorbed — done
-    digits[i] = 0               # 9 + 1 -> 0, carry on
-return [1] + digits             # every digit was 9: 999 + 1 = 1000
+        return digits
+    # 9 + 1 → 0, carry on
+    digits[i] = 0
+# every digit was 9: 999 + 1 = 1000
+return [1] + digits
 ```
 
-The early return is the point: an increment only ripples through trailing 9s, so most calls touch one digit. (Python integers are arbitrary precision, so `int("".join(map(str, digits))) + 1` would technically work without overflow — unlike a fixed-width language — but the array-carry technique is what the problem is testing.)
+The early return is the point. An increment ripples only through trailing 9s, so most calls touch one digit.
 
-### Binary search on the answer
+### Binary search on the answer finds an integer square root
 
-Integer sqrt asks for the largest `m` with `m * m <= x`. The predicate `m * m <= x` is monotone in `m`, so binary-search the *answer space* `[1, x // 2]` rather than any array:
+The integer square root is the largest `m` with `m * m <= x`. The predicate `m * m <= x` is monotonic in `m`. So binary search the answer space `[1, x // 2]`, not a list.
 
 ```python
 if x < 2:
@@ -76,33 +86,36 @@ while lo <= hi:
         lo = mid + 1
     else:
         hi = mid - 1
-return hi   # hi is the last value whose square is <= x
+# last value whose square is <= x
+return hi
 ```
 
-Newton's method is the classic alternative: iterate `r = (r + x // r) // 2` from `r = x` until `r * r <= x`. It converges quadratically — a handful of iterations even for 2³¹ — and is worth mentioning as a follow-up. (`x` and `r` are non-negative throughout, so `//` behaves like truncation here — no floor-division surprises.)
+Newton's method is the classic alternative. Start from `r = x`, and repeat `r = (r + x // r) // 2` until `r * r <= x`. It converges quadratically: a few iterations, even for 2³¹. Mention it as a follow-up.
 
-### Binary exponentiation — x^n in O(log n)
+### Binary exponentiation computes x^n in O(log n)
 
-Write `n` in binary: `x^13 = x^8 · x^4 · x^1` (13 = 1101₂). Square the base once per bit and multiply it into the result on 1-bits:
+Write `n` in binary: `x^13 = x^8 · x^4 · x^1`, because 13 = 1101₂. Square the base once per bit. On each 1-bit, multiply it into the result.
 
 ```python
+# flip once, up front
 if n < 0:
-    x = 1 / x       # flip once, up front — n stays non-negative from here on
-    n = -n
+    x, n = 1 / x, -n
 result = 1
 while n > 0:
-    if n % 2 == 1:   # this bit is set
+    # this bit is set
+    if n % 2 == 1:
         result *= x
-    x *= x            # next bit's base
+    # the base for the next bit
+    x *= x
     n //= 2
 return result
 ```
 
-31 iterations cover any 32-bit exponent — a naive loop would take two billion. **Flip the sign of `n` before the loop, not inside it.** If you tried to halve a negative `n` directly with `n //= 2`, floor division rounds toward −∞ (more negative each step, converging to −1 forever, not to 0) instead of toward zero — the loop would never terminate the way a truncating halving would. Making `n` non-negative up front sidesteps the whole issue: every `n //= 2` afterward is ordinary truncating division.
+31 iterations cover any 32-bit exponent. A plain `for` loop takes two billion. Make `n` non-negative before the loop, so every `n //= 2` truncates. See Watch out.
 
-### Legendre's formula — counting a prime factor in n!
+### Legendre's formula counts a prime factor in n!
 
-Trailing zeros of `n!` are factors of 10 = 2·5, and 2s vastly outnumber 5s, so count the 5s. Every 5th number contributes one 5, every 25th contributes a second, every 125th a third…
+The trailing zeros of `n!` are factors of 10 = 2·5. Factors of 2 far outnumber factors of 5, so count the 5s. Every 5th number gives one 5, every 25th gives a second, every 125th a third, and so on.
 
 ```python
 count = 0
@@ -112,9 +125,9 @@ while p <= n:
     p *= 5
 ```
 
-Never compute `n!` itself — Python won't overflow (arbitrary precision), but for large `n` the factorial is enormous and computing it is far slower than the O(log₅ n) formula.
+Never compute `n!` itself. It overflows every fixed-width type almost at once. Python integers do not overflow, but `n!` for a large `n` is huge and slow to compute.
 
-### Complexity of the flagship problems
+### Complexity of the main problems
 
 | Problem | Time | Space | Technique |
 |---------|------|-------|-----------|
@@ -125,190 +138,262 @@ Never compute `n!` itself — Python won't overflow (arbitrary precision), but f
 
 ## Watch out
 
-- **`//` floors toward negative infinity, not toward zero.** `-7 // 2 == -4`. Whenever a value entering a division might be negative, either guard it out first (palindrome: reject negatives before dividing) or normalize the sign once up front (pow: flip `n` before the loop) — never divide a possibly-negative value repeatedly and assume it behaves like truncation.
-- **Palindrome guards.** `-121` is not a palindrome, and neither is `10` — but `0` is. Both guards must come before the half-reversal loop, or the loop's stopping condition lies to you.
-- **Negate the exponent once, before the loop, in `my_pow`.** Handling the sign inside the squaring loop double-applies it, and repeatedly floor-dividing a negative `n` never reaches 0 the way truncating division would.
-- **Plus One: never round-trip through a fixed-width type mentally** — Python `int` won't overflow, but the exercise is the array-carry technique, not `int(''.join(...)) + 1`.
-- **Sqrt returns `hi`, not `lo`,** after a `lo <= hi` loop — `hi` ends on the last value whose square is ≤ x.
-- **Trailing zeroes: count 5s, not zeros.** Computing `n!` and inspecting it is unnecessary and slow for large `n`, even though Python can represent the (huge) exact value.
+- In Python, `/` is float division. `121 / 10` gives `12.1`, not `12`. Use `//` for every digit drop.
+- `//` floors toward negative infinity. `-7 // 2 == -4`, not `-3`.
+- Guard out negative values, or fix the sign once, before you divide again and again.
+- `-121` is not a palindrome, and neither is `10`. `0` is a palindrome.
+- Put both palindrome guards before the half-reversal loop. Without them, the stop condition gives wrong answers.
+- Negate the exponent once, before the loop. Sign handling inside the squaring loop applies it twice.
+- `n //= 2` on a negative `n` stops at `-1`, never at 0. The loop never ends.
+- In Plus One, `int` conversion does not overflow in Python, but the task checks the carry technique.
+- After a `lo <= hi` loop, Sqrt returns `hi`, not `lo`. `hi` ends on the last value whose square is ≤ x.
+- In fixed-width languages, compare `mid > x // mid`, not `mid * mid > x`. That avoids overflow.
+- Python integers have no fixed width, so `mid * mid` is safe here.
+- For trailing zeros, count factors of 5. Computing `n!` is slow for a large `n`, and you do not need it.
 
 ## Problem walkthroughs
 
 ### Palindrome Number ★
 
-**Problem.** Given an integer `x`, return `True` if its decimal digits read the same forwards and backwards. Solve it arithmetically — no string conversion.
+**Problem.** Given an integer `x`, return `True` if its decimal digits read the same forwards and backwards. Solve it with arithmetic, not a string conversion.
 
 **Example.**
 
-    121  → True
-    -121 → False   (reads 121- backwards)
-    10   → False   (01 would need a leading zero)
+```
+121  → True
+-121 → False
+  (reads 121- backwards)
+10   → False
+  (01 needs a leading zero)
+```
 
 **Steps.**
-1. Guard: return `False` if `x < 0`, or if `x % 10 == 0 and x != 0`.
-2. Reverse from the back while `x > rev`: `rev = rev * 10 + x % 10`, then `x //= 10`. The loop stops as soon as `rev` has at least as many digits as `x` — you've reversed the back half.
-3. Even digit count: the halves must match exactly (`x == rev`). Odd: the middle digit sits at the end of `rev` and belongs to neither half — compare `x == rev // 10`.
-4. Why the guards matter: without them, `10` reverses to `1` and the odd-length branch reports a false match. With them, the loop condition `x > rev` is a correct "half consumed" test, and you never divide a negative `x`.
 
-**Complexity.** O(log₁₀ x) time / O(1) space — one digit per iteration, half the digits total.
+1. Guard: return `False` if `x < 0`, or if `x % 10 == 0 and x != 0`.
+2. While `x > rev`, set `rev = rev * 10 + x % 10`, then `x //= 10`. The loop stops when `rev` has at least as many digits as `x`. You reversed the back half.
+3. For an even digit count, the halves must match exactly: `x == rev`. For an odd count, the middle digit is at the end of `rev` and belongs to neither half. Compare `x == rev // 10`.
+4. Why the guards matter: without them, `10` reverses to `1`, and the odd-length branch reports a false match. With them, `x > rev` is a correct "half consumed" test.
+
+**Complexity.** O(log₁₀ x) time, O(1) space: one digit per iteration, half the digits in total.
 
 ### Plus One ★
 
-**Problem.** `digits` is a non-empty big-endian list of decimal digits representing a non-negative integer with no leading zeros (except the number 0 itself). Return the digit list of that integer plus one.
+**Problem.** `digits` is a big-endian list of decimal digits for a non-negative integer. It has no leading zeros, except for the number 0 itself. Return the digit list of that integer plus one.
 
 **Example.**
 
-    [1,2,3] → [1,2,4]
-    [9,9,9] → [1,0,0,0]
+```
+[1,2,3] → [1,2,4]
+[9,9,9] → [1,0,0,0]
+```
 
 **Steps.**
-1. Walk `i` from the last index toward the front.
-2. If `digits[i] < 9`, increment it and return — the carry is absorbed and nothing to the left changes.
-3. Otherwise the digit is 9: set it to 0 and continue left (carry propagates).
-4. If the loop finishes, every digit was 9 — prepend a 1 (`[1, 0, 0, ..., 0]`).
-5. This is a digit-array exercise, not a numeric-precision one in Python — but the array-walk technique is what generalizes to fixed-width languages and to bignum arithmetic in general.
 
-**Complexity.** O(n) worst case (all nines) / O(1) extra beyond the returned list; typical calls touch one digit.
+1. Walk `i` from the last index toward the front.
+2. If `digits[i] < 9`, increment it and return. The carry stops, and nothing to the left changes.
+3. Otherwise, the digit is 9. Set it to 0 and continue left; the carry moves on.
+4. If the loop finishes, every digit was 9. Prepend a 1: `[1, 0, 0, ..., 0]`.
+5. Python can convert the list to an `int` and back with no overflow. The carry walk is still the technique: it works in fixed-width languages and in bignum code.
+
+**Complexity.** O(n) in the worst case, all nines. O(1) extra space beyond the returned list. Typical calls touch one digit.
 
 ### Factorial Trailing Zeroes
 
-**Problem.** Given `n >= 0`, return the number of trailing zeros in `n!` — without computing `n!`.
+**Problem.** Given `n >= 0`, return the number of trailing zeros in `n!`, without computing `n!`.
 
 **Example.**
 
-    5  → 1    (5! = 120)
-    25 → 6
-    0  → 0
+```
+5  → 1  (5! = 120)
+25 → 6
+0  → 0
+```
 
 **Steps.**
-1. A trailing zero is a factor of 10 = 2 × 5. In `1..n` the factor 2 appears far more often than 5, so the count of 5s decides.
-2. Legendre's formula: multiples of 5 each contribute one 5, multiples of 25 contribute a second, 125 a third, and so on.
-3. Loop `p = 5; while p <= n: p *= 5`, accumulating `n // p`.
-4. The insight: you're counting *factors in a product* — a question about `n!` answered with O(log n) divisions and no factorial anywhere, which matters even in Python where the factorial itself wouldn't overflow but would be needlessly slow to compute for large `n`.
 
-**Complexity.** O(log₅ n) time / O(1) space.
+1. A trailing zero is a factor of 10 = 2 × 5. In `1..n`, the factor 2 appears far more often than 5. So the count of 5s decides.
+2. Legendre's formula: each multiple of 5 gives one 5. Each multiple of 25 gives a second, each multiple of 125 a third, and so on.
+3. Start at `p = 5`, loop while `p <= n` and multiply `p` by 5 each time. Add `n // p` on each pass.
+4. The insight: you count factors in a product. You answer a question about `n!` with O(log n) divisions and no factorial.
+
+**Complexity.** O(log₅ n) time, O(1) space.
 
 ### Sqrt(x) ★
 
-**Problem.** Given a non-negative integer `x`, return `⌊√x⌋` — the integer square root, rounded down. Library square-root functions are off-limits.
+**Problem.** Given a non-negative integer `x`, return `⌊√x⌋`, the integer square root rounded down. You cannot use library square-root functions.
 
 **Example.**
 
-    4 → 2
-    8 → 2    (√8 ≈ 2.83, floored)
+```
+4 → 2
+8 → 2  (√8 ≈ 2.83, floored)
+```
 
 **Steps.**
-1. `x < 2` returns `x` (covers 0 and 1, and lets the search start at `lo = 1`).
-2. Binary search `[1, x // 2]` — for `x >= 2`, `⌊√x⌋` never exceeds `x // 2`.
-3. If `mid * mid == x`, return `mid`. If less, the answer is `mid` or bigger: `lo = mid + 1`. If more, `hi = mid - 1`.
-4. When the loop exits, `hi` is the largest value whose square is ≤ x — return `hi`.
-5. Alternative: Newton's method on `f(r) = r² − x`: iterate `r = (r + x // r) // 2` from `r = x` while `r * r > x`. Quadratic convergence — a handful of steps. Both `x` and `r` stay non-negative throughout, so `//` matches truncation here.
 
-**Complexity.** O(log x) time / O(1) space for both approaches.
+1. If `x < 2`, return `x`. That covers 0 and 1, and lets the search start at `lo = 1`.
+2. Binary search `[1, x // 2]`. For `x ≥ 2`, `⌊√x⌋` never exceeds `x // 2`.
+3. If `mid * mid == x`, return `mid`. If it is less, the answer is `mid` or bigger: set `lo = mid + 1`. If it is more, set `hi = mid - 1`.
+4. When the loop ends, `hi` is the largest value whose square is ≤ x. Return `hi`.
+5. Alternative: Newton's method on `f(r) = r² − x`. Start from `r = x`, and repeat `r = (r + x // r) // 2` while `r * r > x`. It converges quadratically, in a few steps.
+
+**Complexity.** O(log x) time, O(1) space for both approaches.
 
 ### Pow(x, n) ★
 
-**Problem.** Implement `x` raised to the integer power `n`, where `n` may be negative and as large as 32 bits allow. The `**` operator and `math.pow` are off-limits; the naive O(n) multiplication loop is too slow for `n` near 2³¹.
+**Problem.** Compute `x` raised to the integer power `n`. `n` can be negative and as large as 32 bits allow. You cannot use `math.pow` or `**`. A plain O(n) multiplication loop is too slow for `n` near 2³¹.
 
 **Example.**
 
-    x = 2,   n = 10 → 1024
-    x = 2,   n = -2 → 0.25
+```
+x = 2, n = 10 → 1024
+x = 2, n = -2 → 0.25
+```
 
 **Steps.**
-1. Negative exponent: `x^(−n) = (1/x)^n`. Set `x = 1 / x; n = -n` once, before anything else — this is also what keeps every later `n //= 2` behaving like truncation instead of floor-toward-negative-infinity.
-2. Loop while `n > 0` with an accumulator `result = 1`: when `n` is odd (`n % 2 == 1`), multiply `result *= x`; every iteration, square `x *= x` and halve `n //= 2`.
-3. Each iteration processes one binary digit of `n`: `x` holds `x^(2^i)` at step `i`, and `result` collects exactly the powers whose bits are set.
-4. Convention: `n == 0` returns 1, including `0^0 → 1`.
 
-**Complexity.** O(log |n|) time / O(1) space — at most 32 squarings for any 32-bit exponent.
+1. For a negative exponent, `x^(−n) = (1/x)^n`. Set `x = 1 / x` and `n = -n` once, before anything else.
+2. Start `result = 1`, and loop while `n > 0`. When `n` is odd (`n % 2 == 1`), set `result *= x`. On every iteration, square `x *= x` and halve `n //= 2`.
+3. Each iteration handles one binary digit of `n`. At step `i`, `x` holds `x^(2^i)`, and `result` collects exactly the powers whose bits are set.
+4. Halve only a non-negative `n`. On a negative `n`, `n //= 2` floors toward −∞ and stops at −1, so the loop never ends.
+5. The convention: `n == 0` returns 1, including `0^0 → 1`.
+
+**Complexity.** O(log |n|) time, O(1) space: at most 32 squarings for any 32-bit exponent.
 
 ### Max Points on a Line
 
-**Problem.** Given `points`, a list of `[x, y]` integer coordinates (all distinct), return the maximum number of points lying on one straight line.
+**Problem.** Given `points`, a list of distinct `[x, y]` integer coordinates, return the maximum number of points on one straight line.
 
 **Example.**
 
-    [[1,1],[2,2],[3,3]]                     → 3
-    [[1,1],[3,2],[5,3],[4,1],[2,3],[1,4]]   → 4
+```
+[[1,1],[2,2],[3,3]] → 3
+[[1,1],[3,2],[5,3],
+ [4,1],[2,3],[1,4]] → 4
+```
 
 **Steps.**
-1. `n <= 2` → every pair is collinear; return `n`.
-2. Any best line passes through *some* point, so anchor each point `i` in turn and ask: among lines through `i`, which direction is most popular?
-3. For each other point `j`, compute `dy = yj - yi`, `dx = xj - xi`. Hashing the float `dy / dx` is a precision bug — reduce the pair by `g = gcd(dy, dx)` and normalize the sign (e.g. force `dx > 0`; for verticals use the canonical key `(1, 0)`), then key a `dict` on `(dy // g, dx // g)`.
-4. The largest bucket for anchor `i`, plus 1 for the anchor itself, is `i`'s best line. Take the max over all anchors.
-5. The anchoring trick turns "check every triple" O(n³) into "hash every pair per anchor" O(n²).
 
-**Complexity.** O(n²) time / O(n) space per anchor for the direction map.
+1. If `n <= 2`, every pair is collinear, so return `n`.
+2. Any best line passes through some point. So anchor each point `i` in turn, and ask which direction through `i` is most popular.
+3. For each other point `j`, compute `dy = yj - yi` and `dx = xj - xi`. Hashing the float `dy / dx` is a precision bug.
+4. Instead, divide both by `g = gcd(dy, dx)` and normalize the sign, for example force `dx > 0`. Vertical lines use the key `(1, 0)`. Key a `dict` on `(dy // g, dx // g)`.
+5. The largest bucket for anchor `i`, plus 1 for the anchor, is the best line through `i`. Take the maximum over all anchors.
+
+The anchor trick turns "check every triple", O(n³), into "hash every pair per anchor", O(n²).
+
+**Complexity.** O(n²) time, O(n) space per anchor for the direction map.
 
 ## Interview follow-ups
 
 After Palindrome Number:
-- "Why reverse only half?" — the half reversal never risks the numeric-range issues a full reversal could hit in a fixed-width language, and it's simply less work.
-- "Palindrome linked list?" — same idea, different tools: fast/slow pointers to the middle, reverse one half, compare.
+
+- "Why reverse only half?" In 32-bit languages, the full reversal of a valid input can overflow. The half reversal never exceeds the size of the original.
+- "Check a palindrome linked list." Use the same idea with other tools: fast and slow pointers to the middle, reverse one half, compare.
 
 After Pow:
-- "Recursive version?" — `pow(x, n) = pow(x*x, n // 2)` times `x` when odd; same O(log n), plus O(log n) stack.
-- "Where else does fast exponentiation appear?" — modular exponentiation in RSA/Diffie–Hellman, and matrix exponentiation (Fibonacci in O(log n)).
+
+- "Give a recursive version." `pow(x, n) = pow(x*x, n // 2)`, times `x` when `n` is odd. It is the same O(log n), plus O(log n) stack.
+- "Where else does fast exponentiation appear?" In modular exponentiation for RSA and Diffie–Hellman, and in matrix exponentiation, such as Fibonacci in O(log n).
 
 After Sqrt:
-- "Newton vs binary search?" — Newton converges quadratically (digits of accuracy double per step); binary search gains one bit per step. Both are O(log x); Newton wins by a constant factor.
+
+- "Newton or binary search?" Newton converges quadratically: the digits of accuracy double per step. Binary search gains one bit per step. Both are O(log x); Newton wins by a constant factor.
 
 After Factorial Trailing Zeroes:
-- "Why not count 2s too?" — every second number is even; 5s are strictly scarcer, so `min(#2s, #5s) = #5s`.
+
+- "Why not count 2s too?" Every second number is even, so 5s are always scarcer. `min(#2s, #5s) = #5s`.
 
 ## The task
 
-Four arithmetic classics. Each must hit the stated complexity — the naive alternative (string conversion, O(n) multiplication loops, library shortcuts) is exactly what's being screened out.
+Write four classic arithmetic functions. Each must meet its complexity limit. The tests use exponents large enough to time out an O(n) loop. They cannot detect string conversion or library shortcuts, so do not use them.
 
 ### `is_palindrome_number(x)`
 
-Return `True` if the integer `x` reads the same forwards and backwards in decimal. **String conversion is forbidden** — no `str(x)`, no slicing, no f-strings; solve it with `% 10` and `// 10` (reversing only the back half is the clean way). Negative numbers are never palindromes. Numbers ending in 0 are never palindromes — except `0` itself, which is one. O(log₁₀ x) time, O(1) space.
+1. Return `True` if the integer `x` reads the same forwards and backwards in decimal.
+2. Do not convert to a string: no `str(x)`, no slicing, no f-strings.
+3. Use `% 10` and `// 10`. Reversing only the back half is the clean way.
+4. Negative numbers are never palindromes.
+5. Numbers that end in 0 are never palindromes, except `0` itself.
+6. Run in O(log₁₀ x) time and O(1) space.
 
 ```python
-is_palindrome_number(121)   # True
+is_palindrome_number(121)  # True
 is_palindrome_number(-121)  # False
-is_palindrome_number(10)    # False
-is_palindrome_number(0)     # True
+is_palindrome_number(10)  # False
+is_palindrome_number(0)  # True
 ```
 
-Edge cases: single-digit numbers (all palindromes), even vs odd digit counts (`1221` and `12321` are both palindromes), `1000021` (false — don't let trailing/leading digit mismatches slip through).
+Edge cases:
+
+- Single-digit numbers are all palindromes.
+- Even and odd digit counts: `1221` and `12321` are both palindromes.
+- `1000021` is false. Do not let a mismatch between the outer digits slip through.
 
 ### `plus_one(digits)`
 
-`digits` is a non-empty big-endian list of decimal digits (`0`–`9`) representing a non-negative integer with no leading zeros (except the number 0 as `[0]`). Return the digit list of that integer plus one. Work digit-by-digit from the back. O(n) time.
+`digits` is a non-empty big-endian list of decimal digits (`0`–`9`) for a non-negative integer. It has no leading zeros, except the number 0 as `[0]`.
+
+1. Return the digit list of that integer plus one.
+2. Work digit by digit from the back.
+3. The list can hold dozens of digits.
+4. Run in O(n) time.
 
 ```python
-plus_one([1, 2, 3])   # [1, 2, 4]
-plus_one([9])         # [1, 0]
-plus_one([9, 9, 9])   # [1, 0, 0, 0]
-plus_one([0])         # [1]
+plus_one([1, 2, 3])  # [1, 2, 4]
+plus_one([9])  # [1, 0]
+plus_one([9, 9, 9])  # [1, 0, 0, 0]
+plus_one([0])  # [1]
 ```
 
-Edge cases: no carry at all (last digit < 9), carry through several trailing 9s (`[8, 9, 9]` → `[9, 0, 0]`), all nines (result grows one digit), lists with dozens of digits.
+Edge cases:
+
+- No carry: the last digit is below 9.
+- A carry through several trailing 9s: `[8, 9, 9]` gives `[9, 0, 0]`.
+- All nines: the result grows by one digit.
+- Lists with dozens of digits.
 
 ### `my_sqrt(x)`
 
-Return `⌊√x⌋` for a non-negative integer `x` — the largest integer `m` with `m * m <= x`. **`math.sqrt`, `math.pow`, and `**` are forbidden**; binary-search the answer space (or use Newton's method). O(log x) time.
+1. Return `⌊√x⌋` for a non-negative integer `x`: the largest integer `m` with `m * m <= x`.
+2. Do not use `math.sqrt`, `math.pow` or `**`.
+3. Binary search the answer space, or use Newton's method.
+4. Run in O(log x) time.
 
 ```python
-my_sqrt(4)           # 2
-my_sqrt(8)           # 2
-my_sqrt(0)           # 0
+my_sqrt(4)  # 2
+my_sqrt(8)  # 2
+my_sqrt(0)  # 0
 my_sqrt(2147395599)  # 46339
 ```
 
-Edge cases: `0` and `1` (return themselves), perfect squares vs one-below-a-perfect-square (`15` → 3, `16` → 4), values near 2³¹ (`2147483647` → 46340).
+Edge cases:
+
+- `0` and `1` return themselves.
+- A perfect square and the value one below it: `15` gives 3, `16` gives 4.
+- Values near 2³¹: `2147483647` gives 46340.
 
 ### `my_pow(x, n)`
 
-Return `x` raised to the integer power `n`. `x` is a float; `n` is an integer that may be negative, with magnitude up to 2³¹. **`math.pow` and `**` are forbidden**, and the solution must run in O(log |n|) time — binary exponentiation, not a multiplication loop. Handle the negative exponent by inverting the base once up front. `my_pow(anything, 0)` is `1`.
+`x` is a float. `n` is an integer that can be negative, with a size up to 2³¹.
+
+1. Return `x` raised to the integer power `n`.
+2. Do not use `math.pow` or `**`.
+3. Run in O(log |n|) time. Use binary exponentiation, not a multiplication loop.
+4. For a negative exponent, invert the base once, before the loop.
+5. `my_pow(anything, 0)` is `1`.
 
 ```python
-my_pow(2, 10)   # 1024
+my_pow(2, 10)  # 1024
 my_pow(2.1, 3)  # 9.261
-my_pow(2, -2)   # 0.25
-my_pow(-2, 3)   # -8
+my_pow(2, -2)  # 0.25
+my_pow(-2, 3)  # -8
 ```
 
-Edge cases: `n == 0` (returns 1, even for `x = 0`), negative base with even vs odd exponent, `x = 0` with positive `n` (returns 0), `n = ±(2³¹ − 1)` scale exponents (must finish instantly), tiny results that underflow toward 0 (fine — return what the arithmetic gives).
+Edge cases:
+
+- `n == 0` returns 1, even for `x = 0`.
+- A negative base with an even or an odd exponent.
+- `x = 0` with a positive `n` returns 0.
+- Exponents near ±2³¹ must finish at once.
+- Tiny results underflow toward 0. Return what the arithmetic gives.

@@ -1,14 +1,12 @@
-# Linked List
+## What you build
 
-## What you'll learn
-
-Pointer surgery on singly linked lists: the dummy-head sentinel that erases every "what if the head changes?" special case, fast/slow pointers (Floyd's cycle detection and the gap-of-n trick), in-place reversal of a window, and list splicing. The same four moves solve everything in this group, from Merge Two Sorted Lists up to LRU Cache — the hash-map-plus-doubly-linked-list design that shows up in real caches as often as in interviews.
+You write four pointer-surgery functions on singly linked lists: `has_cycle`, `add_two_numbers`, `merge_two_lists` and `reverse_between`. Four moves solve this whole group: the dummy head, fast and slow pointers, in-place reversal and splicing. They reach up to LRU Cache, a hash-map-plus-linked-list design used in real caches. This lesson builds on **Stack**.
 
 ## Key concepts
 
-### The node representation
+### A node is a `ListNode` with `val` and `next`
 
-Every list node here is a small class with a value and a pointer to the next node; the tail's `next` is `None`:
+Every list node here is a small `ListNode` object with a value and a pointer to the next node. The tail's `next` is `None`.
 
 ```python
 class ListNode:
@@ -17,61 +15,71 @@ class ListNode:
         self.next = next
 
 # 1 -> 2 -> 3
-head = ListNode(1, ListNode(2, ListNode(3, None)))
+head = ListNode(1, ListNode(2,
+    ListNode(3, None)))
 ```
 
-An empty list is just `None`. Walking a list is `while node is not None: node = node.next`, and every "delete" or "insert" is a pointer reassignment, never a list shift.
+An empty list is `None`. There is no list wrapper class. A walk is `while node is not None: node = node.next`. Every delete or insert is a pointer change, never a list shift.
 
-### The dummy head (sentinel)
+### A dummy head removes the head special case
 
-Any operation that might replace or remove the first node — merging, deleting, partitioning — gets dramatically simpler with a throwaway node in front:
+Some operations can replace or remove the first node, such as merge, delete and partition. A throwaway node in front makes them much simpler.
 
 ```python
 dummy = ListNode(0, head)
 tail = dummy
-# ... build or patch the list through tail.next ...
-return dummy.next  # the real head, whatever it turned out to be
+# Build or patch the list through
+# tail.next.
+# Return the real head, whatever it is.
+return dummy.next
 ```
 
-Without the sentinel you write "if the node to delete is the head..." branches everywhere. With it, the head is just another `next` pointer, handled by the same code as every other node.
+Without the sentinel, you write "if the node to delete is the head" branches everywhere. With it, the head is one more `next` pointer, and the same code handles it.
 
-### Fast/slow pointers
+### Fast and slow pointers
 
-Advance `fast` two steps for every one step of `slow`:
+Advance `fast` two steps for every one step of `slow`.
 
 ```python
 slow = fast = head
-while fast is not None and fast.next is not None:
+while (fast is not None and
+       fast.next is not None):
     slow = slow.next
     fast = fast.next.next
+    # Cycle: they met.
     if slow is fast:
-        return True  # cycle — they met
-return False  # fast fell off the end — no cycle
+        return True
+# fast fell off the end: no cycle.
+return False
 ```
 
-If the list has a cycle, both pointers eventually orbit inside it, and each step shrinks the gap between them by exactly one — so they must collide. If there's no cycle, `fast` hits `None` within n/2 steps. The same skeleton with different offsets finds the middle of a list (`slow` is at the middle when `fast` reaches the end) and the nth node from the end (give `fast` a head start of n).
+In a cycle, both pointers end up inside it. Each step shrinks the gap between them by exactly one, so they must meet. Without a cycle, `fast` reaches `None` within n/2 steps.
 
-Compare nodes by **identity** (`slow is fast` on node references), never by value — values can repeat freely.
+The same skeleton with other offsets finds the middle node: `slow` is at the middle when `fast` reaches the end. It also finds the nth node from the end: give `fast` a head start of n.
 
-### In-place reversal
+Compare nodes by identity (`slow is fast` on node references), never by value. Values can repeat.
 
-The three-pointer loop that reverses a list without allocating:
+### In-place reversal uses three pointers
+
+This loop reverses a list without allocation.
 
 ```python
 prev, curr = None, head
 while curr is not None:
-    next_node = curr.next  # save before overwriting!
-    curr.next = prev        # flip the pointer
+    # Save next before you overwrite it.
+    next_node = curr.next
+    # Flip the pointer.
+    curr.next = prev
     prev = curr
     curr = next_node
-# prev is the new head
+# prev is the new head.
 ```
 
-Reverse Linked List II runs this idea over a window `[left, right]` and then re-splices: the node before the window points at the window's new head, and the window's old head (now its tail) points at whatever follows.
+Reverse Linked List II applies this idea to a window `[left, right]`, then splices the window back in. The node before the window points at the window's new head. The window's old head, now its tail, points at the node after the window.
 
-### Splicing
+### Splicing cuts and reconnects a list
 
-Cutting a list and reconnecting the pieces. Rotate List: find the new tail, cut there, reattach the old tail to the old head. Partition List: build two lists under two dummy heads, then join them — and remember to `None`-terminate the second one, or you've built an accidental cycle.
+Rotate List finds the new tail, cuts there and attaches the old tail to the old head. Partition List builds two lists under two dummy heads, then joins them. Set the second list's last `next` to `None`, or you build an accidental cycle.
 
 ### Complexity of the flagship problems
 
@@ -84,223 +92,263 @@ Cutting a list and reconnecting the pieces. Rotate List: find the new tail, cut 
 
 ## Watch out
 
-- **Save `curr.next` before overwriting it.** Dropping the rest of the list is the single most common reversal bug — once `curr.next = prev` runs, the old tail is unreachable unless you stashed it.
-- **Return `dummy.next`, not `head`.** After a merge or delete, `head` may no longer be the first node. The sentinel exists precisely so you don't have to know.
-- **Guard both `fast` and `fast.next`** in the Floyd loop. Without the double check, `fast.next.next` raises `AttributeError` on even-length lists.
-- **Node identity, not value equality.** `has_cycle` on `1 -> 1 -> 1 -> None` must return `False`; a value-based check (`==`) would lie — always compare with `is`.
-- **Add Two Numbers: the final carry.** `5 + 5` is `[0, 1]`, not `[0]` — loop `while l1 or l2 or carry`.
-- **`reverse_between` is 1-indexed**, and `left == right` must be a no-op, not an off-by-one crash.
-- **LRU Cache: a `get` is also a use.** Forgetting to refresh recency on reads (not just writes) is the classic failure mode — the cache silently evicts hot keys.
+- Save `curr.next` before you overwrite it. After `curr.next = prev`, the rest of the list is lost.
+- Return `dummy.next`, not `head`. After a merge or delete, `head` can be in the middle of the list.
+- Check both `fast` and `fast.next` in the Floyd loop. Otherwise `fast.next.next` raises `AttributeError` on even-length lists.
+- Compare node identity with `is`, not values with `==`. `has_cycle` on `1 -> 1 -> 1 -> None` must return `False`.
+- In Add Two Numbers, keep the final carry. `5 + 5` is `[0, 1]`, not `[0]`. Loop `while l1 or l2 or carry`.
+- `reverse_between` positions are 1-indexed. `left == right` must change nothing and must not crash.
+- In LRU Cache, a `get` is also a use. If reads do not refresh recency, the cache evicts hot keys.
 
 ## Problem walkthroughs
 
 ### Linked List Cycle ★
 
-**Problem.** Given the head of a singly linked list, return `True` if the list contains a cycle — some node's `next` points back to an earlier node — and `False` if it terminates in `None`. Use O(1) space.
+**Problem.** Given the head of a singly linked list, return `True` if the list has a cycle. In a cycle, some node's `next` points back to an earlier node. Return `False` if the list ends in `None`. Use O(1) space.
 
 **Example.**
 
-    3 → 2 → 0 → −4, with −4.next pointing back at the node 2 → True
-    1 → 2 → None                                              → False
+```text
+3 -> 2 -> 0 -> -4, and -4.next
+points back at node 2 -> True
+1 -> 2 -> None -> False
+```
 
 **Steps.**
-1. Set `slow = head`, `fast = head`.
-2. Loop while `fast is not None and fast.next is not None`: move `slow` one step, `fast` two.
-3. After moving, if `slow is fast` (identity comparison), return `True`.
-4. If the loop exits, `fast` walked off the end — return `False`.
-5. Why they must meet: once both pointers are inside the cycle, `fast` gains one node per step on `slow`, so the gap hits zero within one lap. The O(n)-space alternative — a `set` of visited node ids — works but concedes the follow-up.
+1. Set `slow = head` and `fast = head`.
+2. Loop while `fast is not None and fast.next is not None`. Move `slow` one step and `fast` two.
+3. After the move, if `slow is fast` (identity comparison), return `True`.
+4. If the loop ends, `fast` walked off the end, so return `False`.
+5. They must meet. Inside the cycle, `fast` gains one node per step on `slow`, so the gap reaches zero within one lap. A `set` of visited nodes also works, but it uses O(n) space and fails the follow-up.
 
-**Complexity.** O(n) time / O(1) space — `slow` never completes a second lap.
+**Complexity.** O(n) time / O(1) space. `slow` never completes a second lap.
 
 ### Add Two Numbers ★
 
-**Problem.** Two non-empty lists represent non-negative integers with digits stored in **reverse order** — the head is the ones digit. Add the two numbers and return the sum as a list in the same format. Inputs have no leading zeros, except the number 0 itself.
+**Problem.** Two non-empty lists hold non-negative integers with digits in reverse order: the head is the ones digit. Add the two numbers and return the sum as a list in the same format. Inputs have no leading zeros, except the number 0 itself.
 
 **Example.**
 
-    [2,4,3] + [5,6,4] → [7,0,8]     (342 + 465 = 807)
-    [9,9] + [1]       → [0,0,1]     (99 + 1 = 100)
+```text
+[2,4,3] + [5,6,4] -> [7,0,8]
+(342 + 465 = 807)
+[9,9] + [1] -> [0,0,1]
+(99 + 1 = 100)
+```
 
 **Steps.**
-1. Create a dummy head and a `tail` pointer; set `carry = 0`.
-2. Loop while `l1 is not None or l2 is not None or carry != 0`.
-3. Each iteration: `total = (l1.val if l1 else 0) + (l2.val if l2 else 0) + carry`; append a node with `total % 10`; set `carry = total // 10`; advance whichever input pointers are non-`None`.
+1. Create a dummy head and a `tail` pointer. Set `carry = 0`.
+2. Loop while `l1 or l2 or carry`.
+3. In each iteration, compute `total = (l1.val if l1 else 0) + (l2.val if l2 else 0) + carry`. Append a node with `total % 10`. Set `carry = total // 10`. Advance each input pointer that is not `None`.
 4. Return `dummy.next`.
-5. The reverse-order storage is a gift: you add from the ones digit upward, exactly the way carries propagate, with no reversal step needed.
+5. The reverse order helps. You add from the ones digit upward, the same way carries move, with no reversal step.
 
 **Complexity.** O(max(m, n)) time / O(1) space beyond the output list.
 
 ### Merge Two Sorted Lists ★
 
-**Problem.** Merge two sorted (ascending) lists into one sorted list by **splicing the existing nodes together** — no new nodes. Return the merged head.
+**Problem.** Merge two ascending lists into one ascending list. Splice the existing nodes together; create no new nodes. Return the merged head.
 
 **Example.**
 
-    [1,2,4] + [1,3,4] → [1,1,2,3,4,4]
-    [] + [0]          → [0]
+```text
+[1,2,4] + [1,3,4] -> [1,1,2,3,4,4]
+[] + [0] -> [0]
+```
 
 **Steps.**
-1. Create a dummy head; `tail = dummy`.
-2. While both lists are non-`None`: attach the smaller head to `tail.next`, then advance that list and `tail`. Take `list1` on ties (either works; being consistent keeps the merge stable).
-3. When one list runs out, attach the survivor whole: `tail.next = list1 or list2`. It's already sorted — no need to walk it.
-4. Return `dummy.next`. The dummy is what saves you from special-casing which list contributes the first node.
+1. Create a dummy head. Set `tail = dummy`.
+2. While both lists are not `None`, attach the smaller head to `tail.next`. Then advance that list and `tail`. On a tie, take `list1`. Either works, and a consistent choice keeps the merge stable.
+3. When one list runs out, attach the other whole: `tail.next = list1 or list2`. It is already in order, so you do not walk it.
+4. Return `dummy.next`. The dummy saves you a special case for the list that gives the first node.
 
-**Complexity.** O(m + n) time / O(1) space — every node is examined once and moved at most once.
+**Complexity.** O(m + n) time / O(1) space. You examine every node once and move it at most once.
 
 ### Copy List with Random Pointer
 
-**Problem.** Each node carries `next` plus an extra `random` pointer that targets any node in the list, or `None`. Return a deep copy: brand-new nodes, with `next` and `random` wired to the *copies* of whatever the originals pointed at.
+**Problem.** Each node has `next` and an extra `random` pointer. `random` targets any node in the list, or `None`. Return a deep copy: new nodes, with `next` and `random` pointing at the copies of the original targets.
 
 **Example.**
 
-    [7,13,11] where 13.random → the node 7, 11.random → the node 13
-    → a structurally identical list built entirely of new nodes
+```text
+[7,13,11], where 13.random -> node 7
+and 11.random -> node 13
+-> the same structure, all new nodes
+```
 
 **Steps.**
-1. Dict approach — first pass: create a bare clone (`val`, `next=None`, `random=None`) for every node and store it in a `dict` keyed by the original node object (Python objects are hashable by identity by default).
-2. Second pass: for each original, set `clone.next = mapping.get(orig.next)` and `clone.random = mapping.get(orig.random)` (`mapping.get(None)` is `None` already — no extra normalization needed).
-3. Return `mapping[head]`. The dict converts "pointer into the old list" to "pointer into the new list" in O(1).
-4. O(1)-space alternative: interleave — insert each clone right after its original (`A → A' → B → B' → …`), set `clone.random = orig.random.next if orig.random else None` (the clone of the target), then unweave the two lists in a third pass.
+1. Dict approach, first pass: create a bare clone `Node(orig.val)` for every node. Store it in a dict keyed by the original node object.
+2. Second pass: for each original, set `clone.next = clones.get(orig.next)` and `clone.random = clones.get(orig.random)`. `clones.get(None)` is `None`, so a missing target needs no special case.
+3. Return `clones.get(head)`. The dict converts "pointer into the old list" to "pointer into the new list" in O(1).
+4. O(1)-space alternative: interleave. Insert each clone right after its original (`A -> A' -> B -> B' -> …`). Set `clone.random = orig.random.next if orig.random else None`, which is the clone of the target. Then separate the two lists in a third pass.
 
-**Complexity.** O(n) time / O(n) space for the dict (O(1) extra with interleaving).
+**Complexity.** O(n) time / O(n) space for the dict, or O(1) extra with interleaving.
 
 ### Reverse Linked List II ★
 
-**Problem.** Given `head` and 1-indexed positions `left <= right`, reverse the nodes from position `left` through `right` in place and return the head. One pass.
+**Problem.** Given `head` and 1-indexed positions `left ≤ right`, reverse the nodes from position `left` through `right` in place. Return the head. Use one pass.
 
 **Example.**
 
-    [1,2,3,4,5], left = 2, right = 4 → [1,4,3,2,5]
-    [5], left = 1, right = 1         → [5]
+```text
+[1,2,3,4,5], left 2, right 4
+  -> [1,4,3,2,5]
+[5], left 1, right 1 -> [5]
+```
 
 **Steps.**
-1. Create a dummy head so the window can start at position 1 without a special case.
-2. Walk `prev` from the dummy `left - 1` steps — it lands on the node just before the window.
-3. Set `start = prev.next` (the window's first node, which will end up as its last).
-4. Repeat `right - left` times — take the node after `start` and front-insert it at the window's head:
-   `move = start.next; start.next = move.next; move.next = prev.next; prev.next = move`.
-5. Return `dummy.next`. Each iteration front-inserts one node, so after `right - left` moves the window is fully reversed *and already spliced* — no separate reconnect step.
+1. Create a dummy head, so the window can start at position 1 without a special case.
+2. Walk `prev` from the dummy for `left − 1` steps. It lands on the node right before the window.
+3. Set `start = prev.next`. This is the window's first node, and it ends up as the last.
+4. Repeat `right − left` times. Take the node after `start` and insert it at the front of the window:
 
-**Complexity.** O(n) time / O(1) space — one walk to `prev`, then one move per window node.
+   ```python
+   move = start.next
+   start.next = move.next
+   move.next = prev.next
+   prev.next = move
+   ```
+5. Return `dummy.next`. Each iteration moves one node to the front. After `right − left` moves, the window holds the reversed nodes, already spliced in. No separate reconnect step is necessary.
+
+**Complexity.** O(n) time / O(1) space. One walk to `prev`, then one move per window node.
 
 ### Reverse Nodes in k-Group
 
-**Problem.** Reverse every consecutive group of `k` nodes. If fewer than `k` nodes remain at the end, leave them in their original order. Return the head.
+**Problem.** Reverse every consecutive group of `k` nodes. If fewer than `k` nodes remain at the end, keep their original order. Return the head.
 
 **Example.**
 
-    [1,2,3,4,5], k = 2 → [2,1,4,3,5]
-    [1,2,3,4,5], k = 3 → [3,2,1,4,5]
+```text
+[1,2,3,4,5], k = 2 -> [2,1,4,3,5]
+[1,2,3,4,5], k = 3 -> [3,2,1,4,5]
+```
 
 **Steps.**
-1. Use a dummy head; `group_prev = dummy`.
-2. Probe: walk `k` steps from `group_prev` to find the group's last node (`kth`). If you hit `None` first, fewer than `k` nodes remain — stop, leaving them untouched.
-3. Save the boundary `after = kth.next`, then reverse exactly the group with the standard three-pointer loop, running `curr` from `group_prev.next` until it reaches `after`.
-4. Splice: the group's old first node (`group_prev.next`) is now its last. Save it, point `group_prev.next` at `kth`, point the saved node at `after`, then advance `group_prev` to the saved node.
-5. Repeat from step 2. Probing *before* reversing is what protects the final short group.
+1. Use a dummy head. Set `group_prev = dummy`.
+2. Probe: walk `k` steps from `group_prev` to find the group's last node (`kth`). If you reach `None` first, fewer than `k` nodes remain. Stop and leave them as they are.
+3. Save the boundary `after = kth.next`. Reverse exactly the group with the three-pointer loop, from `group_prev.next` until `curr` reaches `after`.
+4. Splice. The group's old first node (`group_prev.next`) is now its last. Save it and point `group_prev.next` at `kth`. Point the saved node at `after`, then advance `group_prev` to the saved node.
+5. Repeat from step 2. The probe before the reversal protects the final short group.
 
-**Complexity.** O(n) time / O(1) space — each node is probed once and reversed once.
+**Complexity.** O(n) time / O(1) space. You probe each node once and reverse it once.
 
 ### Remove Nth Node From End of List
 
-**Problem.** Remove the nth node counting from the end (`n = 1` is the tail) and return the head. `n` is always valid.
+**Problem.** Remove the nth node from the end, where `n = 1` is the tail. Return the head. `n` is always valid.
 
 **Example.**
 
-    [1,2,3,4,5], n = 2 → [1,2,3,5]
-    [1], n = 1         → []
+```text
+[1,2,3,4,5], n = 2 -> [1,2,3,5]
+[1], n = 1 -> []
+```
 
 **Steps.**
-1. Dummy head; start both `slow` and `fast` at the dummy.
-2. Advance `fast` by `n + 1` steps, creating a gap of `n + 1` between the pointers.
-3. Move both one step at a time until `fast` is `None`. Now `slow` sits just **before** the target node.
-4. Delete with `slow.next = slow.next.next`; return `dummy.next`.
-5. The dummy plus the extra lead step is what lets this delete the head itself (`n` = length) with no special case.
+1. Use a dummy head. Start both `slow` and `fast` at the dummy.
+2. Advance `fast` by `n + 1` steps. The gap between the pointers is now `n + 1`.
+3. Move both one step at a time until `fast` is `None`. `slow` now sits right before the target node.
+4. Delete with `slow.next = slow.next.next`. Return `dummy.next`.
+5. The dummy and the extra lead step let this delete the head itself (`n` = length) with no special case.
 
-**Complexity.** O(n) time / O(1) space — one pass, two pointers.
+**Complexity.** O(n) time / O(1) space. One pass, two pointers.
 
 ### Remove Duplicates from Sorted List II
 
-**Problem.** The list is sorted ascending. Delete **every** node whose value appears more than once, keeping only the values that occur exactly once. Return the head.
+**Problem.** The list is in ascending order. Delete every node whose value appears more than once. Keep only the values that occur exactly once. Return the head.
 
 **Example.**
 
-    [1,2,3,3,4,4,5] → [1,2,5]
-    [1,1,1,2,3]     → [2,3]
+```text
+[1,2,3,3,4,4,5] -> [1,2,5]
+[1,1,1,2,3]     -> [2,3]
+```
 
 **Steps.**
-1. Dummy head; `prev = dummy`.
-2. Look at `curr = prev.next`. If `curr.next` exists and shares its value, a duplicate run starts here: advance `curr` while `curr.next is not None and curr.next.val == curr.val`, then bypass the entire run with `prev.next = curr.next` — and **do not advance `prev`**, because the node now at `prev.next` is itself unverified.
-3. Otherwise `curr` is unique — advance `prev = curr`.
-4. Loop until `prev.next is None`; return `dummy.next`.
-5. Invariant: `prev` only ever steps onto nodes proven unique. Sorted order is what makes "duplicates are adjacent" true, so one local check suffices.
+1. Use a dummy head. Set `prev = dummy`.
+2. Look at `curr = prev.next`. If `curr.next` exists and has the same value, a duplicate run starts here.
+3. For a run, advance `curr` while `curr.next is not None and curr.next.val == curr.val`. Then skip the whole run with `prev.next = curr.next`. Do not advance `prev`, because the new node at `prev.next` is not yet proven unique.
+4. Otherwise `curr` is unique, so advance `prev = curr`.
+5. Loop until `prev.next is None`. Return `dummy.next`.
+6. Invariant: `prev` only steps onto nodes proven unique. The order makes duplicates adjacent, so one local check is enough.
 
-**Complexity.** O(n) time / O(1) space — each node is visited at most twice.
+**Complexity.** O(n) time / O(1) space. You visit each node at most twice.
 
 ### Rotate List
 
-**Problem.** Rotate the list right by `k` places: the last `k` nodes move to the front. `k >= 0` and may exceed the list length.
+**Problem.** Rotate the list right by `k` places: the last `k` nodes move to the front. `k ≥ 0` and can exceed the list length.
 
 **Example.**
 
-    [1,2,3,4,5], k = 2 → [4,5,1,2,3]
-    [1,2], k = 3       → [2,1]        (3 % 2 = 1)
+```text
+[1,2,3,4,5], k = 2 -> [4,5,1,2,3]
+[1,2], k = 3 -> [2,1] (3 % 2 = 1)
+```
 
 **Steps.**
 1. If the list is empty or has one node, return it unchanged.
-2. Walk to the tail, counting the length `n`; normalize `k %= n`. If `k == 0`, return `head`.
-3. Close the loop: `tail.next = head` — the list is momentarily circular.
-4. The new tail sits `n - k - 1` steps from the old head; walk there, set `new_head = new_tail.next`, and cut with `new_tail.next = None`.
-5. Making the list circular first turns "rotate" into "choose where to cut" — one decision instead of two splices.
+2. Walk to the tail and count the length `n`. Normalize with `k %= n`. If `k == 0`, return `head`.
+3. Close the loop with `tail.next = head`. The list is circular for a moment.
+4. The new tail is `n − k − 1` steps from the old head. Walk there, set `new_head = new_tail.next`, and cut with `new_tail.next = None`.
+5. The circular list turns "rotate" into "choose where to cut". That is one decision instead of two splices.
 
-**Complexity.** O(n) time / O(1) space — at most two passes.
+**Complexity.** O(n) time / O(1) space. At most two passes.
 
 ### Partition List
 
-**Problem.** Given a value `x`, rearrange the list so every node with `val < x` comes before every node with `val >= x`, **preserving the original relative order** inside each part. Return the head.
+**Problem.** Given a value `x`, rearrange the list so every node with `val < x` comes before every node with `val ≥ x`. Keep the original relative order inside each part. Return the head.
 
 **Example.**
 
-    [1,4,3,2,5,2], x = 3 → [1,2,2,4,3,5]
-    [2,1], x = 2         → [1,2]
+```text
+[1,4,3,2,5,2], x = 3
+  -> [1,2,2,4,3,5]
+[2,1], x = 2 -> [1,2]
+```
 
 **Steps.**
-1. Two dummy heads — `before_dummy` and `after_dummy` — each with its own tail pointer.
-2. Sweep the list once, appending each node to the `before` list if `val < x`, else to the `after` list. Appending existing nodes in encounter order makes the partition stable for free.
-3. Terminate the `after` list: `after_tail.next = None`. Skipping this leaves a pointer dangling into the middle of the original list — usually a cycle.
-4. Join: `before_tail.next = after_dummy.next`; return `before_dummy.next`.
+1. Create two dummy heads, `before_dummy` and `after_dummy`, each with its own tail pointer.
+2. Sweep the list once. Append each node to the `before` list if `val < x`, else to the `after` list. Appending nodes in the order you meet them keeps the partition stable for free.
+3. End the `after` list with `after_tail.next = None`. Without this, a pointer still leads into the middle of the original list, which usually makes a cycle.
+4. Join with `before_tail.next = after_dummy.next`. Return `before_dummy.next`.
 
-**Complexity.** O(n) time / O(1) space — one pass; nodes are moved, never copied.
+**Complexity.** O(n) time / O(1) space. One pass; you move nodes and never copy them.
 
 ### LRU Cache
 
-**Problem.** Design a fixed-capacity key→value cache. `get(key)` returns the value or −1; `put(key, value)` inserts or updates. Both must run in O(1) average time, and both count as a "use" of the key. When a `put` pushes the cache over capacity, evict the least-recently-used key first.
+**Problem.** Design a key-value cache with a fixed capacity. `get(key)` returns the value or −1. `put(key, value)` inserts or updates. Both run in O(1) average time, and both count as a use of the key. When a `put` exceeds the capacity, evict the least recently used key.
 
 **Example.**
 
-    capacity 2: put(1,1), put(2,2), get(1) → 1, put(3,3)   — evicts key 2
-    get(2) → −1, get(1) → 1, get(3) → 3
+```text
+capacity 2:
+put(1,1), put(2,2)
+get(1) -> 1
+put(3,3)  (evicts key 2)
+get(2) -> -1
+get(1) -> 1
+get(3) -> 3
+```
 
 **Steps.**
-1. Combine a hash map (key → node) with a **doubly** linked list ordered by recency: most-recent at the front, eviction victim at the back.
-2. Use head and tail sentinel nodes so insert-at-front and unlink never special-case the ends. Each node stores `key`, `value`, `prev`, `next` — the key must live on the node so eviction can delete its map entry.
-3. `get`: look up the node; if absent return −1; otherwise unlink it, re-insert at the front (the recency refresh), and return its value.
-4. `put`: if the key exists, update the value and move the node to the front. Otherwise insert a new node at the front; if the map size now exceeds capacity, unlink the node just before the tail sentinel and delete its key from the map.
-5. In Python specifically, `collections.OrderedDict` gives you `move_to_end` and `popitem(last=False)` in a handful of lines — know the doubly-linked-list-plus-dict version for the interview, but reach for `OrderedDict` in real code.
+1. Combine a hash map (key to node) with a doubly linked list in order of recency. The most recent node is at the front, and the eviction victim is at the back.
+2. Use head and tail sentinel nodes, so insert-at-front and unlink need no end cases. Each node stores `key`, `value`, `prev` and `next`. The key must live on the node, so an eviction can delete its dict entry.
+3. `get`: look up the node. If it is absent, return −1. Otherwise unlink it, insert it at the front to refresh its recency, and return its value.
+4. `put`: if the key exists, update the value and move the node to the front. Otherwise insert a new node at the front. If the dict size now exceeds the capacity, unlink the node before the tail sentinel and delete its key from the dict.
+5. In Python, `collections.OrderedDict` keeps insertion order. A `move_to_end(key)` on every use, plus `popitem(last=False)` for the LRU key, gives the same O(1) behavior in about twelve lines. Know both, and build the one you can defend.
 
 **Complexity.** O(1) per operation / O(capacity) space.
 
 ## Interview follow-ups
 
-- After **Linked List Cycle**: "Where does the cycle start?" — Floyd phase two: after the meeting, reset one pointer to `head` and advance both one step at a time; they meet at the cycle's entry (the head-to-entry distance equals the meeting-point-to-entry distance modulo the cycle length).
-- After **Merge Two Sorted Lists**: "Merge k lists?" — pairwise divide-and-conquer (O(N log k)) or a min-heap of the k heads; both appear in later concepts.
-- After **Add Two Numbers**: "Digits stored most-significant first?" — reverse both lists first, or push the digits onto two stacks and add from the tops.
-- After **Remove Nth From End**: "Do it in exactly one pass, without counting the length." — that's precisely what the gap-of-n two-pointer already does; be ready to say so.
-- After **LRU Cache**: "Make it LFU." — frequency buckets, each holding its own recency list; still O(1), but the bookkeeping doubles.
+- After **Linked List Cycle**: "Where does the cycle start?" Use Floyd phase two. After the meeting, reset one pointer to `head` and advance both one step at a time. They meet at the cycle's entry. The distance from head to entry equals the distance from the meeting point to the entry, modulo the cycle length.
+- After **Merge Two Sorted Lists**: "Merge k lists?" Use pairwise divide and conquer (O(N log k)) or a min-heap of the k heads. Both appear in later concepts.
+- After **Add Two Numbers**: "Digits stored most significant first?" Reverse both lists first, or push the digits onto two stacks and add from the tops.
+- After **Remove Nth From End**: "Do it in exactly one pass, without the length." The two-pointer gap of n already does that; say so.
+- After **LRU Cache**: "Make it LFU." Use frequency buckets, each with its own recency list. It is still O(1), but the bookkeeping doubles.
 
 ## The task
 
-Four pointer-surgery classics, all built on one node class:
+You write four pointer-surgery functions. Every list node is a `ListNode` with `val` and `next`. `next` is the following node, or `None` at the tail. An empty list is `None`.
 
 ```python
 class ListNode:
@@ -309,55 +357,65 @@ class ListNode:
         self.next = next
 ```
 
-`next` is the following node or `None` at the tail; an empty list is `None` itself. In the samples below, `list_from([a, b, c])` denotes the list `a -> b -> c` built from `ListNode`s — the test suite constructs and reads lists exactly this way.
+In the examples, `list_from([a, b, c])` is the list `a -> b -> c` built from such nodes. The tests build and read lists the same way.
 
-### `has_cycle(head)`
+1. `has_cycle(head)` returns `True` if the list has a cycle, else `False`. In a cycle, following `next` never reaches `None`.
+2. Compare nodes by identity. Values can repeat in a list with no cycle.
+3. Use O(n) time and O(1) space: fast and slow pointers, not a `set` of visited nodes.
+4. `add_two_numbers(l1, l2)` takes two non-empty lists. Each stores a non-negative integer with its digits in reverse order.
+5. The head is the ones digit. There are no leading zeros, except the number 0 itself.
+6. Return a list that holds the sum in the same reverse-digit format. Use O(max(m, n)) time.
+7. `merge_two_lists(list1, list2)` takes two ascending lists. Either one can be `None`.
+8. Merge them into one ascending list and return its head. Splice the existing nodes; do not create new ones.
+9. Use O(m + n) time and O(1) space. The tests check that every result node came from the inputs.
+10. `reverse_between(head, left, right)` reverses the nodes from position `left` through `right`, in place. It returns the head.
+11. Positions are 1-indexed, with `1 ≤ left ≤ right ≤ length`. Use one pass, O(n) time and O(1) space.
 
-Return `True` if the list contains a cycle (following `next` forever never reaches `None`), else `False`. Compare nodes by identity — values may repeat in a perfectly acyclic list. O(n) time and O(1) space: fast/slow pointers, not a `set` of visited nodes.
+Edge cases:
 
-```python
-a, b, c, d = ListNode(3), ListNode(2), ListNode(0), ListNode(-4)
-a.next, b.next, c.next, d.next = b, c, d, b  # tail loops back to b
-has_cycle(a)                    # True
-
-has_cycle(list_from([1, 2]))    # False
-has_cycle(None)                 # False
-```
-
-Edge cases: empty list (`False`), single node with `next=None` (`False`), single node pointing at itself (`True`), repeated values without a cycle (`False`).
-
-### `add_two_numbers(l1, l2)`
-
-`l1` and `l2` are non-empty lists storing non-negative integers with digits in **reverse order** (the head is the ones digit), with no leading zeros except the number 0 itself. Return a list holding their sum in the same reverse-digit format. O(max(m, n)) time.
-
-```python
-add_two_numbers(list_from([2, 4, 3]), list_from([5, 6, 4]))  # list_from([7, 0, 8])  -- 342 + 465 = 807
-add_two_numbers(list_from([0]), list_from([0]))              # list_from([0])
-add_two_numbers(list_from([9, 9]), list_from([1]))           # list_from([0, 0, 1])  -- 99 + 1 = 100
-```
-
-Edge cases: lists of different lengths, a final carry that adds an extra digit, `0 + 0` (a single zero node, not an empty list).
-
-### `merge_two_lists(list1, list2)`
-
-Both lists are sorted ascending; either may be `None`. Merge them into one sorted list by **splicing the existing nodes** — do not allocate new nodes — and return the merged head. O(m + n) time, O(1) space.
+- `has_cycle`: an empty list is `False`. A single node with `next = None` is `False`.
+- `has_cycle`: a single node that points at itself is `True`. Repeated values with no cycle are `False`.
+- `add_two_numbers`: handle lists of different lengths and a final carry that adds a digit.
+- `add_two_numbers`: `0 + 0` gives a single zero node, not an empty list.
+- `merge_two_lists`: handle one or both lists empty and one list entirely smaller than the other.
+- `merge_two_lists`: handle equal values across the two lists and negative values.
+- `reverse_between`: `left == right` changes nothing. A window at position 1 changes the head; return the new one.
+- `reverse_between`: handle a window that ends at the tail and a full reversal of two nodes.
 
 ```python
-merge_two_lists(list_from([1, 2, 4]), list_from([1, 3, 4]))  # list_from([1, 1, 2, 3, 4, 4])
-merge_two_lists(None, None)                                    # None
-merge_two_lists(None, list_from([0]))                          # list_from([0])
+a, b = ListNode(3), ListNode(2)
+c, d = ListNode(0), ListNode(-4)
+a.next, b.next, c.next = b, c, d
+# The tail loops back to b.
+d.next = b
+has_cycle(a)                  # True
+has_cycle(list_from([1, 2]))  # False
+has_cycle(None)               # False
+
+add_two_numbers(list_from([2, 4, 3]),
+  list_from([5, 6, 4]))
+# list_from([7, 0, 8]): 342 + 465 = 807
+add_two_numbers(list_from([0]),
+  list_from([0]))
+# list_from([0])
+add_two_numbers(list_from([9, 9]),
+  list_from([1]))
+# list_from([0, 0, 1]): 99 + 1 = 100
+
+merge_two_lists(list_from([1, 2, 4]),
+  list_from([1, 3, 4]))
+# list_from([1, 1, 2, 3, 4, 4])
+merge_two_lists(None, None)  # None
+merge_two_lists(None,
+  list_from([0]))
+# list_from([0])
+
+reverse_between(
+  list_from([1, 2, 3, 4, 5]), 2, 4)
+# list_from([1, 4, 3, 2, 5])
+reverse_between(list_from([5]), 1, 1)
+# list_from([5])
+reverse_between(list_from([1, 2, 3]),
+  1, 3)
+# list_from([3, 2, 1])
 ```
-
-Edge cases: one or both lists empty, all of one list smaller than all of the other, equal values across the two lists, negative values. The tests verify that every node in the result came from the inputs.
-
-### `reverse_between(head, left, right)`
-
-Reverse the nodes from position `left` through position `right` (**1-indexed**, `1 <= left <= right <= length`) in place, and return the head of the list. One pass, O(n) time, O(1) space.
-
-```python
-reverse_between(list_from([1, 2, 3, 4, 5]), 2, 4)  # list_from([1, 4, 3, 2, 5])
-reverse_between(list_from([5]), 1, 1)              # list_from([5])
-reverse_between(list_from([1, 2, 3]), 1, 3)        # list_from([3, 2, 1])
-```
-
-Edge cases: `left == right` (no-op), a window starting at position 1 (the head changes — return the new one), a window ending at the tail, a two-node full reversal.

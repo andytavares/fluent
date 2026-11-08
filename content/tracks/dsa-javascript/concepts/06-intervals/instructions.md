@@ -1,69 +1,81 @@
-# Intervals
+## What you build
 
-## What you'll learn
-
-The two moves that solve virtually every interval problem: **sort by start, then sweep and merge** (Summary Ranges, Merge Intervals, Insert Interval) and **sort by end, then commit greedily** (Minimum Arrows, and every "maximum non-overlapping intervals" variant). You'll also learn to read each problem's overlap convention — whether touching endpoints count — before writing a single comparison.
+You write three interval functions: `mergeIntervals`, `insertInterval` and `minArrows`. Two moves solve almost every interval problem: sort by start, then sweep and merge; or sort by end, then commit greedily. Before you write a comparison, check whether touching endpoints count as overlap. This lesson builds on **Hash Maps**.
 
 ## Key concepts
 
-An interval is a pair `[start, end]` with `start <= end`, and in this concept endpoints are **inclusive** (closed intervals). Two closed intervals overlap when `a.start <= b.end && b.start <= a.end` — memorize that test; every off-by-one in interval code is a corruption of it.
+### Two closed intervals overlap when each starts before the other ends
+
+An interval is a pair `[start, end]` with `start <= end`. In this concept, endpoints are inclusive (closed intervals). Two closed intervals overlap when `a.start <= b.end && b.start <= a.end`. Learn that test: every off-by-one in interval code is a corruption of it.
 
 ### Sort by start, sweep, merge
 
-Once intervals are sorted by start, all the intervals that should merge into one block are adjacent. Sweep left to right, comparing each interval against the **last merged block** (not the previous input interval):
+After a sort by start, all intervals that merge into one block are adjacent. Sweep left to right. Compare each interval with the last merged block, not with the previous input interval.
 
 ```js
+// n is intervals.length.
 intervals.sort((a, b) => a[0] - b[0]);
 const merged = [intervals[0].slice()];
-for (let i = 1; i < intervals.length; i++) {
+for (let i = 1; i < n; i++) {
   const [start, end] = intervals[i];
   const last = merged[merged.length - 1];
   if (start <= last[1]) {
-    last[1] = Math.max(last[1], end); // extend the block
+    // Extend the block.
+    last[1] = Math.max(last[1], end);
   } else {
-    merged.push([start, end]);        // gap — start a new block
+    // Gap: start a new block.
+    merged.push([start, end]);
   }
 }
 ```
 
 Two details carry all the correctness:
-- `start <= last[1]` uses `<=`, so touching intervals (`[1,4]` and `[4,5]`) merge — closed endpoints share the point 4.
-- `Math.max(last[1], end)` — a later interval can be entirely *inside* the block (`[1,10]` then `[2,3]`); blindly assigning `end` would shrink it.
+- `start <= last[1]` uses `<=`, so touching intervals such as `[1,4]` and `[4,5]` merge. Closed endpoints share the point 4.
+- `Math.max(last[1], end)` handles a later interval that sits inside the block, such as `[1,10]` then `[2,3]`. A plain `last[1] = end` shrinks the block.
 
-### Insert without re-sorting — three phases
+### Insert without a sort: three phases
 
-When the input is already sorted and non-overlapping, inserting one interval doesn't need a sort. Walk the list in three phases:
+When the input is already in order and has no overlaps, an insert needs no sort. Walk the list in three phases.
 
 ```js
-let i = 0, [start, end] = newInterval;
-while (i < n && intervals[i][1] < start) result.push(intervals[i++]);   // strictly before
-while (i < n && intervals[i][0] <= end) {                               // overlapping
+let i = 0;
+let [start, end] = newInterval;
+// Phase 1: strictly before.
+while (i < n && intervals[i][1] < start) {
+  result.push(intervals[i++]);
+}
+// Phase 2: overlapping.
+while (i < n && intervals[i][0] <= end) {
   start = Math.min(start, intervals[i][0]);
   end = Math.max(end, intervals[i][1]);
   i++;
 }
 result.push([start, end]);
-while (i < n) result.push(intervals[i++]);                              // strictly after
+// Phase 3: strictly after.
+while (i < n) result.push(intervals[i++]);
 ```
 
-Phase boundaries are the overlap test split in half: `intervals[i][1] < start` means "ends before the new one begins"; `intervals[i][0] <= end` means "begins before the new one ends". Everything the middle loop swallows gets folded into one interval.
+The phase boundaries are the two halves of the overlap test. `intervals[i][1] < start` means "ends before the new one starts". `intervals[i][0] <= end` means "starts before the new one ends". The middle loop folds everything it absorbs into one interval.
 
 ### Sort by end, commit greedily
 
-For "how many groups/arrows/removals" questions, sort by **end** and greedily commit to each interval's end point. The interval that ends first constrains everyone: any point that serves it must be at most its end, and choosing exactly its end keeps the most room for intervals to the right — the standard exchange argument.
+For "how many groups, arrows or removals" questions, sort by end and commit to each interval's end point. The interval that ends first constrains everyone. A point that serves it must be at most its end. Its exact end leaves the most room for intervals on the right; this is the standard exchange argument.
 
 ```js
 points.sort((a, b) => a[1] - b[1]);
-let arrows = 1, arrowX = points[0][1];
+let arrows = 1;
+let arrowX = points[0][1];
 for (const [start, end] of points) {
-  if (start > arrowX) {  // this balloon starts after the last arrow — new arrow
+  // This balloon starts after the last
+  // arrow: shoot a new arrow.
+  if (start > arrowX) {
     arrows++;
     arrowX = end;
   }
 }
 ```
 
-The same skeleton answers "maximum count of non-overlapping intervals" (each committed end starts a new selection) and "minimum intervals to remove" (n minus that maximum).
+The same skeleton answers "largest count of non-overlapping intervals": each committed end starts a new selection. It also answers "fewest intervals to remove": n minus that largest count.
 
 ### Complexity of the flagship problems
 
@@ -75,138 +87,170 @@ The same skeleton answers "maximum count of non-overlapping intervals" (each com
 
 ## Watch out
 
-- **Numeric comparator, always**: `intervals.sort()` compares arrays as strings — `[10, 12]` sorts before `[2, 3]`. Write `(a, b) => a[0] - b[0]`.
-- **Compare against the merged block, not the previous input interval.** `[1,10],[2,3],[4,5]`: interval `[4,5]` overlaps the *block* `[1,10]` even though it doesn't touch `[2,3]`.
-- **`Math.max` when extending** — containment (`[1,10]` swallowing `[2,3]`) is the case that breaks naive `last[1] = end`.
-- **Know the touching convention per problem.** Merge Intervals: `[1,4]` and `[4,5]` merge (closed intervals share a point). Arrows: an arrow at `x = 4` bursts both `[1,4]` and `[4,6]` — so the "new arrow" test is strictly `start > arrowX`.
-- **Insert Interval is O(n) — don't append-and-sort.** Re-sorting works but throws away the sortedness the problem hands you; interviewers ask about it.
-- **Don't mutate the caller's arrays casually.** Sorting `intervals` in place is usually accepted, but pushing mutated *references* into your output means later edits corrupt it — copy when you extend.
+- Always use a numeric comparator. `intervals.sort()` compares arrays as strings, so `[10, 12]` comes before `[2, 3]`.
+- Compare with the merged block, not the previous input interval. In `[1,10],[2,3],[4,5]`, `[4,5]` overlaps the block `[1,10]`.
+- Use `Math.max` when you extend. Containment, such as `[1,10]` around `[2,3]`, breaks a plain `last[1] = end`.
+- Know the touching rule for each problem. In Merge Intervals, `[1,4]` and `[4,5]` merge.
+- In Arrows, one arrow at `x = 4` bursts `[1,4]` and `[4,6]`. So the new-arrow test is strictly `start > arrowX`.
+- Insert Interval is O(n). An append and a sort works, but it wastes the order the problem gives you. Interviewers ask about it.
+- Take care with the caller's arrays. An in-place sort of `intervals` is usually fine.
+- If you push input references and then extend them, later edits corrupt the output. Copy an interval before you extend it.
 
 ## Problem walkthroughs
 
 ### Summary Ranges
 
-**Problem.** Given a sorted array of unique integers, return the smallest list of range strings covering exactly its values: `"a->b"` for a run from `a` to `b`, `"a"` for a lone value.
+**Problem.** Given an ordered array of unique integers, return the smallest list of range strings that covers exactly its values. Use `"a->b"` for a run from `a` to `b`, and `"a"` for a single value.
 
 **Example.**
 
-    [0,1,2,4,5,7] → ["0->2", "4->5", "7"]
-    [0,2,3,4,6,8,9] → ["0", "2->4", "6", "8->9"]
+```text
+[0,1,2,4,5,7]
+  -> ["0->2", "4->5", "7"]
+[0,2,3,4,6,8,9]
+  -> ["0", "2->4", "6", "8->9"]
+```
 
 **Steps.**
 1. Walk with index `i`. Record `start = nums[i]`.
 2. Advance `i` while the next value continues the run: `nums[i + 1] === nums[i] + 1`.
-3. Emit `start === nums[i] ? \`${start}\` : \`${start}->${nums[i]}\``, then step past the run and repeat.
-4. Sorted-and-unique input is what makes a single forward walk sufficient — a run can only ever continue by exactly +1.
+3. Emit the range, then step past the run and repeat:
+
+   ```js
+   start === nums[i]
+     ? `${start}`
+     : `${start}->${nums[i]}`
+   ```
+4. The input is in order and unique, so one forward walk is enough. A run can only continue by exactly +1.
 
 **Complexity.** O(n) time / O(1) extra space beyond the output.
 
 ### Merge Intervals ★
 
-**Problem.** Given an array of intervals `[start, end]` in arbitrary order, merge every set of overlapping intervals into one and return the result sorted by start. Touching intervals (`[1,4]`, `[4,5]`) count as overlapping.
+**Problem.** You get an array of intervals `[start, end]` in any order. Merge every set of overlapping intervals into one, and return the result in order of start. Touching intervals such as `[1,4]` and `[4,5]` overlap.
 
 **Example.**
 
-    [[1,3],[2,6],[8,10],[15,18]] → [[1,6],[8,10],[15,18]]
-    [[1,4],[4,5]]                → [[1,5]]
+```text
+[[1,3],[2,6],[8,10],[15,18]]
+  -> [[1,6],[8,10],[15,18]]
+[[1,4],[4,5]] -> [[1,5]]
+```
 
 **Steps.**
 1. Sort by start with a numeric comparator.
 2. Seed the output with a copy of the first interval.
-3. For each subsequent `[start, end]`: if `start <= last[1]` (overlaps or touches the last merged block), extend with `last[1] = Math.max(last[1], end)`; otherwise push `[start, end]` as a new block.
-4. Sorting guarantees the invariant that makes one pass enough: every interval that could merge with the current block arrives before any interval that can't.
+3. For each next `[start, end]`, check whether `start <= last[1]`. If so, it overlaps or touches the last block: extend with `last[1] = Math.max(last[1], end)`. Otherwise push `[start, end]` as a new block.
+4. The sort gives the invariant that makes one pass enough. Every interval that can merge with the current block arrives before any interval that cannot.
 
-**Complexity.** O(n log n) time (the sort dominates) / O(n) for the output.
+**Complexity.** O(n log n) time, from the sort / O(n) for the output.
 
 ### Insert Interval ★
 
-**Problem.** `intervals` is sorted by start and pairwise non-overlapping. Insert `newInterval`, merging where necessary, and return a list that is again sorted and non-overlapping. Do it in one O(n) pass — no re-sorting.
+**Problem.** `intervals` is in order of start, and no two of them overlap. Insert `newInterval` and merge where necessary. Return a list that is again in order with no overlaps. Do it in one O(n) pass, without a sort.
 
 **Example.**
 
-    intervals = [[1,3],[6,9]], newInterval = [2,5]
-    → [[1,5],[6,9]]
+```text
+[[1,3],[6,9]], new [2,5]
+  -> [[1,5],[6,9]]
 
-    intervals = [[1,2],[3,5],[6,7],[8,10],[12,16]], newInterval = [4,8]
-    → [[1,2],[3,10],[12,16]]
+[[1,2],[3,5],[6,7],[8,10],[12,16]]
+new [4,8]
+  -> [[1,2],[3,10],[12,16]]
+```
 
 **Steps.**
-1. Phase 1 — copy every interval that ends strictly before `newInterval` starts (`intervals[i][1] < start`).
-2. Phase 2 — while intervals still begin at or before `newInterval`'s end (`intervals[i][0] <= end`), absorb them: `start = Math.min(start, intervals[i][0])`, `end = Math.max(end, intervals[i][1])`.
+1. Phase 1: copy every interval that ends strictly before `newInterval` starts (`intervals[i][1] < start`).
+2. Phase 2: while intervals start at or before the end of `newInterval` (`intervals[i][0] <= end`), absorb them. Set `start = Math.min(start, intervals[i][0])` and `end = Math.max(end, intervals[i][1])`.
 3. Push the absorbed `[start, end]`.
-4. Phase 3 — copy the rest untouched.
-5. Each input interval lands in exactly one phase, decided by one comparison — that's the O(n) argument.
+4. Phase 3: copy the rest unchanged.
+5. One comparison puts each input interval in exactly one phase. That is the O(n) argument.
 
 **Complexity.** O(n) time / O(n) for the output.
 
 ### Minimum Number of Arrows to Burst Balloons ★
 
-**Problem.** Balloons are horizontal spans `[xstart, xend]`. An arrow shot straight up at position `x` bursts every balloon with `xstart <= x <= xend`. Return the minimum number of arrows that bursts all balloons.
+**Problem.** Balloons are horizontal spans `[xstart, xend]`. An arrow shot straight up at position `x` bursts every balloon with `xstart <= x <= xend`. Return the smallest number of arrows that bursts all balloons.
 
 **Example.**
 
-    [[10,16],[2,8],[1,6],[7,12]] → 2   (x = 6 bursts [2,8] and [1,6]; x = 11 bursts [10,16] and [7,12])
-    [[1,2],[3,4],[5,6]]          → 3
-    [[1,2],[2,3],[3,4],[4,5]]    → 2   (x = 2, then x = 4)
+```text
+[[10,16],[2,8],[1,6],[7,12]] -> 2
+(x = 6 bursts [2,8] and [1,6];
+ x = 11 bursts [10,16] and [7,12])
+[[1,2],[3,4],[5,6]] -> 3
+[[1,2],[2,3],[3,4],[4,5]] -> 2
+(x = 2, then x = 4)
+```
 
 **Steps.**
 1. Sort by `xend` with a numeric comparator.
-2. Shoot the first arrow at the first balloon's end (`arrowX = points[0][1]`) — the latest position that still bursts it, so it catches the most balloons after it.
-3. Sweep: any balloon with `start <= arrowX` is already burst (touching counts — inclusive spans). When a balloon has `start > arrowX`, it needs a new arrow: increment the count and set `arrowX` to *its* end.
-4. Greedy exchange argument: any optimal solution can move its first arrow to the first balloon's end without un-bursting anything, so committing to ends is never worse.
+2. Shoot the first arrow at the first balloon's end (`arrowX = points[0][1]`). That is the latest position that still bursts it, so it catches the most balloons after it.
+3. Sweep. A balloon with `start <= arrowX` is already burst, because the spans are inclusive. A balloon with `start > arrowX` needs a new arrow: increment the count and set `arrowX` to its end.
+4. Exchange argument: any optimal solution can move its first arrow to the first balloon's end and still burst every balloon. So a commit to ends is never worse.
 
 **Complexity.** O(n log n) time / O(1) extra space.
 
 ## Interview follow-ups
 
-- After **Merge Intervals**: "Intervals arrive as a stream — merge incrementally?" (an ordered structure / interval tree; each insert is Insert Interval). "Total covered length instead of the merged list?" (sum `end - start` over merged blocks.)
-- After **Insert Interval**: "Why not append and re-sort?" (O(n log n) versus O(n), and it ignores the precondition — say both.) "Delete an interval instead?" (same three phases; the middle phase may emit up to two clipped pieces.)
-- After **Minimum Arrows**: "Maximum number of non-overlapping balloons?" (identical greedy — arrows and selections are the same count when touching counts as overlap.) "Minimum intervals to remove to make the rest non-overlapping?" (n minus the maximum non-overlapping count.)
-- Anywhere: "What if endpoints were exclusive?" (every `<=` in the overlap tests tightens to `<` — restate the convention before coding.)
+- After **Merge Intervals**: "Intervals arrive as a stream; merge as they come?" Use an ordered structure or an interval tree. Each insert is an Insert Interval. "Total covered length instead of the merged list?" Sum `end - start` over the merged blocks.
+- After **Insert Interval**: "Why not append and sort again?" It costs O(n log n) instead of O(n), and it ignores the precondition. Say both. "Delete an interval instead?" Use the same three phases. The middle phase can emit up to two clipped pieces.
+- After **Minimum Arrows**: "Largest number of non-overlapping balloons?" The greedy is the same. Arrows and selections give the same count when touching counts as overlap. "Fewest intervals to remove so the rest do not overlap?" Use n minus the largest non-overlapping count.
+- Anywhere: "What if endpoints were exclusive?" Every `<=` in the overlap tests becomes `<`. State the rule again before you code.
 
 ## The task
 
-Three interval classics. All intervals are closed: `[start, end]` includes both endpoints. Return new arrays; don't rely on the tests reading your mutations of the inputs.
+You write three interval functions. Every interval `[start, end]` includes both endpoints. Return new arrays. The tests do not read your changes to the inputs.
 
-### `mergeIntervals(intervals)`
+1. `mergeIntervals(intervals)` takes intervals `[start, end]` with `start <= end`, in any order.
+2. The input can hold overlapping, touching, nested or duplicate intervals.
+3. Merge every group of overlapping intervals. Return the merged list in order of start. Use O(n log n) time.
+4. Touching intervals merge: `[1,4]` and `[4,5]` become `[1,5]`.
+5. `insertInterval(intervals, newInterval)` takes `intervals` in order of start, with no two overlapping.
+6. Insert `newInterval`, also a closed `[start, end]`, and merge as needed.
+7. Return a list in order of start with no overlaps. Use one O(n) pass; do not sort.
+8. Touching merges here too: `[5,7]` inserted into `[[1,5]]` gives `[[1,7]]`.
+9. `minArrows(points)` takes balloons, where `points[i] = [xstart, xend]` is an inclusive horizontal span.
+10. One arrow at position `x` bursts every balloon with `xstart <= x <= xend`.
+11. Return the smallest number of arrows that bursts all balloons. Return `0` for an empty array. Use O(n log n) time.
+12. When one balloon ends where another starts, one arrow at that shared point bursts both.
 
-Given an array of intervals `[start, end]` (`start <= end`, arbitrary order, possibly overlapping, touching, nested, or duplicated), merge every group of overlapping intervals and return the merged list **sorted by start**. Touching intervals merge: `[1,4]` and `[4,5]` become `[1,5]`. O(n log n) time.
+Edge cases:
+
+- `mergeIntervals`: an empty input returns `[]`. Handle a single interval, an interval that contains others and duplicate intervals.
+- `mergeIntervals`: handle zero-width intervals such as `[5,5]`, unordered input and negative coordinates.
+- `insertInterval`: handle an empty `intervals` and a `newInterval` before or after everything, with no merge.
+- `insertInterval`: handle a `newInterval` that absorbs the whole list, one inside an existing interval and a touch at either endpoint.
+- `minArrows`: an empty array returns `0`, and one balloon returns `1`. Balloons that share one point need `1`.
+- `minArrows`: handle chains of touching balloons, nested balloons and negative or large coordinates. Sort numerically.
 
 ```js
-mergeIntervals([[1, 3], [2, 6], [8, 10], [15, 18]]); // [[1,6],[8,10],[15,18]]
-mergeIntervals([[1, 4], [4, 5]]);                    // [[1,5]]
-mergeIntervals([[1, 10], [2, 3], [4, 5]]);           // [[1,10]]
-mergeIntervals([]);                                  // []
-```
+mergeIntervals([[1, 3], [2, 6],
+  [8, 10], [15, 18]]);
+// [[1, 6], [8, 10], [15, 18]]
+mergeIntervals([[1, 4], [4, 5]]);
+// [[1, 5]]
+mergeIntervals([[1, 10], [2, 3], [4, 5]]);
+// [[1, 10]]
+mergeIntervals([]);  // []
 
-Edge cases: empty input (`[]`), a single interval, an interval fully containing others, duplicate intervals, zero-width intervals (`[5,5]`), unsorted input with negative coordinates.
-
-### `insertInterval(intervals, newInterval)`
-
-`intervals` is sorted by start and pairwise non-overlapping. Insert `newInterval` (also `[start, end]`, closed) and merge as needed, returning a list that is again sorted by start and non-overlapping. Touching merges here too: inserting `[5,7]` into `[[1,5]]` yields `[[1,7]]`. Do it in a single O(n) pass — re-sorting defeats the point.
-
-```js
 insertInterval([[1, 3], [6, 9]], [2, 5]);
-// [[1,5],[6,9]]
+// [[1, 5], [6, 9]]
+insertInterval([[1, 2], [3, 5], [6, 7],
+  [8, 10], [12, 16]], [4, 8]);
+// [[1, 2], [3, 10], [12, 16]]
+insertInterval([], [5, 7]);
+// [[5, 7]]
+insertInterval([[1, 5]], [2, 3]);
+// [[1, 5]] (fully contained)
+insertInterval([[1, 5]], [5, 7]);
+// [[1, 7]]
 
-insertInterval([[1, 2], [3, 5], [6, 7], [8, 10], [12, 16]], [4, 8]);
-// [[1,2],[3,10],[12,16]]
-
-insertInterval([], [5, 7]);        // [[5,7]]
-insertInterval([[1, 5]], [2, 3]);  // [[1,5]]  (fully contained)
+minArrows([[10, 16], [2, 8],
+  [1, 6], [7, 12]]);                 // 2
+minArrows([[1, 2], [3, 4], [5, 6]]); // 3
+minArrows([[1, 2], [2, 3],
+  [3, 4], [4, 5]]);                  // 2
+minArrows([]);                       // 0
 ```
-
-Edge cases: empty `intervals`, `newInterval` before everything / after everything (no merging), `newInterval` swallowing the whole list, `newInterval` fully inside an existing interval, touching at either endpoint.
-
-### `minArrows(points)`
-
-`points[i] = [xstart, xend]` is a balloon's inclusive horizontal span. One arrow shot at position `x` bursts every balloon with `xstart <= x <= xend`. Return the minimum number of arrows needed to burst all balloons; `0` for an empty array. A balloon ending exactly where another starts can be burst by one arrow at that shared coordinate. O(n log n) time.
-
-```js
-minArrows([[10, 16], [2, 8], [1, 6], [7, 12]]); // 2
-minArrows([[1, 2], [3, 4], [5, 6]]);            // 3
-minArrows([[1, 2], [2, 3], [3, 4], [4, 5]]);    // 2
-minArrows([]);                                  // 0
-```
-
-Edge cases: empty array (`0`), one balloon (`1`), all balloons sharing a common point (`1`), chains of touching balloons, nested balloons, negative and large coordinates (sort numerically, not lexicographically).

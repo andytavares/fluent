@@ -1,29 +1,33 @@
-# Divide & Conquer
+## What you build
 
-## What you'll learn
-
-Building on the linked-list surgery from Linked List and the tree recursion from Binary Search Tree, this concept covers divide & conquer as a design recipe: split the input in half, solve each half recursively, and combine the results in linear time. You'll build a height-balanced BST from a sorted array, merge-sort a linked list in place, and merge `k` sorted lists in O(N log k) — three problems where picking the *right middle* and the *right combine step* is the whole solution.
+You write `sortedArrayToBST`, `sortList` and `mergeKLists`. In each one, the right middle and the right combine step are the whole solution. This lesson builds on **Linked List** and **Binary Search Tree**.
 
 ## Key concepts
 
-Divide & conquer has three moves: **divide** (split the input, usually at the middle), **conquer** (recurse on each part), **combine** (stitch the sub-answers together). When the split is balanced and the combine is linear, the recurrence `T(n) = 2T(n/2) + O(n)` gives O(n log n) — that's merge sort. When the combine is O(1), `T(n) = 2T(n/2) + O(1)` gives O(n) — that's building a tree from a sorted array.
+### Divide and conquer has three moves
 
-### Node representations (used by the tests)
+Divide splits the input, usually at the middle. Conquer recurses on each part. Combine joins the sub-answers.
+
+When the split is balanced and the combine is linear, `T(n) = 2T(n/2) + O(n)` gives O(n log n). That is merge sort. When the combine is O(1), `T(n) = 2T(n/2) + O(1)` gives O(n). That is building a tree from a sorted array.
+
+### The tests use plain-object nodes
+
+A binary tree node is `{ val, left, right }`, and an absent child is `null`. A linked-list node is `{ val, next }`, and the last node has `next: null`. You do not need classes; object literals create the nodes.
 
 ```js
-// binary tree node                  // linked list node
-{ val, left, right }                 { val, next }
-// absent children are null          // last node has next: null
+// Binary tree node
+{ val, left, right }
+// Linked-list node
+{ val, next }
 ```
 
-Plain objects, no classes required — create them with object literals.
+### Pick the middle of an array by index
 
-### The middle of an array: pick it, don't search it
-
-A sorted array becomes a height-balanced BST by making the **middle element the root** and recursing on the two halves:
+To turn a sorted array into a height-balanced BST, make the middle element the root. Then recurse on the two halves.
 
 ```js
-function build(lo, hi) {            // inclusive bounds into nums
+// Inclusive bounds into nums
+function build(lo, hi) {
   if (lo > hi) return null;
   const mid = (lo + hi) >> 1;
   return {
@@ -34,51 +38,61 @@ function build(lo, hi) {            // inclusive bounds into nums
 }
 ```
 
-The BST property is free (everything left of `mid` is smaller, everything right is bigger — the array is sorted), and balance is free too: the halves differ in size by at most one, so subtree heights differ by at most one at every node. Recurse on index bounds, not on `slice()` copies — slicing turns O(n) into O(n log n) and burns memory.
+The BST property comes free: the array is sorted, so the values left of `mid` are smaller and the values right of it are larger. Balance comes free too. The halves differ in size by at most one, so subtree heights differ by at most one at every node. Recurse on index bounds, not on copied slices. Slicing turns O(n) into O(n log n) and wastes memory.
 
-### The middle of a linked list: fast/slow, then cut
+### Find the middle of a list with fast and slow pointers, then cut
 
-Lists have no index. Find the middle with two pointers — `slow` moves one step, `fast` moves two — then **cut the list** so the halves are independent:
+A list has no index. Move `slow` one step and `fast` two steps. Then cut the list, so the two halves are independent.
 
 ```js
-let slow = head, fast = head.next;   // fast head-start → slow stops at first-half tail
-while (fast !== null && fast.next !== null) {
+// fast starts ahead, so slow stops
+// at the tail of the first half
+let slow = head, fast = head.next;
+while (fast && fast.next) {
   slow = slow.next;
   fast = fast.next.next;
 }
 const mid = slow.next;
-slow.next = null;                    // cut! without this the recursion never shrinks
+// Cut: without it the input never shrinks
+slow.next = null;
 ```
 
-Starting `fast` at `head.next` makes a 2-node list split into 1 + 1 (with `fast = head` it would split into 2 + 0 and recurse forever).
+When `fast` starts at `head.next`, a 2-node list splits into 1 + 1. With `fast = head`, it splits into 2 + 0 and recurses forever.
 
-### The combine step: merging two sorted lists
+### The combine step merges two sorted lists
 
-Merge sort's combine is the Merge Two Sorted Lists routine from the Linked List concept — a dummy head plus a tail pointer, always appending the smaller front node. It relinks existing nodes; nothing is allocated except the dummy:
+The combine step of merge sort is the Merge Two Sorted Lists routine from **Linked List**. It uses a dummy head and a tail pointer, and it always appends the smaller front node. It relinks the existing nodes and allocates only the dummy.
 
 ```js
 function mergeTwo(a, b) {
   const dummy = { val: 0, next: null };
   let tail = dummy;
-  while (a !== null && b !== null) {
-    if (a.val <= b.val) { tail.next = a; a = a.next; }
-    else                { tail.next = b; b = b.next; }
+  while (a && b) {
+    if (a.val <= b.val) {
+      tail.next = a; a = a.next;
+    } else {
+      tail.next = b; b = b.next;
+    }
     tail = tail.next;
   }
-  tail.next = a !== null ? a : b;    // splice the leftover run
+  // Splice the leftover run
+  tail.next = a ? a : b;
   return dummy.next;
 }
 ```
 
-### k lists: merge pairwise, not sequentially
+### Merge k lists in pairs, not one by one
 
-Merging list 1 into list 2, then the result into list 3, and so on re-walks the early lists over and over — O(N·k) total. Divide & conquer instead: merge lists **in pairs**, halving the count each round. Every node is touched once per round and there are ⌈log₂ k⌉ rounds → O(N log k).
+If you merge list 1 into list 2, then the result into list 3, you walk the early lists again and again: O(N·k) in total. Merge the lists in pairs instead, and halve the count each round. Each round touches every node once, and there are ⌈log₂ k⌉ rounds, so the total is O(N log k).
 
 ```js
 while (lists.length > 1) {
   const merged = [];
-  for (let i = 0; i < lists.length; i += 2) {
-    merged.push(i + 1 < lists.length ? mergeTwo(lists[i], lists[i + 1]) : lists[i]);
+  const n = lists.length;
+  for (let i = 0; i < n; i += 2) {
+    const a = lists[i];
+    const b = lists[i + 1] ?? null;
+    merged.push(mergeTwo(a, b));
   }
   lists = merged;
 }
@@ -95,148 +109,179 @@ while (lists.length > 1) {
 
 ## Watch out
 
-- **Cut the list.** Forgetting `slow.next = null` before recursing in Sort List leaves both halves sharing a tail — the recursion never reaches the base case and blows the stack.
-- **Fast pointer head start.** `fast = head.next` (not `head`) makes the 2-node split 1 + 1. Get this wrong and 2-node lists recurse forever.
-- **Recurse on bounds, not slices.** `nums.slice(lo, mid)` per level costs O(n) allocation per level — O(n log n) total for a problem that should be O(n).
-- **Either middle is fine for even lengths** in sortedArrayToBST — `(lo + hi) >> 1` or `(lo + hi + 1) >> 1` both yield a valid height-balanced BST. Answers aren't unique; tests check balance and ordering, not exact shape.
-- **Relink, don't rebuild.** Sort List and Merge k Lists are pointer-surgery problems: reuse the existing nodes. Copying values into an array, sorting, and building a new list dodges the entire point (and the tests check node identity).
-- **Empty inputs**: `sortList(null)`, `mergeKLists([])`, and `mergeKLists([null, null])` all return `null`; a single-node list is already sorted (base case: `head === null || head.next === null`).
+- If Sort List does not set `slow.next = null`, both halves share a tail. The recursion never ends and overflows the stack.
+- With `fast = head` in place of `head.next`, a 2-node list splits 2 + 0. It recurses forever.
+- A `slice` per level allocates O(n) per level. The total becomes O(n log n) for an O(n) problem.
+- For an even length, either middle works in `sortedArrayToBST`. Both give a valid height-balanced BST.
+- Answers are not unique. The tests check balance and order, not one exact shape.
+- Sort List and Merge k Lists must reuse the existing nodes. The tests check node identity.
+- If you copy values into an array, sort it and build a new list, you miss the point and fail the tests.
+- `sortList(null)`, `mergeKLists([])` and `mergeKLists([null, null])` all return `null`.
+- A single-node list is already sorted. The base case is `head === null || head.next === null`.
 
 ## Problem walkthroughs
 
 ### Convert Sorted Array to Binary Search Tree ★
 
-**Problem.** Given an array of distinct integers sorted ascending, build a **height-balanced** BST containing exactly those values (at every node, subtree heights differ by at most 1). Return the root, or `null` for an empty array. Any valid balanced arrangement is accepted.
+**Problem.** Given an array of distinct integers sorted ascending, build a height-balanced BST with exactly those values. At every node, the subtree heights differ by at most 1. Return the root, or `null` for an empty array. Any valid balanced arrangement passes.
 
 **Example.**
 
-    [-10,-3,0,5,9] → one valid answer:
-          0
-         / \
-       -3   9
-       /   /
-    -10   5
+```text
+[-10,-3,0,5,9] → one valid answer:
+      0
+     / \
+   -3   9
+   /   /
+-10   5
+```
 
 **Steps.**
-1. Recurse on inclusive index bounds `(lo, hi)`; base case `lo > hi` returns `null`.
+1. Recurse on inclusive index bounds `(lo, hi)`. The base case `lo > hi` returns `null`.
 2. Take `mid = (lo + hi) >> 1` and make `nums[mid]` the root of this subtree.
 3. Build `left` from `(lo, mid - 1)` and `right` from `(mid + 1, hi)`.
-4. Correctness: sortedness makes the BST property automatic; halving makes the two subtree sizes differ by at most 1, which bounds the height difference by 1 at every node — height-balance by induction.
+4. Correctness: the sorted order makes the BST property automatic. Halving keeps the two subtree sizes within 1, so by induction the heights stay within 1 at every node.
 
-**Complexity.** O(n) time (one node built per element) / O(log n) recursion depth.
+**Complexity.** O(n) time, one node per element / O(log n) recursion depth.
 
 ### Sort List ★
 
-**Problem.** Sort a singly linked list ascending in O(n log n) time, relinking the existing nodes (no value copying, no arrays). Return the new head.
+**Problem.** Sort a singly linked list ascending in O(n log n) time. Relink the existing nodes; do not copy values and do not use arrays. Return the new head.
 
 **Example.**
 
-    4 → 2 → 1 → 3        →  1 → 2 → 3 → 4
-    -1 → 5 → 3 → 4 → 0   →  -1 → 0 → 3 → 4 → 5
+```text
+4 → 2 → 1 → 3
+→ 1 → 2 → 3 → 4
+-1 → 5 → 3 → 4 → 0
+→ -1 → 0 → 3 → 4 → 5
+```
 
 **Steps.**
-1. Base case: a list of 0 or 1 nodes is sorted — return it.
-2. Divide: fast/slow with `fast = head.next`; after the loop `slow` is the first-half tail. Set `mid = slow.next`, then cut with `slow.next = null`.
-3. Conquer: `sortList(head)` and `sortList(mid)` recursively.
+1. Base case: a list of 0 or 1 nodes is sorted. Return it.
+2. Divide: run fast and slow pointers with `fast = head.next`. After the loop, `slow` is the tail of the first half. Set `mid = slow.next`, then cut with `slow.next = null`.
+3. Conquer: call `sortList(head)` and `sortList(mid)`.
 4. Combine: merge the two sorted halves with the dummy-head merge routine.
-5. Merge sort suits lists perfectly: merging needs only pointer rewires (no random access), which is exactly why quicksort/heapsort — array workhorses — don't transfer here.
+5. Merge sort suits lists, because a merge needs only pointer rewires and no random access. That is why quicksort and heapsort, the array workhorses, do not transfer here.
 
-**Complexity.** O(n log n) time / O(log n) recursion stack; no auxiliary node allocation.
+**Complexity.** O(n log n) time / O(log n) recursion stack, with no extra nodes.
 
 ### Construct Quad Tree
 
-**Problem.** Given an `n × n` binary grid (`n` a power of 2), build its quad tree: each node is `{ isLeaf, val, topLeft, topRight, bottomLeft, bottomRight }`. A node is a leaf iff its whole region is one uniform value; otherwise split the region into four `n/2 × n/2` quadrants and recurse.
+**Problem.** Given an `n × n` binary grid, where `n` is a power of 2, build its quad tree. Each node is `{ isLeaf, val, topLeft, topRight, bottomLeft, bottomRight }`. A node is a leaf if and only if its whole region has one value. Otherwise, split the region into four `n/2 × n/2` quadrants and recurse.
 
 **Example.**
 
-    [[0,1],
-     [1,0]] → root { isLeaf: false } with four leaf children 0,1,1,0
+```text
+[[0,1],
+ [1,0]]
+→ root { isLeaf: false }
+  with four leaf children 0,1,1,0
+```
 
 **Steps.**
-1. Recurse on `(row, col, size)` describing a square region.
-2. Base case `size === 1`: a leaf carrying that cell's value.
+1. Recurse on `(row, col, size)`, which describes a square region.
+2. Base case `size === 1`: return a leaf with the value of that cell.
 3. Build the four quadrant subtrees at `size / 2`.
-4. Combine: if all four children are leaves with the same `val`, collapse — return one leaf with that value (discarding the children). Otherwise return an internal node holding the four.
-5. The collapse-on-combine is the elegance: uniformity checks happen bottom-up for free instead of scanning each region top-down.
+4. Combine: if all four children are leaves with the same `val`, collapse them into one leaf with that value. Otherwise return an internal node that holds the four.
+5. The collapse at combine time is the elegant part. The uniformity checks happen bottom-up for free, with no top-down scan of each region.
 
 **Complexity.** O(n² log n) time naively, O(n²) with prefix-sum uniformity checks / O(log n) recursion depth.
 
 ### Merge k Sorted Lists ★
 
-**Problem.** Given an array `lists` of `k` sorted linked-list heads (entries may be `null`, the array may be empty), merge them into one sorted list, reusing the existing nodes. Return its head, or `null` if there are no nodes at all.
+**Problem.** Given an array `lists` of `k` sorted linked-list heads, merge them into one sorted list that reuses the existing nodes. Entries can be `null`, and the array can be empty. Return the head, or `null` if there are no nodes.
 
 **Example.**
 
-    [[1,4,5],[1,3,4],[2,6]] → 1 → 1 → 2 → 3 → 4 → 4 → 5 → 6
-    []                      → null
-    [null]                  → null
+```text
+[[1,4,5],[1,3,4],[2,6]]
+→ 1 → 1 → 2 → 3 → 4 → 4 → 5 → 6
+[]     → null
+[null] → null
+```
 
 **Steps.**
-1. Write (or reuse) `mergeTwo(a, b)` — the dummy-head two-list merge; it handles `null` inputs naturally.
-2. Round-based reduction: while more than one list remains, merge them in pairs (`i` with `i + 1`, stepping by 2; an odd list at the end passes through unmerged).
-3. Each round halves the list count; after ⌈log₂ k⌉ rounds one list remains — return it (or `null` for an empty input).
-4. Why not merge sequentially? The first list's nodes get re-walked in all `k - 1` merges: O(N·k). Pairwise, each node participates in one merge per round: O(N log k).
-5. Alternative with the same bound: a min-heap of list heads — pop the smallest, push its successor. Worth mentioning in interviews; the pairwise version needs no extra data structure.
+1. Write or reuse `mergeTwo(a, b)`, the dummy-head merge of two lists. It handles `null` inputs without extra code.
+2. Reduce in rounds. While more than one list remains, merge `i` with `i + 1`, stepping by 2. An odd list at the end passes through unmerged.
+3. Each round halves the list count. After ⌈log₂ k⌉ rounds one list remains. Return it, or `null` for an empty input.
+4. Why not merge one by one? The nodes of the first list take part in all `k - 1` merges: O(N·k). In pairs, each node takes part in one merge per round: O(N log k).
+5. A min-heap of list heads gives the same bound: pop the smallest, push its successor. Mention it in interviews; the pairwise version needs no extra data structure.
 
-**Complexity.** O(N log k) time (`N` = total nodes) / O(1) extra space with the iterative pairwise loop.
+**Complexity.** O(N log k) time, where `N` is the total node count / O(1) extra space with the iterative pairwise loop.
 
 ## Interview follow-ups
 
 After Convert Sorted Array to BST:
-- "Sorted **linked list** instead of an array?" — either convert to an array first (O(n) space), or build bottom-up with an inorder simulation: recurse on counts, consume list nodes in order — O(n) time, O(log n) space.
-- "Why is the result not unique?" — even-length ranges have two middles; both choices are balanced. Constraints like "always take the left middle" pin it down.
+- "A sorted linked list in place of an array?" Convert it to an array first, for O(n) space. Or build bottom-up with an inorder simulation: recurse on counts and consume list nodes in order. That takes O(n) time and O(log n) space.
+- "Why is the result not unique?" An even-length range has two middles, and both choices are balanced. A rule like "always take the left middle" fixes one answer.
 
 After Sort List:
-- "Can you do O(1) space, not O(log n)?" — bottom-up merge sort: iterate run lengths 1, 2, 4, …, splicing merged runs back in place; no recursion at all.
-- "Why not quicksort?" — no random access for pivot partitioning benefits, and worst-case O(n²) stays; merge sort's sequential access is exactly what lists provide.
+- "Can you use O(1) space, not O(log n)?" Use bottom-up merge sort. Iterate run lengths 1, 2, 4, … and splice the merged runs back in place, with no recursion.
+- "Why not quicksort?" A list has no random access to help pivot partitioning, and the O(n²) worst case stays. Merge sort needs only sequential access, which a list gives.
 
 After Merge k Sorted Lists:
-- "Compare pairwise merging vs a min-heap." — both O(N log k); the heap uses O(k) extra space and shines when lists stream in incrementally; pairwise is simpler and allocation-free.
-- "What if k is huge but lists are tiny?" — the log k factor dominates; the heap version's O(k) build cost matters, and pairwise merging stays cache-friendly.
+- "Compare pairwise merging with a min-heap." Both are O(N log k). The heap uses O(k) extra space and works well when lists arrive over time. The pairwise version is simpler and allocates nothing.
+- "What if k is huge but the lists are tiny?" The log k factor dominates. The O(k) build cost of the heap matters, and pairwise merging stays cache-friendly.
 
 ## The task
 
-Three divide & conquer builds over linked structures. Representations: a binary tree node is a plain object `{ val, left, right }` (absent children are `null`); a linked-list node is `{ val, next }` (the last node's `next` is `null`).
+Write three divide-and-conquer builds over linked structures. A binary tree node is `{ val, left, right }`, and an absent child is `null`. A linked-list node is `{ val, next }`, and the last node's `next` is `null`.
 
-### `sortedArrayToBST(nums)`
+1. `sortedArrayToBST(nums)` takes an array of distinct integers in ascending order. It returns the root of a height-balanced binary search tree with exactly those values.
+2. In that tree, the left subtree of every node holds only smaller values. The right subtree holds only larger values.
+3. At every node, the two subtree heights differ by at most 1.
+4. `sortList(head)` sorts a singly linked list of integers ascending in O(n log n) time. It returns the new head.
+5. `sortList` relinks the existing nodes. Do not allocate new nodes or copy values into an array.
+6. `mergeKLists(lists)` takes an array of `k` sorted list heads. It merges them into one sorted list and returns its head.
+7. `mergeKLists` reuses the existing nodes and allocates no new nodes.
+8. `mergeKLists` takes O(N log k) time, where `N` is the total node count. Merge the lists in pairs, in rounds.
 
-`nums` is an array of distinct integers sorted in ascending order. Return the root of a **height-balanced** binary search tree containing exactly the values of `nums`: at every node, the left subtree holds only smaller values, the right subtree only larger ones, and the two subtree heights differ by at most 1. Return `null` for an empty array. Any valid height-balanced BST is accepted — answers are not unique.
+Edge cases:
 
-```js
-sortedArrayToBST([1, 2, 3]);
-// { val: 2, left: { val: 1, left: null, right: null },
-//           right: { val: 3, left: null, right: null } }
+- `sortedArrayToBST([])` returns `null`. A single element becomes a leaf.
+- For two elements, either one can be the root. Any valid height-balanced BST passes, because answers are not unique.
+- `sortedArrayToBST` handles negative values and large arrays. Unbalanced insertion fails the balance check.
+- `sortList(null)` returns `null`. A single node comes back as the same node.
+- For two nodes, the split must make progress: 1 + 1, not 2 + 0.
+- `sortList` handles duplicates, negative values, sorted lists and reverse-sorted lists.
+- The tests check that every node in the result of `sortList` and `mergeKLists` is an input node.
+- `mergeKLists([])` returns `null`. If all entries are `null`, it returns `null`.
+- `mergeKLists` handles `null` entries mixed with real lists, and duplicates across lists.
+- A single list comes back unchanged. `k` one-node lists merge into one sorted list.
 
-sortedArrayToBST([]);   // null
-sortedArrayToBST([7]);  // { val: 7, left: null, right: null }
-```
-
-Edge cases: empty array (`null`), single element (a leaf), two elements (either one may be the root), negative values, larger arrays where naive unbalanced insertion would fail the balance check.
-
-### `sortList(head)`
-
-`head` is the head of a singly linked list of integers (possibly `null`). Sort the list ascending in **O(n log n)** time and return the new head. Relink the **existing** nodes — do not allocate new nodes or copy values into an array; the tests verify that every node in the result is one of the input nodes.
-
-```js
-// 4 → 2 → 1 → 3
-sortList(head);        // 1 → 2 → 3 → 4
-
-sortList(null);        // null
-// single node: returned as-is
-```
-
-Edge cases: `null` (empty list), a single node, two nodes (the split must make progress: 1 + 1, not 2 + 0), duplicates, negative values, an already-sorted list, a reverse-sorted list.
-
-### `mergeKLists(lists)`
-
-`lists` is an array of `k` sorted linked-list heads; individual entries may be `null` and the array itself may be empty. Merge all of them into one sorted linked list, reusing the existing nodes (no new node allocation), and return its head — `null` if there are no nodes at all. Target **O(N log k)** where `N` is the total node count: merge the lists pairwise in rounds rather than folding them in one by one.
+In the examples, `list(...)` builds a linked list from its values, and `→` shows the result.
 
 ```js
-// lists: [1→4→5, 1→3→4, 2→6]
-mergeKLists(lists);    // 1 → 1 → 2 → 3 → 4 → 4 → 5 → 6
+// Only one balanced BST exists:
+// { val: 2,
+//   left: { val: 1, ... },
+//   right: { val: 3, ... } }
+sortedArrayToBST([1, 2, 3])
+sortedArrayToBST([])   // null
+// { val: 7, left: null, right: null }
+sortedArrayToBST([7])
 
-mergeKLists([]);       // null
-mergeKLists([null]);   // null
+sortList(list(4, 2, 1, 3))
+// 1 → 2 → 3 → 4
+sortList(list(-1, 5, 3, 4, 0, 3))
+// -1 → 0 → 3 → 3 → 4 → 5
+sortList(list(2, 1))   // 1 → 2
+sortList(null)         // null
+// A single node comes back as-is
+sortList(list(5))      // 5
+
+mergeKLists([
+  list(1, 4, 5),
+  list(1, 3, 4),
+  list(2, 6),
+])
+// 1 → 1 → 2 → 3 → 4 → 4 → 5 → 6
+mergeKLists([
+  null, list(2, 4), null, list(1, 3),
+])
+// 1 → 2 → 3 → 4
+mergeKLists([])                 // null
+mergeKLists([null])             // null
+mergeKLists([null, null, null]) // null
 ```
-
-Edge cases: empty `lists` array, all entries `null`, some entries `null` mixed with real lists, a single list (returned as-is), `k` lists of one node each, duplicate values across lists.

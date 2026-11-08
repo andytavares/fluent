@@ -1,31 +1,39 @@
-# Tree BFS
+## What you build
 
-## What you'll learn
-
-Tree DFS gave you recursion down paths; this concept gives you the other traversal: breadth-first, level by level, with a queue. The one idea that matters is the **level-size snapshot** — freeze the queue size before draining a level so you know exactly where one depth ends and the next begins. With that loop in hand, level order traversal, right side view, per-level averages, and zigzag ordering are each a one-line variation on the same template.
+You write three breadth-first traversals of a binary tree: level order, right side view and zigzag level order. Each one visits the tree level by level with a queue. This lesson builds on **Binary Tree**.
 
 ## Key concepts
 
-### The queue and the level-size snapshot
+### BFS visits nodes in order of distance from the root
 
-BFS visits nodes in order of distance from the root: the root, then both its children, then all four grandchildren, and so on. Java's `ArrayDeque` gives O(1) offer/poll, so it's the natural queue — but it does *not* tell you where level boundaries fall on its own. The fix: at the top of each outer iteration, snapshot how many nodes are currently queued via `queue.size()`. That count is exactly one complete level, because every node queued so far is from the current depth and everything you push while draining it is from the next.
+Breadth-first search (BFS) visits the root, then its children, then its grandchildren. A queue gives this order. Depth-first search follows one path down; BFS covers one whole level before the next.
+
+### A level-size snapshot marks where each level ends
+
+A queue alone does not show where one level ends. At the top of each outer loop, store the queue size. That count is exactly one level. Every node in the queue is at the current depth. Each child you push belongs to the next depth.
 
 ```java
-public static List<List<Integer>> levelOrder(TreeNode root) {
-    var result = new ArrayList<List<Integer>>();
+static List<List<Integer>> levelOrder(
+        TreeNode root) {
+    List<List<Integer>> result =
+        new ArrayList<>();
     if (root == null) return result;
-
-    var queue = new ArrayDeque<TreeNode>();
+    Deque<TreeNode> queue =
+        new ArrayDeque<>();
     queue.offer(root);
-
     while (!queue.isEmpty()) {
-        int levelSize = queue.size(); // snapshot: exactly one level
-        var level = new ArrayList<Integer>();
-        for (int i = 0; i < levelSize; i++) {
+        // levelSize nodes: one level
+        int levelSize = queue.size();
+        List<Integer> level =
+            new ArrayList<>();
+        for (int i = 0; i < levelSize;
+                i++) {
             TreeNode node = queue.poll();
             level.add(node.val);
-            if (node.left != null) queue.offer(node.left);
-            if (node.right != null) queue.offer(node.right);
+            if (node.left != null)
+                queue.offer(node.left);
+            if (node.right != null)
+                queue.offer(node.right);
         }
         result.add(level);
     }
@@ -33,89 +41,109 @@ public static List<List<Integer>> levelOrder(TreeNode root) {
 }
 ```
 
-Invariant: children offered during the inner loop increase `queue.size()`, but the `for` loop only runs `levelSize` times — fixed before any child is added — so they are never consumed as part of the current level. That's the whole trick.
+The invariant: the loop bound `levelSize` is fixed before the inner loop pushes any child. The inner loop never reads those children as part of the current level.
 
-### Every level problem is this template plus one line
+### Each level problem is the template plus one change
 
 | Problem | Change to the template |
 |---------|------------------------|
-| Level order traversal | none — collect each level list |
-| Right side view | keep only the value drained last in each level |
+| Level order traversal | none: collect each level list |
+| Right side view | keep only the last value of each level |
 | Average of levels | sum the level, divide by the snapshot size |
 | Zigzag level order | reverse the level list on odd depths |
 
-Recognize this in interviews: if the problem statement says "per level", "by depth", "visible from the side", or "top to bottom", reach for the snapshot loop before anything else.
+In an interview, look for "per level", "by depth", "visible from the side" or "top to bottom". These words point to the snapshot loop.
 
-### The queue in Java
+### A queue needs O(1) removal from the front
 
-Unlike JavaScript (no built-in deque, `Array.prototype.shift()` is O(n)) or Python's list `.pop(0)`, Java's `java.util.ArrayDeque` is a proper double-ended queue: `offer`/`poll` are both O(1), and it also supports `addFirst`/`addLast` — exactly what zigzag's direction flip needs if you want to build a level in reverse order without a separate reverse pass:
+`ArrayList.remove(0)` moves every remaining element, so it costs O(n) per call and O(n²) for the traversal. Two alternatives keep the traversal O(n).
 
 ```java
-var level = new ArrayDeque<Integer>();
-if (leftToRight) level.addLast(node.val);
-else             level.addFirst(node.val);
-// ... later: result.add(new ArrayList<>(level));
+// 1. ArrayDeque (used above): offer() to
+//    the tail, poll() from the head. Both
+//    are O(1).
+
+// 2. Level swap: hold the current level in
+//    one list, collect the children into
+//    the next one, then swap.
+List<TreeNode> current = List.of(root);
+while (!current.isEmpty()) {
+    List<TreeNode> next =
+        new ArrayList<>();
+    for (TreeNode node : current) {
+        if (node.left != null)
+            next.add(node.left);
+        if (node.right != null)
+            next.add(node.right);
+    }
+    current = next;
+}
 ```
 
-`ArrayDeque` also rejects `null` elements outright (`offer(null)` throws `NullPointerException`), which is why every enqueue here is guarded by `if (node.left != null)`.
+The level-swap form makes the snapshot implicit, because the whole list is one level. Many solutions to these problems use it.
 
-### Complexity of the flagship problems
+### Complexity of the main problems
 
 | Problem | Time | Space |
 |---------|------|-------|
-| Level Order Traversal | O(n) | O(w) queue, w = max level width |
+| Level Order Traversal | O(n) | O(w) |
 | Right Side View | O(n) | O(w) |
 | Zigzag Level Order | O(n) | O(w) |
 
-The queue peaks at the widest level — up to ⌈n/2⌉ nodes for a complete tree, so O(n) worst case.
-
-## vs other languages
-
-JavaScript has no built-in deque, so `levelOrder` there needs a head-index array or a level-swap trick to avoid O(n) `shift()` calls; Java's `ArrayDeque` makes that non-issue disappear entirely. Python's `collections.deque` plays the same role as `ArrayDeque` here (`popleft()` is O(1)). C++ has `std::queue` (usually backed by `std::deque`) with the same O(1) guarantees.
+`w` is the largest level width. The queue peaks at the widest level. A complete tree has up to ⌈n/2⌉ nodes in its last level, so the worst case is O(n).
 
 ## Watch out
 
-- **Snapshot before draining.** `for (int i = 0; i < queue.size(); i++)` re-reads a size that grows as you offer children — levels bleed into each other. Capture `int levelSize = queue.size()` first, then loop `i < levelSize`.
-- **Guard the empty tree.** Return the empty result before touching the queue; offering a `null` root crashes on `.left`.
-- **Right side view is not the right spine.** In the tree `1 → (2, 3)` with `2.left = 4` and nothing below `3`, the view is `[1, 3, 4]` — once the right side runs out of depth, a left-subtree node becomes visible. Walking `node.right` pointers gives the wrong answer; the last node per BFS level is always right.
-- **Zigzag reverses the collected level, not the queue.** Keep enqueueing left-then-right at every depth; flip only the output list (`Collections.reverse(level)` or build with `addFirst`). Reordering the queue corrupts every level below.
-- **Offer only non-null children.** `ArrayDeque.offer(null)` throws — always check `node.left != null` / `node.right != null` first.
+- `i < queue.size()` re-reads a size that grows as you push. Levels then mix. Store `levelSize` first.
+- `ArrayList.remove(0)` costs O(n) per call. Use `ArrayDeque`, or show the level-swap fix.
+- A `null` root in the queue crashes on `.left`. Return an empty list for an empty tree before you use the queue.
+- The right side view is not the right spine. Following `right` pointers misses left-subtree nodes that are visible below a short right side.
+- In the tree `1 → (2, 3)` with `2.left = 4`, the view is `[1, 3, 4]`. The last node of each BFS level is always correct.
+- Zigzag reverses the collected level, not the queue. Reordering the queue corrupts every level below it.
+- Push only non-null children. `ArrayDeque.offer(null)` throws a `NullPointerException`.
 
 ## Problem walkthroughs
 
 ### Binary Tree Level Order Traversal ★
 
-**Problem.** Given the root of a binary tree, return a list of lists: the node values at each depth, top to bottom, left to right within a level.
+**Problem.** Given the root of a binary tree, return a list of lists. Each inner list holds the values at one depth, top to bottom, left to right.
 
 **Example.**
 
-    tree 3 → (9, 20), 20 → (15, 7)  →  [[3], [9, 20], [15, 7]]
-    empty tree                       →  []
+```text
+3 → (9, 20), 20 → (15, 7)
+  → [[3], [9, 20], [15, 7]]
+empty tree → []
+```
 
 **Steps.**
-1. Return an empty result for a null root. Otherwise offer the root.
-2. While the queue is non-empty: snapshot `levelSize = queue.size()`, drain exactly that many nodes into a `level` list, offering each node's non-null children as you go.
-3. Add `level` to the result after the inner loop.
-4. The snapshot is the correctness argument: everything queued at the top of an iteration is one full level, and children land beyond that count.
+1. Return an empty list for a null root. Otherwise, put the root in the queue.
+2. While the queue is not empty, store `levelSize = queue.size()`. Remove exactly that many nodes into a `level` list. Push each node's non-null children as you go.
+3. After the inner loop, add `level` to the result.
+4. The snapshot is the proof of correctness. The queue at the top of an iteration is one full level, and children land after it.
 
-**Complexity.** O(n) time / O(w) space — each node is queued and drained exactly once.
+**Complexity.** O(n) time, O(w) space. Each node enters and leaves the queue exactly once.
 
 ### Binary Tree Right Side View ★
 
-**Problem.** Standing to the right of a binary tree, return the values you can see, top to bottom — the rightmost node at each depth.
+**Problem.** You stand to the right of a binary tree. Return the values you can see, top to bottom: the rightmost node at each depth.
 
 **Example.**
 
-    tree 1 → (2, 3), 2.right = 5, 3.right = 4  →  [1, 3, 4]
-    tree 1 → (2, 3), 2.left = 4 (3 is a leaf)  →  [1, 3, 4]
+```text
+1 → (2, 3), 2.right = 5, 3.right = 4
+  → [1, 3, 4]
+1 → (2, 3), 2.left = 4, 3 is a leaf
+  → [1, 3, 4]
+```
 
 **Steps.**
-1. Run the level loop; you don't need the `level` list — just the values.
-2. Inside the inner loop, when draining the node at position `i == levelSize - 1` (the last of the level), add its value to the result.
-3. Children are enqueued left-to-right, so within a level the queue preserves left-to-right order — the last drained node is the rightmost one at that depth, whichever subtree it lives in.
-4. Note the second example: the deepest visible node (`4`) hangs off the *left* child. That's why this is a BFS problem, not a walk down `right` pointers.
+1. Run the level loop. You do not need the `level` list, only the values.
+2. In the inner loop, add the value of the node at position `i == levelSize - 1`, the last of the level.
+3. Children enter the queue left to right, so the queue keeps left-to-right order within a level. The last node removed is the rightmost at that depth, in either subtree.
+4. In the second example, the deepest visible node (`4`) hangs off the left child. That is why this is a BFS problem, not a walk down `right` pointers.
 
-**Complexity.** O(n) time / O(w) space.
+**Complexity.** O(n) time, O(w) space.
 
 ### Average of Levels in Binary Tree
 
@@ -123,104 +151,91 @@ JavaScript has no built-in deque, so `levelOrder` there needs a head-index array
 
 **Example.**
 
-    tree 3 → (9, 20), 20 → (15, 7)  →  [3, 14.5, 11]
+```text
+3 → (9, 20), 20 → (15, 7)
+  → [3.0, 14.5, 11.0]
+```
 
 **Steps.**
-1. Same level loop; instead of collecting values, keep a running `double sum` across the inner loop.
-2. After draining the level, add `sum / levelSize` — the snapshot doubles as the divisor, which is exactly why you took it.
-3. Sum in a `long` (or `double`) accumulator if values could overflow `int` — `Integer.MAX_VALUE`-scale trees are a common follow-up.
+1. Use the same level loop. In place of the value list, keep a running `sum` in the inner loop.
+2. After the level, add `(double) sum / levelSize`. The snapshot is also the divisor.
+3. Sum into a `long` to avoid `int` overflow.
 
-**Complexity.** O(n) time / O(w) space.
+**Complexity.** O(n) time, O(w) space.
 
 ### Binary Tree Zigzag Level Order Traversal ★
 
-**Problem.** Return the level order traversal, but alternate direction per level: level 0 left-to-right, level 1 right-to-left, level 2 left-to-right, and so on.
+**Problem.** Return the level order traversal with alternating direction. Level 0 goes left to right, level 1 right to left, level 2 left to right, and so on.
 
 **Example.**
 
-    tree 3 → (9, 20), 20 → (15, 7)  →  [[3], [20, 9], [15, 7]]
+```text
+3 → (9, 20), 20 → (15, 7)
+  → [[3], [20, 9], [15, 7]]
+```
 
 **Steps.**
-1. Run the plain level loop, always enqueueing children left-then-right — traversal order never changes.
-2. Track a `leftToRight` boolean you flip each level.
-3. On right-to-left levels, reverse the collected `level` list before adding it (`Collections.reverse(level)`) — or, to skip the reverse, build the level with an `ArrayDeque` and call `addFirst` instead of `addLast`.
-4. The insight: zigzag is a *presentation* change, not a *traversal* change. Solutions that mess with queue order break because children of a reversed level would be discovered in the wrong order for the level after it.
+1. Run the plain level loop. Always push children left, then right. The traversal order never changes.
+2. Track the depth, or a `leftToRight` flag that you flip at each level.
+3. On right-to-left levels, call `Collections.reverse(level)` before you add it. To skip the reverse, build each level in an `ArrayDeque<Integer>` with `addFirst`.
+4. Zigzag is a change to the output, not to the traversal. If you change the queue order, the next level comes out in the wrong order.
 
-**Complexity.** O(n) time / O(w) space — the reverse costs O(levelSize), already paid for by draining it.
+**Complexity.** O(n) time, O(w) space. The reverse costs O(level size), which the level already costs.
 
 ## Interview follow-ups
 
-- After **Right Side View**: "Left side view?" (keep `i == 0` instead of the last). "Do it with DFS?" (visit right child first, record a value whenever `depth == result.size()` — the first arrival at each depth is the rightmost node.)
-- After **Level Order**: "Bottom-up level order?" (collect normally, reverse the result — don't traverse upside down.)
-- After **Zigzag**: "Avoid the reverse?" (build each level with `ArrayDeque.addFirst`/`addLast` based on direction.)
-- General: "Why BFS over DFS here?" — DFS with a depth parameter can group by level too (append to `result.get(depth)`), but BFS finds level boundaries without bookkeeping and its memory is bounded by tree *width* instead of *height*, which matters for deep, narrow trees.
+- After **Right Side View**: "Left side view?" Keep the node at `i == 0` in place of the last one.
+- After **Right Side View**: "Do it with DFS?" Visit the right child first. Record a value when `depth == result.size()`, because the first visit to each depth is the rightmost node.
+- After **Level Order**: "Bottom-up level order?" Collect the levels normally, then reverse the result.
+- After **Zigzag**: "Avoid the reverse?" Build each level with `addFirst` on a deque.
+- General: "Why BFS over DFS here?" DFS with a depth parameter can also group by level, with `result.get(depth)`. BFS finds level boundaries without this bookkeeping.
+- BFS memory depends on the tree width, and DFS memory on the tree height. For deep, narrow trees, this difference matters.
 
 ## The task
 
-Three level-by-level traversals over binary trees. Every tree node is:
+Write three level-by-level traversals of a binary tree.
+
+1. Each node is a `TreeNode` with `int val`, `TreeNode left` and `TreeNode right`.
+2. `left` and `right` are child nodes or `null`. An empty tree is `null`.
+3. `List<List<Integer>> levelOrder(TreeNode root)` returns a list of lists: the values at each depth.
+4. Depths go top to bottom. Values in a depth go left to right.
+5. `List<Integer> rightSideView(TreeNode root)` returns the rightmost value at each depth, top to bottom.
+6. `List<List<Integer>> zigzagLevelOrder(TreeNode root)` returns the level order with alternating direction.
+7. Level 0 goes left to right, level 1 right to left, and so on.
+8. Each function runs in O(n) time.
+
+Each function returns an empty list for an empty tree. A left-subtree node is visible from the right when no node at its depth is further right. A level with one node is the same in both directions.
+
+In the examples, `tree(...)` builds a tree from level-order values. `null` marks an absent child. The values omit the children of absent nodes.
 
 ```java
-static class TreeNode {
-    int val;
-    TreeNode left;
-    TreeNode right;
-    TreeNode(int val) { this.val = val; }
-    TreeNode(int val, TreeNode left, TreeNode right) {
-        this.val = val; this.left = left; this.right = right;
-    }
-}
+levelOrder(
+    tree(3, 9, 20, null, null, 15, 7));
+// [[3], [9, 20], [15, 7]]
+levelOrder(tree(1));
+// [[1]]
+levelOrder(tree(1, null, 2, null, 3));
+// [[1], [2], [3]]
+levelOrder(null);
+// []
+
+rightSideView(
+    tree(1, 2, 3, null, 5, null, 4));
+// [1, 3, 4]
+// 2.left = 4, and 3 is a leaf:
+rightSideView(tree(1, 2, 3, 4));
+// [1, 3, 4]
+rightSideView(tree(1, 2, null, 3));
+// [1, 2, 3]
+rightSideView(null);
+// []
+
+zigzagLevelOrder(
+    tree(3, 9, 20, null, null, 15, 7));
+// [[3], [20, 9], [15, 7]]
+zigzagLevelOrder(
+    tree(1, 2, 3, 4, 5, 6, 7));
+// [[1], [3, 2], [4, 5, 6, 7]]
+zigzagLevelOrder(null);
+// []
 ```
-
-`left`/`right` are child nodes or `null`; an empty tree is `null` itself. All three methods must run in O(n) time.
-
-```java
-// The tree used in the samples below:
-//        3
-//       / \
-//      9  20
-//         / \
-//        15  7
-TreeNode t = new TreeNode(3,
-    new TreeNode(9),
-    new TreeNode(20, new TreeNode(15), new TreeNode(7)));
-```
-
-### `levelOrder(TreeNode root)`
-
-Return a list of lists: the node values at each depth, top to bottom, left to right within each level. An empty tree returns an empty list.
-
-```java
-levelOrder(t);                       // [[3], [9, 20], [15, 7]]
-levelOrder(new TreeNode(1));         // [[1]]
-levelOrder(null);                    // []
-```
-
-Edge cases: empty tree, single node, skewed trees (every level has one node), negative values.
-
-### `rightSideView(TreeNode root)`
-
-Return the values visible from the right side of the tree, top to bottom — the rightmost node at each depth. A node in a *left* subtree is visible when nothing at its depth exists further right. An empty tree returns an empty list.
-
-```java
-rightSideView(t);     // [3, 20, 7]
-rightSideView(null);  // []
-
-// 1 → (2, 3), where 2.left = 4 and 3 is a leaf: depth 2 only contains 4
-TreeNode u = new TreeNode(1,
-    new TreeNode(2, new TreeNode(4), null),
-    new TreeNode(3));
-rightSideView(u);     // [1, 3, 4]
-```
-
-Edge cases: empty tree, single node, right-only and left-only chains, deeper nodes hanging off left subtrees (the `[1, 3, 4]` case above — do not just follow `right` pointers).
-
-### `zigzagLevelOrder(TreeNode root)`
-
-Return the level order traversal with alternating direction: level 0 left-to-right, level 1 right-to-left, and so on. An empty tree returns an empty list.
-
-```java
-zigzagLevelOrder(t);     // [[3], [20, 9], [15, 7]]
-zigzagLevelOrder(null);  // []
-```
-
-Edge cases: empty tree, single node, levels with one node (reversing changes nothing), trees deep enough to flip direction several times.

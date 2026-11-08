@@ -1,87 +1,108 @@
-# Backtracking
+## What you build
 
-## What you'll learn
-
-Building on the DFS recursion you used for trees and graphs, this concept covers backtracking: exhaustive search over a decision tree where you **choose** an option, **explore** its consequences, and **unchoose** before trying the next option. You'll learn the four shapes almost every backtracking problem reduces to — one choice per slot, permutation over unused elements, combination via a start index, and constraint-counter generation — plus the pruning tricks that keep exponential search spaces small enough to run.
+You write four generators: `letterCombinations`, `permute`, `combinationSum` and `generateParenthesis`. Each one searches a tree of choices: choose an option, explore it, then undo it before the next option. This lesson builds on **Graphs**, and uses the recursion from **Binary Tree**.
 
 ## Key concepts
 
-Backtracking is DFS on the tree of partial solutions. Every problem instantiates the same skeleton; what changes is the *choice set* at each node, the *base case* that records a result, and the *pruning* that abandons doomed branches early.
+### Backtracking is DFS on the tree of partial solutions
+
+Every problem fills in the same skeleton. Three parts change: the choice set at each node, the base case that records a result, and the pruning that abandons doomed branches early.
 
 ```java
-void backtrack(List<Integer> path, State state) {
+void backtrack(List<Integer> path,
+               State state) {
     if (isComplete(path)) {
-        result.add(new ArrayList<>(path)); // record a COPY
+        // Record a COPY
+        result.add(new ArrayList<>(path));
         return;
     }
-    for (int choice : currentChoices(state)) {
-        if (doomed(choice)) continue;   // prune
-        path.add(choice);               // choose
-        backtrack(path, updated(state, choice)); // explore
-        path.remove(path.size() - 1);   // unchoose — this is the "backtrack"
-    }
-}
-```
-
-The `remove` at the end is what distinguishes backtracking from plain DFS: the same `path` list is shared by every frame, so each frame must undo its own mutation before returning.
-
-### Shape 1 — one choice per slot (letter combinations)
-
-The candidate has a fixed length; position `i` picks from a fixed menu (the letters of digit `i`). The tree's depth equals the input length; branching equals menu size.
-
-```java
-void bt(int i, StringBuilder current) {
-    if (i == digits.length()) { result.add(current.toString()); return; }
-    for (char ch : KEYPAD.get(digits.charAt(i)).toCharArray()) {
-        current.append(ch);
-        bt(i + 1, current);
-        current.setLength(current.length() - 1); // undo the append
-    }
-}
-```
-
-Unlike JavaScript, Java `String`s are also immutable, but concatenating a new string per call (`current + ch`) would allocate O(n) garbage per level. A shared `StringBuilder` with `append`/`setLength` is the idiomatic choose/unchoose pair here — cheap and explicit.
-
-### Shape 2 — permutations (order matters, each element once)
-
-Each level picks any *unused* element. Track usage with a `boolean[]` parallel to `nums`:
-
-```java
-void bt(List<Integer> path, boolean[] used) {
-    if (path.size() == nums.length) { result.add(new ArrayList<>(path)); return; }
-    for (int i = 0; i < nums.length; i++) {
-        if (used[i]) continue;
-        used[i] = true;  path.add(nums[i]);
-        bt(path, used);
-        path.remove(path.size() - 1);  used[i] = false;
-    }
-}
-```
-
-### Shape 3 — combinations (order doesn't matter): the start index
-
-To generate each subset/combination exactly once, force choices to be taken in increasing index order — each frame only considers indexes `>= start`:
-
-```java
-void bt(int start, List<Integer> path) {
-    if (done(path)) { result.add(new ArrayList<>(path)); return; }
-    for (int i = start; i < candidates.length; i++) {
-        path.add(candidates[i]);
-        bt(i + 1, path); // i + 1: each element used at most once
+    for (int choice : choices(state)) {
+        // Prune
+        if (doomed(choice)) continue;
+        // Choose
+        path.add(choice);
+        // Explore
+        backtrack(path,
+            next(state, choice));
+        // Unchoose: the "backtrack"
         path.remove(path.size() - 1);
     }
 }
 ```
 
-For Combination Sum, recurse with `bt(i, ...)` instead of `bt(i + 1, ...)`: staying at `i` allows the same candidate to be reused, while never going *below* `i` still prevents duplicate combinations in different orders.
+The `remove` separates backtracking from plain DFS. Every frame shares the same `path` list, so each frame must undo its own change before it returns.
 
-### Shape 4 — constraint counters (generate parentheses)
+### Shape 1: one choice per slot
 
-Instead of a menu of elements, each level chooses between a few moves guarded by counters. Well-formed parentheses: you may add `(` while `open < n`, and `)` while `close < open`. The guards *are* the pruning — no invalid string is ever partially built.
+The candidate has a fixed length. Position `i` picks from a fixed menu, such as the letters of digit `i`. The tree depth equals the input length, and the branching equals the menu size.
 
-### Pruning
+```java
+void bt(int i, String current) {
+    if (i == digits.length()) {
+        result.add(current);
+        return;
+    }
+    String letters =
+        KEYPAD.get(digits.charAt(i));
+    for (char ch : letters.toCharArray()) {
+        bt(i + 1, current + ch);
+    }
+}
+```
 
-Sort-then-break is the workhorse: with `candidates` sorted ascending, the loop in Combination Sum can `break` (not just `continue`) the moment `candidates[i] > remaining` — every later candidate is bigger. In N-Queens, three `Set`s (columns, `r - c` diagonals, `r + c` anti-diagonals) reject a square in O(1). Good pruning doesn't change worst-case complexity but routinely cuts real search trees by orders of magnitude.
+Strings are immutable, so `current + ch` needs no undo step. The "unchoose" is implicit. A `StringBuilder` avoids the copies, but then you undo with `sb.setLength(sb.length() - 1)` after each recursive call.
+
+### Shape 2: permutations pick any unused element
+
+In a permutation, order matters and each element appears once. Each level picks any unused element. A boolean array parallel to `nums` tracks usage.
+
+```java
+void bt(List<Integer> path,
+        boolean[] used) {
+    if (path.size() == nums.length) {
+        result.add(new ArrayList<>(path));
+        return;
+    }
+    for (int i = 0; i < nums.length; i++) {
+        if (used[i]) continue;
+        used[i] = true;
+        path.add(nums[i]);
+        bt(path, used);
+        path.remove(path.size() - 1);
+        used[i] = false;
+    }
+}
+```
+
+### Shape 3: combinations use a start index
+
+In a combination, order does not matter. To generate each subset once, take choices in increasing index order. Each frame considers only indexes `>= start`.
+
+```java
+void bt(int start, List<Integer> path) {
+    if (done(path)) {
+        result.add(new ArrayList<>(path));
+        return;
+    }
+    // n is cands.length
+    for (int i = start; i < n; i++) {
+        path.add(cands[i]);
+        // i + 1: each element at most once
+        bt(i + 1, path);
+        path.remove(path.size() - 1);
+    }
+}
+```
+
+For Combination Sum, recurse with `bt(i, ...)` in place of `bt(i + 1, ...)`. Staying at `i` lets the same candidate repeat. Never going below `i` still prevents the same combination in a different order.
+
+### Shape 4: constraint counters guard each move
+
+Some problems have no menu of elements. Each level chooses between a few moves, and counters guard each move. For well-formed parentheses, you can add `(` while `open < n`, and `)` while `close < open`. The guards are the pruning: the search never builds an invalid prefix.
+
+### Pruning cuts the search tree
+
+Sort, then break. With `candidates` sorted ascending, the Combination Sum loop can `break`, not only `continue`, when `candidates[i] > remaining`. Every later candidate is bigger. In N-Queens, three sets (columns, `r - c` diagonals, `r + c` anti-diagonals) reject a square in O(1). Good pruning does not change the worst-case complexity, but it often cuts real search trees by orders of magnitude.
 
 ### Complexity of the flagship problems
 
@@ -92,54 +113,60 @@ Sort-then-break is the workhorse: with `candidates` sorted ascending, the loop i
 | Combination Sum | input-dependent | O(k · b^(t/m)) worst case | O(t/m) |
 | Generate Parentheses | Catalan C(n) ≈ 4^n / n^1.5 | O(4^n / √n) | O(n) |
 
-`t` = target, `m` = smallest candidate, `b` = branching factor, `k` = average combination length.
-
-## vs other languages
-
-JavaScript arrays are reference types shared across recursive calls the same way Java `List`s are, so `push`/`pop` and `add`/`remove(size() - 1)` play identical roles. The one real difference is strings: JS string concatenation (`current + ch`) is idiomatic there because engines optimize it, but Java code reaches for a mutable `StringBuilder` instead — allocating a new immutable `String` per recursive frame is wasteful and non-idiomatic in Java.
+`t` is the target, `m` the smallest candidate, `b` the branching factor and `k` the average combination length.
 
 ## Watch out
 
-- **Snapshot on record**: `result.add(new ArrayList<>(path))`, never `result.add(path)`. Without the copy every recorded entry aliases the same list — which is empty by the time the search finishes.
-- **Every add needs a matching remove.** An early `return` between `add` and `remove` corrupts the path for all remaining branches. Keep the choose/explore/unchoose lines adjacent.
-- **`i` vs `i + 1`** in the start-index shape decides reuse semantics: `bt(i, ...)` = unlimited reuse (Combination Sum), `bt(i + 1, ...)` = each element once (Combinations). Mixing them up produces duplicate or missing results, not a crash — easy to miss without tests.
-- **`break` vs `continue` when pruning**: `break` on `candidates[i] > remaining` is only correct if the candidates are sorted. Unsorted input needs `continue` — or a sort up front (never mutate the caller's array in place; sort a clone).
-- **`letterCombinations("")` returns an empty list**, not a list containing `""`. Guard the empty input before starting the recursion.
-- **Result order doesn't matter** in these problems — but *your tests* might compare sorted or via sets; don't burn time chasing a specific ordering.
+- Record a copy: `result.add(new ArrayList<>(path))`, not `result.add(path)`. Without the copy, every entry is the same list.
+- That shared list is empty when the search finishes, so every recorded entry ends up empty.
+- Every `add` needs a `remove`. An early `return` between them corrupts the path for all later branches.
+- Keep the choose, explore and unchoose lines next to each other.
+- In the start-index shape, `bt(i, ...)` allows unlimited reuse, as in Combination Sum.
+- `bt(i + 1, ...)` uses each element once, as in Combinations.
+- If you mix up `i` and `i + 1`, you get duplicate or missing results, not a crash. Tests catch it; reading rarely does.
+- `break` on `candidates[i] > remaining` is correct only for sorted candidates. Unsorted input needs `continue`, or a sort first.
+- `letterCombinations("")` returns an empty list, not `[""]`. Check for empty input before the recursion starts.
+- Result order does not matter in these problems. The tests compare as sets, so do not chase one order.
 
 ## Problem walkthroughs
 
 ### Letter Combinations of a Phone Number ★
 
-**Problem.** Given a string `digits` of characters `'2'`–`'9'`, return every string you can form by picking one letter for each digit, using the phone keypad mapping (2→abc, 3→def, 4→ghi, 5→jkl, 6→mno, 7→pqrs, 8→tuv, 9→wxyz). Empty input produces an empty list.
+**Problem.** Given a string `digits` of characters `'2'`–`'9'`, return every string that picks one letter for each digit. Use the phone keypad mapping: 2→abc, 3→def, 4→ghi, 5→jkl, 6→mno, 7→pqrs, 8→tuv, 9→wxyz. Empty input gives an empty list.
 
 **Example.**
 
-    "23" → ["ad","ae","af","bd","be","bf","cd","ce","cf"]
-    ""   → []
+```text
+"23" → [ad, ae, af, bd, be,
+        bf, cd, ce, cf]
+""   → []
+```
 
 **Steps.**
-1. Return an empty list immediately for empty input.
-2. Build the digit → letters lookup table (a `Map<Character, String>`).
-3. Recurse on position `i` with a shared `StringBuilder`: base case `i == digits.length()` records the string.
-4. At position `i`, loop over the letters of `digits.charAt(i)`, appending each and recursing with `i + 1`, then `setLength` back down before the next letter.
-5. The tree has depth `digits.length()` and branching 3–4; every leaf is a valid combination, so there is nothing to prune.
+1. Return an empty list at once for empty input.
+2. Build the digit-to-letters lookup table.
+3. Recurse on position `i` with the string built so far. The base case `i == digits.length()` records the string.
+4. At position `i`, loop over the letters of `digits.charAt(i)`. Append each one and recurse with `i + 1`. Concatenation creates a new string per call, so no undo is necessary.
+5. The tree has depth `digits.length()` and branching 3–4. Every leaf is a valid combination, so there is nothing to prune.
 
 **Complexity.** O(n · 4^n) time (up to 4^n results, each of length n) / O(n) recursion depth.
 
 ### Combinations
 
-**Problem.** Given `n` and `k`, return all combinations of `k` distinct numbers chosen from `1..n`. Order within a combination and between combinations doesn't matter.
+**Problem.** Given `n` and `k`, return all combinations of `k` distinct numbers from `1..n`. Order inside a combination and between combinations does not matter.
 
 **Example.**
 
-    n = 4, k = 2 → [[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]]
+```text
+n = 4, k = 2 →
+[[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]]
+```
 
 **Steps.**
-1. Start-index recursion: `bt(start, path)` considers numbers `start..n` in increasing order, which generates each combination exactly once.
-2. Base case: `path.size() == k` — record a copy.
-3. Loop `i` from `start` to `n`: add `i`, recurse `bt(i + 1, path)`, remove.
-4. Prune with the "not enough numbers left" check: you still need `k - path.size()` numbers, so `i` can run at most to `n - (k - path.size()) + 1`. This turns the tail of the search from exponential dead ends into an immediate cutoff.
+1. Use start-index recursion: `bt(start, path)` considers the numbers `start..n` in increasing order. This generates each combination exactly once.
+2. Base case: `path.size() == k`. Record a copy.
+3. Loop `i` from `start` to `n`: add `i`, recurse `bt(i + 1, path)`, remove the last element.
+4. Prune when too few numbers remain. You still need `k - path.size()` numbers, so `i` runs at most to `n - (k - path.size()) + 1`. This replaces exponential dead ends at the tail with an immediate cutoff.
 
 **Complexity.** O(k · C(n, k)) time / O(k) recursion depth.
 
@@ -149,155 +176,175 @@ JavaScript arrays are reference types shared across recursive calls the same way
 
 **Example.**
 
-    [1,2,3] → [[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]
-    [1]     → [[1]]
+```text
+[1,2,3] → [[1,2,3],[1,3,2],[2,1,3],
+           [2,3,1],[3,1,2],[3,2,1]]
+[1]     → [[1]]
+```
 
 **Steps.**
-1. Keep a shared `path` list and a `boolean[]` used array.
-2. Base case: `path.size() == nums.length` — record `new ArrayList<>(path)`.
-3. Loop over all indexes; skip used ones. For each unused `i`: mark `used[i]`, add `nums[i]`, recurse, remove, unmark.
-4. The `used` array is the "remaining elements" set in O(1) per check — cheaper than rebuilding a filtered list per frame.
-5. Alternative worth knowing for the follow-up: the swap method — swap `nums[depth]` with each `i >= depth`, recurse on `depth + 1`, swap back. No extra arrays at all.
+1. Keep a shared `path` and a `used` boolean array.
+2. Base case: `path.size() == nums.length`. Record `new ArrayList<>(path)`.
+3. Loop over all indexes and skip the used ones. For each unused `i`: mark `used[i]`, add `nums[i]`, recurse, remove the last element, unmark.
+4. The `used` array is the "remaining elements" set with an O(1) check. That is cheaper than a new filtered list per frame.
+5. Know the swap method for the follow-up. Swap `nums[depth]` with each `i >= depth`, recurse on `depth + 1`, then swap back. It needs no extra arrays.
 
 **Complexity.** O(n · n!) time (n! results, O(n) to copy each) / O(n) recursion depth.
 
 ### Combination Sum ★
 
-**Problem.** Given distinct positive integers `candidates` and a positive `target`, return all unique combinations of candidates summing to `target`. The same candidate may appear in a combination any number of times. Order doesn't matter — no duplicate combinations.
+**Problem.** Given distinct positive integers `candidates` and a positive `target`, return all unique combinations of candidates that sum to `target`. A combination can use the same candidate any number of times. Order does not matter, so return no duplicate combinations.
 
 **Example.**
 
-    candidates = [2,3,6,7], target = 7 → [[2,2,3],[7]]
-    candidates = [2,3,5],   target = 8 → [[2,2,2,2],[2,3,3],[3,5]]
+```text
+[2,3,6,7], target 7 → [[2,2,3],[7]]
+[2,3,5], target 8 →
+  [[2,2,2,2],[2,3,3],[3,5]]
+```
 
 **Steps.**
-1. Sort a clone of `candidates` ascending — this enables `break`-style pruning without mutating the caller's array.
-2. Recurse `bt(start, remaining, path)`; base case `remaining == 0` records a copy.
-3. Loop `i` from `start`: if `candidates[i] > remaining`, `break` — every later candidate is at least as large.
-4. Add `candidates[i]` and recurse with `bt(i, remaining - candidates[i], path)` — **`i`, not `i + 1`**, so the same candidate may be picked again; never going below `i` keeps combinations canonical (non-decreasing), which is what prevents duplicates like `[2,3,3]` vs `[3,2,3]`.
-5. Remove after the recursive call returns.
+1. Sort the candidates ascending. This enables `break` pruning.
+2. Recurse `bt(start, remaining, path)`. The base case `remaining == 0` records a copy.
+3. Loop `i` from `start`. If `candidates[i] > remaining`, `break`: every later candidate is at least as large.
+4. Add `candidates[i]` and recurse with `bt(i, remaining - candidates[i], path)`. Use `i`, not `i + 1`, so the same candidate can repeat.
+5. Never going below `i` keeps each combination non-decreasing. That prevents duplicates such as `[2,3,3]` and `[3,2,3]`.
+6. Remove the last element after the recursive call returns.
 
-**Complexity.** O(b^(t/m)) nodes worst case (`t` = target, `m` = smallest candidate) / O(t/m) recursion depth.
+**Complexity.** O(b^(t/m)) nodes in the worst case (`t` is the target, `m` the smallest candidate) / O(t/m) recursion depth.
 
 ### N-Queens II
 
-**Problem.** Count the distinct ways to place `n` queens on an `n × n` board so that no two share a row, column, or diagonal.
+**Problem.** Count the distinct ways to place `n` queens on an `n × n` board so that no two share a row, column or diagonal.
 
 **Example.**
 
-    n = 4 → 2
-    n = 1 → 1
+```text
+n = 4 → 2
+n = 1 → 1
+```
 
 **Steps.**
-1. Place one queen per row, top to bottom — rows are handled by construction, so only columns and diagonals need checking.
-2. Keep three sets: `cols`, `diag` keyed by `r - c`, `anti` keyed by `r + c`. A square `(r, c)` is safe iff none of the three sets contains its key.
-3. `bt(row)`: base case `row == n` increments the count. Otherwise try every column: if safe, add the three keys, recurse `bt(row + 1)`, then remove the three keys.
-4. The two diagonal keys work because all squares on a ↘ diagonal share `r - c` and all squares on a ↙ diagonal share `r + c`.
-5. Because only a count is needed, there's no path list at all — the three sets are the entire state.
+1. Place one queen per row, top to bottom. The construction handles rows, so you check only columns and diagonals.
+2. Keep three sets: `cols`, `diag` keyed by `r - c`, and `anti` keyed by `r + c`. A square `(r, c)` is safe if and only if no set contains its key.
+3. `bt(row)`: the base case `row == n` increments the count. Otherwise try every column. If it is safe, add the three keys, recurse `bt(row + 1)`, then remove the three keys.
+4. The diagonal keys work because all squares on a ↘ diagonal share `r - c`, and all squares on a ↙ diagonal share `r + c`.
+5. Only a count is necessary, so there is no path list. The three sets are the whole state.
 
-**Complexity.** O(n!) time in practice (each row has fewer safe columns than the last) / O(n) space for the sets and recursion.
+**Complexity.** O(n!) time in practice, because each row has fewer safe columns than the last / O(n) space for the sets and recursion.
 
 ### Generate Parentheses ★
 
-**Problem.** Given `n`, return all strings of `n` pairs of parentheses that are well-formed (every prefix has at least as many `(` as `)`).
+**Problem.** Given `n`, return all well-formed strings of `n` pairs of parentheses. In a well-formed string, every prefix has at least as many `(` as `)`.
 
 **Example.**
 
-    n = 3 → ["((()))","(()())","(())()","()(())","()()()"]
-    n = 1 → ["()"]
+```text
+n = 3 → [((())), (()()), (())(),
+         ()(()), ()()()]
+n = 1 → [()]
+```
 
 **Steps.**
-1. Recurse with the string so far (a `StringBuilder`) plus two counters: `open` and `close` used.
-2. Base case: string length `2n` — it's complete and, by construction, valid.
-3. Add `(` if `open < n` (still have opens left). Add `)` if `close < open` (there's an unmatched `(` to close).
-4. Those two guards make invalid strings unreachable — this is pruning by construction rather than generate-and-filter, and it's why the output size is the Catalan number rather than 2^(2n).
+1. Recurse with the string so far and two counters: `open` and `close`.
+2. Base case: the string has length `2n`. It is complete and, by construction, valid.
+3. Add `(` if `open < n`: opens remain. Add `)` if `close < open`: an unmatched `(` waits for its close.
+4. Those two guards make invalid strings unreachable. This prunes by construction, not by generate-and-filter. It is why the output size is the Catalan number, not 2^(2n).
 
 **Complexity.** O(4^n / √n) time (Catalan-number results, O(n) each) / O(n) recursion depth.
 
 ### Word Search
 
-**Problem.** Given an `m × n` grid of letters and a string `word`, return `true` if `word` can be traced through horizontally or vertically adjacent cells, using each cell at most once.
+**Problem.** Given an `m × n` grid of letters and a string `word`, return `true` if a path traces `word` through adjacent cells. Cells are adjacent horizontally or vertically, and the path uses each cell at most once.
 
 **Example.**
 
-    board = [['A','B','C','E'],
-             ['S','F','C','S'],
-             ['A','D','E','E']]
-    word = "ABCCED" → true;  word = "ABCB" → false
+```text
+board = [['A','B','C','E'],
+         ['S','F','C','S'],
+         ['A','D','E','E']]
+word = "ABCCED" → true
+word = "ABCB"   → false
+```
 
 **Steps.**
-1. Try a DFS from every cell whose letter matches `word.charAt(0)`.
+1. Start a DFS from every cell whose letter matches `word.charAt(0)`.
 2. `dfs(r, c, i)`: if `board[r][c] != word.charAt(i)`, fail. If `i` is the last index, succeed.
-3. Mark the cell visited by overwriting it in place (`board[r][c] = '#'`), recurse into the four neighbors with `i + 1`, then restore the letter. In-place marking is the O(1)-space version of a visited set.
-4. Return `true` if any neighbor's DFS succeeds; the restore must run before returning either way.
-5. Optional pruning: bail out early if the grid's letter counts can't cover the word's letter counts.
+3. Mark the cell as visited in place (`board[r][c] = '#'`). Recurse into the four neighbors with `i + 1`, then restore the letter. In-place marking is the O(1)-space form of a visited set.
+4. Return `true` if the DFS of any neighbor succeeds. The restore must run before you return, in both cases.
+5. Optional pruning: stop early if the letter counts of the grid cannot cover the letter counts of the word.
 
-**Complexity.** O(m · n · 3^L) time (`L` = word length; 3 because you never return to the cell you came from) / O(L) recursion depth.
+**Complexity.** O(m · n · 3^L) time / O(L) recursion depth. `L` is the word length; the base is 3 because the path never returns to the cell it came from.
 
 ## Interview follow-ups
 
 After Permutations:
-- "Input contains duplicates?" — Permutations II: sort, then at each level skip `nums[i]` when it equals `nums[i-1]` and `used[i-1]` is false (the duplicate's twin was skipped at this same level).
-- "Without the `used` array?" — the swap method: permute in place, O(1) auxiliary state.
+- "The input contains duplicates?" This is Permutations II. Sort, then at each level skip `nums[i]` when it equals `nums[i-1]` and `used[i-1]` is false. That means the search skipped its twin at this same level.
+- "Without the `used` array?" Use the swap method: permute in place with O(1) auxiliary state.
 
 After Combination Sum:
-- "Each candidate at most once, input has duplicates?" — Combination Sum II: sort, recurse `bt(i + 1, ...)`, and skip `candidates[i] == candidates[i-1]` when `i > start`.
-- "Only the *count* of combinations?" — switch to DP (coin change counting): O(target · candidates) beats exponential enumeration.
+- "Each candidate at most once, and the input has duplicates?" This is Combination Sum II. Sort, recurse `bt(i + 1, ...)`, and skip `candidates[i] == candidates[i-1]` when `i > start`.
+- "Only the count of combinations?" Switch to DP (coin change counting). O(target · candidates) beats exponential enumeration.
 
 After Generate Parentheses:
-- "Why is the count the Catalan number?" — bijection with balanced sequences / Dyck paths; derive C(n) = (2n choose n) / (n + 1).
+- "Why is the count the Catalan number?" There is a bijection with balanced sequences, or Dyck paths. Derive C(n) = (2n choose n) / (n + 1).
 
 After N-Queens II:
-- "Return the boards, not the count?" — same search, carry a `path` of column choices and render on the base case (N-Queens I).
+- "Return the boards, not the count?" Use the same search. Carry a `path` of column choices and render it in the base case (N-Queens I).
 
 ## The task
 
-Four generators over exponential search spaces. **The order of the returned results never matters** — tests compare as sets (and for the list-of-lists results, order *within* a combination doesn't matter either, except for `permute`, where the whole point is the ordering).
+Write four generators over exponential search spaces. The order of the returned results never matters: the tests compare them as sets.
 
-### `letterCombinations(String digits)`
+For list-of-list results, the order inside a combination does not matter either. `permute` is the exception, because each ordering is a separate answer.
 
-`digits` is a string of characters `'2'`–`'9'` (possibly empty). Return every string formed by choosing exactly one letter for each digit, using the phone keypad mapping: 2→`abc`, 3→`def`, 4→`ghi`, 5→`jkl`, 6→`mno`, 7→`pqrs`, 8→`tuv`, 9→`wxyz`. Return them in any order. `""` → empty list (not a list containing `""`).
+1. `List<String> letterCombinations(String digits)` takes a string of characters `'2'`–`'9'`. It returns every string that picks exactly one letter for each digit.
+2. Use the phone keypad mapping: 2→`abc`, 3→`def`, 4→`ghi`, 5→`jkl`, 6→`mno`, 7→`pqrs`, 8→`tuv`, 9→`wxyz`.
+3. `List<List<Integer>> permute(int[] nums)` takes an array of distinct integers, with length 1 to 6. It returns all permutations of `nums`.
+4. Each permutation is a new list. There are exactly `n!` of them.
+5. `List<List<Integer>> combinationSum(int[] candidates, int target)` returns all unique combinations of candidates that sum exactly to `target`.
+6. `candidates` holds distinct positive integers, and `target` is a positive integer. A combination can use a candidate any number of times.
+7. Two combinations are the same if they use the same multiset of values, in any order. Return each combination exactly once.
+8. `List<String> generateParenthesis(int n)` takes `n` from 1 to 8. It returns all distinct well-formed strings of exactly `n` pairs of parentheses.
+9. A string is well-formed if every prefix has at least as many `(` as `)`, and the totals are equal.
 
-```java
-letterCombinations("23"); // [ad, ae, af, bd, be, bf, cd, ce, cf]
-letterCombinations("");   // []
-letterCombinations("2");  // [a, b, c]
-```
+Edge cases:
 
-Edge cases: empty input, a single digit, digits `7` and `9` (four letters each — `"79"` yields 16 combinations).
-
-### `permute(int[] nums)`
-
-`nums` is an array of **distinct** integers (1 ≤ length ≤ 6). Return all permutations of `nums`, in any order. Each permutation is a new list; there are exactly `n!` of them.
-
-```java
-permute(new int[]{1, 2, 3}); // [[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]
-permute(new int[]{0, 1});    // [[0,1],[1,0]]
-permute(new int[]{1});       // [[1]]
-```
-
-Edge cases: single element (one permutation), two elements, negative values.
-
-### `combinationSum(int[] candidates, int target)`
-
-`candidates` is an array of **distinct positive** integers; `target` is a positive integer. Return all unique combinations of candidates that sum exactly to `target`; the same candidate may be used any number of times. Two combinations are the same if they use the same multiset of values, regardless of order — return each exactly once, in any order.
+- `letterCombinations("")` returns an empty list, not `[""]`. A single digit gives its letters.
+- Digits `7` and `9` have four letters each, so `"79"` gives 16 combinations.
+- `permute` with one element gives one permutation. Values can be negative.
+- `combinationSum` returns an empty list when no combination exists. A candidate equal to `target` is a valid combination.
+- `combinationSum` can reuse one small candidate many times: `{2}` with target `8` gives `[[2, 2, 2, 2]]`.
+- The `candidates` array can arrive unsorted.
+- `generateParenthesis` returns no duplicates. Every string has length `2n`.
 
 ```java
-combinationSum(new int[]{2, 3, 6, 7}, 7); // [[2,2,3],[7]]
-combinationSum(new int[]{2, 3, 5}, 8);    // [[2,2,2,2],[2,3,3],[3,5]]
-combinationSum(new int[]{2}, 1);          // []
-```
+letterCombinations("23");
+// [ad, ae, af, bd, be,
+//  bf, cd, ce, cf]
+letterCombinations("");  // []
+letterCombinations("2"); // [a, b, c]
 
-Edge cases: no solution (empty list), a candidate equal to `target`, deep reuse of a single small candidate (`{2}` with target `8` → `[[2,2,2,2]]`), unsorted input.
+permute(new int[]{1, 2, 3});
+// [[1, 2, 3], [1, 3, 2], [2, 1, 3],
+//  [2, 3, 1], [3, 1, 2], [3, 2, 1]]
+permute(new int[]{0, 1});
+// [[0, 1], [1, 0]]
+permute(new int[]{1});   // [[1]]
 
-### `generateParenthesis(int n)`
+combinationSum(new int[]{2, 3, 6, 7}, 7);
+// [[2, 2, 3], [7]]
+combinationSum(new int[]{2, 3, 5}, 8);
+// [[2, 2, 2, 2], [2, 3, 3], [3, 5]]
+combinationSum(new int[]{2}, 1);
+// []
+combinationSum(new int[]{2}, 8);
+// [[2, 2, 2, 2]]
 
-`n` is a positive integer (1 ≤ n ≤ 8). Return all distinct well-formed strings of exactly `n` pairs of parentheses, in any order. A string is well-formed if every prefix contains at least as many `(` as `)` and the total counts are equal.
-
-```java
-generateParenthesis(3); // [((())), (()()), (())(), ()(()), ()()()]
+generateParenthesis(3);
+// [((())), (()()), (())(),
+//  ()(()), ()()()]
 generateParenthesis(1); // [()]
-generateParenthesis(2); // [(()), ()()]
+generateParenthesis(2);
+// [(()), ()()]
 ```
-
-Edge cases: `n = 1`, no duplicates in the output, every returned string has length `2n`.
