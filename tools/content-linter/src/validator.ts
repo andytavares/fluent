@@ -89,16 +89,21 @@ export async function validateExerciseFolder(
     errors.push({ code: "E007", message: `Missing test file (*_test.${ext})` });
   }
 
-  // W001: instructions.md should have minimum length
   if (files.includes("instructions.md")) {
     const content = await readFile(join(folderPath, "instructions.md"), "utf-8");
-    if (content.trim().length < 50) {
-      errors.push({ code: "W001", message: "instructions.md is very short (< 50 chars)" });
-    }
-    errors.push(...checkLessonStructure(content));
+    errors.push(...checkInstructions(content));
   }
 
   return errors;
+}
+
+function checkInstructions(content: string): LintError[] {
+  const errors: LintError[] = [];
+  // W001: instructions.md should have minimum length
+  if (content.trim().length < 50) {
+    errors.push({ code: "W001", message: "instructions.md is very short (< 50 chars)" });
+  }
+  return [...errors, ...checkLessonStructure(content)];
 }
 
 const MAX_CODE_LINE_WIDTH = 43;
