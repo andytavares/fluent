@@ -1,36 +1,42 @@
 # Step 4 — PATCH /tasks/:id/status
 
-This is the core of the board: tasks move through a fixed workflow, and
-the API is the only thing enforcing it. Unlike Step 2's validation (is
-this a known status?), this step validates a *transition* (is it legal to
-move from the task's current status to this one?).
+This step is the core of the board. Tasks move through a fixed
+workflow, and only the API enforces it. Step 2 checks that a status is
+known. This step checks a *transition*: can the task move from its
+current status to the new one?
 
 ## Key concept: the transition map as a typed `Record`
 
-Encode the allowed transitions as a lookup table keyed by every
-`TaskStatus`, so TypeScript forces you to account for all three states —
-forget one and the object literal won't satisfy the `Record` type:
+Put the allowed transitions in a lookup table with a key for every
+`TaskStatus`. Then TypeScript makes you cover all three states. If you
+forget one, the object literal does not satisfy the `Record` type:
 
 ```ts
-const ALLOWED_TRANSITIONS: Record<TaskStatus, TaskStatus[]> = {
+const ALLOWED_TRANSITIONS: Record<
+  TaskStatus,
+  TaskStatus[]
+> = {
   todo: ["in_progress"],
   in_progress: ["done"],
   done: [],
 };
 
-function canTransition(from: TaskStatus, to: TaskStatus): boolean {
-  return ALLOWED_TRANSITIONS[from].includes(to);
+function canTransition(
+  from: TaskStatus,
+  to: TaskStatus,
+): boolean {
+  return ALLOWED_TRANSITIONS[from]
+    .includes(to);
 }
 ```
 
-This makes "no skipping, no going back" a single table lookup instead of
-a chain of `if` statements — and the table itself documents the entire
-workflow at a glance.
+"No skipping, no going back" is now one table lookup, not a chain of
+`if` statements. The table also shows the whole workflow in one place.
 
 ## The task
 
-Add a handler for `PATCH /tasks/:id/status` that transitions a task to a
-new status.
+Add a handler for `PATCH /tasks/:id/status`. It moves a task to a new
+status.
 
 **Request body:**
 
@@ -38,7 +44,7 @@ new status.
 { "status": "in_progress" }
 ```
 
-**Response:** `200 OK` with the full updated row on a legal transition:
+**Response:** on a legal transition, `200 OK` with the full updated row:
 
 ```json
 {
@@ -52,27 +58,38 @@ new status.
 
 Requirements:
 
-- Legal transitions are exactly: `todo` → `in_progress`, and
-  `in_progress` → `done`. No other transition is allowed — not skipping
-  a state (`todo` → `done`), and not reversing one (`in_progress` →
-  `todo`, `done` → `in_progress`).
+- The only legal transitions are `todo` → `in_progress` and
+  `in_progress` → `done`. The API rejects every other transition. A request
+  cannot skip a state (`todo` → `done`). It cannot go back either
+  (`in_progress` → `todo`, `done` → `in_progress`).
 - If the requested `status` is not one of the three known values, return
-  `400 Bad Request` with body:
+  `400 Bad Request` with this body:
 
-  ```json
-  { "error": "invalid status", "allowed": ["todo", "in_progress", "done"] }
-  ```
+```json
+{
+  "error": "invalid status",
+  "allowed": [
+    "todo",
+    "in_progress",
+    "done"
+  ]
+}
+```
 
-- If `status` is a known value but the transition from the task's
-  current status isn't allowed, return `409 Conflict` with body:
+- If `status` is a known value but the task cannot move to it from its
+  current status, return `409 Conflict` with this body:
 
-  ```json
-  { "error": "invalid transition", "from": "todo", "to": "done" }
-  ```
+```json
+{
+  "error": "invalid transition",
+  "from": "todo",
+  "to": "done"
+}
+```
 
-  where `"from"` is the task's current status and `"to"` is the
-  requested one.
-- Return `404 Not Found` with body `{"error": "not found"}` if no task
-  with that id exists.
-- Parse the path segment as an integer. If it isn't numeric, return
+- `"from"` is the current status of the task. `"to"` is the requested
+  status.
+- If no task has that id, return `404 Not Found` with body
+  `{"error": "not found"}`.
+- Parse the path segment as an integer. If it is not numeric, return
   `400 Bad Request`.

@@ -1,14 +1,14 @@
 # Step 4 — DELETE /expenses/:id
 
-The last single-resource operation: removing an expense. This closes out
-the single-record CRUD surface before Steps 5 and 6 add the reporting
-endpoints the rest of this capstone is really about.
+This is the last single-resource operation: delete an expense. It
+completes the single-record CRUD endpoints. Steps 5 and 6 then add the
+reporting endpoints, which are the main topic of this capstone.
 
 ## The task
 
-Add a handler for `DELETE /expenses/:id` that deletes an expense by id.
+Add a handler for `DELETE /expenses/:id`. It deletes an expense by id.
 
-**Sample request/response (deleted):**
+**Sample request and response (deleted):**
 
 ```
 DELETE /expenses/2
@@ -16,7 +16,7 @@ DELETE /expenses/2
 204 No Content
 ```
 
-**Sample request/response (not found):**
+**Sample request and response (not found):**
 
 ```
 DELETE /expenses/9999
@@ -29,10 +29,10 @@ Content-Type: application/json
 
 Requirements:
 
-- Return `204 No Content` on success, with an empty response body.
-- Return `404` with body `{"error": "not found"}` if no expense with that
-  id exists.
-- Check `cur.rowcount` after the `DELETE`; if it's zero, the id wasn't
-  found.
-- Parse the path segment as an integer. If it isn't numeric, return
+- On success, return `204 No Content` with an empty response body.
+- If no expense has that id, return `404` with body
+  `{"error": "not found"}`.
+- Check `cur.rowcount` after the `DELETE`. If it is zero, the id does
+  not exist.
+- Parse the path segment as an integer. If it is not numeric, return
   `400 Bad Request`.

@@ -1,31 +1,34 @@
 # Step 2 — POST /recipes
 
-With the server up from Step 1, it's time to add persistence. This step
-introduces the `recipes` and `ratings` tables and the first write path
-the rest of the capstone builds on — every later step reads or mutates
-rows this endpoint creates.
+The server from Step 1 is up. Now add persistence. This step adds the
+`recipes` and `ratings` tables and the first write path. Every later
+step reads or changes rows that this endpoint creates.
 
-This is also the first place Kotlin's null-safety earns its keep: a
-recipe's cook time (`minutes`) is genuinely optional. Modeling that as
-`Int?` instead of a sentinel like `-1` means the compiler forces you to
-handle the "no cook time given" case everywhere you touch it, rather than
-trusting yourself to remember.
+Here Kotlin null-safety starts to help. A recipe's cook time (`minutes`)
+is optional. Model it as `Int?`, not with a sentinel like `-1`. Then the
+compiler makes you handle the "no cook time" case everywhere you use it.
+You do not have to remember it yourself.
 
 ## The task
 
-Add a handler for `POST /recipes` that creates a recipe and persists it
-in Postgres.
+Add a handler for `POST /recipes`. It creates a recipe and stores it in
+Postgres.
 
 **Request body:**
 
 ```json
-{ "name": "Pancakes", "ingredients": ["flour", "milk", "eggs"], "minutes": 20 }
+{
+  "name": "Pancakes",
+  "ingredients": ["flour", "milk", "eggs"],
+  "minutes": 20
+}
 ```
 
-`minutes` is optional — it may be omitted or explicitly `null`.
+`minutes` is optional. The request can leave it out or set it to
+`null`.
 
-**Response:** `201 Created` with the inserted row, ingredients as a JSON
-array:
+**Response:** `201 Created` with the inserted row, with `ingredients` as
+a JSON array:
 
 ```json
 {
@@ -36,113 +39,153 @@ array:
 }
 ```
 
-When `minutes` wasn't given:
+When the request has no `minutes`:
 
 ```json
-{ "id": 2, "name": "Salad", "ingredients": ["lettuce"], "minutes": null }
+{
+  "id": 2,
+  "name": "Salad",
+  "ingredients": ["lettuce"],
+  "minutes": null
+}
 ```
 
 Requirements:
 
-- Connect to Postgres using the `DATABASE_URL` environment variable
-  (already set in your session), via `java.sql.DriverManager` and the
-  `org.postgresql.Driver` JDBC driver (pre-fetched into your session at a
-  fixed classpath entry — the same driver Java uses, since JDBC is a Java
-  API you call directly from Kotlin). No other third-party library is
-  available — your session has no network access per deploy, only this
-  one pre-fetched driver jar.
+- Connect to Postgres with the `DATABASE_URL` environment variable. Your
+  session already sets it.
+- Use `java.sql.DriverManager` and the `org.postgresql.Driver` JDBC
+  driver. The session has the driver jar at a fixed classpath entry.
+  Java uses the same driver, because JDBC is a Java API that Kotlin calls
+  directly.
+- No other third-party library is available. Your session has no
+  network access per deploy, only this one driver jar.
+- Your server must create the `recipes` and `ratings` tables on startup
+  if they do not exist.
+- Validate that `name` is present and `ingredients` is an array that is
+  not empty. If either one is missing or empty, return
+  `400 Bad Request`.
+- Use a `PreparedStatement` with
+  `RETURNING id, name, ingredients, minutes`. The database then returns
+  the generated `id` in one round trip.
+- Build the response JSON by hand. Render `ingredients` as a JSON array.
+- When the `minutes` column is SQL `NULL`, render `minutes` as the
+  literal `null`, with no quotes.
 
-  **The gotcha:** `DATABASE_URL` is a standard Postgres URI —
-  `postgresql://user:pass@host:port/dbname` — but JDBC connection strings
-  use a different format: `jdbc:postgresql://host:port/dbname`, with
-  credentials passed as separate connection properties (not embedded in
-  the URL). You need to parse `DATABASE_URL` and reassemble it. The
-  simplest approach is `java.net.URI`, which already knows how to split a
-  URI into host/port/path/userInfo for you:
+**The gotcha: the connection string.** `DATABASE_URL` is a standard
+Postgres URI: `postgresql://user:pass@host:port/dbname`. JDBC uses a
+different format: `jdbc:postgresql://host:port/dbname`. JDBC takes the
+credentials as separate connection properties, not inside the URL. Parse
+`DATABASE_URL` and build the JDBC URL again. `java.net.URI` already
+splits a URI into host, port, path and user info:
 
-  ```kotlin
-  import java.net.URI
-  import java.sql.Connection
-  import java.sql.DriverManager
+```kotlin
+import java.net.URI
+import java.sql.Connection
+import java.sql.DriverManager
 
-  fun connect(): Connection {
-    val uri = URI(System.getenv("DATABASE_URL"))
-    val (user, password) = uri.userInfo.split(":", limit = 2)
-    val jdbcUrl = "jdbc:postgresql://${uri.host}:${uri.port}${uri.path}"
+fun connect(): Connection {
+  val uri = URI(
+    System.getenv("DATABASE_URL")
+  )
+  val (user, password) =
+    uri.userInfo.split(":", limit = 2)
+  val jdbcUrl = "jdbc:postgresql://" +
+    "${uri.host}:${uri.port}${uri.path}"
 
-    Class.forName("org.postgresql.Driver")
-    return DriverManager.getConnection(jdbcUrl, user, password)
-  }
-  ```
+  Class.forName("org.postgresql.Driver")
+  return DriverManager.getConnection(
+    jdbcUrl, user, password
+  )
+}
+```
 
-- Your server should create the `recipes` and `ratings` tables itself on
-  startup if they don't already exist:
+**The tables.** Run these statements on startup:
 
-  ```sql
-  CREATE TABLE IF NOT EXISTS recipes (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
-    ingredients TEXT[] NOT NULL DEFAULT '{}',
-    minutes INTEGER,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-  );
+```sql
+CREATE TABLE IF NOT EXISTS recipes (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  ingredients TEXT[] NOT NULL DEFAULT '{}',
+  minutes INTEGER,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
 
-  CREATE TABLE IF NOT EXISTS ratings (
-    id SERIAL PRIMARY KEY,
-    recipe_id INTEGER NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
-    stars INTEGER NOT NULL CHECK (stars BETWEEN 1 AND 5),
-    created_at TIMESTAMPTZ DEFAULT NOW()
-  );
-  ```
+CREATE TABLE IF NOT EXISTS ratings (
+  id SERIAL PRIMARY KEY,
+  recipe_id INTEGER NOT NULL
+    REFERENCES recipes(id)
+    ON DELETE CASCADE,
+  stars INTEGER NOT NULL
+    CHECK (stars BETWEEN 1 AND 5),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
 
-  `minutes` has no `NOT NULL` — the schema itself models "no cook time
-  given" as SQL `NULL`, which maps directly onto Kotlin's `Int?`.
+`minutes` has no `NOT NULL`. The schema stores "no cook time" as SQL
+`NULL`, which maps directly to the Kotlin `Int?`.
 
-- There's no JSON library available either (no kotlinx.serialization, no
-  Gson). For a request body this small and with a fixed, known shape, a
-  hand-rolled extractor is enough — don't reach for a dependency that was
-  never fetched:
+**The JSON body.** No JSON library is available: no
+kotlinx.serialization, no Gson. For a small request body with a fixed,
+known shape, hand-written extractors are enough. Do not add a dependency
+that the session never fetched:
 
-  ```kotlin
-  fun extractField(json: String, field: String): String? =
-    Regex("\"$field\"\\s*:\\s*\"([^\"]*)\"").find(json)?.groupValues?.get(1)
+```kotlin
+fun extractField(
+  json: String, field: String
+): String? =
+  Regex("\"$field\"\\s*:\\s*\"([^\"]*)\"")
+    .find(json)?.groupValues?.get(1)
 
-  // Nullable integer field: absent, `null`, or a number.
-  fun extractIntField(json: String, field: String): Int? =
-    Regex("\"$field\"\\s*:\\s*(-?\\d+)").find(json)?.groupValues?.get(1)?.toInt()
+// Nullable integer field:
+// absent, `null`, or a number.
+fun extractIntField(
+  json: String, field: String
+): Int? =
+  Regex("\"$field\"\\s*:\\s*(-?\\d+)")
+    .find(json)?.groupValues?.get(1)
+    ?.toInt()
 
-  // A JSON string array like ["flour", "milk"].
-  fun extractStringArray(json: String, field: String): List<String> {
-    val arr = Regex("\"$field\"\\s*:\\s*\\[(.*?)\\]").find(json)?.groupValues?.get(1) ?: return emptyList()
-    return Regex("\"([^\"]*)\"").findAll(arr).map { it.groupValues[1] }.toList()
-  }
-  ```
+// A JSON string array like
+// ["flour", "milk"].
+fun extractStringArray(
+  json: String, field: String
+): List<String> {
+  val pattern =
+    Regex("\"$field\"\\s*:\\s*\\[(.*?)\\]")
+  val arr = pattern.find(json)
+    ?.groupValues?.get(1)
+    ?: return emptyList()
+  return Regex("\"([^\"]*)\"")
+    .findAll(arr)
+    .map { it.groupValues[1] }
+    .toList()
+}
+```
 
-  Read the raw body with `exchange.requestBody` (an `InputStream`) and
-  decode it to a `String` (`.readBytes().toString(Charsets.UTF_8)`) before
-  extracting fields.
+Read the raw body with `exchange.requestBody`, which is an
+`InputStream`. Decode it to a `String` with
+`.readBytes().toString(Charsets.UTF_8)` before you extract fields.
 
-- Validate that `name` is present and `ingredients` is a non-empty array.
-  If either is missing/empty, return `400 Bad Request`.
-- Postgres arrays need `Connection.createArrayOf("text", ...)` on the way
-  in, bound with `PreparedStatement.setArray`:
+**The arrays.** To write a Postgres array, make it with
+`Connection.createArrayOf("text", ...)`. Bind it with
+`PreparedStatement.setArray`:
 
-  ```kotlin
-  val sqlArray = conn.createArrayOf("text", ingredients.toTypedArray())
-  stmt.setArray(2, sqlArray)
-  ```
+```kotlin
+val sqlArray = conn.createArrayOf(
+  "text", ingredients.toTypedArray()
+)
+stmt.setArray(2, sqlArray)
+```
 
-  and `ResultSet.getArray(...)` on the way out — cast its `.array` to
-  `Array<*>` and map to strings:
+To read it, use `ResultSet.getArray(...)`. Cast its `.array` to
+`Array<*>` and map the items to strings:
 
-  ```kotlin
-  val raw = rs.getArray("ingredients").array as Array<*>
-  val ingredients = raw.map { it.toString() }
-  ```
+```kotlin
+val raw = rs.getArray("ingredients")
+  .array as Array<*>
+val ingredients = raw.map { it.toString() }
+```
 
-- Use a `PreparedStatement` with `RETURNING id, name, ingredients, minutes`
-  so the database hands back the generated `id` in one round trip. Build
-  the response JSON by hand, rendering `ingredients` as a JSON array and
-  `minutes` as the literal `null` (no quotes) when the column is SQL
-  `NULL` — `rs.getObject("minutes")` returns Kotlin `null` for a SQL
-  `NULL`, which is the natural place to branch.
+**The null.** `rs.getObject("minutes")` returns Kotlin `null` for a SQL
+`NULL`. Branch on that value to write `null` or the number.

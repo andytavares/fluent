@@ -1,29 +1,39 @@
 # Step 6 — GET /users (paginated)
 
-The final ticket: a collection endpoint for listing users, since real
-clients rarely want every row at once. The fixtures for this step seed
-enough rows to actually exercise pagination across two pages.
+The final ticket adds a collection endpoint that lists users. Real clients
+seldom want every row at once. The fixtures for this step seed enough rows
+to fill two pages.
 
 ## The task
 
-Add a handler for `GET /users` that lists users with offset-based
-pagination via query params:
+Add a handler for `GET /users`. It lists users with offset-based
+pagination. The query parameters `page` and `limit` select the page:
 
 ```
 GET /users?page=1&limit=10
 ```
 
-- `page` defaults to `1` if omitted.
-- `limit` defaults to `10` if omitted, and is clamped to a maximum of
-  `100` if a caller requests more.
+- If `page` is missing, it defaults to `1`.
+- If `limit` is missing, it defaults to `10`.
+- If a caller asks for a `limit` above `100`, use `100`.
 
-**Response:** `200 OK` with:
+**Response:** `200 OK` with this shape:
 
 ```json
 {
   "users": [
-    { "id": 15, "name": "...", "email": "...", "created_at": "..." },
-    { "id": 14, "name": "...", "email": "...", "created_at": "..." }
+    {
+      "id": 15,
+      "name": "...",
+      "email": "...",
+      "created_at": "..."
+    },
+    {
+      "id": 14,
+      "name": "...",
+      "email": "...",
+      "created_at": "..."
+    }
   ],
   "total": 15,
   "page": 1,
@@ -33,10 +43,10 @@ GET /users?page=1&limit=10
 
 Requirements:
 
-- Order results by `created_at DESC` so the newest users appear first.
-- `total` is the total count of users in the table, independent of the
-  current page — use a separate `COUNT(*)` query.
+- Order the results by `created_at DESC`, so the newest users come first.
+- `total` is the count of all users in the table, for every page. Get it
+  with a separate `COUNT(*)` query.
 - Use `OFFSET (page - 1) * limit` for pagination.
-- Clamp `limit` to `100` max even if a caller requests a larger value.
-- With the seeded fixtures (15 users) and the default `limit=10`, page 1
-  returns 10 users and page 2 returns the remaining 5.
+- Clamp `limit` to a maximum of `100`, also when a caller asks for more.
+- The fixtures seed 15 users. With the default `limit=10`, page 1 returns
+  10 users and page 2 returns the other 5.

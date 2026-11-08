@@ -1,23 +1,25 @@
 # Step 2 — POST /users
 
-With the server up from Step 1, it's time to add persistence. This step
-introduces the `users` table and the first write path the rest of the
-capstone builds on — every later step reads or mutates rows this endpoint
-creates.
+The server from Step 1 runs. Now add persistence. This step adds the `users`
+table and the first write path. Every later step reads or changes the rows
+that this endpoint creates.
 
 ## The task
 
-Add a handler for `POST /users` that creates a user and persists it in
+Add a handler for `POST /users`. It creates a user and stores it in
 Postgres.
 
 **Request body:**
 
 ```json
-{ "name": "Alice", "email": "alice@example.com" }
+{
+  "name": "Alice",
+  "email": "alice@example.com"
+}
 ```
 
-**Response:** `201 Created` with the inserted row, including the
-database-generated `id` and `created_at` fields:
+**Response:** `201 Created` with the inserted row. The row includes the
+`id` and `created_at` fields that the database generates:
 
 ```json
 {
@@ -30,10 +32,11 @@ database-generated `id` and `created_at` fields:
 
 Requirements:
 
-- Connect to Postgres using the `DATABASE_URL` environment variable
-  (already set in your session), via the `database/sql` package with the
-  `github.com/jackc/pgx/v5/stdlib` driver (pre-fetched into your session —
-  import it for its side effect and open with driver name `"pgx"`):
+- Connect to Postgres with the `DATABASE_URL` environment variable. Your
+  session already sets it.
+- Use the `database/sql` package with the `github.com/jackc/pgx/v5/stdlib`
+  driver. Your session has this driver already. Import it for its side
+  effect, and open it with the driver name `"pgx"`:
 
   ```go
   import (
@@ -41,13 +44,14 @@ Requirements:
       _ "github.com/jackc/pgx/v5/stdlib"
   )
 
-  db, err := sql.Open("pgx", os.Getenv("DATABASE_URL"))
+  db, err := sql.Open(
+      "pgx", os.Getenv("DATABASE_URL"))
   ```
 
-  No other third-party module is available — your session's `go run` has no
-  network access per deploy, only this one pre-fetched driver.
-- Your server should create the `users` table itself on startup if it
-  doesn't already exist, e.g.:
+- No other third-party module is available. Your session's `go run` has no
+  network access, so it can use only this one driver.
+- On startup, your server creates the `users` table if it does not exist.
+  For example:
 
   ```sql
   CREATE TABLE IF NOT EXISTS users (
@@ -58,5 +62,5 @@ Requirements:
   );
   ```
 
-- Validate that both `name` and `email` are present in the request body.
-  If either is missing, return `400 Bad Request`.
+- The request body must contain both `name` and `email`. If one is missing,
+  return `400 Bad Request`.

@@ -1,17 +1,16 @@
 # Step 2 — POST /notes
 
-With the server up from Step 1, it's time to add persistence. This step
-introduces the `notes` table and the first write path the rest of the
-capstone builds on — every later step reads, updates, or filters rows this
-endpoint creates.
+The server from Step 1 is up. Now add persistence. This step adds the
+`notes` table and the first write path. Every later step reads, updates
+or filters rows that this endpoint creates.
 
-Unlike the `users`/`expenses` shape you might have seen elsewhere, a note
-has a flexible, loosely-typed `tags` field — a good fit for a Postgres
-array column, and for JS's native comfort with arrays as JSON values.
+A note has a flexible, loosely typed `tags` field. A Postgres array
+column fits it well, and JavaScript handles arrays as JSON values
+natively.
 
 ## The task
 
-Add a handler for `POST /notes` that creates a note and persists it in
+Add a handler for `POST /notes`. It creates a note and stores it in
 Postgres.
 
 **Request body:**
@@ -24,12 +23,12 @@ Postgres.
 }
 ```
 
-`body` and `tags` are optional (`body` defaults to `""`, `tags` defaults
-to `[]`). `title` is required.
+The request must include `title`. `body` and `tags` are optional: `body` defaults to
+`""` and `tags` defaults to `[]`.
 
-**Response:** `201 Created` with the inserted row, including the
-database-generated `id`, `created_at`, and `updated_at` fields, with
-`tags` serialized as a JSON array:
+**Response:** `201 Created` with the inserted row. The row includes the
+`id`, `created_at` and `updated_at` fields that the database generates.
+`tags` is a JSON array:
 
 ```json
 {
@@ -44,57 +43,66 @@ database-generated `id`, `created_at`, and `updated_at` fields, with
 
 Requirements:
 
-- Connect to Postgres using the `DATABASE_URL` environment variable
-  (already set in your session), via the `pg` package (pre-fetched into
-  your session):
+- Connect to Postgres with the `DATABASE_URL` environment variable. Your
+  session already sets it.
+- Use the `pg` package. Your session already has it. No other
+  third-party package is available: your session has no network access
+  per deploy.
+- Your server must create the `notes` table on startup if it does not
+  exist.
+- Validate that `title` is present in the request body. If it is
+  missing, return `400 Bad Request`.
 
-  ```javascript
-  const { Client } = require("pg");
+**The connection:**
 
-  const client = new Client({ connectionString: process.env.DATABASE_URL });
-  await client.connect();
-  ```
+```javascript
+const { Client } = require("pg");
 
-  No other third-party package is available — your session has no network
-  access per deploy, only this one pre-fetched driver. Use `$1`, `$2`, ...
-  as placeholders in parameterized queries, and `RETURNING` to get the
-  generated columns back from an `INSERT`. Pass a JS array straight
-  through as a parameter for a `TEXT[]` column — `pg` encodes it as a
-  Postgres array for you:
+const client = new Client({
+  connectionString:
+    process.env.DATABASE_URL,
+});
+await client.connect();
+```
 
-  ```javascript
-  const result = await client.query(
-    "INSERT INTO notes (title, body, tags) VALUES ($1, $2, $3) " +
-      "RETURNING id, title, body, tags, created_at, updated_at",
-    [title, body ?? "", tags ?? []]
-  );
-  const row = result.rows[0];
-  ```
+**The insert.** Use `$1`, `$2`, ... as placeholders in parameterized
+queries. Use `RETURNING` to get the generated columns back from an
+`INSERT`. Pass a JavaScript array as the parameter for a `TEXT[]`
+column. `pg` encodes it as a Postgres array:
 
-- Your server should create the `notes` table itself on startup if it
-  doesn't already exist, e.g.:
+```javascript
+const result = await client.query(
+  "INSERT INTO notes " +
+    "(title, body, tags) " +
+    "VALUES ($1, $2, $3) " +
+    "RETURNING id, title, body, tags, " +
+    "created_at, updated_at",
+  [title, body ?? "", tags ?? []]
+);
+const row = result.rows[0];
+```
 
-  ```sql
-  CREATE TABLE IF NOT EXISTS notes (
-    id SERIAL PRIMARY KEY,
-    title TEXT NOT NULL,
-    body TEXT NOT NULL DEFAULT '',
-    tags TEXT[] NOT NULL DEFAULT '{}',
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
-    created_at TIMESTAMPTZ DEFAULT NOW()
-  );
-  ```
+**The table.** For example:
 
-- Validate that `title` is present in the request body. If it's missing,
-  return `400 Bad Request`.
-- Since `http.createServer` doesn't parse JSON bodies for you, read and
-  buffer the request body yourself:
+```sql
+CREATE TABLE IF NOT EXISTS notes (
+  id SERIAL PRIMARY KEY,
+  title TEXT NOT NULL,
+  body TEXT NOT NULL DEFAULT '',
+  tags TEXT[] NOT NULL DEFAULT '{}',
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
 
-  ```javascript
-  let body = "";
-  req.on("data", (chunk) => (body += chunk));
-  req.on("end", async () => {
-    const parsed = JSON.parse(body);
-    // ...
-  });
-  ```
+**The request body.** `http.createServer` does not parse JSON bodies.
+Read and buffer the request body yourself:
+
+```javascript
+let body = "";
+req.on("data", (chunk) => (body += chunk));
+req.on("end", async () => {
+  const parsed = JSON.parse(body);
+  // ...
+});
+```

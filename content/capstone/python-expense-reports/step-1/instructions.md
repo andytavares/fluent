@@ -1,23 +1,23 @@
 # Step 1 — Health endpoint
 
-This is the first ticket on the board: get a bare Python HTTP server
-running and reachable before any database logic exists. Every later step
-assumes your server is already listening and healthy, so this is the smoke
-test the rest of the capstone builds on.
+This is the first ticket on the board. Start a bare Python HTTP server
+and make it reachable before any database logic exists. Every later step
+needs a server that listens and answers, so this step is the smoke test
+for the capstone.
 
-There's no web framework pre-installed in your session (only a Postgres
-driver, see Step 2) — use the standard library's `http.server` module.
+Your session has no web framework. It has only a Postgres driver, which
+Step 2 uses. Use the standard library `http.server` module.
 
 ## The task
 
-Add a handler for `GET /health` that returns a JSON response with status
-`200` and this exact body:
+Add a handler for `GET /health`. It returns status `200` and this exact
+JSON body:
 
 ```json
 { "status": "ok" }
 ```
 
-Sample request/response:
+Sample request and response:
 
 ```
 GET /health
@@ -28,29 +28,40 @@ Content-Type: application/json
 {"status":"ok"}
 ```
 
-A minimal `http.server` handler looks like:
+A minimal `http.server` handler looks like this:
 
 ```python
 import json
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import (
+    BaseHTTPRequestHandler,
+    HTTPServer,
+)
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/health":
-            body = json.dumps({"status": "ok"}).encode()
+            body = json.dumps(
+                {"status": "ok"}
+            ).encode()
             self.send_response(200)
-            self.send_header("Content-Type", "application/json")
+            self.send_header(
+                "Content-Type",
+                "application/json",
+            )
             self.end_headers()
             self.wfile.write(body)
 
 if __name__ == "__main__":
-    HTTPServer(("0.0.0.0", 8080), Handler).serve_forever()
+    server = HTTPServer(
+        ("0.0.0.0", 8080), Handler
+    )
+    server.serve_forever()
 ```
 
 Requirements:
 
 - The server must listen on port `8080`.
-- No database connection is required for this step — this is a pure
-  smoke test for your server setup.
-- The response body must be valid JSON with a `status` key whose value is
-  exactly `"ok"` (case-sensitive).
+- This step needs no database connection. It only tests your server
+  setup.
+- The response body must be valid JSON with a `status` key. Its value
+  must be exactly `"ok"` (case-sensitive).

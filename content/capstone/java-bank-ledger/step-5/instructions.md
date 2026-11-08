@@ -1,11 +1,10 @@
 # Step 5 — Transfers
 
-This is the ticket that actually tests whether your transaction handling
-is correct. A transfer touches **two** accounts and writes **two**
-entries (`transfer_out` on the source, `transfer_in` on the destination).
-All four writes succeed together or none of them happen — there's no
-partial transfer where money leaves one account without arriving at the
-other.
+This ticket tests whether your transaction handling is correct. A
+transfer touches **two** accounts and writes **two** entries:
+`transfer_out` on the source and `transfer_in` on the destination. All
+four writes succeed together, or none of them happen. Money never leaves
+one account without arriving at the other.
 
 ## The task
 
@@ -43,49 +42,52 @@ Add a handler for `POST /transfers`:
 
 Requirements:
 
-- `amount_cents` must be a positive integer. If it's missing, zero, or
+- `amount_cents` must be a positive integer. If it is missing, zero or
   negative, return `400 Bad Request`.
-- If either `from` or `to` doesn't exist as an account id, return `404`
-  with body `{"error": "not found"}`. Check this before touching any
+- If `from` or `to` is not an existing account id, return `404` with
+  body `{"error": "not found"}`. Check this before you change any
   balance.
-- If the `from` account's balance is less than `amount_cents`, return
-  `409` with body `{"error": "insufficient funds"}`. **Nothing should be
-  written to the database in this case** — no entries rows, no balance
-  changes on either account. This is the part graders will check directly
-  by re-reading both balances after a failed transfer and confirming
-  they're unchanged.
+- If the `from` balance is less than `amount_cents`, return `409` with
+  body `{"error": "insufficient funds"}`.
+- In the `409` case, **write nothing to the database**: no `entries`
+  rows and no balance changes on either account. The graders read both
+  balances again after a failed transfer and check that they did not
+  change.
 - On success, do all four writes in a single transaction:
   1. Insert an `entries` row on `from` with `kind` `'transfer_out'`.
   2. Insert an `entries` row on `to` with `kind` `'transfer_in'`.
-  3. Decrement `from`'s `balance_cents`.
-  4. Increment `to`'s `balance_cents`.
+  3. Decrease the `balance_cents` of `from`.
+  4. Increase the `balance_cents` of `to`.
 
-  Same pattern as Step 3, just with two accounts and four statements
-  inside one `setAutoCommit(false)` / `commit()` / `rollback()` block:
+The pattern is the same as in Step 3, with two accounts and four
+statements. Put them inside one `setAutoCommit(false)` / `commit()` /
+`rollback()` block:
 
-  ```java
-  Connection conn = connect();
-  try {
-    conn.setAutoCommit(false);
+```java
+Connection conn = connect();
+try {
+  conn.setAutoCommit(false);
 
-    // read both accounts' balances (SELECT ... both ids)
-    // if either missing -> 404, rollback, return
-    // if from balance < amount -> 409, rollback, return
+  // read the balances of both ids
+  // if either is missing:
+  //   404, rollback, return
+  // if from balance < amount:
+  //   409, rollback, return
 
-    // insert transfer_out entry for `from`
-    // insert transfer_in entry for `to`
-    // update both accounts' balance_cents
+  // insert transfer_out entry for `from`
+  // insert transfer_in entry for `to`
+  // update balance_cents of both accounts
 
-    conn.commit();
-  } catch (Exception e) {
-    conn.rollback();
-    throw e;
-  } finally {
-    conn.setAutoCommit(true);
-  }
-  ```
+  conn.commit();
+} catch (Exception e) {
+  conn.rollback();
+  throw e;
+} finally {
+  conn.setAutoCommit(true);
+}
+```
 
-  Returning early on a `404`/`409` inside the `try` block still needs to
-  call `conn.rollback()` first (or simply never call `commit()` and let
-  the `finally` restore auto-commit — either way, no partial writes should
-  reach the table).
+An early return on a `404` or `409` inside the `try` block must call
+`conn.rollback()` first. You can also never call `commit()` and let the
+`finally` block restore auto-commit. In both cases, no partial writes
+reach the table.

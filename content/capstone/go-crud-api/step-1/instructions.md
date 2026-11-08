@@ -1,20 +1,19 @@
 # Step 1 — Health endpoint
 
-This is the first ticket on the board: get a bare Go HTTP server running and
-reachable before any database logic exists. Every later step assumes your
-server is already listening and healthy, so this is the smoke test the rest
-of the capstone builds on.
+Start a bare Go HTTP server before you add database code. Every later step
+needs this server to listen and answer. This step is the smoke test for the
+rest of the capstone.
 
 ## The task
 
-Add a handler for `GET /health` that returns a JSON response with status
-`200` and this exact body:
+Add a handler for `GET /health`. It returns status `200` and this exact
+JSON body:
 
 ```json
 { "status": "ok" }
 ```
 
-Sample request/response:
+Sample request and response:
 
 ```
 GET /health
@@ -27,8 +26,7 @@ Content-Type: application/json
 
 Requirements:
 
-- The server must listen on port `8080`.
-- No database connection is required for this step — this is a pure
-  smoke test for your server setup.
-- The response body must be valid JSON with a `status` key whose value is
-  exactly `"ok"` (case-sensitive).
+- The server listens on port `8080`.
+- This step needs no database connection. It only tests your server setup.
+- The response body is valid JSON. Its `status` key has the exact value
+  `"ok"`, in lowercase.

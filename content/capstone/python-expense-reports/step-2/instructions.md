@@ -1,13 +1,12 @@
 # Step 2 — POST /expenses
 
-With the server up from Step 1, it's time to add persistence. This step
-introduces the `expenses` table and the first write path the rest of the
-capstone builds on — every later step reads or aggregates rows this
-endpoint creates.
+The server from Step 1 is up. Now add persistence. This step adds the
+`expenses` table and the first write path. Every later step reads or
+aggregates rows that this endpoint creates.
 
 ## The task
 
-Add a handler for `POST /expenses` that creates an expense and persists it
+Add a handler for `POST /expenses`. It creates an expense and stores it
 in Postgres.
 
 **Request body:**
@@ -21,10 +20,10 @@ in Postgres.
 }
 ```
 
-`note` is optional; everything else is required.
+`note` is optional. The request must include all the other fields.
 
-**Response:** `201 Created` with the inserted row, including the
-database-generated `id` and `created_at` fields:
+**Response:** `201 Created` with the inserted row. The row includes the
+`id` and `created_at` fields that the database generates:
 
 ```json
 {
@@ -39,54 +38,71 @@ database-generated `id` and `created_at` fields:
 
 Requirements:
 
-- Connect to Postgres using the `DATABASE_URL` environment variable
-  (already set in your session), via `psycopg` (psycopg 3, pre-fetched into
-  your session as `psycopg[binary]`):
+- Connect to Postgres with the `DATABASE_URL` environment variable. Your
+  session already sets it.
+- Use `psycopg` (psycopg 3). Your session already has it as
+  `psycopg[binary]`.
+- No other third-party package is available. Your session has no
+  network access per deploy, only this one driver.
+- Your server must create the `expenses` table on startup if it does not
+  exist.
+- Validate that `category`, `amount_cents` and `spent_on` are all
+  present in the request body. If one is missing, return
+  `400 Bad Request`.
 
-  ```python
-  import os
-  import psycopg
+**The connection:**
 
-  conn = psycopg.connect(os.environ["DATABASE_URL"], autocommit=True)
-  ```
+```python
+import os
+import psycopg
 
-  No other third-party package is available — your session has no network
-  access per deploy, only this one pre-fetched driver. Use `%s` as the
-  placeholder in parameterized queries (psycopg's paramstyle), and
-  `RETURNING` to get the generated columns back from an `INSERT`:
+conn = psycopg.connect(
+    os.environ["DATABASE_URL"],
+    autocommit=True,
+)
+```
 
-  ```python
-  with conn.cursor() as cur:
-      cur.execute(
-          "INSERT INTO expenses (category, amount_cents, note, spent_on) "
-          "VALUES (%s, %s, %s, %s) "
-          "RETURNING id, category, amount_cents, note, spent_on, created_at",
-          (category, amount_cents, note, spent_on),
-      )
-      row = cur.fetchone()
-  ```
+**The insert.** Use `%s` as the placeholder in parameterized queries.
+That is the psycopg paramstyle. Use `RETURNING` to get the generated
+columns back from an `INSERT`:
 
-- Your server should create the `expenses` table itself on startup if it
-  doesn't already exist, e.g.:
+```python
+with conn.cursor() as cur:
+    cur.execute(
+        "INSERT INTO expenses "
+        "(category, amount_cents, "
+        "note, spent_on) "
+        "VALUES (%s, %s, %s, %s) "
+        "RETURNING id, category, "
+        "amount_cents, note, "
+        "spent_on, created_at",
+        (category, amount_cents,
+         note, spent_on),
+    )
+    row = cur.fetchone()
+```
 
-  ```sql
-  CREATE TABLE IF NOT EXISTS expenses (
-    id SERIAL PRIMARY KEY,
-    category TEXT NOT NULL,
-    amount_cents INTEGER NOT NULL,
-    note TEXT,
-    spent_on DATE NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-  );
-  ```
+**The table.** For example:
 
-- Validate that `category`, `amount_cents`, and `spent_on` are all present
-  in the request body. If any is missing, return `400 Bad Request`.
-- `spent_on` and `created_at` come back from psycopg as `date`/`datetime`
-  objects, and `json.dumps` doesn't know how to serialize those on its
-  own. Pass a `default` function so the encoder falls back to
-  `.isoformat()` for anything it doesn't recognize:
+```sql
+CREATE TABLE IF NOT EXISTS expenses (
+  id SERIAL PRIMARY KEY,
+  category TEXT NOT NULL,
+  amount_cents INTEGER NOT NULL,
+  note TEXT,
+  spent_on DATE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
 
-  ```python
-  json.dumps(payload, default=lambda v: v.isoformat())
-  ```
+**The dates.** psycopg returns `spent_on` and `created_at` as `date` and
+`datetime` objects. `json.dumps` cannot serialize them on its own. Pass
+a `default` function, so that the encoder calls `.isoformat()` on any
+value it does not know:
+
+```python
+json.dumps(
+    payload,
+    default=lambda v: v.isoformat(),
+)
+```

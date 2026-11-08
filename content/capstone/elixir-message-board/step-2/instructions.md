@@ -1,11 +1,10 @@
 # Step 2 — POST /channels
 
-With the server up from Step 1, it's time to add persistence. This step
-introduces the `channels` table and the first write path the rest of the
-capstone builds on. It also introduces the things every remaining step
-needs: reading a request body, talking to Postgres via Postgrex, and
-turning a database constraint violation into an HTTP status code instead
-of a crash.
+The server from Step 1 runs. This step adds persistence: the `channels`
+table and the first write path that the rest of the capstone builds on.
+It also adds what every later step needs. You read a request body, talk
+to Postgres through Postgrex, and turn a constraint violation into an
+HTTP status code instead of a crash.
 
 ## The task
 
@@ -20,10 +19,14 @@ Add a handler for `POST /channels` that creates a channel.
 **Response:** `201 Created` with the inserted row:
 
 ```json
-{ "id": 1, "name": "general", "created_at": "2026-07-08T12:00:00Z" }
+{
+  "id": 1,
+  "name": "general",
+  "created_at": "2026-07-08T12:00:00Z"
+}
 ```
 
-If a channel with that name already exists, respond `409 Conflict`:
+If a channel with that name exists, respond `409 Conflict`:
 
 ```json
 { "error": "channel exists" }
@@ -31,34 +34,38 @@ If a channel with that name already exists, respond `409 Conflict`:
 
 Requirements:
 
-- Connect to Postgres using the `DATABASE_URL` environment variable
-  (already set in your session, in `postgresql://user:pass@host:port/db`
-  form). `Postgrex.start_link/1` does **not** accept a `:url` option
-  directly — it only takes individual keys (`:hostname`, `:port`,
-  `:username`, `:password`, `:database`). Parse the URI yourself with
-  Elixir's built-in `URI` module and pass the pieces through:
+- Connect to Postgres with the `DATABASE_URL` environment variable. Your
+  session sets it in `postgresql://user:pass@host:port/db` form.
+  `Postgrex.start_link/1` does **not** accept a `:url` option. It takes
+  only separate keys: `:hostname`, `:port`, `:username`, `:password` and
+  `:database`. Parse the URI with the built-in `URI` module and pass the
+  parts through:
 
   ```elixir
-  uri = URI.parse(System.get_env("DATABASE_URL"))
-  [username, password] = String.split(uri.userinfo, ":", parts: 2)
+  uri =
+    URI.parse(System.get_env("DATABASE_URL"))
 
-  {:ok, pid} = Postgrex.start_link(
-    hostname: uri.host,
-    port: uri.port,
-    username: username,
-    password: password,
-    database: String.trim_leading(uri.path, "/")
-  )
+  [username, password] =
+    String.split(uri.userinfo, ":", parts: 2)
+
+  {:ok, pid} =
+    Postgrex.start_link(
+      hostname: uri.host,
+      port: uri.port,
+      username: username,
+      password: password,
+      database:
+        String.trim_leading(uri.path, "/")
+    )
   ```
 
-  Start this once (e.g. from the same top-level call that starts your
-  accept loop) and pass the connection `pid` down to every handler that
-  needs it.
+  Start the connection once, for example from the top-level call that
+  starts your accept loop. Pass the connection `pid` to every handler
+  that needs it.
 
-- Your server should create both the `channels` and `messages` tables on
-  startup if they don't already exist (you'll need `messages` starting
-  next step, but creating both now avoids a migration order problem
-  later):
+- On startup, create the `channels` and `messages` tables if they do not
+  exist. Step 3 needs `messages`. Creating both now avoids a migration
+  order problem later:
 
   ```elixir
   Postgrex.query!(pid, """
@@ -72,7 +79,9 @@ Requirements:
   Postgrex.query!(pid, """
   CREATE TABLE IF NOT EXISTS messages (
     id SERIAL PRIMARY KEY,
-    channel_id INTEGER NOT NULL REFERENCES channels(id) ON DELETE CASCADE,
+    channel_id INTEGER NOT NULL
+      REFERENCES channels(id)
+      ON DELETE CASCADE,
     author TEXT NOT NULL,
     body TEXT NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW()
@@ -80,45 +89,59 @@ Requirements:
   """, [])
   ```
 
-- Reading the request body: once you've read the request line and headers
-  line by line (as in Step 1), find the `Content-Length` header, parse it
-  as an integer, and `:gen_tcp.recv(client, length)` to read exactly that
-  many more bytes as the body.
+- To read the request body, first read the request line and the headers
+  line by line, as in Step 1. Find the `Content-Length` header and parse
+  it as an integer. Then call `:gen_tcp.recv(client, length)` to read
+  exactly that many bytes as the body.
 
-- Elixir's standard library has no built-in JSON support until 1.18 (this
-  session runs 1.17), and no JSON dependency is fetched for this project —
-  don't reach for `Jason` or `JSON.encode!`, they aren't available. Parse
-  the tiny, fixed-shape request bodies this capstone sends with a small
-  regex-based helper instead:
+- The Elixir standard library has no JSON support before 1.18, and this
+  session runs 1.17. The project fetches no JSON dependency, so `Jason`
+  and `JSON.encode!` are not available. Parse the small, fixed-shape
+  request bodies of this capstone with a regex helper:
 
   ```elixir
   def extract_field(json, key) do
-    case Regex.run(~r/"#{key}"\s*:\s*"([^"]*)"/, json) do
+    pattern =
+      ~r/"#{key}"\s*:\s*"([^"]*)"/
+
+    case Regex.run(pattern, json) do
       [_, value] -> value
       nil -> nil
     end
   end
   ```
 
-  Build response JSON the same way you'll build every response body for
-  the rest of this capstone: plain string interpolation.
+  Build every response body in this capstone with plain string
+  interpolation.
 
-- Validate that `name` is present (non-nil, non-empty). If it's missing,
-  return `400 Bad Request`.
+- Make sure that `name` is present: not nil and not empty. If it is
+  missing, return `400 Bad Request`.
 
-- Use `Postgrex.query/3` (not the bang variant `query!/3`) for the insert,
-  so a unique-constraint violation on `name` comes back as an `{:error,
-  reason}` tuple instead of raising and crashing the connection handler.
-  The `reason` is a `%Postgrex.Error{}` struct with a `postgres` field
-  describing the underlying Postgres error:
+- Use `Postgrex.query/3` for the insert, not the bang variant `query!/3`.
+  A unique-constraint violation on `name` then returns an
+  `{:error, reason}` tuple. It does not raise and crash the connection
+  handler. The `reason` is a `%Postgrex.Error{}` struct. Its `postgres`
+  field describes the Postgres error:
 
   ```elixir
-  case Postgrex.query(pid, "INSERT INTO channels (name) VALUES ($1) RETURNING *", [name]) do
+  sql =
+    "INSERT INTO channels (name) " <>
+      "VALUES ($1) RETURNING *"
+
+  case Postgrex.query(pid, sql, [name]) do
     {:ok, result} ->
-      # build the 201 response from result.rows
-    {:error, %Postgrex.Error{postgres: %{code: :unique_violation}}} ->
-      # respond 409 with {"error": "channel exists"}
+      # Build the 201 response
+      # from result.rows.
+
+    {:error,
+     %Postgrex.Error{
+       postgres: %{code: :unique_violation}
+     }} ->
+      # Respond 409 with
+      # {"error": "channel exists"}.
+
     {:error, _reason} ->
-      # anything else — treat as a generic failure
+      # Treat anything else as a
+      # generic failure.
   end
   ```
