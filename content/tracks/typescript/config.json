@@ -1,7 +1,7 @@
 {
   "slug": "typescript",
   "title": "TypeScript Essentials",
-  "description": "Add static types to JavaScript. Learn TypeScript's type system, generics, and tooling to write safer, more maintainable code.",
+  "description": "Add static types to JavaScript. Learn the TypeScript type system, generics and tooling to write safer code that is easier to maintain.",
   "language": "typescript",
   "status": "published"
 }

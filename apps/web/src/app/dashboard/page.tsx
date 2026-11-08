@@ -4,19 +4,22 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc/client";
 import { DashboardStats, ContinueBuildingCard } from "@fluent/ui";
-
-const LANG_COLORS: Record<string, string> = {
-  go: "#00ACD7", javascript: "#F7DF1E", typescript: "#3178C6",
-  c: "#A8B9CC", cpp: "#659AD2", java: "#ED8B00",
-  elixir: "#9B59B6", ruby: "#CC342D", python: "#F7C948",
-  shell: "#4EAA25", assembly: "#6E4C13", terraform: "#844FBA",
-  helm: "#0F1689", kotlin: "#7F52FF", rust: "#CE422B",
-};
+import { LANG_COLORS } from "@/lib/track-colors";
 
 export default function DashboardPage() {
   const router = useRouter();
   const dashboardQuery = trpc.dashboard.getDashboard.useQuery();
   const tracksQuery = trpc.tracks.listTracks.useQuery();
+  const primaryTrackSlug = dashboardQuery.data?.[0]?.track.slug ?? "";
+  const capstoneQueryOptions = { enabled: primaryTrackSlug !== "" };
+  const capstoneProjectQuery = trpc.capstone.getProject.useQuery(
+    { trackSlug: primaryTrackSlug },
+    capstoneQueryOptions,
+  );
+  const capstoneStepsQuery = trpc.capstone.getSteps.useQuery(
+    { trackSlug: primaryTrackSlug },
+    capstoneQueryOptions,
+  );
   const resetEnrollment = trpc.enrollments.resetEnrollment.useMutation({
     onSuccess: () => void dashboardQuery.refetch(),
   });
@@ -49,24 +52,19 @@ export default function DashboardPage() {
             capstoneProgress={primary.stats.capstoneProgress}
           />
 
-          <div className="mt-8">
-            {primary.continueBuildingCard ? (
+          {capstoneProjectQuery.data && (
+            <div className="mt-8">
               <ContinueBuildingCard
-                sessionId={primary.continueBuildingCard.sessionId}
-                currentStep={primary.continueBuildingCard.currentStep}
-                trackSlug={primary.continueBuildingCard.trackSlug}
-                onResume={() =>
-                  router.push(`/tracks/${primary.continueBuildingCard?.trackSlug}/capstone`)
-                }
-                onStart={() => router.push(`/tracks/${primary.track.slug}/capstone`)}
-              />
-            ) : (
-              <ContinueBuildingCard
+                capstoneTitle={capstoneProjectQuery.data.title}
+                stepCount={capstoneStepsQuery.data?.length ?? 0}
+                sessionId={primary.continueBuildingCard?.sessionId ?? null}
+                currentStep={primary.continueBuildingCard?.currentStep ?? null}
+                trackSlug={primary.track.slug}
                 onResume={() => router.push(`/tracks/${primary.track.slug}/capstone`)}
                 onStart={() => router.push(`/tracks/${primary.track.slug}/capstone`)}
               />
-            )}
-          </div>
+            </div>
+          )}
 
           <section className="mt-12">
             <h2 className="mb-4 text-lg font-semibold text-[var(--color-text-primary)]">
@@ -132,7 +130,7 @@ export default function DashboardPage() {
         </>
       ) : (
         <p className="text-[var(--color-text-secondary)]">
-          No enrollments yet. Pick a track below to get started.
+          You have no tracks yet. Pick one below.
         </p>
       )}
 

@@ -1,7 +1,7 @@
 {
   "slug": "kubernetes",
   "title": "Kubernetes",
-  "description": "Learn Kubernetes from first principles to production patterns — pods to autoscaling, written for app developers deploying real services.",
+  "description": "Learn Kubernetes from first principles to production patterns, from pods to autoscaling. The track is for app developers who deploy real services.",
   "language": "kubernetes",
   "status": "published"
 }

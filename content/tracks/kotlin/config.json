@@ -1,7 +1,7 @@
 {
   "slug": "kotlin",
   "title": "Kotlin Essentials",
-  "description": "Learn Kotlin — a modern, concise JVM language with null safety, coroutines, and a powerful type system. The primary language for Android and a great Java alternative.",
+  "description": "Learn Kotlin, a concise JVM language with null safety, coroutines and a strong type system. It is the primary language for Android and an alternative to Java.",
   "language": "kotlin",
   "status": "published"
 }

@@ -1,6 +1,8 @@
 "use client";
 
 interface ContinueBuildingCardProps {
+  capstoneTitle: string;
+  stepCount: number;
   sessionId?: string | null;
   currentStep?: number | null;
   trackSlug?: string | null;
@@ -9,6 +11,8 @@ interface ContinueBuildingCardProps {
 }
 
 export function ContinueBuildingCard({
+  capstoneTitle,
+  stepCount,
   sessionId,
   currentStep,
   trackSlug,
@@ -24,8 +28,8 @@ export function ContinueBuildingCard({
       </h3>
       <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
         {hasSession
-          ? `You're on step ${currentStep} of the Go CRUD API capstone.`
-          : "Build a real Go CRUD API with a live database."}
+          ? `You are on step ${currentStep} of ${stepCount}: ${capstoneTitle}.`
+          : `Build the ${capstoneTitle} in ${stepCount} steps, against a live database.`}
       </p>
       <button
         onClick={hasSession ? onResume : onStart}

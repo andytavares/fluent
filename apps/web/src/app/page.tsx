@@ -1,22 +1,8 @@
 import Link from "next/link";
+import { prisma } from "@/lib/db";
+import { LANG_COLORS } from "@/lib/track-colors";
 
-const LANGUAGES = [
-  { name: "Go", slug: "go", color: "#00ACD7" },
-  { name: "Rust", slug: "rust", color: "#CE422B" },
-  { name: "TypeScript", slug: "typescript", color: "#3178C6" },
-  { name: "Python", slug: "python", color: "#F7C948" },
-  { name: "C", slug: "c", color: "#A8B9CC" },
-  { name: "C++", slug: "cpp", color: "#659AD2" },
-  { name: "Java", slug: "java", color: "#ED8B00" },
-  { name: "Kotlin", slug: "kotlin", color: "#7F52FF" },
-  { name: "Ruby", slug: "ruby", color: "#CC342D" },
-  { name: "Elixir", slug: "elixir", color: "#9B59B6" },
-  { name: "JavaScript", slug: "javascript", color: "#F7DF1E" },
-  { name: "Shell", slug: "shell", color: "#4EAA25" },
-  { name: "Terraform", slug: "terraform", color: "#844FBA" },
-  { name: "Helm", slug: "helm", color: "#0F1689" },
-  { name: "Assembly", slug: "assembly", color: "#6E4C13" },
-];
+export const dynamic = "force-dynamic";
 
 const FEATURES = [
   {
@@ -31,12 +17,18 @@ const FEATURES = [
   },
   {
     eyebrow: "Structure",
-    title: "10 concepts per language.",
-    body: "Each track teaches the 10 things you actually need to be productive: types, functions, error handling, concurrency, and the key idioms.",
+    title: "10 to 23 concepts per track.",
+    body: "Each track teaches the concepts you use at work, in the order you need them. Each concept ends with a task and its tests.",
   },
 ];
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const tracks = await prisma.track.findMany({
+    where: { status: "published" },
+    orderBy: { createdAt: "asc" },
+    select: { slug: true, title: true, language: true },
+  });
+
   return (
     <main className="min-h-screen bg-[var(--color-surface-base)]">
       {/* Nav */}
@@ -81,7 +73,7 @@ export default function LandingPage() {
             href="/auth/sign-up"
             className="px-6 py-3 rounded-lg bg-[var(--color-interactive-primary)] text-base font-semibold text-[var(--color-interactive-primary-text)] hover:bg-[var(--color-interactive-primary-hover)] transition-colors"
           >
-            Pick a language →
+            Pick a track →
           </Link>
           <Link
             href="/auth/sign-in"
@@ -92,23 +84,23 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Language grid */}
+      {/* Track grid */}
       <section className="border-t border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)]/40 px-8 py-14">
         <div className="max-w-4xl mx-auto">
           <p className="mb-8 text-xs font-mono tracking-widest text-[var(--color-text-tertiary)] uppercase">
-            {LANGUAGES.length} languages
+            {tracks.length} tracks
           </p>
           <div className="flex flex-wrap gap-2">
-            {LANGUAGES.map((lang) => (
+            {tracks.map((track) => (
               <span
-                key={lang.slug}
+                key={track.slug}
                 className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)] px-3 py-1.5 text-sm font-medium text-[var(--color-text-secondary)]"
               >
                 <span
                   className="h-2 w-2 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: lang.color }}
+                  style={{ backgroundColor: LANG_COLORS[track.language] ?? "var(--color-text-tertiary)" }}
                 />
-                {lang.name}
+                {track.title}
               </span>
             ))}
           </div>

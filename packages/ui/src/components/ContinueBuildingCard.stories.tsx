@@ -5,6 +5,8 @@ const meta: Meta<typeof ContinueBuildingCard> = {
   title: "Rosetta/ContinueBuildingCard",
   component: ContinueBuildingCard,
   args: {
+    capstoneTitle: "Java Bank Ledger API",
+    stepCount: 6,
     onResume: () => {},
     onStart: () => {},
   },
@@ -18,6 +20,6 @@ export const ActiveSession: Story = {
   args: {
     sessionId: "session-abc123",
     currentStep: 2,
-    trackSlug: "go",
+    trackSlug: "java",
   },
 };

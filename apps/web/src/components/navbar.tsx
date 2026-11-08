@@ -4,15 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { trpc } from "@/lib/trpc/client";
 
-export function Navbar() {
-  const pathname = usePathname();
-  const profileQuery = trpc.profile.getProfile.useQuery();
-
-  const trackSlugMatch = pathname.match(/^\/tracks\/([^/]+)/);
-  const trackSlug = trackSlugMatch?.[1];
+function useActiveTrack(pathname: string, profileFailed: boolean) {
+  const trackSlug = pathname.match(/^\/tracks\/([^/]+)/)?.[1];
 
   const enrollmentsQuery = trpc.enrollments.listEnrollments.useQuery(undefined, {
-    enabled: !profileQuery.isError,
+    enabled: !profileFailed,
   });
 
   const enrollment = trackSlug
@@ -20,7 +16,19 @@ export function Navbar() {
     : enrollmentsQuery.data?.[0];
 
   const activeTrackSlug = trackSlug ?? enrollment?.track.slug;
-  const activeTrackTitle = enrollment?.track.title ?? activeTrackSlug;
+  const tracksQuery = trpc.tracks.listTracks.useQuery(undefined, {
+    enabled: activeTrackSlug !== undefined && enrollment === undefined,
+  });
+  const activeTrack = tracksQuery.data?.find((track) => track.slug === activeTrackSlug);
+  const activeTrackTitle = enrollment?.track.title ?? activeTrack?.title ?? activeTrackSlug;
+
+  return { activeTrackSlug, activeTrackTitle };
+}
+
+export function Navbar() {
+  const pathname = usePathname();
+  const profileQuery = trpc.profile.getProfile.useQuery();
+  const { activeTrackSlug, activeTrackTitle } = useActiveTrack(pathname, profileQuery.isError);
 
   const navLink = (href: string, label: string, active: boolean) => (
     <Link
