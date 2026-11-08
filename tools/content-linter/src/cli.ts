@@ -2,7 +2,7 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { trackConfigSchema } from "@fluent/content-config";
-import { validateExerciseFolder } from "./validator.js";
+import { checkFolderBuildsOn, validateExerciseFolder } from "./validator.js";
 import { runExerciseChecks } from "./runner.js";
 
 // Concept folders live at content/tracks/<track>/concepts/<concept>;
@@ -30,6 +30,8 @@ async function main() {
 
   // Step 1: Static validation
   const errors = await validateExerciseFolder(folderPath, language);
+  const buildsOn = await checkFolderBuildsOn(folderPath);
+  if (buildsOn) errors.push(buildsOn);
 
   const criticalErrors = errors.filter((e) => !e.code.startsWith("W"));
   const warnings = errors.filter((e) => e.code.startsWith("W"));
@@ -42,7 +44,7 @@ async function main() {
     for (const e of criticalErrors) {
       console.error(`  ✗ ${e.code}: ${e.message}${e.file ? ` (${e.file})` : ""}`);
     }
-    console.error(`\n${criticalErrors.length} error(s) found. Exiting 1.`);
+    console.error(`\n${String(criticalErrors.length)} error(s) found. Exiting 1.`);
     process.exit(1);
   }
 
@@ -66,7 +68,7 @@ async function main() {
   console.log("\n✓ All checks passed");
 }
 
-main().catch((err) => {
+main().catch((err: unknown) => {
   console.error(err);
   process.exit(1);
 });

@@ -22,7 +22,7 @@ async function createValidExercise(base: string): Promise<string> {
     join(dir, "config.json"),
     JSON.stringify({ slug: "hello", title: "Hello World", position: 1, has_testout: false, status: "published" }),
   );
-  await writeFile(join(dir, "instructions.md"), "# Hello World\n\nWrite a function that prints Hello, World! to stdout.");
+  await writeFile(join(dir, "instructions.md"), "# Hello World\n\n## The task\n\nWrite a function that prints Hello, World! to stdout.\n\n```go\nfunc main()\n```\n");
   await writeFile(join(dir, "stub.go"), "package main\n\nfunc main() {}\n");
   await writeFile(join(dir, "exemplar.go"), "package main\n\nimport \"fmt\"\n\nfunc main() { fmt.Println(\"Hello, World!\") }\n");
   await writeFile(join(dir, "hello_test.go"), "package main\nimport \"testing\"\nfunc TestHello(t *testing.T) {}\n");
