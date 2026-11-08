@@ -1,42 +1,34 @@
-# Matrix and Parallelism
+## What you build
 
-## What you'll learn
-
-Builds on **conditionals** and **agents and targeting**: you can already
-target one step at one kind of agent. This concept covers Buildkite's two
-mechanisms for turning *one step definition* into *many jobs* —
-`matrix` and `parallelism` — which solve different problems and are not
-interchangeable.
+You write three steps that each turn one step definition into many jobs: two with `matrix` and one with `parallelism`. The two mechanisms solve different problems and do not replace each other. This lesson builds on **Conditionals** and **Agents and Targeting**.
 
 ## Key concepts
 
-**`matrix` — different inputs, same command shape.** A matrix expands one
-step template across a list (or lists) of values, substituting
-`{{matrix}}` into `label`, `command`/`commands`, `env`, `plugins`, and
-`agents`:
+### `matrix` runs one command shape with different inputs
+
+A matrix expands one step template across a list of values. Buildkite puts each value into `{{matrix}}` in `label`, `command` or `commands`, `env`, `plugins` and `agents`.
 
 ```yaml
 steps:
   - label: ":test_tube: Test {{matrix}}"
-    command: "make test LANG_VERSION={{matrix}}"
+    command: "make test V={{matrix}}"
     matrix:
       - "3.9"
       - "3.10"
       - "3.11"
 ```
 
-This produces three jobs, one per Python version, each with its own
-`{{matrix}}` substitution. Use a single-dimension matrix any time the
-*only* thing changing between jobs is one value.
+This makes three jobs, one per Python version. Use a single-dimension matrix when only one value changes between jobs.
 
-**Multi-dimension matrices with `matrix.setup`.** For more than one varying
-axis, use `setup` with named dimensions — Buildkite creates the full
-cross-product:
+### `matrix.setup` makes every combination
+
+For more than one changing value, use `setup` with named dimensions. Buildkite creates the full cross-product. Refer to each dimension as `{{matrix.<dimension-name>}}`.
 
 ```yaml
 steps:
-  - label: ":test_tube: {{matrix.os}} / {{matrix.arch}}"
-    command: "echo {{matrix.os}} {{matrix.arch}}"
+  - label: "{{matrix.os}}/{{matrix.arch}}"
+    command: >-
+      echo {{matrix.os}} {{matrix.arch}}
     matrix:
       setup:
         os:
@@ -47,14 +39,11 @@ steps:
           - "arm64"
 ```
 
-Two dimensions of two values each produce four jobs (`2 × 2`). Reference
-each dimension as `{{matrix.<dimension-name>}}`.
+Two dimensions of two values each make four jobs (2 × 2). The `>-` folds the next line into one string value.
 
-**`adjustments` — patch individual matrix cells.** With `matrix.setup`, an
-`adjustments` list can `skip` a specific combination entirely, or mark it
-`soft_fail` (allowed to fail without breaking the build) — useful for a
-known-broken or low-priority combination you still want visibility into
-without blocking the pipeline:
+### `adjustments` changes one combination
+
+With `matrix.setup`, an `adjustments` list can change single combinations. `skip: true` removes a combination. `soft_fail` lets it fail without failing the build. Use `soft_fail` for a known-broken or low-priority combination that you still want to see.
 
 ```yaml
     matrix:
@@ -68,74 +57,45 @@ without blocking the pipeline:
           skip: true
 ```
 
-**`parallelism` — same input, split the work.** `parallelism: N` creates
-`N` identical jobs from one step — same command, same environment — for
-splitting a single, large workload (typically a test suite) across
-workers. Each job gets `BUILDKITE_PARALLEL_JOB` (its 0-based index) and
-`BUILDKITE_PARALLEL_JOB_COUNT` (the total), which your test runner or a
-splitting script uses to partition work:
+### `parallelism` splits one workload
+
+`parallelism: N` creates N identical jobs from one step, with the same command and environment. Use it to split one large workload, often a test suite, across workers.
+
+Each job gets `BUILDKITE_PARALLEL_JOB`, its 0-based index, and `BUILDKITE_PARALLEL_JOB_COUNT`, the total. Your test runner or a split script reads them to choose its part of the work.
 
 ```yaml
 steps:
   - label: ":test_tube: Sharded tests"
-    command: "make test-shard"   # reads BUILDKITE_PARALLEL_JOB internally
+    # reads BUILDKITE_PARALLEL_JOB
+    command: "make test-shard"
     parallelism: 4
 ```
 
-**Matrix vs. parallelism — different problems.** A matrix answers "run
-this against N *different inputs*" (versions, OSes, architectures) —each
-job is meaningfully different. `parallelism` answers "split this *one*
-workload across N identical workers" for speed — each job is identical
-except for which shard of data/tests it picks up. They are **not
-compatible on the same step** — you cannot combine `matrix:` and
-`parallelism:` in one step definition, but you can use both in the same
-build on separate steps.
+### Matrix and parallelism solve different problems
 
-## vs other tools
+A matrix runs a step against N different inputs, such as versions, OSes or architectures. Each job is different. `parallelism` splits one workload across N identical workers for speed. Each job differs only in the part of the work it takes.
 
-| | Buildkite | GitHub Actions | CircleCI |
-|---|---|---|---|
-| Different inputs | `matrix:` (array or `setup` + `adjustments`) | `strategy.matrix:` | N/A (no native matrix; parameterized configs) |
-| Splitting one workload | `parallelism:` + `BUILDKITE_PARALLEL_JOB` | `strategy.matrix` reused as a splitter, or third-party test-splitting actions | `parallelism:` + `CIRCLE_NODE_INDEX` |
-| Excluding a combination | `matrix.adjustments` with `skip`/`soft_fail` | `strategy.matrix.exclude` | N/A |
-
-GitHub Actions overloads its single `matrix` mechanism for both "different
-inputs" and "split one workload" use cases; Buildkite keeps them as two
-distinct, purpose-built attributes, which is why matrix and parallelism
-can't be combined on one step — they're solving different problems by
-design, not by omission.
+You cannot use `matrix:` and `parallelism:` on the same step. You can use both in one build, on separate steps. GitHub Actions uses its one `matrix` mechanism for both jobs. Buildkite keeps two attributes, by design.
 
 ## Watch out
 
-- **Matrix values can't be used in `key` or `concurrency_group`** — only
-  `env`, `label`, `commands`, `plugins`, and `agents` accept `{{matrix}}`
-  interpolation. If you need a unique key per matrix job, you don't get
-  one automatically.
-- **`parallelism` jobs don't split anything for you** — Buildkite creates
-  N identical jobs; *your test runner* (or a wrapper script) must read
-  `BUILDKITE_PARALLEL_JOB` / `BUILDKITE_PARALLEL_JOB_COUNT` and decide
-  which subset of tests to run. Forgetting this means N jobs all running
-  the entire suite.
-- **`adjustments` requires `matrix.setup`** — you can't add `adjustments`
-  to a bare list-form matrix; switch to the `setup` form first.
+- `key` and `concurrency_group` do not accept `{{matrix}}`. Matrix jobs get no unique key automatically.
+- Only `env`, `label`, `commands`, `plugins` and `agents` accept `{{matrix}}`.
+- `parallelism` does not split anything. Your test runner must read the two variables, or each job runs the whole suite.
+- `adjustments` needs `matrix.setup`. A bare list-form matrix cannot have `adjustments`.
 
 ## The task
 
-Write a `pipeline.yml` with three command steps:
+Write a pipeline in `stub.yaml` with three command steps. Step labels are free text: the checks do not read them, so a label can differ from the stub's comment.
 
-1. **Language version matrix** — `label: ":test_tube: Test {{matrix}}"`,
-   `key: "test-matrix"`, `command: "make test LANG_VERSION={{matrix}}"`,
-   with a single-dimension `matrix:` list of `"3.9"`, `"3.10"`, `"3.11"`.
-2. **OS/arch matrix with an adjustment** — `label: ":test_tube: {{matrix.os}} / {{matrix.arch}}"`,
-   `key: "test-matrix-multi"`, `command: "echo {{matrix.os}} {{matrix.arch}}"`,
-   using `matrix.setup` with `os: ["linux", "windows"]` and
-   `arch: ["amd64", "arm64"]`, and an `adjustments` entry that skips the
-   `windows`/`arm64` combination (`skip: true`).
-3. **Sharded tests** — `label: ":test_tube: Sharded tests"`,
-   `key: "test-shards"`, `command: "make test-shard"`, `parallelism: 4`
-   (on its own step, never combined with `matrix:`).
+1. Version matrix: `label: ":test_tube: Test {{matrix}}"`, `key: "test-matrix"`, `command: "make test LANG_VERSION={{matrix}}"`.
+2. Give the version matrix a single-dimension `matrix:` list: `"3.9"`, `"3.10"`, `"3.11"`.
+3. OS and arch matrix: `label: "{{matrix.os}}/{{matrix.arch}}"`, `key: "test-matrix-multi"`. Its command echoes both dimensions.
+4. Give it a `matrix.setup` with `os` (`"linux"`, `"windows"`) and `arch` (`"amd64"`, `"arm64"`). Write each value on its own line.
+5. Add an `adjustments` entry that skips the `windows` and `arm64` combination with `skip: true`.
+6. Sharded tests: `label: ":test_tube: Sharded tests"`, `key: "test-shards"`, `command: "make test-shard"`, `parallelism: 4`.
 
-Expected shape:
+The sharded step must not have `matrix:`.
 
 ```yaml
 steps:
@@ -147,9 +107,10 @@ steps:
       - "3.10"
       - "3.11"
 
-  - label: ":test_tube: {{matrix.os}} / {{matrix.arch}}"
+  - label: "{{matrix.os}}/{{matrix.arch}}"
     key: "test-matrix-multi"
-    command: "echo {{matrix.os}} {{matrix.arch}}"
+    command: >-
+      echo {{matrix.os}} {{matrix.arch}}
     matrix:
       setup:
         os:

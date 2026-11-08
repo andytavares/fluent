@@ -1,97 +1,124 @@
-# STL Containers
+## What you build
 
-## What you'll learn
-
-Building on the templates from lesson 2 — the STL containers (`vector`, `map`, `unordered_map`, ...) are themselves class templates. The Standard Template Library provides ready-to-use containers and algorithms (`sort`, `find_if`, `accumulate`) that work with any of them through a common iterator interface.
+You write three functions with STL containers and algorithms: `unique_sorted`, `word_count` and `top_n`. The STL containers, such as `vector` and `map`, are class templates. This lesson builds on **Templates**.
 
 ## Key concepts
 
-**`std::vector`** — dynamic array, the default sequence container:
+### `std::vector` is the default sequence container
+
+A `vector` is a dynamic array. It grows when you add elements.
+
 ```cpp
 #include <vector>
 std::vector<int> nums = {3, 1, 4, 1, 5};
 nums.push_back(9);
-nums.size();        // 6
-nums[0];            // 3
+nums.size();  // 6
+nums[0];      // 3
 ```
 
-**`std::map`** — sorted key-value store (O(log n) operations, red-black tree):
+### `std::map` keeps its keys sorted
+
+A `map` is a red-black tree with O(log n) operations. Iteration always gives the keys in sorted order. Python's `dict` keeps insertion order, and a hash map keeps no order.
+
 ```cpp
 #include <map>
 std::map<std::string, int> scores;
 scores["Alice"] = 95;
 scores["Bob"]   = 87;
-scores.count("Alice");  // 1 (key exists)
-scores.count("Carol");  // 0 (key absent)
+// 1: key exists
+scores.count("Alice");
+// 0: key absent
+scores.count("Carol");
 ```
 
-**`std::unordered_map`** — hash map (O(1) average, no ordering guarantee):
+### `std::unordered_map` is a hash map
+
+Operations are O(1) on average. The map gives no order guarantee. `operator[]` default-constructs the value on first access, `0` for `int`. So `freq["go"]++` works before `"go"` is a key.
+
 ```cpp
 #include <unordered_map>
 std::unordered_map<std::string, int> freq;
 freq["go"]++;
-freq["go"]++;  // freq["go"] == 2
+freq["go"]++;
+// freq["go"] == 2
 ```
-`operator[]` default-constructs the value (`0` for `int`) on first access — this is what makes `freq["go"]++` work even before `"go"` exists as a key.
 
-**Algorithms from `<algorithm>` and `<numeric>`** operate on iterator ranges, not containers directly:
+### Algorithms work on iterator ranges
+
+The functions in `<algorithm>` and `<numeric>` take a range `[begin, end)`, not a container. This works on subranges and streams too. Python, Ruby and JS put these methods on the collection instead.
+
 ```cpp
 #include <algorithm>
 #include <numeric>
 
 std::sort(nums.begin(), nums.end());
-int total = std::accumulate(nums.begin(), nums.end(), 0);
-auto it   = std::find_if(nums.begin(), nums.end(), [](int n){ return n > 3; });
+int total = std::accumulate(
+    nums.begin(), nums.end(), 0);
+auto it = std::find_if(
+    nums.begin(), nums.end(),
+    [](int n) { return n > 3; });
 ```
 
-**The erase-remove idiom** — `std::remove`/`std::unique` don't shrink the container, they just move elements to the front and return a new logical end; you must `erase` the tail:
+### Erase-remove removes elements for real
+
+`std::remove` and `std::unique` do not shrink the container. They move the kept elements to the front and return the new logical end. You must `erase` the tail.
+
 ```cpp
 std::sort(v.begin(), v.end());
-v.erase(std::unique(v.begin(), v.end()), v.end());  // now actually deduplicated
+// Now v has no duplicates
+v.erase(
+    std::unique(v.begin(), v.end()),
+    v.end());
 ```
 
-**Range-based for:**
+### Range-based `for` visits each element
+
+With a `map`, each element is a key-value pair. Structured bindings name both parts.
+
 ```cpp
 for (const auto& [key, val] : scores) {
-    std::cout << key << ": " << val << "\n";
+    std::cout << key << ": "
+              << val << "\n";
 }
 ```
 
-**vs other languages:** STL algorithms operate on iterator ranges `[begin, end)` rather than on the container directly — more flexible (works on subranges, streams) than Python/Ruby/JS built-in collection methods, but requires getting used to the pair-of-iterators pattern. `std::map`'s ordering is a real behavioral difference from Python's `dict` (insertion order) or a hash-based map — iterate a `map` and you get keys sorted, always.
-
 ## Watch out
 
-- **`std::unique` requires the range to already be sorted.** It only removes *consecutive* duplicates — `std::unique` on `{1, 3, 1}` does nothing, because the two `1`s aren't adjacent. Sort first.
-- **Erasing from a `std::vector` while iterating invalidates iterators** past the erase point. Don't do `for (auto it = v.begin(); it != v.end(); ++it) if (...) v.erase(it);` — use the return value of `erase` or the erase-remove idiom instead.
-- **`operator[]` on a `map`/`unordered_map` inserts** a default value if the key is missing — even a read-only-looking `if (m["key"] == 5)` mutates the map. Use `.count(key)` or `.find(key)` to check existence without inserting.
+- `std::unique` removes only consecutive duplicates. On `{1, 3, 1}` it does nothing. Sort first.
+- Erasing from a `vector` in a loop invalidates the iterators after the erase point.
+- Do not call `v.erase(it)` and then `++it`. Use the iterator that `erase` returns, or use erase-remove.
+- `operator[]` on a `map` or `unordered_map` inserts a default value if the key is missing.
+- Even `if (m["key"] == 5)` changes the map. Use `.count(key)` or `.find(key)` to test for a key.
 
 ## The task
 
-Implement three functions using STL containers and algorithms, in `stub.cpp`.
+Write three functions in `stub.cpp` with STL containers and algorithms.
 
-**`std::vector<int> unique_sorted(std::vector<int> v)`** — return a new vector containing the elements of `v`, sorted ascending, with duplicates removed.
+1. `std::vector<int> unique_sorted(std::vector<int> v)` returns the elements of `v`, sorted ascending, with duplicates removed.
+2. `std::unordered_map<std::string, int> word_count(const std::string& text)` counts how many times each word appears in `text`.
+3. In `word_count`, one or more spaces separate the words. An empty `text` gives an empty map.
+4. `std::vector<int> top_n(std::vector<int> v, int n)` returns the `n` largest elements of `v`, sorted descending.
+5. If `v` has fewer than `n` elements, `top_n` returns all of them, sorted descending.
 
-```cpp
-unique_sorted({3, 1, 4, 1, 5, 9, 2, 6, 5});  // {1, 2, 3, 4, 5, 6, 9}
-unique_sorted({5, 5, 5});                    // {5}
-unique_sorted({});                           // {}
-```
-
-**`std::unordered_map<std::string, int> word_count(const std::string& text)`** — count how many times each word appears in `text`, where words are separated by one or more spaces.
+An empty input vector gives an empty result for `unique_sorted` and `top_n`.
 
 ```cpp
-auto wc = word_count("the cat sat on the mat the cat");
-wc["the"];         // 3
-wc["cat"];         // 2
-wc["sat"];         // 1
-wc.count("dog");   // 0 — key never inserted
-word_count("");    // {} — empty map
-```
+unique_sorted({3, 1, 4, 1, 5, 9, 2, 6, 5});
+// {1, 2, 3, 4, 5, 6, 9}
+unique_sorted({1, 2, 3}); // {1, 2, 3}
+unique_sorted({5, 5, 5}); // {5}
+unique_sorted({});        // {}
 
-**`std::vector<int> top_n(std::vector<int> v, int n)`** — return the `n` largest elements of `v`, sorted descending. If `v` has fewer than `n` elements, return all of them, sorted descending.
+auto wc = word_count(
+    "the cat sat on the mat the cat");
+wc["the"];        // 3
+wc["cat"];        // 2
+wc["sat"];        // 1
+wc.count("dog");  // 0
+word_count("");   // {} (empty map)
 
-```cpp
-top_n({3, 1, 4, 1, 5, 9, 2, 6}, 3);  // {9, 6, 5}
-top_n({3, 1, 2}, 10);                // {3, 2, 1}  — fewer than n elements
-top_n({}, 3);                        // {}
+top_n({3, 1, 4, 1, 5, 9, 2, 6}, 3);
+// {9, 6, 5}
+top_n({3, 1, 2}, 10);  // {3, 2, 1}
+top_n({}, 3);          // {}
 ```

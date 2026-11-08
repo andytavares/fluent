@@ -1,12 +1,12 @@
-# Pattern Matching
+## What you build
 
-## What you'll learn
-
-`match` in Rust is exhaustive — the compiler rejects any match that doesn't cover all possible cases. Combined with Rust's expressive enum variants, pattern matching replaces entire categories of code that other languages handle with if-else chains or virtual dispatch.
+You write three functions with `match`: one describes a `Command` enum, and two work with `Option<i32>`. With Rust enums, `match` replaces long `if`/`else` chains and virtual dispatch. This lesson builds on **Structs & Enums**.
 
 ## Key concepts
 
-**Basic `match`.** Every arm is `pattern => expression`. The value of the matched arm is the value of the whole `match` expression.
+### `match` is an exhaustive expression
+
+Each arm is `pattern => expression`. The value of the arm that matches is the value of the whole `match`. The compiler rejects a `match` that does not cover every case. Go's `switch` does not bind, does not destructure and has no exhaustiveness check.
 
 ```rust
 let x: i32 = 3;
@@ -14,18 +14,23 @@ let label = match x {
     1 => "one",
     2 | 3 => "two or three",
     4..=9 => "four to nine",
-    _ => "other",   // catch-all, required unless all cases are covered
+    // Catch-all: required unless
+    // the arms cover all cases
+    _ => "other",
 };
 ```
 
-**Matching enums.** The compiler ensures all variants are handled.
+### A `match` on an enum handles every variant
+
+An arm can bind the data that a variant holds.
 
 ```rust
 enum Coin {
     Penny,
     Nickel,
     Dime,
-    Quarter(String), // variant with data
+    // A variant with data
+    Quarter(String),
 }
 
 fn value(c: Coin) -> u32 {
@@ -34,47 +39,58 @@ fn value(c: Coin) -> u32 {
         Coin::Nickel => 5,
         Coin::Dime => 10,
         Coin::Quarter(state) => {
-            println!("Quarter from {}", state);
+            println!("From {}", state);
             25
         }
     }
 }
 ```
 
-**Destructuring structs and tuples** inside patterns:
+### Patterns destructure structs and tuples
+
+A pattern can fix some fields to values and bind the other fields to names.
 
 ```rust
 struct Point { x: i32, y: i32 }
 
 let p = Point { x: 3, y: -2 };
 match p {
-    Point { x: 0, y } => println!("on y-axis at {}", y),
-    Point { x, y: 0 } => println!("on x-axis at {}", x),
-    Point { x, y }    => println!("({}, {})", x, y),
+    Point { x: 0, y } =>
+        println!("on y-axis at {}", y),
+    Point { x, y: 0 } =>
+        println!("on x-axis at {}", x),
+    Point { x, y } =>
+        println!("({}, {})", x, y),
 }
 ```
 
-**Guards** add boolean conditions to a pattern:
+### A guard adds a condition to a pattern
+
+Write `if` and a boolean condition after the pattern.
 
 ```rust
 let num = 4;
 match num {
     n if n < 0 => println!("negative"),
-    n if n % 2 == 0 => println!("positive even: {}", n),
+    n if n % 2 == 0 =>
+        println!("positive even: {}", n),
     n => println!("positive odd: {}", n),
 }
 ```
 
-**`@` bindings** capture the matched value while also testing it:
+### An `@` binding names a value that a pattern tests
 
 ```rust
 match x {
-    n @ 1..=9 => println!("single digit: {}", n),
+    n @ 1..=9 =>
+        println!("single digit: {}", n),
     _ => println!("other"),
 }
 ```
 
-**`if let`** — shorthand when you care about one variant only:
+### `if let` matches one variant
+
+Use `if let` when only one variant matters to you.
 
 ```rust
 if let Some(val) = some_option {
@@ -82,7 +98,7 @@ if let Some(val) = some_option {
 }
 ```
 
-**`while let`** — loop while a pattern continues to match:
+### `while let` loops while a pattern matches
 
 ```rust
 let mut stack = vec![1, 2, 3];
@@ -91,59 +107,57 @@ while let Some(top) = stack.pop() {
 }
 ```
 
-## vs other languages
-
-| | Rust | Go | TypeScript | Java (switch) |
-|---|---|---|---|---|
-| Exhaustiveness | **compile error** if incomplete | no | no (TS `never` trick) | no (Java 21 sealed classes: yes) |
-| Binding in arms | yes | no | no | Java 21 patterns: yes |
-| Value expression | yes — `match` is an expression | no | no | no |
-| Struct destructure | yes | no | yes | no |
-
-Go's `switch` does not bind, does not destructure, and has no exhaustiveness check. You simulate pattern matching there with a chain of type assertions.
-
 ## Watch out
 
-- Adding a variant to an enum later will make every `match` on it fail to compile until you handle the new variant (unless there's a `_` catch-all) — this is a feature: the compiler finds every call site that needs updating.
-- A `_` catch-all silences exhaustiveness checking for *future* variants too. Prefer listing every variant explicitly when the set is closed and small (like `Command` here); reserve `_` for truly open-ended ranges (like an integer range's default case).
-- `match cmd { ... }` on `&Command` binds by reference inside the arms automatically (via match ergonomics) — you get `x: &i32`-like bindings without writing `ref` yourself, which trips up people coming from older Rust tutorials or languages with explicit ref/deref patterns.
+- A new enum variant breaks every `match` on that enum without `_`. The compiler finds each place to update.
+- A `_` catch-all also hides future variants from the exhaustiveness check.
+- For a small, closed set such as `Command`, list every variant. Keep `_` for open sets such as integer ranges.
+- A `match` on `&Command` binds by reference in the arms. You do not write `ref`.
+- Older tutorials use explicit `ref` patterns. Match ergonomics makes them unnecessary.
 
 ## The task
 
-Implement three functions:
+Write a `Command` enum and three functions that use `match`.
+
+1. `enum Command` has four variants: `Quit`, `Move { x: i32, y: i32 }`, `Write(String)` and `ChangeColor(u8, u8, u8)`.
+2. `fn describe_command(cmd: &Command) -> String` returns a description of `cmd`:
+   - `Quit` gives `"quit"`.
+   - `Move { x, y }` gives `"move to (x, y)"`.
+   - `Write(text)` gives `"write: "` followed by `text`.
+   - `ChangeColor(r, g, b)` gives `"color: (#RRGGBB)"`. Each part is two uppercase hex digits.
+3. `fn clamp_option(n: i32) -> Option<i32>` returns `Some(n)` if `n` is from 1 to 100 inclusive. Otherwise it returns `None`.
+4. `fn double_or_minus_one(opt: Option<i32>) -> i32` returns the value times 2. For `None`, it returns `-1`.
+
+`Write` with an empty string gives `"write: "`. A zero color part prints as `00`.
 
 ```rust
-enum Command {
-    Quit,
-    Move { x: i32, y: i32 },
-    Write(String),
-    ChangeColor(u8, u8, u8),
-}
+use Command::*;
 
-// Describe the command as a String:
-//   Quit                    -> "quit"
-//   Move { x, y }           -> "move to (x, y)"
-//   Write(text)             -> "write: <text>"
-//   ChangeColor(r, g, b)    -> "color: (#RRGGBB)" — uppercase hex, 2 digits each
-fn describe_command(cmd: &Command) -> String
+describe_command(&Quit)  // "quit"
+describe_command(&Move { x: 3, y: -1 })
+// "move to (3, -1)"
+describe_command(&Move { x: 0, y: 0 })
+// "move to (0, 0)"
+describe_command(
+    &Write(String::from("hi")))
+// "write: hi"
+describe_command(
+    &Write(String::from("")))
+// "write: "
+describe_command(
+    &ChangeColor(255, 128, 0))
+// "color: (#FF8000)"
+describe_command(&ChangeColor(0, 0, 0))
+// "color: (#000000)"
 
-// Return Some(n) if n is in 1..=100 inclusive, None otherwise.
-fn clamp_option(n: i32) -> Option<i32>
+clamp_option(50)   // Some(50)
+clamp_option(1)    // Some(1)
+clamp_option(100)  // Some(100)
+clamp_option(0)    // None
+clamp_option(101)  // None
+clamp_option(-5)   // None
 
-// Given Option<i32>, return the value doubled, or -1 if None.
-fn double_or_minus_one(opt: Option<i32>) -> i32
-```
-
-```rust
-describe_command(&Command::Quit);                          // "quit"
-describe_command(&Command::Move { x: 3, y: -1 });           // "move to (3, -1)"
-describe_command(&Command::Write(String::from("hi")));      // "write: hi"
-describe_command(&Command::ChangeColor(255, 128, 0));       // "color: (#FF8000)"
-
-clamp_option(50);   // Some(50)
-clamp_option(0);    // None — below the range
-clamp_option(101);  // None — above the range
-
-double_or_minus_one(Some(7)); // 14
-double_or_minus_one(None);    // -1
+double_or_minus_one(Some(7))  // 14
+double_or_minus_one(Some(0))  // 0
+double_or_minus_one(None)     // -1
 ```

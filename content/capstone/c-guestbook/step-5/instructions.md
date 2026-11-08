@@ -1,16 +1,16 @@
 # Step 5 — Recent entries
 
-Guests want to see what's freshest, not the whole history. This is the
-first endpoint that returns more than one row, which means building a JSON
-*array* in C — with no JSON library, and no `std::string`-style
-append-as-you-go buffer either.
+Guests want to see the newest entries, not the whole history. This is
+the first endpoint that returns more than one row. You build a JSON
+*array* in C, with no JSON library and no growable string buffer like
+`std::string`.
 
 ## The task
 
-Add a handler for `GET /entries/recent` that returns the 5 newest entries,
+Add a handler for `GET /entries/recent`. It returns the 5 newest entries,
 newest first.
 
-**Sample request/response:**
+**Sample request and response:**
 
 ```
 GET /entries/recent
@@ -18,58 +18,72 @@ GET /entries/recent
 200 OK
 Content-Type: application/json
 
-{"entries":[{"id":8,"name":"Visitor Eight","message":"msg8","created_at":"2026-07-01 09:07:00+00"},...]}
+{"entries":[
+ {"id":8,
+  "name":"Visitor Eight",
+  "message":"msg8",
+  "created_at":"2026-07-01 09:07:00+00"},
+ ...]}
 ```
 
 ### Querying the newest rows
 
-`ORDER BY created_at DESC LIMIT 5` gets you the newest-first rows in one
+`ORDER BY created_at DESC LIMIT 5` gets the newest rows first in one
 query:
 
 ```c
 PGresult *res = PQexec(conn,
-    "SELECT id, name, message, created_at::text FROM entries "
+    "SELECT id, name, message, "
+    "created_at::text FROM entries "
     "ORDER BY created_at DESC LIMIT 5");
 ```
 
 ### The `snprintf` offset pattern
 
-`strcat` re-scans the destination buffer from the start every time you
-call it to find where to append — fine for a handful of calls, wasteful
-in a loop. The more common C idiom for building up a buffer incrementally
-is to track a running offset and let `snprintf`'s return value (the number
-of bytes it *would have* written) advance it:
+`strcat` scans the destination buffer from the start on each call to
+find the end. That is fine for a few calls, but it wastes time in a loop.
+The common C idiom keeps a running offset instead. The return value of
+`snprintf` is the number of bytes it *would have* written, and you add it
+to the offset:
 
 ```c
 char body[8192];
-int offset = snprintf(body, sizeof(body), "{\"entries\":[");
+int offset = snprintf(body, sizeof(body),
+                      "{\"entries\":[");
 
 int n = PQntuples(res);
 for (int i = 0; i < n; i++) {
-    offset += snprintf(body + offset, sizeof(body) - offset,
-        "%s{\"id\":%s,\"name\":\"%s\",\"message\":\"%s\",\"created_at\":\"%s\"}",
+    offset += snprintf(body + offset,
+        sizeof(body) - offset,
+        "%s{\"id\":%s,"
+        "\"name\":\"%s\","
+        "\"message\":\"%s\","
+        "\"created_at\":\"%s\"}",
         i > 0 ? "," : "",
-        PQgetvalue(res, i, 0), PQgetvalue(res, i, 1),
-        PQgetvalue(res, i, 2), PQgetvalue(res, i, 3));
+        PQgetvalue(res, i, 0),
+        PQgetvalue(res, i, 1),
+        PQgetvalue(res, i, 2),
+        PQgetvalue(res, i, 3));
 }
 
-offset += snprintf(body + offset, sizeof(body) - offset, "]}");
+offset += snprintf(body + offset,
+    sizeof(body) - offset, "]}");
 PQclear(res);
 ```
 
-Each call writes starting at `body + offset` and is bounded by
-`sizeof(body) - offset` — the remaining space, not the whole buffer —so
-you never overwrite what you already wrote and never write past the end.
-The `i > 0 ? "," : ""` trick keeps commas between elements without a
-trailing comma after the last one.
+Each call writes from `body + offset`. Its limit is
+`sizeof(body) - offset`, the remaining space, not the whole buffer. So
+you never overwrite earlier output and never write past the end. The
+`i > 0 ? "," : ""` expression puts a comma between elements and no comma
+after the last one.
 
 Requirements:
 
 - Return the 5 most recently created entries, newest first
   (`ORDER BY created_at DESC LIMIT 5`).
-- Response body shape: `{"entries": [...]}`, where each element has `id`,
-  `name`, `message`, and `created_at`.
-- If there are fewer than 5 entries in the table, return however many
-  exist — don't pad or error.
-- Build the JSON array with the running-offset `snprintf` pattern shown
-  above, not repeated `strcat` calls.
+- The response body shape is `{"entries": [...]}`. Each element has
+  `id`, `name`, `message` and `created_at`.
+- If the table has fewer than 5 entries, return all of them. Do not pad
+  the array or return an error.
+- Build the JSON array with the running-offset `snprintf` pattern above.
+  Do not use repeated `strcat` calls.

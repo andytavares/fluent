@@ -1,15 +1,15 @@
-# Functions
+## What you build
 
-## What you'll learn
-
-You've been writing loops and conditionals inline; functions let you package that logic and reuse it. Bash functions look like functions in other languages but behave differently in three important ways: arguments are positional (not named), return values are exit codes (not data), and all variables are global unless explicitly declared `local`.
+You write `max`, `join_by` and `repeat_func`. They use positional arguments, `shift` and a call to a function by its name. This lesson builds on **Loops**.
 
 ## Key concepts
 
-**Two equivalent declaration syntaxes:**
+### Bash has two ways to declare a function
+
+The `name()` form is POSIX and more portable. The `function` keyword is Bash only. Pick one and use it everywhere.
 
 ```bash
-# POSIX-compatible
+# POSIX form
 greet() {
   echo "Hello, $1"
 }
@@ -20,9 +20,9 @@ function greet {
 }
 ```
 
-Both work. The `name()` form is more portable; the `function` keyword is Bash-specific. Pick one and be consistent.
+### Arguments are positional
 
-**Positional arguments — `$1`, `$2`, ... `$@`:**
+A function has no named parameters, only `$1`, `$2` and so on. Copy them into named `local` variables at the top.
 
 ```bash
 add() {
@@ -30,55 +30,62 @@ add() {
   local b="$2"
   echo $(( a + b ))
 }
-add 3 4   # prints 7
+# Prints 7
+add 3 4
+```
 
+### `shift` drops the first argument
+
+After `shift`, `$2` becomes `$1`, and `$@` holds the rest. `$@` gives each argument as a separate word, so use it to pass arguments on. `$*` joins them with `IFS`, so use it to print. `$#` is the count.
+
+```bash
 log() {
   local level="$1"
-  shift            # drop $1; $@ now contains remaining args
+  shift
   echo "[$level] $*"
 }
 log INFO "server started on port" 8080
-# → [INFO] server started on port 8080
+# [INFO] server started on port 8080
 ```
 
-`$@` — all args as separate quoted words (use this for passing args along)
-`$*` — all args joined by IFS (use this for printing)
-`$#` — count of args
+### Variables are global unless you declare them `local`
 
-**`local` — always use it:**
+Without `local`, every variable you set in a function changes the global one. This is one of the most dangerous defaults in Bash.
 
 ```bash
-counter=0   # global
+# Global
+counter=0
 
 increment() {
-  local counter=0   # shadows the global — doesn't modify it
+  # Hides the global; does not change it
+  local counter=0
   ((counter++))
-  echo "$counter"   # always 1
+  # Always 1
+  echo "$counter"
 }
 ```
 
-Without `local`, every variable you set inside a function modifies the global scope. This is one of Bash's most dangerous defaults.
+### A function returns an exit code, not data
 
-**Return values — exit codes, not data:**
+The exit code of the last command is the return value. `return N` sets it to a number from 0 to 255. To give back data, `echo` it and capture it with `$()`.
 
 ```bash
 is_even() {
   local n="$1"
-  (( n % 2 == 0 ))   # exits 0 if true, 1 if false
+  # Exits 0 if true, 1 if false
+  (( n % 2 == 0 ))
 }
 
 if is_even 4; then echo "yes"; fi
 
-# To return data, echo it and capture with $()
 double() {
   echo $(( $1 * 2 ))
 }
-result=$(double 21)   # result="42"
+# result="42"
+result=$(double 21)
 ```
 
-`return N` sets the exit code (0–255). To pass data back, `echo` it and capture with `$()`.
-
-**Recursive functions work:**
+### Functions can call themselves
 
 ```bash
 factorial() {
@@ -86,59 +93,58 @@ factorial() {
   if (( n <= 1 )); then
     echo 1
   else
-    echo $(( n * $(factorial $((n - 1))) ))
+    local rest
+    rest=$(factorial $(( n - 1 )))
+    echo $(( n * rest ))
   fi
 }
 ```
 
+### A function name is a string you can call
+
+You can pass a function by its name and run it with `"$func"`. Bash has no closures. A name has one definition, so overloading is not possible.
+
 ## Watch out
 
-- Forgetting `local` leaks variables into the caller's scope — and worse, into any function further up the call stack, since Bash scope is dynamic, not lexical. A loop variable named `i` in a helper function can silently clobber an `i` the caller is using for something else.
-- `return` only sets the exit code (0–255); `return 300` wraps around to `44` (`300 % 256`). If you need to hand back a number bigger than 255, or any non-numeric data, `echo` it and capture with `$()` — never rely on `return` for data.
-- Calling a function before it's defined fails — Bash reads scripts top to bottom, unlike languages with function hoisting. Define functions before the code that calls them (or before the `main`-style block at the bottom).
-- Passing an unquoted argument through several layers of `$1`/`$@` is how word-splitting bugs sneak into "working" functions. Quote every expansion you forward: `other_func "$1"`, not `other_func $1`.
-
-## vs other languages
-
-| Concept | Most languages | Bash |
-|---------|---------------|------|
-| Named parameters | `def greet(name, age)` | No — only positional `$1`, `$2` |
-| Return value | `return x` returns data | `return N` returns exit code only; data goes via `echo` |
-| Variable scope | Block/function scoped | Global by default — `local` opts in to function scope |
-| Overloading | Many languages support it | Not possible — one definition per name |
-| First-class functions | JS, Python, Go, etc. | Functions can be passed by name, but no closures |
-
-The most impactful habit to build: always `local` every variable in a function. One unintentional global collision can cause hours of debugging.
+- A variable without `local` leaks into the caller's scope.
+- Bash scope is dynamic, so it also leaks into every caller further up the stack.
+- A helper's loop variable `i` can overwrite the caller's `i`.
+- `return` sets only the exit code, from 0 to 255. `return 300` gives 44 (`300 % 256`).
+- For larger numbers or text, `echo` the value and capture it with `$()`.
+- Bash reads a script from top to bottom and has no hoisting.
+- A call before the definition fails. Define functions before the code that calls them.
+- An unquoted argument passed through several functions splits into words.
+- Quote every expansion you pass on: `other_func "$1"`, not `other_func $1`.
 
 ## The task
 
-You're writing three functions that exercise positional arguments, `shift`, and calling a function by name.
+Write three functions that use positional arguments, `shift` and a call by name.
 
-**`max a b`** — echoes the larger of two integers.
+1. `max a b` prints the larger of two integers. When they are equal, it prints that value.
+2. `join_by separator word...` prints the words after the first argument, joined by `separator`.
+3. In `join_by`, use `shift` to remove the separator, then loop over the rest.
+4. `repeat_func func n` calls the function named `func` `n` times.
+5. Each call gets the pass number as its only argument, from 1 to `n`.
+6. Call it with `"$func" "$i"`.
 
-```bash
-max 9 3     # 9
-max 3 9     # 9
-max 5 5     # 5   — ties return either (equal)
-max -3 0    # 0
-```
-
-**`join_by separator [words...]`** — echoes all arguments after the first, joined by `separator`. Use `shift` to consume the separator first, then iterate over the rest.
+With one word, `join_by` prints the word and no separator. With no words, it prints an empty line. When `n` is 0, `repeat_func` prints nothing.
 
 ```bash
-join_by , a b c     # a,b,c
-join_by - x y z     # x-y-z
-join_by , solo      # solo          — one word, no separator inserted
-join_by ,           # (empty line)  — no words at all
-```
+max 9 3    # 9
+max 3 9    # 9
+max 5 5    # 5
+max -3 0   # 0
 
-**`repeat_func func n`** — calls the function named `func` (a string) `n` times, passing the iteration number (1-based) as its single argument. Call it dynamically with `"$func" "$i"`.
+join_by , a b c    # a,b,c
+join_by - x y z    # x-y-z
+join_by ' ' a b    # a b
+join_by , solo     # solo
+join_by ,          # (an empty line)
 
-```bash
 repeat_func echo 3
 # 1
 # 2
 # 3
-
-repeat_func echo 0   # (nothing printed — loop body never runs)
+repeat_func echo 0
+# (nothing)
 ```

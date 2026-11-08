@@ -1,40 +1,42 @@
-# Named Templates
+## What you build
 
-## What you'll learn
-
-Named templates let you define a reusable block once and call it from multiple template files. This is how Helm charts avoid copy-pasting the same label set across every Deployment, Service, and ConfigMap. The convention lives in `_helpers.tpl`, and the mechanics hinge on understanding the difference between `template` and `include`.
+You write three named templates in `_helpers.tpl`: a full name, a full label set and a selector label set. A Service then calls them with `include`. This lesson builds on **Control Flow**.
 
 ## Key concepts
 
-**`{{- define }}`** — declares a named template block:
+### `define` declares a named template
+
+A named template is a block that you define once and call from many template files. Then you do not copy the same labels into every Deployment, Service and ConfigMap.
 
 ```yaml
 {{/* _helpers.tpl */}}
 {{- define "myapp.labels" -}}
 app.kubernetes.io/name: {{ .Chart.Name }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
 {{- end }}
 ```
 
-The name is a string — by convention `<chartname>.<purpose>`. This scoping prevents collisions when charts are composed as subcharts.
+### Name templates `<chartname>.<purpose>`
 
-**`{{- template }}` vs `{{- include }}`** — this is the most important distinction in named templates:
+The name is a string. The chart name in front prevents collisions when a chart is a subchart of another chart.
+
+### `include` returns a string; `template` does not
+
+`template` writes its output directly, so you cannot pipe it. `include` returns the output as a string, so you can pipe it to `indent` or `nindent`. Always use `include` in real charts.
 
 ```yaml
-# template — cannot be piped; output is emitted directly
+# template: no pipe, no indent control
 labels:
   {{- template "myapp.labels" . }}
 
-# include — returns a string, can be piped to indent/nindent
+# include: pipe it to nindent
 labels:
   {{- include "myapp.labels" . | nindent 2 }}
 ```
 
-**Always use `include` instead of `template`** in real charts. `template` cannot be combined with pipeline functions, which means you can't control indentation. `include` returns the rendered content as a string, letting you pipe it to `nindent` or `indent`.
+### `nindent` adds a newline, then indents
 
-**`nindent` vs `indent`** — `nindent N` prepends a newline then indents every line by N spaces. `indent N` indents without the leading newline. In practice, `nindent` after `{{-` is the correct pattern:
+`nindent N` adds a newline, then indents every line by N spaces. `indent N` indents with no newline. Use `nindent` after `{{-`.
 
 ```yaml
 metadata:
@@ -43,6 +45,7 @@ metadata:
 ```
 
 This renders as:
+
 ```yaml
 metadata:
   labels:
@@ -50,14 +53,17 @@ metadata:
     app.kubernetes.io/instance: prod
 ```
 
-**Passing context (the `.`)** — the second argument to `include`/`template` is the scope passed into the block. Almost always pass `.` (the current root context). Inside the defined block, `.` is whatever you passed. You can pass a sub-object (`include "myapp.thing" .Values.config`) to scope the block to just that map.
+### The second argument is the scope
 
-**`_helpers.tpl` conventions:**
+The second argument of `include` and `template` becomes `.` inside the block. Pass `.`, the root, in most calls. To scope the block to one map, pass that map: `include "myapp.thing" .Values.config`.
 
-- One file per chart, located at `templates/_helpers.tpl`
-- Files starting with `_` are never rendered as standalone manifests
-- Group related templates with comments: `{{/* Selector labels — subset of full labels */}}`
-- Define both a "full labels" and a "selector labels" template — selector labels must be immutable once set (Kubernetes doesn't let you change them on existing Deployments)
+### `_helpers.tpl` follows conventions
+
+- Each chart has one file, `templates/_helpers.tpl`.
+- Helm never renders a file that starts with `_` as a manifest.
+- Group related templates with comments, for example `{{/* Selector labels */}}`.
+- Define a full label set and a selector label set.
+- Selector labels must not change after the first install. Kubernetes does not let you change them on an existing Deployment.
 
 ```yaml
 {{- define "myapp.selectorLabels" -}}
@@ -66,30 +72,39 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 ```
 
-## vs other tools
+### Named templates are the Helm functions
 
-Kustomize has no equivalent to named templates — you cannot define a label block and reuse it across multiple resources without repeating it in each patch file. Terraform has modules and locals for this kind of reuse. CDK8s has actual functions and classes. Helm's named templates are the closest thing to a function in a YAML-first world: not ideal, but workable once you understand the `include | nindent` pattern.
+Kustomize cannot define a label block once and reuse it, while Terraform has modules and locals, and CDK8s has functions and classes. In Helm, the `include | nindent` pattern is the closest thing to a function.
 
 ## Watch out
 
-- **`template` output can't be indented, which silently breaks nested YAML.** `{{ template "webapp.labels" . }}` dumps its output flush to whatever column the tag started at — if that's not where the surrounding YAML expects the child keys, you get invalid indentation with no error message until `kubectl apply` rejects the manifest. This is *the* reason the convention is always `include | nindent`, never `template`.
-- **`define` blocks are global across the whole chart, including subcharts.** A parent chart and a subchart that both define `webapp.labels` silently clash — whichever renders last wins, and Helm doesn't warn you. This is exactly why the naming convention is `<chartname>.<purpose>`, not something generic like `labels`.
-- **`nindent N` adds a newline *and* indents; using it where the tag is already at the start of a line double-spaces your output.** The pattern `{{- include "x" . | nindent 4 }}` relies on the leading `{{-` eating the newline that would otherwise precede it — drop the `-` and you get a blank line before the included content.
-- **A `define` block's own leading/trailing whitespace becomes part of what `include` returns.** `{{- define "x" -}}` (with the trailing `-}}`) trims the newline after the opening tag so the included string starts immediately with content, not a blank line — omit it and every consumer of `include "x"` inherits an extra blank line at the top.
+- You cannot indent `template` output. It starts at the column of the tag.
+- With `template`, the indentation can be wrong with no error until `kubectl apply` rejects the manifest. Use `include | nindent`.
+- `define` names are global across the chart and its subcharts.
+- Two charts that define `webapp.labels` clash with no warning. The last one rendered wins. Always use the `<chartname>.<purpose>` names.
+- `nindent` adds its own newline. `{{- include "x" . | nindent 4 }}` needs the `{{-` to remove the newline before the tag.
+- Without the `-` in `{{-`, a blank line comes before the included content.
+- The whitespace of a `define` block is part of the string that `include` returns.
+- `{{- define "x" -}}` removes the newline after the opening tag. Without the `-}}`, each `include "x"` starts with a blank line.
 
 ## The task
 
-Write a `templates/_helpers.tpl` that defines these three named templates for a chart named `webapp`:
+Write `templates/_helpers.tpl` and `templates/service.yaml` in `stub.yaml`, in that order. The chart name is `webapp`.
 
-1. `webapp.fullname` — returns `{{ .Release.Name }}-{{ .Chart.Name }}`, truncated to 63 chars with `trunc 63 | trimSuffix "-"`
-2. `webapp.labels` — the full label set: `app.kubernetes.io/name`, `app.kubernetes.io/instance`, `app.kubernetes.io/version` (quoted), `helm.sh/chart`
-3. `webapp.selectorLabels` — just `app.kubernetes.io/name` and `app.kubernetes.io/instance`
+1. Define `webapp.fullname`. It returns `.Release.Name`, a `-` and `.Chart.Name`, through `trunc 63 | trimSuffix "-"`.
+2. Define `webapp.labels`: `app.kubernetes.io/name`, `app.kubernetes.io/instance`, `app.kubernetes.io/version` (quoted) and `helm.sh/chart`.
+3. Define `webapp.selectorLabels`: `app.kubernetes.io/name` and `app.kubernetes.io/instance` only.
+4. Open each block with `{{- define "<name>" -}}`, so the output has no leading blank line.
+5. Set the Service `metadata.name` to `{{ include "webapp.fullname" . }}`.
+6. Set `metadata.labels` with `include "webapp.labels" . | nindent 4`.
+7. Set `spec.selector` with `include "webapp.selectorLabels" . | nindent 4`.
+8. Remove every `TODO` comment.
 
-Then write a `templates/service.yaml` that uses `include` with `nindent` to apply `webapp.labels` in `metadata.labels` and `webapp.selectorLabels` in `spec.selector`.
-
-For a release named `myrelease` of chart `webapp` (`Chart.yaml`: `version: 1.4.0`, `appVersion: "2.3.1"`), `templates/service.yaml` should render as:
+`printf "%s-%s" .Release.Name .Chart.Name` builds the same full name. Define it once, so each template calls one named template.
 
 ```yaml
+# Release myrelease, chart webapp 1.4.0,
+# appVersion "2.3.1"
 apiVersion: v1
 kind: Service
 metadata:
@@ -110,5 +125,3 @@ spec:
     app.kubernetes.io/name: webapp
     app.kubernetes.io/instance: myrelease
 ```
-
-Note that `webapp.fullname` is used for `metadata.name` — it is the same value computed by `printf "%s-%s" .Release.Name .Chart.Name`, but defined once so every template that needs a resource name calls the same named template instead of repeating the `printf | trunc | trimSuffix` chain.

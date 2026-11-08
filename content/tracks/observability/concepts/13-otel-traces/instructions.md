@@ -1,27 +1,27 @@
-# OpenTelemetry Traces
+## What you build
 
-## What you'll learn
-
-Traces are the signal that answers "where did the time go, across every service this one request touched." This lesson covers the anatomy of a span, how context propagates across process boundaries (the mechanism that makes a *distributed* trace possible at all), span kinds, the sampling decision every tracing system has to make (and why), and exemplars — the direct link from a metric spike to the actual trace that explains it.
+You write a tracing configuration for a checkout service: three spans, context propagation, tail sampling and exemplars. Traces show where the time went, across every service one request touched. This lesson builds on **OpenTelemetry Fundamentals**.
 
 ## Key concepts
 
-**A trace is a tree of spans.** A span represents one unit of work — one HTTP handler invocation, one DB query, one function call you cared to measure. A trace is the set of spans sharing a `trace_id`, connected by parent/child relationships (a `span_id` and a `parent_span_id`), forming a tree/DAG that shows the whole call graph for one request.
+### A trace is a tree of spans
+
+A span is one unit of work: one HTTP handler call, one database query, one function you measure. A trace is all spans with the same `trace_id`. Each span has a `span_id` and a `parent_span_id`, which form the call tree of one request.
 
 ```
 trace_id: 4bf92f3577b34da6a3ce929d0e0e4736
-├─ span: POST /checkout            (100ms)
-   ├─ span: validate-cart          (5ms)
-   ├─ span: charge-payment         (60ms)
-   │  └─ span: stripe.charge (client)  (55ms)
-   └─ span: write-order-db         (20ms)
+POST /checkout                (100ms)
+├─ validate-cart              (5ms)
+├─ charge-payment             (60ms)
+│  └─ stripe.charge (client)  (55ms)
+└─ write-order-db             (20ms)
 ```
 
-**Span anatomy** — the fields that matter:
+### A span has attributes, events and a status
 
-- **Attributes** — key-value metadata following semantic conventions from the last lesson (`http.method`, `db.statement`, `http.status_code`).
-- **Events** — timestamped things that happened *during* the span, not separate spans of their own (an exception being caught, a retry happening, a cache miss) — cheaper than a full child span when you just need a timestamped annotation, not a duration.
-- **Status** — `Unset`, `Ok`, or `Error`, set explicitly by instrumentation (an HTTP 500 response sets the span's status to `Error`, distinct from the HTTP status code attribute itself).
+- **Attributes**: key-value data that follows the semantic conventions, for example `http.request.method`, `db.query.text` and `http.response.status_code`.
+- **Events**: timestamped things that happen during the span, such as a caught exception, a retry or a cache miss. An event costs less than a child span when you need a timestamp, not a duration.
+- **Status**: `Unset`, `Ok` or `Error`, set by the instrumentation. An HTTP 500 sets the status to `Error`, separate from the status code attribute.
 
 ```yaml
 span:
@@ -37,62 +37,71 @@ span:
   status: Ok
 ```
 
-**Context propagation — what makes a *distributed* trace possible.** Within one process, the current span is tracked in-memory. Across a network call, that context has to travel with the request — OTel does this via the **W3C `traceparent` header**, an HTTP header carrying the trace ID, parent span ID, and trace flags (e.g., "sampled or not") so the receiving service can attach its new spans as children of the caller's span instead of starting an unrelated new trace:
+### Context propagation connects services
+
+Inside one process, the SDK tracks the current span in memory. Across a network call, the context must travel with the request. OTel uses the W3C `traceparent` HTTP header. It carries the trace ID, the parent span ID and the trace flags, such as "sampled". The receiver then adds its spans as children of the caller's span, not as a new trace.
 
 ```
-traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01
-             ^^ version    ^^ trace-id (32 hex)     ^^ parent-id (16 hex) ^^ flags
+traceparent: 00-<trace-id>-<parent-id>-01
+# 00: version
+# trace-id: 32 hex characters
+# parent-id: 16 hex characters
+# 01: flags (sampled)
 ```
 
-Every hop in a call chain must propagate this header (or lose the trace at that hop) — this is exactly what OTel auto-instrumentation for HTTP clients/servers handles for you automatically; manual instrumentation across a network boundary requires explicitly injecting/extracting this header if you're not using an instrumented HTTP client.
+Every hop must pass the header on, or the trace breaks at that hop. Auto-instrumentation for HTTP clients and servers does this for you. With manual instrumentation and no instrumented client, you must inject and extract the header yourself.
 
-**Span kinds** — describe the span's role in a distributed operation, letting backends correctly visualize cross-process relationships:
+### The span kind gives the role of a span
 
 | Kind | Meaning |
 |---|---|
-| `internal` | Work inside one process, no cross-process edge (default) |
-| `server` | Handling an incoming request (an HTTP server span) |
-| `client` | Making an outgoing request (an HTTP client call, a DB query) |
-| `producer` | Sending a message to a queue |
-| `consumer` | Receiving a message from a queue |
+| `internal` | Work inside one process (default) |
+| `server` | Handles an incoming request |
+| `client` | Makes an outgoing request or database query |
+| `producer` | Sends a message to a queue |
+| `consumer` | Receives a message from a queue |
 
-A `client` span in one service and the corresponding `server` span in the callee, linked via the propagated context, is what lets a tracing UI draw "service A called service B, here's exactly how long each side thought the call took" (the difference between the two is often network/queueing time).
+A `client` span in the caller links to a `server` span in the callee through the propagated context. The tracing UI then draws "service A called service B" with the time on each side. Network or queue time often makes up the difference.
 
-**Sampling — you cannot keep every trace at scale, so you decide which to keep.**
+### Sampling decides which traces to keep
 
-- **Head sampling** — the decision ("keep this trace" / "drop it") is made at the *start* of the trace, before any span exists, usually a fixed percentage (e.g., "keep 10% of traces," or "keep 100% of traces flagged `error`, 1% otherwise"). Cheap, simple, but the decision is made blind — you don't yet know if the trace will turn out to be interesting (e.g., contain an error or be unusually slow).
-- **Tail sampling** — the decision is made *after* the full trace completes, by a collector buffering all spans and applying a rule ("keep it if any span had an error, or if total duration exceeded 1s"). Far more useful (you keep the traces that actually matter) but requires buffering complete traces before deciding, which costs memory/complexity in the collector (next lesson) and means every span still has to be *sent* to the collector before the decision — head sampling saves network/ingestion cost, tail sampling saves storage cost while keeping the interesting stuff.
+At scale, you cannot keep every trace.
 
-**Exemplars — linking a metric spike straight to the trace that explains it.** A histogram sample can carry an "exemplar": a specific trace ID attached to that one observation, so a Grafana panel showing a latency spike lets you click directly into the actual slow trace behind that specific data point, instead of separately searching a trace backend and hoping you find the right one from the right time window. This is the concrete payoff of metrics and traces sharing the OTel/OTLP pipeline rather than being two unrelated tools.
+- **Head sampling** decides at the start of the trace, before any span exists. It usually keeps a fixed share, such as 10%. It is cheap and simple, but it decides before it knows if the trace has an error or is slow.
+- **Tail sampling** decides after the trace is complete. A Collector buffers all spans and applies rules, such as "keep it if any span has an error or the trace took over 1s". It keeps the traces that matter, but costs Collector memory and complexity.
 
-## vs other tools
+With tail sampling, every span still goes to the Collector. Head sampling saves network and ingest cost. Tail sampling saves storage and keeps the interesting traces.
 
-Jaeger and Zipkin predate OTel and have their own wire formats/UIs; OTel doesn't replace them as *backends* — Jaeger and Grafana Tempo both accept OTLP directly now, so the instrumentation-vs-backend split from the fundamentals lesson applies here too: instrument with OTel, choose Jaeger or Tempo (or a vendor) as the trace *storage and UI* without re-instrumenting. AWS X-Ray and Google Cloud Trace both now accept OTLP ingestion as well, for the same reason every vendor adopted it — it was cheaper than losing every OTel-instrumented customer.
+### Exemplars link a metric to a trace
+
+An exemplar is a trace ID attached to one histogram observation. On a Grafana latency spike, you click straight into the slow trace behind that data point. You do not search a trace backend for the right time window. This works because metrics and traces share the OTel and OTLP pipeline.
+
+Jaeger and Zipkin predate OTel. Jaeger and Grafana Tempo now accept OTLP directly, so you instrument with OTel and pick the trace backend separately.
 
 ## Watch out
 
-- **A span without propagated context starts a brand-new, disconnected trace** — the most common distributed tracing bug is a network hop (a manually-written HTTP call, a message queue producer) that doesn't propagate `traceparent`, silently fragmenting one logical request into multiple unconnected traces that look like separate, shorter operations.
-- **Head sampling at a flat percentage misses rare but important traces** — a 1% sample rate will almost never happen to capture your rarest, worst outlier requests; if you need to catch every error, sample errors at a much higher rate (or 100%) than successful requests, which most head-sampling configs support as a rule, not just a flat percentage.
-- **Using a `client`/`server` span kind mismatch (or `internal` where you meant a boundary)** breaks a tracing UI's ability to draw the cross-process relationship correctly — always set the span kind matching what's actually happening at that call.
+- A hop that does not propagate `traceparent` starts a new, disconnected trace.
+- Common causes are a hand-written HTTP call or a queue producer. One request then shows as several short traces.
+- A flat 1% head sample almost never keeps your rarest, worst requests.
+- To catch every error, sample errors at a much higher rate, or 100%. Most head samplers support such rules.
+- A wrong span kind, such as `internal` at a service boundary, breaks the cross-process view in the tracing UI.
 
 ## The task
 
-Write `tracing-config.yaml`: a tracing configuration covering span design, sampling, and exemplar linkage for the checkout service.
+Write `stub.yaml`: the tracing configuration `tracing-config.yaml` for the checkout service. Use the `server`, `internal`, `client` chain of span kinds.
 
-Requirements:
+1. Under `spans:`, add a list of three spans. Each has `name`, `kind` and an `attributes` map.
+2. Span 1: `name: "POST /checkout"`, `kind: server`, with `http.method: POST` and `http.route: /checkout`.
+3. Span 2: `name: charge-payment`, `kind: internal`, with `payment.provider: stripe`.
+4. Span 3: `name: stripe.charge`, `kind: client`, with `http.method: POST` and `peer.service: stripe`.
+5. Under `propagation:`, set `header: traceparent` and `standard: w3c`.
+6. Under `sampling:`, set `strategy: tail`.
+7. Add a `rules:` list with two entries, each with `sample_rate: 1.0`.
+8. Rule 1 has `condition: "status == Error"`. Rule 2 has `condition: "duration > 1s"`.
+9. Set `default_sample_rate: 0.1`.
+10. Under `exemplars:`, set `enabled: true` and `linked_metric: http_request_duration_seconds`.
 
-Under `spans:`, a list of three span definitions, each with `name`, `kind`, and `attributes` (a map):
-1. `name: POST /checkout`, `kind: server`, attributes including `http.method: POST` and `http.route: /checkout`.
-2. `name: charge-payment`, `kind: internal`, attributes including `payment.provider: stripe`.
-3. `name: stripe.charge`, `kind: client`, attributes including `http.method: POST` and `peer.service: stripe`.
-
-Under `propagation:`, `header: traceparent` and `standard: w3c`.
-
-Under `sampling:`, `strategy: tail`, and a `rules:` list with two entries: `{ condition: "status == Error", sample_rate: 1.0 }` and `{ condition: "duration > 1s", sample_rate: 1.0 }`, plus a `default_sample_rate: 0.1`.
-
-Under `exemplars:`, `enabled: true` and `linked_metric: http_request_duration_seconds`.
-
-Expected shape:
+`http.method` is the older name of `http.request.method`. Do not leave `TODO` comments in the file.
 
 ```yaml
 spans:
@@ -130,5 +139,3 @@ exemplars:
   enabled: true
   linked_metric: http_request_duration_seconds
 ```
-
-The `server` → `internal` → `client` span-kind chain is the load-bearing detail: get it wrong and a tracing UI can no longer correctly distinguish "this service handled a request" from "this service called out to something else."

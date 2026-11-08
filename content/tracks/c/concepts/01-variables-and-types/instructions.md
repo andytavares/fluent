@@ -1,63 +1,86 @@
-# Variables & Types
+## What you build
 
-## What you'll learn
-
-C is statically typed and requires an explicit type on every variable declaration. Types determine size, range, and the operations you can perform — the compiler rejects type mismatches.
+You write three small functions: `add`, `clamp` and `celsius_to_fahrenheit`. C uses static types. Every variable declaration needs an explicit type, and the compiler rejects type mismatches.
 
 ## Key concepts
 
-**Primitive types:**
+### The type sets size, range and operations
+
+Each variable has one type for its whole life. An `int` is usually 32 bits. A `char` is one byte.
+
 ```c
-int    count = 42;          // signed integer (typically 32-bit)
-double ratio = 3.14;        // double-precision float
-char   letter = 'A';        // single byte, often used for ASCII
-int    flag = 1;            // C has no bool; use 0/1 or <stdbool.h>
+// Signed integer, usually 32-bit
+int    count = 42;
+// Double-precision float
+double ratio = 3.14;
+// One byte, often an ASCII character
+char   letter = 'A';
+// Use 0/1 for false/true
+int    flag = 1;
 ```
 
-**Declarations must precede use** (in C89/C90). Modern C (C99+) allows declarations anywhere, but top-of-block is conventional.
+Before C23, C has no `bool` keyword. Use `0` and `1`, or include `<stdbool.h>`. C23 makes `bool`, `true` and `false` keywords.
 
-**printf format specifiers:**
-| Type     | Specifier |
-|----------|-----------|
-| `int`    | `%d`      |
-| `double` | `%f` / `%.2f` |
-| `char`   | `%c`      |
-| `char*`  | `%s`      |
+### C99 lets you declare anywhere
 
-**Arithmetic:**
+C89/C90 needs declarations at the top of a block, before other statements. C99 and later allow a declaration anywhere. Top-of-block is still a common style.
+
+### `printf` needs the right format specifier
+
+| Type     | Specifier       |
+|----------|-----------------|
+| `int`    | `%d`            |
+| `double` | `%f` or `%.2f`  |
+| `char`   | `%c`            |
+| `char*`  | `%s`            |
+
+```c
+printf("%d %.2f %c\n", 7, 3.5, 'A');
+```
+
+### Integer division truncates
+
+Division of two `int` values truncates toward zero. Cast one operand to `double` first to keep the fraction.
+
 ```c
 int a = 7, b = 2;
-int quotient  = a / b;   // 3   — integer division truncates
-double ratio  = (double)a / b;  // 3.5 — cast first
-int remainder = a % b;   // 1
+int quotient  = a / b;          // 3
+double ratio  = (double)a / b;  // 3.5
+int remainder = a % b;          // 1
 ```
 
-**vs other languages:** There is no garbage collector — you manage memory. Stack variables are freed when the function returns. No exceptions — errors are returned as integer codes or indicated via `errno`.
+### You manage memory and errors
+
+C has no garbage collector. The function's stack variables end when the function returns. C has no exceptions. Functions report errors with integer return codes or with `errno`.
 
 ## Watch out
 
-- **Signed integer overflow is undefined behavior**, not a wraparound like Java's `int` or a promotion to bignum like Python's `int`. Don't write code that depends on `INT_MAX + 1` doing anything in particular.
-- **Integer division truncates toward zero, before any surrounding cast**: `(double)(a / b)` casts an already-truncated integer result; `(double)a / b` casts an operand first, giving a real fraction. Mixing these up is a classic C bug.
-- `printf` does no type checking against its format string — passing a `double` where `%d` expects an `int` reads garbage because varargs carry no type information at runtime.
-- Uninitialized local variables hold whatever garbage was already on the stack — always initialize before reading.
+- Signed integer overflow is undefined behavior. `INT_MAX + 1` does not wrap like Java or grow like Python.
+- `(double)(a / b)` casts a result that is already truncated. Write `(double)a / b` to get the fraction.
+- `printf` does not check types against the format string. A `double` passed to `%d` prints garbage.
+- An uninitialized local variable holds old stack data. Always initialize a variable before you read it.
 
 ## The task
 
-Implement three functions (no `main` needed — the test runner provides it):
+Write three functions. The test runner provides `main`.
 
-- `int add(int a, int b)` — return the sum
-- `int clamp(int value, int min_val, int max_val)` — return `value` clamped to the inclusive range `[min_val, max_val]`
-- `double celsius_to_fahrenheit(double c)` — convert Celsius to Fahrenheit using `c * 9.0 / 5.0 + 32.0`
+1. `int add(int a, int b)` returns the sum of `a` and `b`.
+2. `int clamp(int value, int min_val, int max_val)` returns `value` limited to the inclusive range `[min_val, max_val]`.
+3. If `value` is below `min_val`, `clamp` returns `min_val`.
+4. If `value` is above `max_val`, `clamp` returns `max_val`.
+5. `double celsius_to_fahrenheit(double c)` returns `c * 9.0 / 5.0 + 32.0`.
+
+A value equal to `min_val` or `max_val` stays unchanged. At -40, both scales agree.
 
 ```c
-add(2, 3);                     // 5
-add(-5, -3);                   // -8
-
-clamp(15, 0, 10);               // 10  — above max_val, pulled down
-clamp(-5, 0, 10);                // 0  — below min_val, pulled up
-clamp(5, 0, 10);                 // 5  — already in range, unchanged
-
-celsius_to_fahrenheit(0.0);     // 32.0
-celsius_to_fahrenheit(100.0);   // 212.0
-celsius_to_fahrenheit(-40.0);   // -40.0  — the crossover point where both scales agree
+add(2, 3);                    // 5
+add(-5, -3);                  // -8
+clamp(15, 0, 10);             // 10
+clamp(-5, 0, 10);             // 0
+clamp(5, 0, 10);              // 5
+clamp(10, 0, 10);             // 10
+celsius_to_fahrenheit(0.0);   // 32.0
+celsius_to_fahrenheit(100.0); // 212.0
+celsius_to_fahrenheit(-40.0); // -40.0
+celsius_to_fahrenheit(37.0);  // 98.6
 ```

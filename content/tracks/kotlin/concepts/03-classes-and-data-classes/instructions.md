@@ -1,19 +1,16 @@
-# Classes & Data Classes
+## What you build
 
-## What you'll learn
-
-Kotlin's `class` syntax is dramatically more concise than Java's. `data class` auto-generates `equals`, `hashCode`, `toString`, and `copy`. `object` creates singletons. `companion object` gives you Java-style static members.
+You write a `Money` data class, two extension functions on it and an `ExchangeRates` singleton. This lesson builds on **Functions**.
 
 ## Key concepts
 
-**Regular classes**
+### The primary constructor is in the class header
 
-The primary constructor is declared inline with the class header. `val`/`var` in the constructor declares and initializes a property in one shot:
+`val` or `var` in the header declares a property and sets it in one step. Kotlin has no `new` keyword and no `this.radius = radius` lines.
 
 ```kotlin
 class Circle(val radius: Double) {
     fun area() = Math.PI * radius * radius
-    fun perimeter() = 2 * Math.PI * radius
 }
 
 val c = Circle(5.0)
@@ -21,42 +18,50 @@ println(c.radius)   // 5.0
 println(c.area())   // 78.53...
 ```
 
-No `new` keyword. No `this.radius = radius` boilerplate.
+### An `init` block runs at construction
 
-**Secondary constructors and `init` blocks**
+Put checks on the constructor values in an `init` block.
 
 ```kotlin
-class Rectangle(val width: Double, val height: Double) {
+class Rectangle(
+    val width: Double,
+    val height: Double,
+) {
     init {
-        require(width > 0 && height > 0) { "Dimensions must be positive" }
+        require(width > 0 && height > 0) {
+            "Dimensions must be positive"
+        }
     }
 }
 ```
 
-**`data class`**
+### `data class` generates `equals`, `hashCode`, `toString` and `copy`
 
-Add `data` to get `equals`, `hashCode`, `toString`, and `copy` for free — based on all properties declared in the primary constructor:
+The compiler builds these four functions from the properties in the primary constructor. In Kotlin, `==` calls `equals`, and `===` checks reference equality.
 
 ```kotlin
 data class Point(val x: Int, val y: Int)
 
 val p1 = Point(1, 2)
 val p2 = Point(1, 2)
-println(p1 == p2)          // true (structural equality)
-println(p1)                // Point(x=1, y=2)
-val p3 = p1.copy(y = 10)   // Point(x=1, y=10)
+println(p1 == p2)  // true
+println(p1)        // Point(x=1, y=2)
+val p3 = p1.copy(y = 10)
+// p3 is Point(x=1, y=10)
 ```
 
-**Destructuring declarations**
+### A data class supports destructuring
 
-`data class` components map to positional destructuring:
+Each constructor property maps to a position.
 
 ```kotlin
 val (x, y) = Point(3, 4)
 println("$x, $y")   // 3, 4
 ```
 
-**`object` — singletons**
+### `object` declares a singleton
+
+You use the object by its name. You never create an instance.
 
 ```kotlin
 object Config {
@@ -64,16 +69,19 @@ object Config {
     fun isDebug() = false
 }
 
-Config.maxRetries   // accessed directly, no instantiation
+Config.maxRetries   // 3
 ```
 
-**`companion object` — static-like members**
+### `companion object` holds static-like members
+
+Members of the companion object belong to the class, not to an instance. Use it for factory functions and constants.
 
 ```kotlin
 class User(val name: String) {
     companion object {
-        fun fromJson(json: String): User = User("parsed")   // factory method
         const val MAX_NAME_LENGTH = 50
+        fun fromJson(json: String) =
+            User("parsed")
     }
 }
 
@@ -81,42 +89,40 @@ User.fromJson("{}")
 User.MAX_NAME_LENGTH
 ```
 
-## vs other languages
-
-| Concept | Java | Swift | Kotlin |
-|---------|------|-------|--------|
-| Boilerplate for a value type | `equals`, `hashCode`, `toString`, getters, builder | `struct` (auto) | `data class` (auto) |
-| Singleton | `static` instance + private constructor | `static let shared` | `object` |
-| Static members | `static` methods/fields | `static` on struct/class | `companion object` |
-| Constructor | Separate block, `this.x = x` | `init(x:)` | Primary constructor in header |
-| Structural equality | `.equals()` | `==` with `Equatable` | `==` on data class |
-
-The biggest shift from Java: Kotlin's `==` calls `equals`. Reference equality is `===`.
-
 ## Watch out
 
-- `1.0 / 0.92` is not an exact decimal — it's `108.695652...`. Tests on `Double` results should always compare with a tolerance (`kotlin.math.abs(expected - actual) < epsilon`), never exact `==`. Don't round a stored `Double` just to make an equality test pass; round only at the presentation boundary (e.g. in `format()`).
-- `data class` equality/`hashCode`/`toString`/`copy` are generated **only from properties declared in the primary constructor**. A property added in the class body is invisible to all of them.
-- `object` is a singleton — it's constructed once, lazily, on first access. Don't put per-request mutable state in one; use a regular class instead.
+- `1.0 / 0.92` is not an exact decimal. It is `108.695652...`.
+- Compare `Double` results with a tolerance, not with `==`. Use `kotlin.math.abs(expected - actual) < epsilon`.
+- Do not round a stored `Double` to make a test pass. Round only for display, for example in `format()`.
+- A data class ignores properties declared in the class body. `equals`, `hashCode`, `toString` and `copy` do not see them.
+- Kotlin creates an `object` once, on first access. Do not keep per-request mutable state in one. Use a regular class.
 
 ## The task
 
-Implement the following in `stub.kt`:
+You model an amount of money in one currency, and convert between US dollars and euros. Write these in `stub.kt`:
 
-- `data class Money(val amount: Double, val currency: String)` — a data class representing a monetary value.
-- `fun Money.add(other: Money): Money` — extension function that adds two `Money` values with the same currency, returning a new `Money`. Throws `IllegalArgumentException` if the currencies differ.
-- `fun Money.format(): String` — returns a string like `"USD 42.50"` (currency, space, amount formatted to exactly 2 decimal places, rounding as needed).
-- `object ExchangeRates` — a singleton with two conversions:
-  - `fun usdToEur(amount: Double): Double` — multiplies by `0.92`.
-  - `fun eurToUsd(amount: Double): Double` — multiplies by `1.0 / 0.92`. This does **not** land on a clean two-decimal value (`eurToUsd(100.0)` is `~108.6957`, not `108.70`) — the function returns the raw `Double`; only `format()` rounds for display.
+1. `data class Money(val amount: Double, val currency: String)`.
+2. `fun Money.add(other: Money): Money` returns a new `Money` with the sum of both amounts.
+3. If the two currencies differ, `add` throws `IllegalArgumentException`.
+4. `fun Money.format(): String` returns the currency, one space, and the amount with exactly 2 decimal places.
+5. `object ExchangeRates` has `fun usdToEur(amount: Double): Double`. It multiplies `amount` by `0.92`.
+6. `ExchangeRates` also has `fun eurToUsd(amount: Double): Double`. It multiplies `amount` by `1.0 / 0.92`.
+
+`format()` rounds to 2 decimal places. The two conversions return the raw `Double` and do not round. `eurToUsd(100.0)` is about `108.6957`, not `108.70`.
 
 ```kotlin
 val m1 = Money(10.0, "USD")
 val m2 = Money(5.50, "USD")
-m1.format()                     // "USD 10.00"
-m1.add(m2).format()             // "USD 15.50"
-m1.add(Money(1.0, "EUR"))       // throws IllegalArgumentException
+m1.format()          // "USD 10.00"
+m1.add(m2).format()  // "USD 15.50"
+Money(42.5, "EUR").format()
+// "EUR 42.50"
+m1.add(Money(1.0, "EUR"))
+// throws IllegalArgumentException
+m1.copy(amount = 20.0)
+// Money(amount=20.0, currency=USD)
 
-ExchangeRates.usdToEur(100.0)   // 92.0
-ExchangeRates.eurToUsd(92.0)    // ~100.0 (within floating-point tolerance)
+ExchangeRates.usdToEur(100.0)  // 92.0
+ExchangeRates.eurToUsd(100.0)
+// about 108.6957
 ```

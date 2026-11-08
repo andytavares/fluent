@@ -1,24 +1,24 @@
 # Step 4 — PUT /users/:id
 
-With create and read working, add the update path. Learners often make
-this endpoint accept only full replacements — this ticket specifically
-calls for partial updates, since that's what real API clients expect.
+Create and read work. Now add the update path. Learners often accept only a
+full replacement here. This ticket asks for partial updates, because real
+API clients send them.
 
 ## The task
 
-Add a handler for `PUT /users/:id` that updates an existing user's `name`
-and/or `email`.
+Add a handler for `PUT /users/:id`. It updates the `name`, the `email`, or
+both, of an existing user.
 
-The request body is **partial** — only the fields that should change are
-sent:
+The request body is **partial**. The client sends only the fields that
+change:
 
 ```
 PUT /users/1
 { "email": "ada.lovelace@example.com" }
 ```
 
-**Response:** `200 OK` with the full updated record (not just the changed
-fields):
+**Response:** `200 OK` with the full updated record, not only the changed
+fields:
 
 ```json
 {
@@ -29,15 +29,15 @@ fields):
 }
 ```
 
-If the id doesn't exist, return `404 Not Found` with body
+If the id does not exist, return `404 Not Found` with the body
 `{"error": "not found"}`.
 
 Requirements:
 
-- Accept a body containing `name`, `email`, or both — build the `UPDATE`
-  statement dynamically based on which fields are present.
-- Always return the complete, current row on success, not just the fields
-  that were sent.
-- Return `404` if no user with the given id exists.
-- Parse the path parameter as an integer. If it isn't numeric, return
+- Accept a body with `name`, `email`, or both.
+- Build the `UPDATE` statement from the fields that the body contains.
+- On success, always return the complete current row, not only the fields
+  that the client sent.
+- If no user has the given id, return `404`.
+- Parse the path parameter as an integer. If it is not numeric, return
   `400 Bad Request`.

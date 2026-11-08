@@ -1,79 +1,98 @@
-# Instrumenting Services
+## What you build
 
-## What you'll learn
-
-You now know the four metric types. This lesson is about what to actually instrument on a typical HTTP service, the wire format Prometheus scrapes, the difference between a *target* label (who/where) and a *metric* label (what), and where exporters (node_exporter, blackbox_exporter) fit when you can't add instrumentation directly to the thing you're measuring.
+You write a sample of the Prometheus exposition format for an HTTP service. You add a scrape config for node_exporter and a blackbox probe with relabeling. This lesson builds on **Metric Types**.
 
 ## Key concepts
 
-**The four numbers every HTTP service should expose**, regardless of language or framework:
+### Every HTTP service exposes four numbers
 
-1. **Request count** — a counter, labeled by method/route/status: `http_requests_total{method="GET", route="/users/:id", status="200"}`. This is where request rate and error rate both come from.
-2. **Request duration** — a histogram, labeled by method/route (not status — see below): `http_request_duration_seconds_bucket{method="GET", route="/users/:id", le="0.5"}`.
-3. **In-flight requests** — a gauge: `http_requests_in_flight`. Answers "are we currently overloaded," independent of any time window.
-4. **Errors** — usually *not* a separate metric. Model errors as a `status` (or `code`) label on the request counter, so error rate is just a ratio over the same series, not a second metric you have to keep in sync. A separate `errors_total` invites double-counting and drift from the request counter.
+These four signals answer most "is the service healthy?" questions, in any language or framework:
 
-This is the RED method (Rate, Errors, Duration) in miniature — you'll get the full treatment, plus USE for infrastructure, in a dedicated lesson later in this track. For now, internalize that these four signals cover the large majority of "is the service healthy" questions.
-
-**Why duration shouldn't be labeled by status.** Latency for a 500 (fails fast, e.g., a validation error) and a 200 (does real work) have different distributions, and mixing them muddies your percentiles. But labeling duration itself with high-cardinality-adjacent fields multiplies histogram bucket series (a histogram already emits one series *per bucket*, so a `_bucket` metric with `status` as an extra label times 10 buckets times N status codes gets expensive fast). Keep duration labels to the low-cardinality dimensions you actually slice dashboards by — typically `method` and `route`.
-
-**Exposition format** — what `/metrics` actually returns, plain text over HTTP:
+1. **Request count**: a counter with `method`, `route` and `status` labels. Request rate and error rate both come from it.
+2. **Request duration**: a histogram with `method` and `route` labels, but no `status` label.
+3. **In-flight requests**: a gauge, `http_requests_in_flight`. It shows overload now, with no time window.
+4. **Errors**: a `status` or `code` label on the request counter, not a separate metric.
 
 ```
-# HELP http_requests_total Total number of HTTP requests
+http_requests_total{method="GET",
+  route="/users/:id", status="200"}
+http_request_duration_seconds_bucket{
+  method="GET", route="/users/:id",
+  le="0.5"}
+```
+
+With errors as a label, the error rate is a ratio over the same series. A separate `errors_total` counter invites double counting and drifts from the request counter. This is the RED method (Rate, Errors, Duration) in short form. A later concept covers RED, and USE for infrastructure.
+
+### Duration does not get a status label
+
+A fast 500 from a validation error and a slow 200 have different latency distributions. But a histogram already emits one series per bucket. A `status` label multiplies that: 10 buckets times N status codes. Keep duration labels to the low-cardinality dimensions you slice dashboards by, usually `method` and `route`.
+
+### The exposition format is plain text
+
+`/metrics` returns plain text over HTTP.
+
+```
+# HELP http_requests_total Total ...
 # TYPE http_requests_total counter
-http_requests_total{method="GET",route="/users/:id",status="200"} 84213
-http_requests_total{method="GET",route="/users/:id",status="500"} 42
-
-# HELP http_request_duration_seconds HTTP request duration in seconds
-# TYPE http_request_duration_seconds histogram
-http_request_duration_seconds_bucket{method="GET",route="/users/:id",le="0.1"} 80211
-http_request_duration_seconds_bucket{method="GET",route="/users/:id",le="0.5"} 84100
-http_request_duration_seconds_bucket{method="GET",route="/users/:id",le="+Inf"} 84213
-http_request_duration_seconds_sum{method="GET",route="/users/:id"} 3021.4
-http_request_duration_seconds_count{method="GET",route="/users/:id"} 84213
+http_requests_total{method="GET",
+  route="/users/:id",
+  status="200"} 84213
 ```
 
-Every metric family gets a `# HELP` (human description) and `# TYPE` (counter/gauge/histogram/summary) comment line — Prometheus parses these, and `promtool check metrics` validates them. This is what a client library (`prometheus_client` in Python, `prom-client` in Node, `client_golang` in Go) generates for you; you should never hand-format this in production code, but you must be able to read it to debug a scrape.
+Each metric family has a `# HELP` line, a human description. It also has a `# TYPE` line: counter, gauge, histogram or summary. Prometheus parses both lines, and `promtool check metrics` validates them. A client library writes this format for you: `prometheus_client` in Python, `prom-client` in Node, `client_golang` in Go. Do not write it by hand in production code. You must still read it to debug a scrape.
 
-**Target labels vs metric labels — a distinction that trips up almost everyone.** Metric labels (`method`, `route`, `status`) come from *inside* the application — they describe the observation. Target labels (`job`, `instance`, and anything added via `relabel_configs` or the scrape config's `labels:` block) come from *outside* — they describe *which process/host emitted this*, attached by Prometheus at scrape time, not by the application. `instance` is typically `host:port` and `job` is the `job_name` from the scrape config. This split matters because target labels are what you use to distinguish "which of 40 replicas" while metric labels are what you use to distinguish "which kind of request" — conflating them (e.g., hardcoding a pod name into a metric label from inside the app) duplicates information Prometheus already attaches for free and often introduces unbounded cardinality (pod names churn constantly in Kubernetes).
+### Target labels describe who emitted the data
 
-**Exporters** — for things you can't instrument directly (the OS, a third-party binary, a network endpoint), you run a small sidecar process that translates existing data into Prometheus exposition format:
+Metric labels such as `method`, `route` and `status` come from inside the application. They describe the observation. Target labels come from outside. Prometheus attaches them at scrape time to show which process or host emitted the data.
 
-- **node_exporter** — host-level metrics (CPU, memory, disk, network) for the machine it runs on. Exposes `node_cpu_seconds_total`, `node_memory_MemAvailable_bytes`, etc.
-- **blackbox_exporter** — active probing: it hits an HTTP/TCP/ICMP/DNS target *you* configure and exposes whether it succeeded and how long it took (`probe_success`, `probe_duration_seconds`). This is how you get "is this website up from the outside" as a metric, for things you don't control the code of.
+Target labels are `job`, `instance` and the labels from `relabel_configs` or the scrape config's `labels:` block. `instance` is usually `host:port`. `job` is the `job_name` from the scrape config.
 
-Both run as their own scrape targets — `job_name: 'node'` scraping `node-exporter:9100`, `job_name: 'blackbox'` scraping the blackbox exporter's `/probe` endpoint with a `params` block naming the real target and a `relabel_configs` step to move the probed URL into the `instance` label (a pattern you'll see below).
+Use target labels to tell 40 replicas apart. Use metric labels to tell kinds of request apart. Do not hard-code a pod name in a metric label inside the app. Prometheus already attaches that information. In Kubernetes, pod names change all the time, so the label adds unbounded cardinality.
 
-## vs other tools
+### Exporters measure what you cannot instrument
 
-Datadog/New Relic agents auto-instrument via bytecode injection or eBPF and give you request/duration/error metrics with zero code changes, at the cost of a proprietary agent and per-host licensing. The Prometheus model requires you (or a library maintainer) to add a few lines of middleware, but the result is a plain-text format any tool can scrape — no agent lock-in. OpenTelemetry auto-instrumentation (covered later in this track) is the vendor-neutral middle ground: automatic HTTP instrumentation via language-specific agents, exported to whatever backend you choose.
+An exporter is a small separate process. It translates existing data into the exposition format, for the OS, a third-party binary or a network endpoint.
+
+- **node_exporter** exposes host metrics for its machine: CPU, memory, disk and network. Examples are `node_cpu_seconds_total` and `node_memory_MemAvailable_bytes`.
+- **blackbox_exporter** probes a target that you configure, over HTTP, TCP, ICMP or DNS. It exposes `probe_success` and `probe_duration_seconds`. It answers "is this website up from the outside?" for code you do not control.
+
+Each exporter is its own scrape target. Job `'node'` scrapes `node-exporter:9100`. Job `'blackbox'` scrapes the `/probe` endpoint of the exporter. A `params` block names the real target. A `relabel_configs` chain moves the probed URL into the `instance` label.
+
+### The relabel chain points Prometheus at the exporter
+
+The blackbox chain has three steps:
+
+1. Copy `__address__`, the probed URL, into `__param_target`. Blackbox probes that URL.
+2. Copy `__param_target` into `instance`. Dashboards then group by URL, not by exporter process.
+3. Set `__address__` to the exporter, so Prometheus scrapes the exporter and not the probed site.
+
+### Agents instrument without code changes
+
+Datadog and New Relic agents add request metrics with no code changes, but lock you to a proprietary agent and per-host licensing. With Prometheus, you or a library add a few lines of middleware, and any tool can scrape the result. OpenTelemetry auto-instrumentation is the vendor-neutral middle path. Later concepts in this track cover it.
 
 ## Watch out
 
-- **Don't create a separate `errors_total` counter alongside `requests_total`.** It's redundant with a `status` label and the two will eventually disagree after someone edits one code path and not the other.
-- **Never put the full URL path (with IDs interpolated) in a route label** — `/users/482913` instead of `/users/:id` is a cardinality bomb identical to the `user_id` label mistake from the last lesson. Route labels must come from your router's *pattern*, not the raw request path.
-- **`instance` is not `job`.** `job` identifies "what kind of service" (shared across all replicas); `instance` identifies "which specific process" (unique per replica). Dashboards that group by the wrong one either merge distinct services together or fragment one service into dozens of indistinguishable rows.
+- Do not add an `errors_total` counter next to `requests_total`. The two disagree after someone edits only one code path.
+- `/users/482913` in a `route` label is a cardinality bomb, like `user_id`. Take the route from the router pattern, `/users/:id`.
+- `job` names the kind of service, shared by all replicas. `instance` names one process.
+- A dashboard grouped by the wrong label merges distinct services, or splits one service into many rows.
 
 ## The task
 
-Write `service-metrics.yaml`: an annotated exposition-format snippet for an HTTP service, plus a scrape config with relabeling for a blackbox probe.
+Write `stub.yaml`, also named `service-metrics.yaml`. It holds an exposition-format sample and a scrape config with relabeling for a blackbox probe.
 
-Requirements:
-
-Under `exposition_sample:` (a literal block scalar `|` containing the raw exposition-format text), include, for metric family `http_requests_total`:
-- A `# HELP` line and `# TYPE http_requests_total counter` line.
-- At least two sample lines with labels `method`, `route`, `status` (different status values, e.g. one `200` and one `500`).
-
-And for `http_request_duration_seconds`:
-- `# TYPE http_request_duration_seconds histogram`.
-- At least one `_bucket` line with an `le` label, plus a `_sum` and `_count` line.
-
-Under `scrape_configs:`, define two jobs:
-1. `job_name: 'node'` scraping `static_configs` targets `['node-exporter:9100']`.
-2. `job_name: 'blackbox'` scraping `metrics_path: /probe`, with `params: module: [http_2xx]`, `static_configs` targets `['https://example.com']`, and a `relabel_configs` list containing at least one relabel step with `target_label: __param_target` and one with `target_label: instance`.
-
-Expected shape:
+1. Add `exposition_sample:` as a literal block scalar, `|`, with raw exposition-format text.
+2. For `http_requests_total`, add a `# HELP` line and `# TYPE http_requests_total counter`.
+3. Add two or more `http_requests_total` sample lines with `method`, `route` and `status` labels.
+4. Use `route="/users/:id"`. One sample has `status="200"`, another has `status="500"`.
+5. For `http_request_duration_seconds`, add `# TYPE http_request_duration_seconds histogram`.
+6. Add one or more `_bucket` lines with an `le` label, one `_sum` line and one `_count` line.
+7. Under `scrape_configs:`, add job `'node'` with `static_configs` target `'node-exporter:9100'`.
+8. Add job `'blackbox'` with `metrics_path: /probe` and `params:` `module: [http_2xx]`.
+9. Its `static_configs` target is `'https://example.com'`.
+10. Its `relabel_configs` list has a step with `target_label: __param_target`.
+11. It has another step with `target_label: instance`.
+12. Remove every `TODO` comment.
 
 ```yaml
 exposition_sample: |
@@ -107,5 +126,3 @@ scrape_configs:
       - target_label: __address__
         replacement: blackbox-exporter:9115
 ```
-
-The blackbox relabel chain is the load-bearing pattern: it moves the probed URL into `__param_target` (what blackbox actually probes), then into `instance` (so dashboards group by "which URL," not "which blackbox-exporter process"), then rewrites `__address__` to point Prometheus at the exporter itself rather than the target being probed.

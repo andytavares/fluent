@@ -1,14 +1,12 @@
-# Modules & Mixins
+## What you build
 
-## What you'll learn
-
-Modules as namespaces vs mixins, the difference between `include`, `prepend`, and `extend`, and how to read Ruby's method resolution order (MRO).
+You write two mixin modules, `Printable` and `Taggable`, and include both in an `Article` class. This lesson builds on **Metaprogramming**.
 
 ## Key concepts
 
-### Modules as namespaces
+### A module is a namespace
 
-A module groups related constants and methods under a name — the equivalent of a package in Java or Go.
+A module groups related constants, methods and classes under one name, like a package in Java or Go. Use `::` to reach a constant inside it.
 
 ```ruby
 module Geometry
@@ -20,26 +18,26 @@ module Geometry
 
   class Point
     attr_reader :x, :y
-    def initialize(x, y) = @x, @y = x, y
+    def initialize(x, y) = (@x, @y = x, y)
   end
 end
 
-Geometry::PI                     # => 3.14159...
-Geometry.circle_area(5)          # => 78.53...
+Geometry::PI             # => 3.14159...
+Geometry.circle_area(5)  # => 78.53...
 Geometry::Point.new(1, 2)
 ```
 
-### include — instance-method mixin
+### `include` adds instance methods
 
-`include` inserts the module into the class's ancestor chain, just above the class itself. Module methods become instance methods.
+`include` puts the module in the ancestor chain of the class, directly above the class. The module methods become instance methods.
 
 ```ruby
 module Serializable
   def to_json
     pairs = instance_variables.map do |var|
-      key   = var.to_s.delete_prefix("@")
-      value = instance_variable_get(var).inspect
-      "\"#{key}\":#{value}"
+      key = var.to_s.delete_prefix("@")
+      val = instance_variable_get(var)
+      "\"#{key}\":#{val.inspect}"
     end
     "{#{pairs.join(",")}}"
   end
@@ -50,17 +48,17 @@ class User
   attr_accessor :name, :email
 
   def initialize(name, email)
-    @name  = name
+    @name = name
     @email = email
   end
 end
 
-User.new("Alice", "alice@example.com").to_json
+User.new("Alice", "a@x.com").to_json
 ```
 
-### prepend — method wrapping
+### `prepend` wraps the methods of a class
 
-`prepend` inserts the module **before** the class in the ancestor chain. This means module methods run first — they can call `super` to delegate to the class's own implementation. Classic use: instrumentation, logging, decoration.
+`prepend` puts the module before the class in the ancestor chain. The module method runs first and calls `super` to reach the method of the class. Use it for instrumentation, logging and decoration.
 
 ```ruby
 module Timed
@@ -85,9 +83,11 @@ Pipeline.new.process("hello")
 # => "HELLO"
 ```
 
-### extend — class-level mixin
+`prepend` wraps any method without a subclass and without a change to the original class. Java and Go have no match for it. ActiveSupport and Rails use it for around-hooks.
 
-`extend` adds module methods as class methods (methods on the singleton class of the object receiving `extend`).
+### `extend` adds class methods
+
+`extend` adds the module methods to the singleton class of the receiver. On a class, they become class methods.
 
 ```ruby
 module ClassMethods
@@ -103,7 +103,9 @@ end
 Widget.description  # => "I am Widget"
 ```
 
-A common pattern combines `include` and `extend` in a single module using the `included` hook:
+### The `included` hook does both
+
+A common pattern uses the `included` hook to extend the class when it includes the module.
 
 ```ruby
 module Concerns
@@ -122,13 +124,15 @@ class MyClass
   include Concerns
 end
 
-MyClass.class_info        # => "class method"
-MyClass.new.instance_info # => "instance method"
+MyClass.class_info
+# => "class method"
+MyClass.new.instance_info
+# => "instance method"
 ```
 
-### Method Resolution Order (MRO)
+### `ancestors` shows the method lookup order
 
-Ruby uses C3 linearization (same as Python). Read the ancestor chain with `ancestors`:
+Ruby searches the classes and modules in `ancestors` from left to right. A module included later comes earlier in the chain.
 
 ```ruby
 module A; end
@@ -138,73 +142,60 @@ class C
   include B
 end
 
-C.ancestors  # => [C, B, A, Object, Kernel, BasicObject]
+C.ancestors
+# => [C, B, A, Object, Kernel,
+#     BasicObject]
+Pipeline.ancestors.first(2)
+# => [Timed, Pipeline]
 ```
-
-Note that later `include` calls appear earlier in the chain — `B` was included after `A`, so `B` is searched first. `prepend` inserts before the class: `[Timed, Pipeline, Object, ...]`.
-
-## vs other languages
-
-| | Ruby | Java | Python | Go |
-|---|---|---|---|---|
-| Multi-inheritance | Via modules (mixins) | Interfaces only | Yes (MRO) | Interfaces (implicit) |
-| Module as namespace | Yes — `Module::Constant` | Package | Module | Package |
-| Method wrapping | `prepend` | No (need proxy/decorator) | `__mro__` / decorator | No |
-| include order matters | Yes — last in, first searched | N/A | Yes (C3) | N/A |
-
-`prepend` is Ruby-specific and genuinely powerful — it lets you wrap any method without subclassing or changing the original class. ActiveSupport and Rails use it extensively for around-hooks.
 
 ## Watch out
 
-- `include` order is reversed in the ancestor chain — the **last** module included is searched **first**. If two included modules define the same method, the one included last wins.
-- A mixin method that reads `@tags` before it's ever set gets `nil`, not `[]` — initialize lazily with `@tags ||= []` inside the accessor rather than assuming an `initialize` elsewhere set it up.
-- `include` only works at the class body level (or via `klass.include Module` at runtime) — you can't `include` inside an instance method to affect a single object; for that, use `extend` on the specific object.
-- Two modules included into the same class share **one** ancestor chain; if `Taggable` and another mixin both defined `tags`, only the one that's later in `ancestors` would ever run — there's no automatic conflict detection.
+- Ruby searches the last included module first. If two modules define one method, the last one included wins.
+- Ruby does not report a conflict. Only the method earliest in `ancestors` runs.
+- A mixin that reads `@tags` before it is set gets `nil`, not `[]`. Use `@tags ||= []` in the accessor.
+- `include` works in a class body or as `klass.include(Mod)`. To change one object, use `extend` on it.
 
 ## The task
 
-Implement two mixin modules and include both into a class.
+Write two mixin modules and an `Article` class in `stub.rb`. `Article` includes both modules.
 
-**`Printable`** — a module adding one instance method:
+1. `Printable#print_info` prints `"#{self.class.name}: #{to_s}"` to standard output with `puts`.
+2. `print_info` relies on the including class to define `to_s`.
+3. `Taggable#tags` returns the `@tags` array. On first access, it sets `@tags` to `[]`.
+4. `Taggable#add_tag(tag)` appends `tag` to `tags` and returns `self`, so calls can chain.
+5. `Taggable#tagged_with?(tag)` returns `true` if `tags` includes `tag`, else `false`.
+6. `Article` includes `Printable` and `Taggable` and has `attr_reader :title`.
+7. `Article#initialize(title)` stores `title`. `Article#to_s` returns `title`.
 
-- `print_info` — prints `"#{self.class.name}: #{to_s}"` to standard output (via `puts`). Relies on the including class defining `to_s`.
-
-```ruby
-class Article
-  include Printable
-  def to_s = "Hello World"
-end
-
-Article.new.print_info  # prints: "Article: Hello World"
-```
-
-**`Taggable`** — a module adding three instance methods that manage a per-instance tag list:
-
-- `tags` — returns the `@tags` array, initializing it to `[]` on first access if it's `nil`.
-- `add_tag(tag)` — appends `tag` to `tags` and returns `self`, so calls can be chained.
-- `tagged_with?(tag)` — returns `true` if `tags` includes `tag`.
+Each `Article` has its own tag list. A new article has no tags.
 
 ```ruby
-a = Article.new
-a.tags                    # => []
-a.tagged_with?("ruby")    # => false
+a = Article.new("Hello World")
+# Prints "Article: Hello World"
+a.print_info
 
-a.add_tag("ruby").add_tag("programming")  # chaining via returned self
-a.tags                    # => ["ruby", "programming"]
-a.tagged_with?("ruby")    # => true
-a.tagged_with?("python")  # => false
+b = Article.new("Test Article")
+b.tags                    # => []
+b.tagged_with?("ruby")    # => false
+b.add_tag("ruby")
+b.tags                    # => ["ruby"]
+b.tagged_with?("ruby")    # => true
+b.tagged_with?("python")  # => false
 
-b = Article.new
-b.tags                    # => []  — independent from `a`
-```
+c = Article.new("Chainable")
+c.add_tag("a").add_tag("b").add_tag("c")
+# => c
+c.tags  # => ["a", "b", "c"]
 
-**`Article`** — includes both `Printable` and `Taggable`, has `attr_reader :title`, `initialize(title)`, and `to_s` returning `title`.
+x = Article.new("X")
+y = Article.new("Y")
+x.add_tag("shared")
+x.tags  # => ["shared"]
+y.tags  # => []
 
-```ruby
-a = Article.new("Ruby Metaprogramming")
-a.print_info                       # prints "Article: Ruby Metaprogramming"
-a.add_tag("ruby").add_tag("meta")
-a.tags                             # => ["ruby", "meta"]
-Article.ancestors.include?(Printable)  # => true
-Article.ancestors.include?(Taggable)   # => true
+Article.ancestors.include?(Printable)
+# => true
+Article.ancestors.include?(Taggable)
+# => true
 ```

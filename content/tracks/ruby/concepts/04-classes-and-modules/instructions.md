@@ -1,26 +1,22 @@
-# Classes & Modules
+## What you build
 
-## What you'll learn
-
-Ruby's class model — `initialize`, instance vs class variables, `attr_accessor`, single inheritance with `super`, and the difference between `include` and `extend` for modules.
+You model rectangles and squares with a small class hierarchy that uses `attr_reader`, `super` and method overrides. This lesson builds on **Collections**.
 
 ## Key concepts
 
-### Defining a class
+### `initialize` sets up instance variables
+
+`new` calls `initialize`. An instance variable starts with `@` and belongs to one object.
 
 ```ruby
 class BankAccount
   def initialize(owner, balance = 0)
-    @owner   = owner    # instance variable
+    @owner = owner
     @balance = balance
   end
 
   def deposit(amount)
     @balance += amount
-  end
-
-  def balance
-    @balance
   end
 
   def to_s
@@ -30,21 +26,22 @@ end
 
 acct = BankAccount.new("Alice", 100)
 acct.deposit(50)
-puts acct  # => Alice: $150
+puts acct  # Alice: $150
 ```
 
-### attr_accessor, attr_reader, attr_writer
+### `attr_*` methods generate getters and setters
 
-These generate getter/setter methods — the Ruby equivalent of Java properties or C# auto-properties.
+`attr_accessor` makes a getter and a setter, like a C# auto-property. `attr_reader` makes only the getter, and `attr_writer` only the setter.
 
 ```ruby
 class Person
-  attr_accessor :name   # generates def name / def name=
-  attr_reader   :id     # read-only
-  attr_writer   :email  # write-only
+  # Defines name and name=
+  attr_accessor :name
+  attr_reader :id
+  attr_writer :email
 
   def initialize(id, name)
-    @id   = id
+    @id = id
     @name = name
   end
 end
@@ -55,17 +52,19 @@ p.name  # => "Alicia"
 p.id    # => 1
 ```
 
-### Class methods and class variables
+### `self.` defines a class method
+
+A class variable starts with `@@`. All instances, and all subclasses, share it.
 
 ```ruby
 class Counter
-  @@count = 0           # class variable — shared across all instances
+  @@count = 0
 
   def initialize
     @@count += 1
   end
 
-  def self.count        # class method
+  def self.count
     @@count
   end
 end
@@ -75,9 +74,9 @@ Counter.new
 Counter.count  # => 2
 ```
 
-Prefer class-level instance variables (`@count` on `self`) over `@@` when subclassing — `@@` is shared across the entire inheritance chain.
+### A subclass inherits with `<`
 
-### Inheritance and super
+Ruby has single inheritance. A class can still include many modules.
 
 ```ruby
 class Animal
@@ -88,7 +87,8 @@ class Animal
   end
 
   def speak
-    raise NotImplementedError, "#{self.class} must implement speak"
+    raise NotImplementedError,
+          "#{self.class} needs speak"
   end
 end
 
@@ -97,10 +97,17 @@ class Dog < Animal
     "#{name} says woof"
   end
 end
+```
 
+### `super` calls the parent method
+
+Bare `super` passes all the arguments of the current method. `super()` passes none, and `super(x)` passes only `x`.
+
+```ruby
 class Cat < Animal
   def initialize(name, indoor: true)
-    super(name)          # calls Animal#initialize
+    # Calls Animal#initialize
+    super(name)
     @indoor = indoor
   end
 
@@ -110,11 +117,9 @@ class Cat < Animal
 end
 ```
 
-`super` with no arguments passes all the current method's arguments up the chain. `super()` passes none. `super(x)` passes `x` explicitly.
+### `include` adds instance methods, `extend` adds class methods
 
-### include vs extend
-
-`include` mixes a module's methods in as **instance methods**. `extend` mixes them in as **class methods** (methods on the class object itself).
+A module mixed in with `include` gives its methods to each instance. A module mixed in with `extend` gives them to the class object itself.
 
 ```ruby
 module Greetable
@@ -128,75 +133,77 @@ class Staff
   attr_reader :name
   def initialize(name) = @name = name
 end
-
-Staff.new("Bob").greet  # => "Hi, I'm Bob"
+Staff.new("Bob").greet
+# => "Hi, I'm Bob"
 
 class Team
   extend Greetable
   def self.name = "Engineering"
 end
-
 Team.greet  # => "Hi, I'm Engineering"
 ```
 
-## vs other languages
+### `private` is a method call
 
-| | Ruby | Java | Python | C++ |
-|---|---|---|---|---|
-| Constructor name | `initialize` | class name | `__init__` | class name |
-| Instance var syntax | `@name` | `this.name` | `self.name` | `this->name` |
-| Getters/setters | `attr_accessor` macro | manual or Lombok | `@property` | manual |
-| Multiple inheritance | No — but `include` multiple modules | No | Yes | Yes |
-| Interface equivalent | Module (duck-typed) | `interface` | ABC or Protocol | pure virtual class |
+Methods are public by default. `private` is not part of a signature: it is a method call that applies to the methods defined after it.
 
-Ruby has no access modifiers like `private` / `protected` in the Java sense as part of the class signature — they're method calls that apply to the methods defined after them in the source. `private` is the most common; Ruby methods are public by default.
+```ruby
+class Vault
+  def open = check_code
+
+  private
+
+  def check_code = true
+end
+```
 
 ## Watch out
 
-- `attr_accessor :width` generates a plain `@width` getter/setter — it does **not** call your custom `initialize` logic or validate anything. If you need validation, write the setter method by hand instead of using `attr_writer`/`attr_accessor`.
-- `super` (no parens) forwards the **exact arguments the current method received**; `super()` forwards **none**. Forgetting the distinction is the most common inheritance bug — a subclass `initialize(side)` calling bare `super` (not `super(side, side)`) passes only `side` up, not two arguments.
-- `@@count` class variables are shared down the **entire** inheritance chain — a subclass increments the same counter as its superclass. Prefer a class-level instance variable (`@count` read via `self.count`) if each subclass needs its own count.
-- `square?` returning `width == height` works here because both are numeric; don't assume `==` does deep/structural comparison for arbitrary objects unless you define `#==` yourself.
+- `attr_accessor` makes a plain getter and setter with no validation. Write the setter by hand when you need checks.
+- Bare `super` passes the exact arguments the current method got. `super()` passes none.
+- In `Square#initialize(side)`, bare `super` passes one argument. `Rectangle#initialize` needs `super(side, side)`.
+- A subclass changes the same `@@count` as its parent. Use a class-level `@count` for one count per class.
+- `==` compares numbers by value. For your own objects, `==` checks identity unless you define `#==`.
 
 ## The task
 
-Model rectangles and squares with a small class hierarchy.
+Write two classes in `stub.rb`. `Square` is a `Rectangle` with equal sides.
 
-**`Rectangle`** — has `attr_reader :width, :height`, and:
+`Rectangle` has `attr_reader :width, :height` and these methods:
 
-- `initialize(width, height)` — stores both dimensions.
-- `area` — returns `width * height`.
-- `perimeter` — returns `2 * (width + height)`.
-- `square?` — returns `true` if `width == height`, else `false`.
-- `to_s` — returns `"Rectangle(#{width}x#{height})"`.
+1. `initialize(width, height)` stores both dimensions.
+2. `area` returns `width * height`.
+3. `perimeter` returns `2 * (width + height)`.
+4. `square?` returns `true` when `width == height`, else `false`.
+5. `to_s` returns `"Rectangle(#{width}x#{height})"`.
+
+`Square < Rectangle` has these methods:
+
+6. `initialize(side)` calls `super`, so `width` and `height` both equal `side`.
+7. `to_s` returns `"Square(#{width})"`.
+8. `area`, `perimeter` and `square?` come from `Rectangle` unchanged.
 
 ```ruby
 r = Rectangle.new(4, 6)
-r.width       # => 4
-r.height      # => 6
-r.area        # => 24
-r.perimeter   # => 20
-r.square?     # => false
-r.to_s        # => "Rectangle(4x6)"
+r.width      # => 4
+r.height     # => 6
+r.area       # => 24
+r.perimeter  # => 20
+r.square?    # => false
+r.to_s       # => "Rectangle(4x6)"
 
 Rectangle.new(5, 5).square?  # => true
-```
+Rectangle.new(3, 1).area     # => 3
+Rectangle.new(3, 1).perimeter # => 8
 
-**`Square < Rectangle`** — a rectangle whose width and height are always equal:
-
-- `initialize(side)` — calls `super` so that both `width` and `height` are set to `side`.
-- `to_s` — overridden to return `"Square(#{width})"`.
-
-All other `Rectangle` methods (`area`, `perimeter`, `square?`) are inherited unchanged.
-
-```ruby
 s = Square.new(7)
-s.width       # => 7
-s.height      # => 7
-s.area        # => 49
-s.perimeter   # => 28
-s.square?     # => true
-s.to_s        # => "Square(7)"
+s.width      # => 7
+s.height     # => 7
+s.area       # => 49
+s.perimeter  # => 28
+s.square?    # => true
+s.to_s       # => "Square(7)"
 
-s.is_a?(Rectangle)  # => true
+Square.new(1).square?        # => true
+Square.new(3).is_a?(Rectangle) # => true
 ```

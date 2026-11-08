@@ -1,86 +1,130 @@
-# Dynamic Memory
+## What you build
 
-## What you'll learn
-
-C gives you direct control over heap allocation. There is no garbage collector — you request memory with `malloc` and release it with `free`. Get it wrong and you get memory leaks, double-frees, or use-after-free bugs. Get it right and you have deterministic, zero-overhead memory management.
+You write four functions that allocate, resize, copy and reverse heap memory. C has no garbage collector: you request memory with `malloc` and release it with `free`. This lesson builds on **Control Flow**.
 
 ## Key concepts
 
-**Allocating memory:**
+### `malloc` and `calloc` allocate on the heap
+
+`malloc` leaves the memory uninitialized. `calloc` sets it to zero.
+
 ```c
 #include <stdlib.h>
 
-int *arr = malloc(10 * sizeof(int));  // uninitialized
-int *arr = calloc(10, sizeof(int));   // zero-initialized
+// Uninitialized
+int *a = malloc(10 * sizeof(int));
+// Zero-initialized
+int *b = calloc(10, sizeof(int));
 ```
 
-Always check the return value — `malloc` returns `NULL` if allocation fails:
+### Always check for `NULL`
+
+`malloc` returns `NULL` when the allocation fails.
+
 ```c
 int *p = malloc(n * sizeof(int));
-if (p == NULL) return NULL;  // handle failure
+if (p == NULL) return NULL;
 ```
 
-**Resizing:**
+### `realloc` resizes a block
+
+On failure, `realloc` returns `NULL` and does not free the original block. The original pointer stays valid.
+
 ```c
-int *bigger = realloc(arr, new_size * sizeof(int));
+int *bigger =
+    realloc(arr, new_size * sizeof(int));
 if (bigger == NULL) {
-    free(arr);   // original pointer still valid; realloc didn't free it
+    // arr is still valid: free it
+    free(arr);
     return NULL;
 }
 arr = bigger;
 ```
 
-**Freeing:**
+### `free` releases a block
+
+Set the pointer to `NULL` after `free`. A later use then fails as a clear `NULL` dereference.
+
 ```c
 free(arr);
-arr = NULL;  // convention: null the pointer after freeing to catch use-after-free
+arr = NULL;
 ```
 
-Never `free` the same pointer twice (double-free is undefined behavior). Never access memory after freeing it (use-after-free).
+Never free the same pointer twice. Never use memory after you free it.
 
-**String duplication:**
+### Copy a string onto the heap
+
+Allocate one more byte than `strlen` for the `'\0'`.
+
 ```c
 #include <string.h>
 
-char *dup = malloc(strlen(s) + 1);  // +1 for the null terminator
+char *dup = malloc(strlen(s) + 1);
 if (dup) strcpy(dup, s);
 ```
 
-**Diagnosing leaks:** Run with `valgrind --leak-check=full ./program` on Linux, or `leaks` on macOS. Tools like AddressSanitizer (`-fsanitize=address`) catch use-after-free and double-free at runtime.
+### Tools find memory bugs
 
-**vs other languages:** Java, Go, JavaScript, and Python all have garbage collectors — you allocate and forget, and the runtime reclaims memory automatically. C++ adds RAII and smart pointers (`unique_ptr`, `shared_ptr`) so destructors release memory deterministically without a GC. C has none of that: every `malloc` must have a matching `free`, and you must track ownership manually.
+On Linux, run `valgrind --leak-check=full ./program`. On macOS, run `leaks`. AddressSanitizer (`-fsanitize=address`) catches use-after-free and double-free at runtime.
+
+### Every `malloc` needs one `free`
+
+C++ releases memory in destructors through RAII and smart pointers (`unique_ptr`, `shared_ptr`), and Java, Go, JavaScript and Python use a garbage collector. C has none of these. You track the owner of each block yourself. Correct code gets deterministic memory management with no overhead.
 
 ## Watch out
 
-- **`realloc` may move the block.** `realloc(arr, ...)` can return a *different* address than `arr`; always assign the result to a (possibly new) variable and never keep using the old pointer. If `realloc` fails, it returns `NULL` but the *original* pointer is still valid and still allocated — you must free it yourself or you'll leak it.
-- **Double-free is undefined behavior**, not a safe no-op — freeing the same pointer twice can corrupt the heap allocator's internal bookkeeping and crash somewhere unrelated, much later.
-- **Use-after-free** reads/writes through a pointer whose memory has already been returned to the allocator; the memory may look fine for a while and then get silently overwritten by something else. Setting a pointer to `NULL` right after `free` turns a future use-after-free into an obvious, safe-to-diagnose NULL dereference.
-- `malloc` leaves memory **uninitialized** — reading it before writing is undefined behavior (garbage, not zero). `calloc` zero-initializes; that's the whole reason it exists as a separate function instead of just being `malloc` + `memset`.
-- Every function below that returns a heap pointer documents who owns the result — see each function's note. Get the ownership wrong (forget to `free`, or `free` something you don't own) and you leak or crash.
+- `realloc` can return a different address. Never use the old pointer after the call.
+- If `realloc` fails, the original block is still allocated. Free it, or it leaks.
+- Double-free is undefined behavior. It can corrupt the allocator and crash later, in unrelated code.
+- After use-after-free, the memory can look correct for a while. Then other code overwrites it.
+- Reading `malloc` memory before you write it is undefined behavior. You get garbage, not zero.
+- That is the reason `calloc` exists: it zero-initializes the block.
+- Each function below states who owns its result. A missing `free` leaks. A wrong `free` crashes.
 
 ## The task
 
-Implement the following functions. Each documents its own memory-ownership contract — read it before writing code.
+Write four functions. Each one states who owns the memory.
 
-- `int* create_int_array(int size)` — allocate a zero-initialized array of `size` ints on the heap. **The caller owns the result and must `free` it.** Returns `NULL` if allocation fails.
-- `int* resize_array(int* arr, int old_size, int new_size)` — resize a heap array previously returned by `create_int_array` (or a prior `resize_array` call) from `old_size` to `new_size` elements; any newly grown slots must be zero. **Returns the new pointer, which the caller now owns and must `free`** — the old `arr` pointer must not be used again after this call, whether or not the address changed. Returns `NULL` on allocation failure (in which case `arr` is untouched and still the caller's responsibility).
-- `char* string_duplicate(const char* s)` — allocate a heap copy of the null-terminated string `s`, including its terminator. **The caller owns the result and must `free` it.** Returns `NULL` on allocation failure.
-- `void reverse_in_place(int* arr, int size)` — reverse `size` elements of `arr` in place. No allocation, no ownership change — `arr` is caller-owned stack or heap memory that already existed before the call. `size == 0` is a no-op (and `arr` may be `NULL` in that case).
+1. `int* create_int_array(int size)` allocates a heap array of `size` ints, all zero.
+2. The caller owns the result of `create_int_array` and must `free` it. It returns `NULL` if allocation fails.
+3. `int* resize_array(int* arr, int old_size, int new_size)` resizes `arr` from `old_size` to `new_size` elements.
+4. `arr` comes from `create_int_array` or an earlier `resize_array` call.
+5. `resize_array` keeps the existing values up to the smaller size. New slots must be zero.
+6. The caller owns the returned pointer and must `free` it. Never use the old `arr` again.
+7. On allocation failure, `resize_array` returns `NULL`. Then `arr` keeps its contents and the caller still owns it.
+8. `char* string_duplicate(const char* s)` returns a heap copy of `s`, including its `'\0'`.
+9. The caller owns the copy and must `free` it. It returns `NULL` if allocation fails.
+10. `void reverse_in_place(int* arr, int size)` reverses `size` elements of `arr` in place.
+11. `reverse_in_place` does not allocate. The caller owns `arr`.
+12. If `size == 0`, `reverse_in_place` does nothing. `arr` can be `NULL` then.
+
+The copy of `""` is a new empty string. Shrinking keeps the first `new_size` values.
 
 ```c
-int *arr = create_int_array(5);   // {0,0,0,0,0}, heap-allocated
+// {0, 0, 0, 0, 0}
+int *arr = create_int_array(5);
 arr[0] = 1; arr[1] = 2; arr[2] = 3;
 
+// {1, 2, 3, 0, 0, 0}. Do not use arr.
 int *big = resize_array(arr, 3, 6);
-// big[0..2] == {1,2,3} preserved, big[3..5] == {0,0,0} newly zeroed
-// `arr` must not be touched again — only `big` is valid now
-free(big);
+// {1, 2}. Do not use big.
+int *small = resize_array(big, 6, 2);
+free(small);
 
-char *dup = string_duplicate("hello");  // heap copy, independent of the literal
-// dup[0] == 'h', strcmp(dup, "hello") == 0
+// "hello", a new heap pointer
+char *dup = string_duplicate("hello");
 free(dup);
+// "", not NULL
+char *empty = string_duplicate("");
+free(empty);
 
-int nums[] = {1, 2, 3, 4, 5};   // stack array — reverse_in_place does not allocate
-reverse_in_place(nums, 5);      // {5, 4, 3, 2, 1}
-reverse_in_place(NULL, 0);      // no-op, must not crash
+int nums[] = {1, 2, 3, 4, 5};
+// {5, 4, 3, 2, 1}
+reverse_in_place(nums, 5);
+int two[] = {7, 8};
+reverse_in_place(two, 2);  // {8, 7}
+int one[] = {42};
+reverse_in_place(one, 1);  // {42}
+// Does nothing, does not crash
+reverse_in_place(NULL, 0);
 ```

@@ -1,60 +1,93 @@
-# Topics, Partitions, and Offsets
+## What you build
 
-## What you'll learn
-
-Kafka isn't a queue and it isn't a pub/sub bus in the traditional sense — it's a distributed, append-only commit log. Every other concept in this track (ordering, delivery semantics, replication, consumer groups) is a consequence of that one design decision. This lesson builds the mental model: what a topic actually is on disk, why partitions are the unit of parallelism, and how offsets work as per-partition bookmarks.
+You write the topic configuration for `clickstream`, a high-volume event topic, in `stub.properties`. Kafka is a distributed, append-only commit log. Ordering, delivery, replication and consumer groups all follow from that design.
 
 ## Key concepts
 
-**A topic is a named stream; a partition is the physical log.** A topic is a logical category (`orders`, `clickstream`). Under the hood, a topic is split into one or more **partitions**, and each partition is an ordered, append-only sequence of records stored as files on a broker's disk — literally a sequence of log segment files (`00000000000000000000.log`, `00000000000000368769.log`, ...). Records are never modified in place. A producer only ever appends to the tail; a consumer only ever reads forward from some position.
+### A partition is the physical log of a topic
+
+A topic is a named category, for example `orders` or `clickstream`. Kafka splits each topic into one or more **partitions**. Each partition is an ordered, append-only sequence of records in segment files on a broker's disk.
 
 ```
 topic: orders (3 partitions)
-
-partition 0: [msg0][msg1][msg2][msg3]...   -> broker 1 (leader)
-partition 1: [msg0][msg1][msg2]...          -> broker 2 (leader)
-partition 2: [msg0][msg1][msg2][msg3][msg4] -> broker 3 (leader)
+p0: [m0][m1][m2][m3] -> broker 1
+p1: [m0][m1][m2]     -> broker 2
+p2: [m0][m1][m2][m3] -> broker 3
 ```
 
-Each partition lives on a broker (with replicas on others — covered in the replication lesson). Partitions are the unit Kafka distributes across the cluster and across consumers. There is no "global" ordering across a topic — only per-partition ordering. That single sentence resolves half the "why is my message out of order" bugs you'll ever debug in Kafka.
+Segment files have names such as `00000000000000000000.log` and `00000000000000368769.log`. Kafka never changes a record in place. A producer appends to the tail. A consumer reads forward from a position.
 
-**Offsets are per-partition bookmarks, not global sequence numbers.** Every record in a partition gets a monotonically increasing integer, the **offset**, assigned by the broker at append time — 0, 1, 2, 3, ... A consumer doesn't track "how many messages have I read from this topic"; it tracks "what offset have I consumed up to, in *each* partition I'm assigned." Offsets are meaningless without a partition to scope them: `(orders, partition 1, offset 4502)` uniquely identifies one record; `offset 4502` alone means nothing.
+### Order exists only inside one partition
+
+Each partition lives on a broker, with replicas on other brokers. The partition is the unit that Kafka spreads across the cluster and across consumers. A topic has no global order, only per-partition order.
+
+### An offset is a bookmark inside one partition
+
+The broker gives each record a number when it appends it: 0, 1, 2, 3. This number is the **offset**, and it always increases. A consumer tracks the offset it has reached in *each* partition it reads.
+
+An offset means nothing without its partition. `(orders, partition 1, offset 4502)` identifies one record. `offset 4502` alone identifies nothing.
 
 ```
-partition 1 offsets: 0   1   2   3   4   5   6
-                      [A] [B] [C] [D] [E] [F] [G]
-                                   ^
-                         consumer has committed offset 3 (next read: offset 4, "D")
+partition 1:
+offset  0   1   2   3   4   5   6
+       [A] [B] [C] [D] [E] [F] [G]
+                ^
+committed 3: next read is offset 3 ("D")
 ```
 
-This is why replaying data in Kafka means seeking a *consumer* to an earlier offset on a *partition* — there's no concept of "rewind the topic," only "rewind this partition's read position."
+To replay data, you move a *consumer* to an earlier offset on a *partition*. Kafka has no "rewind the topic", only "rewind this partition's read position".
 
-**Partition count is your parallelism ceiling.** Within one consumer group, Kafka assigns each partition to exactly one consumer at a time. That means:
+### The partition count limits consumer parallelism
 
-- If a topic has 12 partitions, at most 12 consumers in a single group can be doing useful work concurrently. A 13th consumer in that group sits idle.
-- Fewer consumers than partitions is fine — each consumer just gets multiple partitions.
-- You can increase partition count later (`kafka-topics.sh --alter --partitions N`), but you can never decrease it, and increasing it **reassigns the key→partition mapping for every existing key** (see the keys/ordering lesson) — so plan partition count for your ordering and parallelism needs up front, not as an afterthought.
+Inside one consumer group, Kafka gives each partition to exactly one consumer at a time.
 
-Sizing rule of thumb: `partitions ≥ max(target_throughput / per_partition_throughput, max_consumer_parallelism_needed)`. A single partition on modern hardware typically sustains somewhere in the 5-20 MB/s range for writes depending on record size, compression, and replication — so a target of 100 MB/s and no other constraint suggests roughly 10-20 partitions, then round up to match your desired consumer parallelism.
+- With 12 partitions, at most 12 consumers in one group do useful work. A 13th consumer stays idle.
+- Fewer consumers than partitions is fine. Each consumer then reads more than one partition.
+- You can add partitions later with `kafka-topics.sh --alter --partitions N`. You can never remove them.
 
-**More partitions isn't free.** Every partition is an open file handle (times the replication factor) on every broker that hosts a replica, adds to controller metadata size, and lengthens leader-election time during a broker failure (more partitions to fail over = more work for the controller). Thousands of partitions per broker is a real operational ceiling, not a theoretical one — over-provisioning "just in case" has a cost.
+Adding partitions changes the partition of every existing key. The keys lesson covers this. Plan the partition count for order and parallelism at the start.
+
+### Size partitions from throughput and parallelism
+
+A rule of thumb:
+
+```
+partitions >= max(
+  target_throughput
+    / per_partition_throughput,
+  max_consumer_parallelism)
+```
+
+One partition on modern hardware writes about 5 to 20 MB/s. The rate depends on record size, compression and replication. A 100 MB/s target alone gives 10 to 20 partitions. Round up to the consumer parallelism you want.
+
+### More partitions have a cost
+
+Each partition is an open file handle on every broker with a replica, times the replication factor. Each one adds controller metadata. More partitions also make leader election slower when a broker fails. Thousands of partitions per broker is a real operational limit, so do not add spare partitions with no need.
 
 ## Watch out
 
-- **"Ordering" without qualification is a trap.** Kafka guarantees order *within a partition* only. Two records with different keys (and therefore likely different partitions) have no ordering guarantee relative to each other, even if produced by the same producer in sequence.
-- **Offsets are not timestamps and not row counts.** They're an opaque, monotonically increasing per-partition sequence. Two different partitions being at "offset 500" doesn't mean they hold related data or were written at the same time.
-- **You cannot shrink partition count.** If you over-provision, you're stuck re-creating the topic (and migrating data) to reduce it. Under-provisioning is the safer default mistake — you can always add partitions later, just not remove them.
+- "Ordered" without a scope is wrong. Kafka orders records only inside one partition.
+- Two records with different keys usually go to different partitions. They have no relative order, even from one producer.
+- An offset is not a timestamp or a row count. Two partitions at offset 500 hold unrelated data.
+- You cannot reduce the partition count. To shrink, you must create a new topic and move the data.
+- Too few partitions is the safer mistake. You can add partitions later, but not remove them.
 
 ## The task
 
-You're creating the topic configuration for `clickstream`, a high-volume event topic. Requirements:
+You create the configuration for `clickstream`, a high-volume event topic. You pass the file to `kafka-topics.sh --create --topic clickstream --config <file>`. `--partitions` and `--replication-factor` are CLI flags, not `--config` entries. So you record them as comment lines.
 
-- The team runs a single consumer group with **12** consumer instances that must all be able to do useful work in parallel — so the topic needs **12** partitions.
-- The topic must **tolerate one broker failure** without losing the ability to serve reads/writes, which requires a replication factor of **3** (leader + 2 followers; covered fully in the replication lesson — for now, just set the number).
-- Events must be retained for **exactly 7 days** (604800000 ms) for reprocessing, after which old data should be deleted (this is a plain event log, not a compacted changelog).
-- Because losing acknowledged writes is unacceptable, at least **2** in-sync replicas must acknowledge a write for it to be considered committed (`min.insync.replicas`).
+Write `stub.properties` with these rules:
 
-Write `stub.properties` as the config you'd pass to `kafka-topics.sh --create --topic clickstream --config <this file>`, plus three commented metadata lines (since `--partitions` and `--replication-factor` are CLI flags, not `--config` entries) recording the values you chose. Use exactly this shape:
+1. Add the comment `# topic=clickstream`.
+2. Add the comment `# partitions=12`. One consumer group runs 12 consumers, and all 12 must work in parallel.
+3. Add the comment `# replication.factor=3`. The topic must survive one broker failure: one leader and 2 followers.
+4. Set `cleanup.policy=delete`. This topic is a plain event log, not a compacted changelog.
+5. Set `retention.ms=604800000`. That is exactly 7 days, for reprocessing.
+6. Set `min.insync.replicas=2`. At least 2 in-sync replicas must acknowledge each write.
+
+The file must not set `cleanup.policy=compact`. It must not contain the text `TODO`.
+
+Use exactly this content:
 
 ```properties
 # topic=clickstream

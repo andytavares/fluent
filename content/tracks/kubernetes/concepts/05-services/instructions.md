@@ -1,24 +1,16 @@
-# Services
+## What you build
 
-## What you'll learn
-
-Pods are ephemeral — they get new IPs every time they're recreated by a
-rollout, a node failure, or a scale event. A Service is a stable network
-identity in front of a *changing* set of Pods, found via the label selectors
-you learned two lessons ago. This lesson covers the four Service types and
-the port model that trips up almost everyone the first time.
+You write a `ClusterIP` Service for the `web` Pods and a headless Service for database Pods. Pods get a new IP each time a rollout, node failure or scale event creates them. A Service gives a changing set of Pods one stable network identity. This lesson builds on **Labels, Selectors & Annotations** and **Deployments**.
 
 ## Key concepts
 
-**How a Service finds its Pods:** a Service's `spec.selector` is matched
-against Pod labels exactly like the selectors you already know. Kubernetes
-maintains an `Endpoints` (or `EndpointSlice`) object listing the IP:port of
-every currently-matching, Ready Pod — this list updates automatically as
-Pods come and go. The Service's ClusterIP is a virtual address; `kube-proxy`
-(or the CNI's equivalent) rewrites traffic to it toward one of the real Pod
-IPs in the Endpoints list.
+### A Service finds its Pods by label
 
-**Four Service types:**
+The Service `spec.selector` matches Pod labels, as other selectors do. Kubernetes keeps an `Endpoints` or `EndpointSlice` object with the IP and port of each matching Ready Pod. The list updates when Pods start and stop.
+
+### The ClusterIP is a virtual address
+
+`kube-proxy`, or the CNI plugin's equivalent, sends traffic for the ClusterIP to one Pod IP from the endpoints list. A Service is a live query over Pod labels, not a load balancer with a static config. AWS target groups need manual or Auto Scaling registration instead.
 
 ```yaml
 apiVersion: v1
@@ -26,7 +18,7 @@ kind: Service
 metadata:
   name: web
 spec:
-  type: ClusterIP        # default
+  type: ClusterIP
   selector:
     app: web
   ports:
@@ -34,35 +26,37 @@ spec:
       targetPort: 8080
 ```
 
-- **`ClusterIP`** (default) — internal-only virtual IP, reachable from
-  inside the cluster. The building block every other type is layered on.
-- **`NodePort`** — additionally opens a port (30000–32767 by default) on
-  *every* node's IP, forwarding to the ClusterIP. Crude but works without any
-  cloud integration.
-- **`LoadBalancer`** — additionally provisions a cloud load balancer (ELB,
-  GCLB, etc.) pointing at the NodePort. Requires a cloud controller manager
-  that implements it — on bare-metal clusters without one (e.g. MetalLB),
-  the `EXTERNAL-IP` stays `<pending>` forever.
-- **`ExternalName`** — no selector, no proxying at all. Returns a `CNAME`
-  DNS record pointing at an external hostname:
-  `spec: { type: ExternalName, externalName: legacy-db.example.com }`. Pure
-  DNS aliasing — no Endpoints, no port mapping, works purely at the DNS
-  layer.
+### `ClusterIP` is the default type
 
-**The three ports, precisely:**
+It gives an internal virtual IP that only the cluster can reach. The other types build on it.
 
-- `port` — the port the *Service* listens on (what other Pods in the
-  cluster connect to: `web.default.svc.cluster.local:80`).
-- `targetPort` — the port on the *Pod* traffic is forwarded to. Can differ
-  from `port` (Service on 80, container listening on 8080, as above) or be
-  omitted (defaults to equal `port`).
-- `nodePort` — (NodePort/LoadBalancer types only) the port opened on every
-  node's host IP. If omitted, Kubernetes allocates one from the
-  30000–32767 range.
+### `NodePort` opens a port on every node
 
-**Headless Services** (`clusterIP: None`) skip the virtual-IP layer
-entirely. DNS resolution of a headless Service's name returns the Pod IPs
-directly (one A record per Ready Pod) instead of a single load-balanced VIP:
+The port comes from the range 30000–32767 by default. Traffic to that port on any node IP goes to the ClusterIP. It works without cloud integration.
+
+### `LoadBalancer` asks for an external load balancer
+
+The cloud creates a load balancer, such as an ELB or GCLB, that points at the NodePort. It needs a cloud controller manager or an implementation such as MetalLB. Without one, `EXTERNAL-IP` stays `<pending>` forever.
+
+### `ExternalName` is a DNS alias
+
+It has no selector, no proxy, no endpoints and no port mapping. DNS returns a `CNAME` record for an external hostname.
+
+```yaml
+spec:
+  type: ExternalName
+  externalName: legacy-db.example.com
+```
+
+### A Service has three port fields
+
+- `port` is the port that the Service listens on, for example `web.default.svc.cluster.local:80`.
+- `targetPort` is the port on the Pod. It can differ from `port`. If you leave it out, it equals `port`.
+- `nodePort` is the port on every node, for `NodePort` and `LoadBalancer` only. If you leave it out, Kubernetes picks one from 30000–32767.
+
+### A headless Service returns the Pod IPs
+
+`clusterIP: None` removes the virtual IP. A DNS lookup of the Service name returns one A record per Ready Pod.
 
 ```yaml
 apiVersion: v1
@@ -77,62 +71,35 @@ spec:
     - port: 5432
 ```
 
-Use headless Services when clients need to address *individual* Pods rather
-than "any one of them" — the canonical case is a StatefulSet member with a
-stable identity (next-but-one lesson), where clients need to reach
-`db-0.db.default.svc.cluster.local` specifically, not a random replica.
-
-## vs other tools
-
-| | Kubernetes Service | AWS ELB/ALB target group | DNS round-robin |
-|---|---|---|---|
-| Membership tracking | Automatic via label selector + Endpoints | Manual registration or ASG hook | Manual record management |
-| Internal-only option | `ClusterIP` | Internal ALB (separate resource) | N/A |
-| Per-instance addressing | Headless Service (`clusterIP: None`) | Not typical | Yes, if you manage records per host |
-| Health-aware | Yes — only Ready Pods are in Endpoints | Yes — health checks | No |
-
-The Endpoints-list mechanism is the key idea to internalize: a Service is
-never "a load balancer with a config file" — it's a live query result over
-Pod labels, refreshed continuously by the control plane.
+Use it when clients must reach one specific Pod, not any replica. The typical case is a StatefulSet member, such as `db-0.db.default.svc.cluster.local`. A later concept covers StatefulSets.
 
 ## Watch out
 
-- **`port` vs `targetPort` confusion is the #1 "service not reachable"
-  bug.** If your container listens on 8080 but you set `targetPort: 80` (or
-  omit it, defaulting to match `port: 80`), every request 502s or times out
-  — the Service is healthy, the Pods are healthy, but nothing is listening
-  on the port the Service forwards to.
-- **A Service with a selector matching zero Pods is not an error.** It
-  creates successfully with an empty `Endpoints` list and silently drops all
-  traffic. Always cross-check `spec.selector` against your Deployment's
-  `template.metadata.labels`.
-- **`LoadBalancer` on a cluster with no cloud integration hangs at
-  `<pending>` forever** — not a bug, just nothing implementing that
-  Service type. Use `NodePort` or an Ingress controller (next lesson)
-  instead in that environment.
+- A wrong `targetPort` is the top cause of an unreachable Service. Pods and Service look healthy, but nothing listens on that port.
+- Example: the container listens on 8080, and `targetPort` is 80 or missing. Every request fails or times out.
+- A selector that matches zero Pods is not an error. The Service has empty endpoints and drops all traffic.
+- Compare `spec.selector` with the Deployment's `template.metadata.labels`.
+- Without cloud integration, a `LoadBalancer` stays `<pending>` forever. Use `NodePort` or an Ingress controller there.
 
 ## The task
 
-Produce two YAML documents separated by `---`.
+Write two Service manifests in `stub.yaml`, separated by a `---` line.
 
-**Document 1** — a `ClusterIP` Service exposing the `web` Deployment from
-earlier lessons:
+Document 1 exposes the `web` Pods inside the cluster:
 
-- `apiVersion: v1`, `kind: Service`
-- `metadata.name: web`
-- `spec.type: ClusterIP`
-- `spec.selector`: `app: web`
-- `spec.ports` with one entry: `port: 80`, `targetPort: 8080`
+1. Set `apiVersion: v1` and `kind: Service`.
+2. Set `metadata.name` to `web` and `spec.type` to `ClusterIP`.
+3. Set `spec.selector` to `app: web`.
+4. Add one port entry with `port: 80` and `targetPort: 8080`.
 
-**Document 2** — a headless Service for a database StatefulSet's Pods:
+Document 2 is a headless Service for the Pods of a database StatefulSet. It must come after the `---` line:
 
-- `apiVersion: v1`, `kind: Service`
-- `metadata.name: db`
-- `spec.clusterIP: None`
-- `spec.selector`: `app: db`
-- `spec.ports` with one entry: `port: 5432`
+1. Set `apiVersion: v1` and `kind: Service`.
+2. Set `metadata.name` to `db` and `spec.clusterIP` to `None`.
+3. Set `spec.selector` to `app: db`.
+4. Add one port entry with `port: 5432`.
 
-Expected shape:
+The file must match this content:
 
 ```yaml
 apiVersion: v1

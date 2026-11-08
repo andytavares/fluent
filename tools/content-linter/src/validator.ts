@@ -1,6 +1,7 @@
 import { readdir, readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
-import { conceptConfigSchema, LANG_EXT, TEST_FILE_PATTERNS } from "@fluent/content-config";
+import { conceptConfigSchema, createContentStore, LANG_EXT, TEST_FILE_PATTERNS } from "@fluent/content-config";
+import { extractTaskPrompt } from "@fluent/content-config/task-prompt";
 
 export type LintError = {
   code: string;
@@ -88,13 +89,90 @@ export async function validateExerciseFolder(
     errors.push({ code: "E007", message: `Missing test file (*_test.${ext})` });
   }
 
-  // W001: instructions.md should have minimum length
   if (files.includes("instructions.md")) {
     const content = await readFile(join(folderPath, "instructions.md"), "utf-8");
-    if (content.trim().length < 50) {
-      errors.push({ code: "W001", message: "instructions.md is very short (< 50 chars)" });
-    }
+    errors.push(...checkInstructions(content));
   }
 
   return errors;
+}
+
+function checkInstructions(content: string): LintError[] {
+  const errors: LintError[] = [];
+  // W001: instructions.md should have minimum length
+  if (content.trim().length < 50) {
+    errors.push({ code: "W001", message: "instructions.md is very short (< 50 chars)" });
+  }
+  return [...errors, ...checkLessonStructure(content)];
+}
+
+const MAX_CODE_LINE_WIDTH = 43;
+
+function checkLessonStructure(instructions: string): LintError[] {
+  const errors: LintError[] = [];
+  const lines = instructions.split("\n");
+  const file = "instructions.md";
+  if (!lines.includes("## The task")) {
+    errors.push({ code: "E012", message: "no '## The task' line", file });
+  }
+  if (!extractTaskPrompt(instructions).includes("```")) {
+    errors.push({ code: "E013", message: "task section has no fenced code block", file });
+  }
+  const firstLine = lines.find((line) => line.trim().length > 0) ?? "";
+  if (firstLine.startsWith("# ")) {
+    errors.push({ code: "E014", message: "lesson starts with a '# ' title; the page header shows it", file });
+  }
+  const wideLines = findWideCodeLines(lines);
+  if (wideLines.length > 0) {
+    errors.push({
+      code: "W002",
+      message: `${String(wideLines.length)} code line(s) wider than ${String(MAX_CODE_LINE_WIDTH)} chars, first at line ${String(wideLines[0])}`,
+      file,
+    });
+  }
+  return errors;
+}
+
+function findWideCodeLines(lines: string[]): number[] {
+  const wideLineNumbers: number[] = [];
+  let inFence = false;
+  lines.forEach((line, index) => {
+    if (line.trimStart().startsWith("```")) {
+      inFence = !inFence;
+    } else if (inFence && line.replace(/\t/g, "    ").length > MAX_CODE_LINE_WIDTH) {
+      wideLineNumbers.push(index + 1);
+    }
+  });
+  return wideLineNumbers;
+}
+
+export function checkBuildsOn(
+  instructions: string,
+  position: number,
+  earlierTitles: string[],
+): LintError | null {
+  const file = "instructions.md";
+  const section = instructions.match(/## What you build\n([\s\S]*?)(?=\n## |$)/)?.[1];
+  if (section === undefined) {
+    return { code: "E015", message: "no '## What you build' section", file };
+  }
+  if (position <= 1) return null;
+  if (!/\bbuilds on\b/i.test(section)) {
+    return { code: "E015", message: "'## What you build' does not say 'builds on'", file };
+  }
+  if (!earlierTitles.some((title) => section.includes(title))) {
+    return { code: "E015", message: "'## What you build' names no earlier concept title", file };
+  }
+  return null;
+}
+
+// CI lints one folder at a time, so the earlier titles come from the folder's siblings.
+export async function checkFolderBuildsOn(folderPath: string): Promise<LintError | null> {
+  const concepts = createContentStore().listConcepts(join(folderPath, "../.."));
+  const self = concepts.find((concept) => concept.dir === folderPath);
+  if (!self) return null;
+  const { position } = self.config;
+  const earlierTitles = concepts.filter((c) => c.config.position < position).map((c) => c.config.title);
+  const instructions = await readFile(join(folderPath, "instructions.md"), "utf-8").catch(() => "");
+  return checkBuildsOn(instructions, position, earlierTitles);
 }

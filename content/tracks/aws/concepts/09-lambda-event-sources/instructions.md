@@ -1,102 +1,164 @@
-# Lambda Event Sources
+## What you build
 
-## What you'll learn
-
-Lambda functions are invoked *by something* — this concept covers the two fundamentally different invocation models (push vs poll), the specific mechanics of S3 notifications and SQS event-source mappings (including partial-batch failure handling), asynchronous invocation with destinations/DLQs, and why idempotency stops being optional once any of this is in play. Builds on `lambda-functions`.
+You write `stub.sh`, a script that connects Lambda functions to S3 and SQS and routes async results. This lesson builds on **Lambda Functions**.
 
 ## Key concepts
 
-### Push vs poll — two different invocation models
+The examples leave out `--endpoint-url http://localhost:4566`. Add it to every call when you use LocalStack.
 
-- **Push sources** (S3, SNS, API Gateway, EventBridge): the source service calls `Invoke` on your function directly, the moment the event happens. Lambda scales execution environments to match the incoming rate.
-- **Poll sources** (SQS, DynamoDB Streams, Kinesis): Lambda itself runs a poller **on your behalf** that continuously reads from the source and batches records into invocations — your function never registers itself as a "consumer" the way it would with a traditional message-queue client library; Lambda's infrastructure does the polling.
+### Sources push events or Lambda polls them
 
-Knowing which model a given source uses tells you where the retry/backpressure logic lives: for push sources it's the source service's problem (S3 retries a failed async delivery, per the async-invoke section below); for poll sources it's the **event source mapping's** configuration (batch size, error handling) that controls it.
+- **Push sources** (S3, SNS, API Gateway, EventBridge) call `Invoke` on your function at the moment the event happens. Lambda scales environments to match the incoming rate.
+- **Poll sources** (SQS, DynamoDB Streams, Kinesis) do not call your function. Lambda runs a poller on your behalf. It reads the source and batches records into invocations.
 
-### S3 event notifications (push)
+Your function never registers as a consumer, as it would with a message-queue client library. Lambda does the polling.
+
+The model tells you where retry and backpressure logic lives. For a push source, the source service owns it: S3 retries a failed async delivery. For a poll source, the event source mapping owns it, through its batch size and error settings.
+
+### S3 needs permission to invoke the function
 
 ```bash
-aws --endpoint-url http://localhost:4566 lambda add-permission \
+aws lambda add-permission \
+  --function-name process-upload \
+  --statement-id s3invoke \
+  --action lambda:InvokeFunction \
+  --principal s3.amazonaws.com \
+  --source-arn arn:aws:s3:::fluent-uploads
+```
+
+Then `s3api put-bucket-notification-configuration` tells the bucket to call the function on `s3:ObjectCreated:*` events.
+
+`add-permission` adds a resource-based policy to the function itself. It controls who can invoke the function. The execution role is separate: it controls what the running function can do.
+
+A missing `add-permission` is the most common reason that S3 notifications do nothing. S3 accepts the notification configuration, then AWS denies its invoke attempt without an error.
+
+### An event source mapping polls SQS
+
+```bash
+aws lambda create-event-source-mapping \
+  --function-name process-order \
+  --event-source-arn "$QUEUE_ARN" \
+  --batch-size 10 \
+  --function-response-types \
+  ReportBatchItemFailures
+```
+
+- `--batch-size`: the number of SQS messages in one invocation. The maximum is 10,000 for standard queues and less for FIFO queues. Larger batches mean fewer invocations, lower cost and more throughput. One failure then affects more messages.
+- `--function-response-types ReportBatchItemFailures`: your function returns the IDs of the messages that failed. Only those messages go back to the queue.
+
+Without `ReportBatchItemFailures`, one failed message makes Lambda retry the whole batch. The messages that succeeded run twice. Every production SQS-to-Lambda pipeline needs this setting.
+
+### Async invocations retry, then go to a destination
+
+```bash
+aws lambda \
+  put-function-event-invoke-config \
+  --function-name process-upload \
+  --maximum-retry-attempts 2 \
+  --destination-config file://dest.json
+```
+
+`dest.json` names one target for each outcome:
+
+```json
+{
+  "OnSuccess": {"Destination": "<arn>"},
+  "OnFailure": {"Destination": "<arn>"}
+}
+```
+
+An async invocation comes from a push source such as S3 or SNS, or from `--invocation-type Event`. The caller does not wait, so failures need another place to go. Lambda retries a failed async invocation twice by default. Then it sends the final result to the destination for that outcome.
+
+A destination can be an SQS queue, an SNS topic, another Lambda function or an EventBridge bus. A dead-letter queue (`--dead-letter-config`) is the older mechanism and supports only SQS and SNS. It does a subset of what destinations do. Use destinations for new code, but expect DLQs in existing infrastructure.
+
+### Your function runs more than once for one event
+
+Poll sources redeliver a message after a failed or timed-out attempt. The **SQS** concept explains why. Async invocations retry. So your function runs more than once for the same event as a normal part of operation, not as a rare edge case.
+
+A function behind any of these sources must be safe to run twice with the same input. A payment function needs an idempotency key check, not only a try/catch. Before the side effect, check and atomically claim an idempotency key. A DynamoDB conditional `put-item` keyed on the message ID or event ID is the usual choice. Your function then skips a redelivered event.
+
+### AWS runs the poller and scales the consumer
+
+With a traditional consumer, such as a worker that reads from RabbitMQ, you write the poll loop and scale the workers. With Lambda, AWS runs the poller for SQS, Kinesis and DynamoDB Streams. Queue depth drives the scaling. The number of active readers is a property of your concurrency settings and the source, not a count of your own processes. `ReportBatchItemFailures` replaces per-message ack and nack.
+
+## Watch out
+
+- The resource-based policy and the execution role answer different questions. A missing one gives a different silent failure.
+- Without `ReportBatchItemFailures`, one bad message in a batch of 10 retries all 10. Nine successes repeat their side effects.
+- Destinations and DLQs apply only to async invocations. A failed synchronous `invoke` returns the error to the caller.
+- A larger `--batch-size` lowers invocation count and cost. Without `ReportBatchItemFailures`, one bad record then affects more messages. Tune both together.
+
+## The task
+
+Write `stub.sh` to connect two functions to their event sources. Pass `--endpoint-url "$ENDPOINT_URL"` on every `aws` call.
+
+The script does these steps, in order:
+
+1. Run `lambda add-permission` on `process-upload` with `--statement-id s3invoke` and `--action lambda:InvokeFunction`.
+2. Give it `--principal s3.amazonaws.com` and `--source-arn arn:aws:s3:::fluent-uploads`.
+3. Run `s3api put-bucket-notification-configuration` on `fluent-uploads`. It invokes `process-upload` on `s3:ObjectCreated:*` events.
+4. Run `lambda create-event-source-mapping` for `process-order` on the `orders-queue` ARN below.
+5. Give the mapping `--batch-size 10` and `--function-response-types ReportBatchItemFailures`.
+6. Run `lambda put-function-event-invoke-config` on `process-upload` with `--maximum-retry-attempts 2`.
+7. In its `--destination-config`, send `OnSuccess` to `upload-success-queue` and `OnFailure` to `upload-dlq`.
+8. Add a comment that starts with `# answer:`. In one sentence, say why a function behind an SQS mapping must be idempotent, even with correct error handling.
+
+The answer must contain "idempot", "twice" or "redeliver". The queue ARNs are:
+
+- `arn:aws:sqs:us-east-1:000000000000:orders-queue`
+- `arn:aws:sqs:us-east-1:000000000000:upload-success-queue`
+- `arn:aws:sqs:us-east-1:000000000000:upload-dlq`
+
+The function ARN is `arn:aws:lambda:us-east-1:000000000000:function:process-upload`.
+
+The finished script makes these calls:
+
+```bash
+aws lambda add-permission \
   --function-name process-upload \
   --statement-id s3invoke \
   --action lambda:InvokeFunction \
   --principal s3.amazonaws.com \
   --source-arn arn:aws:s3:::fluent-uploads
 
-aws --endpoint-url http://localhost:4566 s3api put-bucket-notification-configuration \
+aws s3api \
+  put-bucket-notification-configuration \
   --bucket fluent-uploads \
   --notification-configuration '{
-    "LambdaFunctionConfigurations": [{
-      "LambdaFunctionArn": "arn:aws:lambda:us-east-1:000000000000:function:process-upload",
-      "Events": ["s3:ObjectCreated:*"]
-    }]
-  }'
-```
+  "LambdaFunctionConfigurations": [{
+    "LambdaFunctionArn": "<function ARN>",
+    "Events": ["s3:ObjectCreated:*"]
+  }]}'
 
-`add-permission` grants the S3 service principal permission to invoke your function — this is a **resource-based policy on the Lambda function itself**, separate from the function's execution role (which governs what the function can do once running, not who can start it). Forgetting `add-permission` is the single most common reason "I configured S3 notifications and nothing happens" — the notification configuration is accepted, but S3's invoke attempt is silently denied.
-
-### SQS event source mappings (poll)
-
-```bash
-aws --endpoint-url http://localhost:4566 lambda create-event-source-mapping \
+aws lambda create-event-source-mapping \
   --function-name process-order \
-  --event-source-arn arn:aws:sqs:us-east-1:000000000000:orders-queue \
+  --event-source-arn "<orders-queue ARN>" \
   --batch-size 10 \
-  --function-response-types ReportBatchItemFailures
-```
+  --function-response-types \
+  ReportBatchItemFailures
 
-- **`--batch-size`**: how many SQS messages Lambda bundles into a single invocation (up to 10,000 for standard queues, fewer for FIFO). Larger batches mean fewer invocations (cheaper, more throughput) but a slower per-invocation failure blast radius.
-- **`--function-response-types ReportBatchItemFailures`**: without this, if *any* message in the batch throws, Lambda's default behavior is to retry the **entire batch** — including the messages that succeeded, which then get processed twice. With this flag, your function returns a list of specifically which message IDs failed; only those go back to the queue for redelivery. This is the standard, expected configuration for any production SQS-to-Lambda pipeline — the alternative silently reprocesses successful work.
-
-### Async invoke: destinations and DLQs
-
-```bash
-aws --endpoint-url http://localhost:4566 lambda put-function-event-invoke-config \
+aws lambda \
+  put-function-event-invoke-config \
   --function-name process-upload \
   --maximum-retry-attempts 2 \
   --destination-config '{
-    "OnSuccess": {"Destination": "arn:aws:sqs:us-east-1:000000000000:upload-success-queue"},
-    "OnFailure": {"Destination": "arn:aws:sqs:us-east-1:000000000000:upload-dlq"}
-  }'
+  "OnSuccess": {"Destination":
+    "<upload-success-queue ARN>"},
+  "OnFailure": {"Destination":
+    "<upload-dlq ARN>"}}'
+
+# answer: SQS can redeliver a message,
+# so the function can run twice for it.
 ```
 
-When Lambda is invoked asynchronously (push sources like S3/SNS, or explicit `--invocation-type Event`), the caller doesn't wait for a result — so failures need somewhere else to go. Lambda automatically retries a failed async invocation (twice, by default), then routes the final outcome to whichever **destination** you configured: `OnSuccess` and `OnFailure` can each be an SQS queue, SNS topic, another Lambda function, or an EventBridge bus. A **dead-letter queue** (the older, SQS/SNS-only mechanism, configured via `--dead-letter-config` instead) is a strict subset of what destinations can do — prefer destinations for new code; DLQs still show up constantly in existing infrastructure.
-
-### Idempotency — no longer optional
-
-Both poll-based redelivery (a message becomes visible again after a failed/timed-out processing attempt — see the SQS concept for exactly why) and async retries mean **your function will be invoked more than once for the same logical event, as a matter of routine operation, not as a rare edge case.** A Lambda function triggered by any of these sources must be safe to run twice with the same input — "process the payment" needs an idempotency key check, not just a try/catch. The standard pattern: before doing the side-effecting work, check (and atomically claim) an idempotency key — often a DynamoDB conditional `put-item` keyed on the message/event ID — so a redelivered event is recognized and skipped rather than reprocessed.
-
-## vs other tools
-
-| | Lambda event sources | A traditional consumer service (e.g., a worker process reading from RabbitMQ) |
-|---|---|---|
-| Who runs the poller | AWS (for SQS/Kinesis/DynamoDB Streams) — you never write poll loop code | You — the consumer library's poll loop is part of your codebase |
-| Scaling the consumer | Automatic, driven by queue depth/backlog | Manual (more worker processes/pods) or an autoscaler watching queue metrics |
-| Partial failure handling | `ReportBatchItemFailures` — explicit, per-message | Ack/nack per message, library-dependent |
-
-The philosophical shift: with Lambda, "how many things are reading from this queue right now" is not a question you answer by counting your own processes — it's a property of your function's concurrency configuration and the source's own scaling behavior.
-
-## Watch out
-
-- **A Lambda resource-based policy (`add-permission`) and the function's execution role answer two completely different questions** — "who can invoke this function" vs. "what can this function do." Missing either one produces a different, equally silent failure mode.
-- **Without `ReportBatchItemFailures`, one bad message in a batch of 10 causes all 10 to be retried**, including 9 that already succeeded and had side effects — this is the most common cause of duplicate processing in SQS-to-Lambda pipelines, and it's why idempotency and partial-batch-failure reporting are always discussed together.
-- **Destinations and DLQs only apply to *async* invocations.** A synchronous `invoke` call that errors returns the error directly to the caller — there's no destination/DLQ routing to fall back on, because the caller was waiting for a direct answer in the first place.
-- **Increasing `--batch-size` reduces invocation *count* (and cost) but increases the *blast radius* of a single bad record** if you haven't also implemented `ReportBatchItemFailures` — tune both together, not independently.
-
-## The task
-
-Fill in `stub.sh` so it, in order:
-
-1. Grants S3 permission to invoke `process-upload` via `lambda add-permission`, with `--statement-id s3invoke`, `--action lambda:InvokeFunction`, `--principal s3.amazonaws.com`, and `--source-arn arn:aws:s3:::fluent-uploads`.
-2. Configures the `fluent-uploads` bucket to invoke `process-upload` on `s3:ObjectCreated:*` events, via `s3api put-bucket-notification-configuration`.
-3. Creates an SQS event source mapping for function `process-order` against `arn:aws:sqs:us-east-1:000000000000:orders-queue`, with `--batch-size 10` and `--function-response-types ReportBatchItemFailures`.
-4. Configures async invoke settings for `process-upload` with `--maximum-retry-attempts 2` and a destination config routing `OnSuccess` to `arn:aws:sqs:us-east-1:000000000000:upload-success-queue` and `OnFailure` to `arn:aws:sqs:us-east-1:000000000000:upload-dlq`.
-5. Adds a comment `# answer: <one sentence>` explaining why a function behind an SQS event source mapping must be idempotent even if it has correct error handling.
+Replace each `<... ARN>` with the full ARN from the list above.
 
 ### Run it for real
 
+Create the `process-upload` and `process-order` functions, the `fluent-uploads` bucket and the queues first.
+
 ```bash
-docker run -d --name localstack -p 4566:4566 localstack/localstack
-# (create process-upload, process-order functions, fluent-uploads bucket, and the queues first)
-bash stub.sh   # once filled in
+docker run -d --name localstack \
+  -p 4566:4566 localstack/localstack
+bash stub.sh
 ```

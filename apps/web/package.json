@@ -15,6 +15,9 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.0.0",
+    "@fluent/complexity-heuristic": "workspace:*",
+    "@fluent/content-config": "workspace:*",
+    "@fluent/execution-contract": "workspace:*",
     "@fluent/ui": "workspace:*",
     "@prisma/client": "^5.15.0",
     "@tanstack/react-query": "^5.0.0",
@@ -22,16 +25,14 @@
     "@trpc/next": "^11.0.0",
     "@trpc/react-query": "^11.0.0",
     "canvas-confetti": "^1.9.4",
+    "clsx": "2.1.1",
     "next": "^14.2.0",
     "next-auth": "^5.0.0-beta.19",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
-    "superjson": "^2.2.0",
-    "@fluent/content-config": "workspace:*",
-    "@fluent/execution-contract": "workspace:*",
-    "@fluent/complexity-heuristic": "workspace:*"
+    "superjson": "^2.2.0"
   },
   "prisma": {
     "schema": "../api/prisma/schema.prisma"

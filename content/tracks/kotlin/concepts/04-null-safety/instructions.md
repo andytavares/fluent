@@ -1,112 +1,121 @@
-# Null Safety
+## What you build
 
-## What you'll learn
-
-Kotlin's type system encodes nullability at compile time — `String` is never null, `String?` might be. This concept covers the operators and scope functions that make working with nullable types ergonomic.
+You write four functions that take nullable values and return safe defaults. Kotlin encodes nullability in the type: a `String` is never null, and a `String?` can be. This lesson builds on **Classes & Data Classes**.
 
 ## Key concepts
 
-**The nullable type distinction**
+### The compiler rejects a call on a nullable value
+
+You cannot read a member of a `String?` directly. You must handle `null` first.
 
 ```kotlin
-val a: String = "hello"    // guaranteed non-null
-val b: String? = null      // explicitly nullable
+val a: String = "hello"
+val b: String? = null
 
-a.length    // safe, always works
-b.length    // compile error: b might be null
+a.length   // OK
+// Compile error: b can be null
+b.length
 ```
 
-**Safe call `?.`**
+### The safe call `?.` returns `null` for a null receiver
 
-Returns `null` instead of throwing when the receiver is null:
+`?.` does not throw. Chain it for nested access.
 
 ```kotlin
-val len: Int? = b?.length      // null if b is null, otherwise b.length
+// null if b is null
+val len: Int? = b?.length
+val city: String? =
+    user?.address?.city
 ```
 
-Chain safe calls for nested access:
+### The Elvis operator `?:` gives a default
+
+`?:` returns the right side when the left side is null.
 
 ```kotlin
-val city: String? = user?.address?.city
-```
-
-**Elvis operator `?:`**
-
-Provides a default when the left side is null:
-
-```kotlin
-val len: Int = b?.length ?: 0        // 0 if b is null
+val len: Int = b?.length ?: 0
 val label = name ?: "Unknown"
 ```
 
-**Not-null assertion `!!`**
+### The not-null assertion `!!` throws on null
 
-Forces a nullable type to non-nullable. Throws `NullPointerException` at runtime if the value is null. Treat `!!` as a code smell — it means you know something the type system doesn't, and you're betting your app on it:
+`!!` turns a nullable type into a non-nullable type. It throws `NullPointerException` at runtime if the value is null. Every `!!` is a bet that you know more than the type system.
 
 ```kotlin
-val len = b!!.length    // NPE if b is null
+// NullPointerException if b is null
+val len = b!!.length
 ```
 
-**Smart casts**
+### A null check is a smart cast
 
-After a null check, the compiler narrows the type automatically:
+After you check for null, the compiler treats the value as non-nullable.
 
 ```kotlin
 if (b != null) {
-    println(b.length)   // b is String here, not String?
+    // b is a String here, not String?
+    println(b.length)
 }
 ```
 
-**Scope functions**
+### Scope functions run a block on a value
 
-The scope functions run a lambda with the nullable value as context. They differ in what `this`/`it` refers to and what they return:
+The five scope functions differ in how the block sees the value and in what they return. They are not specific to null, but they combine with `?.`.
 
-| Function | Receiver as | Returns |
+| Function | Value as | Returns |
 |----------|-------------|---------|
-| `let` | `it` | lambda result |
-| `run` | `this` | lambda result |
-| `also` | `it` | receiver |
-| `apply` | `this` | receiver |
-| `with` | `this` | lambda result (not an extension) |
+| `let` | `it` | block result |
+| `run` | `this` | block result |
+| `also` | `it` | the value |
+| `apply` | `this` | the value |
+| `with` | `this` | block result, not an extension |
 
-The most common null-safety pattern uses `let`:
+The most common null-safe pattern is `?.let`. Use `apply` to set up an object.
 
 ```kotlin
 val name: String? = getName()
-val upper = name?.let { it.uppercase() }   // null if name is null, else uppercased
-```
+// null if name is null
+val upper = name?.let { it.uppercase() }
 
-`apply` is idiomatic for object initialization:
-
-```kotlin
 val list = mutableListOf<String>().apply {
     add("a")
     add("b")
 }
 ```
 
-## vs other languages
-
-| Language | Null model | Operator |
-|----------|-----------|----------|
-| Java | Everything nullable, no compiler help | `Optional<T>` (not universal) |
-| Swift | `Optional<T>` / `T?` | `?.`, `??`, `!` |
-| Go | Pointers can be nil, no optional type | Manual nil checks |
-| TypeScript | `T \| null`, strict null checks optional | `?.`, `??` |
-
-Kotlin and Swift have the closest models. The key difference: Kotlin's `let`/`run`/`also`/`apply` are generic scope functions, not null-specific — but they compose naturally with `?.` for null-safe transformations.
+Swift has the closest null model, with `T?`, `?.`, `??` and `!`.
 
 ## Watch out
 
-- `!!` throws `NullPointerException`, the one exception Kotlin's type system was designed to prevent — treat every `!!` in a code review as a question: "why doesn't the type already prove this is non-null?"
-- Smart casts only work on `val`s (or `var`s the compiler can prove aren't mutated between the check and the use, e.g. locals) — a mutable `var` property on another class can't be smart-cast, because another thread could null it out between the check and the use.
-- `?:` (Elvis) short-circuits: `a ?: expensiveDefault()` only evaluates `expensiveDefault()` when `a` is null, so it's safe to put non-trivial fallback logic on the right-hand side.
+- `!!` throws `NullPointerException`, the one exception the type system exists to prevent. Ask why the type does not already prove the value is non-null.
+- Smart casts work on `val` values and on local `var` values that do not change between the check and the use.
+- A smart cast fails on a `var` property of another class. Other code can set it to null after the check.
+- `a ?: expensiveDefault()` calls `expensiveDefault()` only when `a` is null. Elvis short-circuits.
 
 ## The task
 
-Implement the following top-level functions in `stub.kt`:
+You write helpers that pick a usable value from inputs that can be null. A blank string has only whitespace characters, or no characters. Write four top-level functions in `stub.kt`:
 
-- `firstNonNull(vararg values: String?): String?` — returns the first non-null, non-blank string in the list, or `null` if none exists.
-- `safeDivide(a: Int, b: Int): Double?` — returns `a.toDouble() / b` or `null` if `b` is zero.
-- `parsePositiveInt(s: String?): Int?` — parses `s` as an integer and returns it only if it is positive (> 0). Returns `null` for null input, non-numeric strings, or non-positive values.
-- `coalesce(primary: String?, secondary: String?, fallback: String): String` — returns the first non-null, non-blank value among `primary`, `secondary`, and `fallback`. `fallback` is guaranteed non-null.
+1. `firstNonNull(vararg values: String?): String?` returns the first value that is not null and not blank.
+2. If no value qualifies, `firstNonNull` returns `null`.
+3. `safeDivide(a: Int, b: Int): Double?` returns `a.toDouble() / b`. If `b` is zero, it returns `null`.
+4. `parsePositiveInt(s: String?): Int?` parses `s` as an integer and returns it if it is greater than 0.
+5. `parsePositiveInt` returns `null` for null input, for text that is not a number, and for 0 or less.
+6. `coalesce(primary: String?, secondary: String?, fallback: String): String` returns the first of its arguments that is not null and not blank.
+7. `fallback` is never null. `coalesce` returns it when the other two do not qualify.
+
+```kotlin
+firstNonNull(null, "", "hello") // "hello"
+firstNonNull("a", "b")          // "a"
+firstNonNull("", "  ")          // null
+safeDivide(10, 2)   // 5.0
+safeDivide(1, 2)    // 0.5
+safeDivide(10, 0)   // null
+parsePositiveInt("42")   // 42
+parsePositiveInt(null)   // null
+parsePositiveInt("abc")  // null
+parsePositiveInt("0")    // null
+parsePositiveInt("-1")   // null
+coalesce("a", "b", "c")      // "a"
+coalesce("  ", "b", "c")     // "b"
+coalesce(null, null, "c")    // "c"
+```

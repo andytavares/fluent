@@ -62,7 +62,7 @@ export default function ProfilePage() {
 
       {!masteryQuery.isLoading && (masteryQuery.data ?? []).length === 0 && (
         <p className="text-[var(--color-text-secondary)]">
-          No track enrollments yet. Pick a track from the dashboard to get started.
+          You have no tracks yet. Pick one on the dashboard.
         </p>
       )}
     </main>

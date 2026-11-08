@@ -1,12 +1,10 @@
-# Interfaces
+## What you build
 
-## What you'll learn
-
-Building on structs and methods from the last lesson: Go interfaces are **implicit**. A type satisfies an interface simply by implementing its methods — there's no `implements` keyword, and a type can satisfy an interface that was defined after the type itself, even in a package that doesn't know the type exists. This is Go's answer to polymorphism, and it's structurally very different from Java/C#/TypeScript interfaces.
+You write a `Circle` type that satisfies the `Shape` interface. Go interfaces are implicit: a type satisfies an interface when it has the methods. This lesson builds on **Structs**.
 
 ## Key concepts
 
-**Define an interface** as a set of method signatures:
+### An interface is a set of method signatures
 
 ```go
 type Shape interface {
@@ -15,68 +13,88 @@ type Shape interface {
 }
 ```
 
-**Any type implementing those methods satisfies the interface automatically** — no declaration, no annotation:
+### A type satisfies an interface with no declaration
+
+There is no `implements` keyword. A type can satisfy an interface that a different package defines later, without knowing it exists. Java, C# and TypeScript work differently.
 
 ```go
-type Circle struct { Radius float64 }
-func (c Circle) Area() float64      { return math.Pi * c.Radius * c.Radius }
-func (c Circle) Perimeter() float64 { return 2 * math.Pi * c.Radius }
-// Circle now satisfies Shape — nothing else needed
+type Circle struct{ Radius float64 }
+
+func (c Circle) Area() float64 {
+    return math.Pi * c.Radius * c.Radius
+}
+
+func (c Circle) Perimeter() float64 {
+    return 2 * math.Pi * c.Radius
+}
+// Circle now satisfies Shape
 ```
 
-**Use the interface** as a parameter type — any satisfying type can be passed:
+### An interface parameter accepts any satisfying type
 
 ```go
 func printShape(s Shape) {
-    fmt.Printf("area=%.2f perimeter=%.2f\n", s.Area(), s.Perimeter())
+    fmt.Printf(
+        "area=%.2f perimeter=%.2f\n",
+        s.Area(), s.Perimeter())
 }
 ```
 
-**Type assertions and type switches** recover the concrete type behind an interface value:
+### Type assertions recover the concrete type
+
+A type assertion or a type switch gets the concrete value behind an interface value.
 
 ```go
-if circle, ok := s.(Circle); ok {
-    fmt.Println("radius:", circle.Radius)
+if c, ok := s.(Circle); ok {
+    fmt.Println("radius:", c.Radius)
 }
 
 switch v := s.(type) {
 case Circle:
-    fmt.Println("circle, radius", v.Radius)
+    fmt.Println("circle", v.Radius)
 default:
-    fmt.Println("some other shape")
+    fmt.Println("other shape")
 }
 ```
 
-**The empty interface `any`** (alias for `interface{}`) is satisfied by every type — it's Go's escape hatch for "any value", used sparingly (e.g. in generic-style containers before generics, or JSON decoding).
+### `any` holds a value of any type
+
+`any` is an alias for `interface{}`, and every type satisfies it. Use it rarely, for example in JSON decoding.
+
+```go
+var x any = 42
+x = "now a string"
+```
 
 ## Watch out
 
-- **The nil-interface gotcha**: an interface value holding a `nil` pointer of a concrete type is **not itself `nil`**. `var c *Circle; var s Shape = c; s == nil` is `false` — `s` has a type (`*Circle`) even though its value is nil. This trips up almost everyone the first time they compare a returned interface to `nil`.
-- Whether a method has a **value or pointer receiver** determines whether the *pointer* type, the *value* type, or both satisfy the interface. A type with only pointer-receiver methods is satisfied by `*T`, not `T` — assigning a plain `T` to an interface variable in that case is a compile error.
-- Interface satisfaction is checked at **compile time** for direct assignments, but type assertions (`s.(Circle)`) are a **runtime check** — a failed assertion without the `, ok` form panics.
-- Small, single-method interfaces (`Reader`, `Writer`, `Stringer`) are idiomatic Go — prefer several narrow interfaces over one large one ("accept interfaces, return structs").
+- An interface that holds a `nil` pointer is not `nil`. It still has a type.
+- After `var c *Circle; var s Shape = c`, `s == nil` is `false`.
+- If all methods have pointer receivers, only `*T` satisfies the interface. Assigning a `T` is a compile error.
+- The compiler checks a direct assignment. A type assertion is a runtime check.
+- A failed type assertion without `, ok` panics.
+- Prefer small interfaces with one method, such as `Reader`, `Writer` and `Stringer`. Accept interfaces, return structs.
 
 ## The task
 
-The `Shape` interface is already defined with two methods, `Area() float64` and `Perimeter() float64`. Implement a `Circle` struct with one field, `Radius float64`, and both methods, so that `Circle` satisfies `Shape`.
+The `Shape` interface already has two methods, `Area() float64` and `Perimeter() float64`. Write a `Circle` struct that satisfies it.
 
-**`Area() float64`** — returns `math.Pi * Radius * Radius` (import `"math"` for `math.Pi`).
+1. `Circle` has one field, `Radius float64`.
+2. `Area() float64` returns `math.Pi * Radius * Radius`. Import `"math"`.
+3. `Perimeter() float64` returns `2 * math.Pi * Radius`.
+4. `Circle` satisfies `Shape` with no extra declaration.
 
-**`Perimeter() float64`** — returns `2 * math.Pi * Radius`.
+A radius of `0` gives `0` for both methods.
 
 ```go
-c := Circle{Radius: 1}
-c.Area()        // math.Pi          ≈ 3.14159...
-c.Perimeter()   // 2 * math.Pi      ≈ 6.28318...
+Circle{Radius: 1}.Area() // math.Pi
+Circle{Radius: 2}.Area() // 4 * math.Pi
+Circle{Radius: 5}.Area() // 25 * math.Pi
+Circle{Radius: 0}.Area() // 0
+// 6 * math.Pi
+Circle{Radius: 3}.Perimeter()
+Circle{Radius: 0}.Perimeter() // 0
 
-c2 := Circle{Radius: 5}
-c2.Area()       // 25 * math.Pi     ≈ 78.5398...
-c2.Perimeter()  // 10 * math.Pi     ≈ 31.4159...
-
-zero := Circle{Radius: 0}
-zero.Area()       // 0
-zero.Perimeter()  // 0
-
-// Circle must satisfy Shape without any extra declaration:
-var s Shape = Circle{Radius: 2}
+// compiles with no extra declaration
+var s Shape = Circle{Radius: 1}
 ```

@@ -1,107 +1,124 @@
-# Enum & Streams
+## What you build
 
-## What you'll learn
-
-`Enum` is Elixir's Swiss Army knife for eager collection operations. `Stream` provides the same interface but defers work until the result is consumed — essential when processing large files, infinite sequences, or expensive pipelines where you only need the first N results.
+You write an `Analytics` module with four functions: three use `Enum` and one uses a lazy `Stream`. `Enum` runs each step at once; `Stream` waits until you need a result. This lesson builds on **GenServer**.
 
 ## Key concepts
 
-**`Enum` — eager, immediate:**
+### `Enum` is eager
+
+Each `Enum` function builds its whole result in memory before the next step runs.
 
 ```elixir
-Enum.map([1, 2, 3], fn x -> x * 2 end)         # => [2, 4, 6]
-Enum.filter([1, 2, 3, 4], &(rem(&1, 2) == 0))  # => [2, 4]
-Enum.reduce([1, 2, 3], 0, &+/2)                # => 6
-Enum.flat_map([[1, 2], [3, 4]], & &1)           # => [1, 2, 3, 4]
-Enum.group_by(["foo", "bar", "baz"], &String.at(&1, 0))
-# => %{"f" => ["foo"], "b" => ["bar", "baz"]}
-Enum.zip([1, 2, 3], [:a, :b, :c])  # => [{1, :a}, {2, :b}, {3, :c}]
+Enum.map([1, 2, 3], fn x -> x * 2 end)
+# => [2, 4, 6]
+is_even = &(rem(&1, 2) == 0)
+Enum.filter([1, 2, 3, 4], is_even)
+# => [2, 4]
+Enum.reduce([1, 2, 3], 0, &+/2) # => 6
+Enum.flat_map([[1, 2], [3, 4]], & &1)
+# => [1, 2, 3, 4]
+Enum.group_by(["foo", "bar", "baz"],
+  &String.at(&1, 0))
+# => %{"f" => ["foo"],
+#      "b" => ["bar", "baz"]}
+Enum.zip([1, 2, 3], [:a, :b, :c])
+# => [{1, :a}, {2, :b}, {3, :c}]
 Enum.sort_by(users, & &1.age)
-Enum.chunk_every([1,2,3,4,5], 2)   # => [[1,2],[3,4],[5]]
+Enum.chunk_every([1, 2, 3, 4, 5], 2)
+# => [[1, 2], [3, 4], [5]]
 ```
 
-Every `Enum` function materializes the entire result into memory before the next step runs.
+### `Stream` is lazy
 
-**`Stream` — lazy, deferred:**
+`Stream.map/2` and `Stream.filter/2` return a lazy `Stream` struct. Nothing runs until an `Enum` function asks for values. Rust iterators and Java Streams use the same model.
 
 ```elixir
 1..10_000_000
 |> Stream.map(fn x -> x * x end)
-|> Stream.filter(fn x -> rem(x, 2) == 0 end)
+|> Stream.filter(&(rem(&1, 2) == 0))
 |> Enum.take(5)
-# => [4, 16, 36, 64, 100]  — only processes what's needed
+# => [4, 16, 36, 64, 100]
+# Only the first 10 squares run.
 ```
 
-`Stream.map` and `Stream.filter` return a lazy `Stream` struct. Nothing runs until an `Enum` function forces evaluation. This is the same model as Haskell lazy lists, Rust iterators, or Java Streams.
+### A stream can be infinite
 
-**Infinite streams:**
+A lazy stream computes only the elements you take, so it can describe an endless sequence.
 
 ```elixir
-Stream.iterate(0, &(&1 + 1))       # 0, 1, 2, 3, ...
-Stream.cycle([:a, :b, :c])         # :a, :b, :c, :a, :b, :c, ...
-Stream.unfold({0, 1}, fn {a, b} -> {a, {b, a + b}} end)  # Fibonacci
+# 0, 1, 2, 3, ...
+Stream.iterate(0, &(&1 + 1))
+# :a, :b, :c, :a, :b, :c, ...
+Stream.cycle([:a, :b, :c])
+# Fibonacci: 0, 1, 1, 2, 3, ...
+Stream.unfold({0, 1}, fn {a, b} ->
+  {a, {b, a + b}}
+end)
 ```
 
-**`Stream.resource/3`** is the escape hatch for external resources (files, database cursors, HTTP chunked responses) — it manages open/read/close without loading everything at once.
+### `Stream.resource/3` wraps external data
 
-**When to use which:**
+`Stream.resource/3` opens, reads and closes a resource such as a file, a database cursor or a chunked HTTP response. It does not load all the data at once.
 
-- Small in-memory collections: `Enum` — clearer and slightly less overhead.
-- Large collections, files, or pipelines where you only need the first N: `Stream`.
-- You need multiple passes over the same data: `Enum` (streams are single-pass).
+### Choose `Enum` or `Stream` by size
 
-## vs other languages
+- Use `Enum` for small collections in memory. It is clearer and has less overhead.
+- Use `Stream` for large collections, files, or when you need only the first N results.
+- Use `Enum` when you need more than one pass over the data.
 
-| | Elixir | Python | Java | Rust |
-|---|---|---|---|---|
-| Eager ops | `Enum` | list comprehension / `map` | `Collection` methods | `.collect()` after iter |
-| Lazy ops | `Stream` | generators | `Stream` API | iterator chains |
-| Infinite sequences | `Stream.iterate` | `itertools.count` | `Stream.generate` | `.repeat()` / custom |
-| Force evaluation | `Enum.*` at end | `list(gen)` | `.collect()` | `.collect()` |
+### `Enum` and `Stream` share one API
 
-The API symmetry between `Enum` and `Stream` is deliberate — you can swap one for the other with minimal refactoring. Just replace `Enum.map` with `Stream.map` and add `Enum.to_list` (or `Enum.take`) at the end.
+To make a pipeline lazy, replace `Enum.map` with `Stream.map`. Then end the pipeline with `Enum.to_list/1` or `Enum.take/2`.
 
 ## Watch out
 
-- `Stream.iterate/2` is infinite by construction — feeding it straight into an `Enum` function that materializes everything (like `Enum.to_list/1` or `Enum.map/2`) hangs forever. Always pair it with something that stops early: `Enum.find/2`, `Enum.take/2`, or `Stream.take_while/2`.
-- `Enum.sort_by(map, fn {_k, v} -> v end, :desc)` sorts a *map* by iterating its `{key, value}` pairs — the third argument controls sort direction; without `:desc` you get ascending order, which silently produces the wrong "top N".
-- A `Stream` pipeline is single-pass and re-evaluates its source from scratch every time you force it — reuse the underlying `Enum`/list, not a partially-consumed `Stream`, if you need the same data twice.
+- `Stream.iterate/2` never ends. `Enum.to_list/1` or `Enum.map/2` on it hangs forever.
+- Stop an infinite stream early with `Enum.find/2`, `Enum.take/2` or `Stream.take_while/2`.
+- `Enum.sort_by/3` sorts ascending by default. Without `:desc`, your "top N" is the bottom N.
+- A map sorts as a list of `{key, value}` pairs: `Enum.sort_by(map, fn {_k, v} -> v end, :desc)`.
+- A `Stream` runs its source again each time you use it. To use data twice, keep the list, not the stream.
 
 ## The task
 
-Implement these functions in the `Analytics` module.
+Write four functions in the `Analytics` module.
 
-**`word_count(text)`** — splits `text` on whitespace and returns a map of `%{word => count}`, case-insensitive.
+1. `word_count(text)` splits `text` on whitespace and returns a map of `%{word => count}`.
+2. `word_count/1` ignores case. It uses the lowercase form of each word as the key.
+3. `top_n(map, n)` takes a `%{key => count}` map and returns `{key, count}` tuples.
+4. `top_n/2` sorts the tuples by count, largest first, and keeps the first `n`.
+5. `running_total(numbers)` returns a list of running sums. Element `i` is the sum of elements 0 to `i`.
+6. Write `running_total/1` with `Enum.scan`.
+7. `first_prime_above(n)` returns the first prime number greater than `n`.
+8. In `first_prime_above/1`, use `Stream.iterate/2` for the candidates. Stop at the first prime.
+
+A prime is an integer greater than 1 with no divisors other than 1 and itself. Write a private `prime?/1` helper.
+
+An empty string gives `%{}`. When `n` is larger than the map, `top_n/2` returns all entries. An empty list gives `[]`.
 
 ```elixir
-Analytics.word_count("the cat sat on the mat")
-# => %{"the" => 2, "cat" => 1, "sat" => 1, "on" => 1, "mat" => 1}
+Analytics.word_count(
+  "the cat sat on the mat")
+# => %{"the" => 2, "cat" => 1, "sat" => 1,
+#      "on" => 1, "mat" => 1}
+Analytics.word_count("Hello hello HELLO")
+# => %{"hello" => 3}
+Analytics.word_count("elixir")
+# => %{"elixir" => 1}
+Analytics.word_count("")  # => %{}
 
-Analytics.word_count("Hello hello HELLO")  # => %{"hello" => 3}
-Analytics.word_count("")                   # => %{}
-```
-
-**`top_n(map, n)`** — takes a `%{key => count}` map and returns a list of `{key, count}` tuples sorted by count descending, limited to the top `n` entries.
-
-```elixir
-Analytics.top_n(%{"a" => 3, "b" => 1, "c" => 2}, 2)
+counts = %{"a" => 3, "b" => 1, "c" => 2}
+Analytics.top_n(counts, 2)
 # => [{"a", 3}, {"c", 2}]
+Analytics.top_n(%{"x" => 1}, 10)
+# => [{"x", 1}]
 
-Analytics.top_n(%{"x" => 1}, 10)  # => [{"x", 1}]  — n larger than the map just returns everything
-```
+Analytics.running_total([1, 2, 3, 4])
+# => [1, 3, 6, 10]
+Analytics.running_total([5])  # => [5]
+Analytics.running_total([])   # => []
+Analytics.running_total([1, -1, 2])
+# => [1, 0, 2]
 
-**`running_total(numbers)`** — returns a list where each element is the sum of all elements up to and including that index. Use `Enum.scan/3`.
-
-```elixir
-Analytics.running_total([1, 2, 3, 4])  # => [1, 3, 6, 10]
-Analytics.running_total([5])           # => [5]
-Analytics.running_total([])            # => []
-Analytics.running_total([1, -1, 2])    # => [1, 0, 2]
-```
-
-**`first_prime_above(n)`** — returns the first prime number strictly greater than `n`. Use `Stream.iterate/2` to generate ascending candidates lazily and stop at the first one that's prime — a helper `prime?(n)` (private, not part of the public API) is expected.
-
-```elixir
 Analytics.first_prime_above(10)   # => 11
 Analytics.first_prime_above(2)    # => 3
 Analytics.first_prime_above(1)    # => 2

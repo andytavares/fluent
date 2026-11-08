@@ -1,103 +1,101 @@
-# Functions
+## What you build
 
-## What you'll learn
-
-Kotlin functions are first-class citizens. This concept covers the full function feature set: named/default parameters, single-expression syntax, extension functions, infix functions, and `vararg`.
+You write four functions, each with a different Kotlin function feature: default arguments, an extension, `vararg` and `infix`. This lesson builds on **Variables & Types**.
 
 ## Key concepts
 
-**Basic function syntax**
+### A single-expression function drops the braces
+
+When the body is one expression, write `=` and the expression. The compiler infers the return type.
 
 ```kotlin
 fun add(a: Int, b: Int): Int {
     return a + b
 }
-```
 
-**Single-expression functions**
-
-When the body is a single expression, drop the braces and return type (the compiler infers it):
-
-```kotlin
-fun add(a: Int, b: Int) = a + b
+fun add2(a: Int, b: Int) = a + b
 fun square(x: Double) = x * x
 ```
 
-**Default and named arguments**
+### Parameters can have defaults and names
 
-Parameters can have default values. Callers can name arguments to skip earlier ones or improve readability:
+A parameter can have a default value. A caller can name arguments to skip a default or to make the call clear. This removes most of the overload chains you write in Java.
 
 ```kotlin
-fun greet(name: String, greeting: String = "Hello") = "$greeting, $name!"
+fun greet(
+    name: String,
+    greeting: String = "Hello",
+) = "$greeting, $name!"
 
-greet("Ada")                        // "Hello, Ada!"
-greet("Ada", "Hi")                  // "Hi, Ada!"
-greet(name = "Ada", greeting = "Yo") // named — order doesn't matter
+greet("Ada")         // "Hello, Ada!"
+greet("Ada", "Hi")   // "Hi, Ada!"
+// Named: the order does not matter
 greet(greeting = "Hey", name = "Ada")
 ```
 
-This eliminates most overload chains you'd write in Java.
+### An extension function adds a method to a class
 
-**Extension functions**
-
-Add methods to existing classes without subclassing or wrappers:
+You add a function to an existing class without a subclass or a wrapper. The Kotlin standard library uses extensions on `String`, `List` and other types. An extension is a top-level function in disguise, so it cannot read private members.
 
 ```kotlin
-fun String.isPalindrome(): Boolean = this == this.reversed()
+fun String.isPalindrome() =
+    this == this.reversed()
 
 "racecar".isPalindrome()  // true
 "hello".isPalindrome()    // false
 ```
 
-Extensions are resolved statically — they're syntactic sugar for a top-level function. They cannot access private members.
+### An `infix` function reads like an operator
 
-**Infix functions**
-
-A function with exactly one parameter can be called with infix notation when marked `infix`:
+Mark a member or extension function with one parameter as `infix`. You then call it without the dot and the parentheses. The map syntax `"key" to "value"` uses the `infix` function `to`.
 
 ```kotlin
-infix fun Int.times(str: String) = str.repeat(this)
+infix fun Int.times(str: String) =
+    str.repeat(this)
 
 3 times "ha"   // "hahaha"
 ```
 
-The standard library uses this for `to` in map literals: `"key" to "value"`.
+### `vararg` takes any number of arguments
 
-**`vararg`**
-
-Accept a variable number of arguments with `vararg`. Inside the function, `vararg` is treated as an `Array<T>`. Use the spread operator `*` to pass an existing array:
+Inside the function, a `vararg` parameter is an array. Use the spread operator `*` to pass an existing array.
 
 ```kotlin
-fun sum(vararg numbers: Int): Int = numbers.sum()
+fun sum(vararg numbers: Int) =
+    numbers.sum()
 
-sum(1, 2, 3)         // 6
+sum(1, 2, 3)   // 6
 val arr = intArrayOf(1, 2, 3)
-sum(*arr)            // spread
+sum(*arr)      // 6
 ```
-
-## vs other languages
-
-| Feature | Java | Swift | Go | Kotlin |
-|---------|------|-------|----|--------|
-| Default params | No (use overloads) | Yes | No | Yes |
-| Named args | No | Yes (labels) | No | Yes |
-| Extension functions | No | Yes | No (use methods) | Yes |
-| Variadic | `T...` | `T...` | `...T` | `vararg` |
-| Single-expr function | No | No | No | Yes (`=`) |
-
-The extension function design means you can add methods to `String`, `List`, or any third-party class without inheritance. This is heavily used in the Kotlin stdlib itself.
 
 ## Watch out
 
-- Extension functions are resolved **statically**, based on the declared type at the call site, not the runtime type — there is no dynamic dispatch to an extension the way there is to a member function.
-- `vararg` only accepts one variadic parameter per function, and (if present) it doesn't have to be last, but any parameters after it must be named at the call site.
-- Mixing positional and named arguments: once you use a named argument, every argument after it must also be named — you can't go back to positional.
+- Kotlin picks an extension from the declared type at the call site. It does not dispatch on the runtime type.
+- A function has at most one `vararg` parameter. Callers must name every parameter after it.
+- Since Kotlin 1.4, you can put a positional argument after a named one only if it is in its own position.
 
 ## The task
 
-Implement the following in `stub.kt`:
+Write four functions in `stub.kt`. Each one uses a different Kotlin function feature.
 
-- `repeat(str: String, times: Int = 2): String` — returns `str` repeated `times` times. Default is 2 repetitions.
-- `String.wordCount(): Int` — extension function on `String` that returns the number of words (split on whitespace, ignoring empty tokens).
-- `joinWith(vararg parts: String, separator: String = ", "): String` — joins the variadic `parts` with `separator`.
-- `infix fun Int.pow(exp: Int): Int` — integer exponentiation: `2 pow 10` returns `1024`. Assume `exp >= 0`.
+1. `repeat(str: String, times: Int = 2): String` returns `str` repeated `times` times. `times` is 2 when the caller leaves it out. `times = 0` returns `""`.
+2. `String.wordCount(): Int` is an extension function. It returns the number of words. Words are separated by one or more whitespace characters. Leading and trailing whitespace does not count. An empty string has 0 words.
+3. `joinWith(vararg parts: String, separator: String = ", "): String` joins `parts` with `separator`. Empty parts stay in the result.
+4. `infix fun Int.pow(exp: Int): Int` raises the number to the power `exp`. `exp` is 0 or more. Any number to the power 0 is 1.
+
+```kotlin
+repeat("ha")              // "haha"
+repeat("ab", 3)           // "ababab"
+repeat("x", 0)            // ""
+"  foo bar  ".wordCount() // 2
+"a  b   c".wordCount()    // 3
+"".wordCount()            // 0
+joinWith("a", "b", "c")   // "a, b, c"
+joinWith("", "")          // ", "
+2 pow 10                  // 1024
+5 pow 0                   // 1
+
+// Returns "a|b|c":
+joinWith("a", "b", "c", separator = "|")
+```

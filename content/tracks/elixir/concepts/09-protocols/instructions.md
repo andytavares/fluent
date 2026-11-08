@@ -1,23 +1,21 @@
-# Protocols
+## What you build
 
-## What you'll learn
-
-Building on structs from concept 04: protocols are Elixir's mechanism for polymorphism. A protocol defines a contract (a set of functions) and you implement that contract separately for any data type — including built-in types and types defined in third-party libraries you don't control. This lesson also covers a real footgun: naming a protocol function after a `Kernel` built-in.
+You write a `Serializable` protocol and implement it for integers, floats, strings and lists. A protocol gives polymorphism: one contract, with a separate implementation for each data type. This lesson builds on **Enum & Streams**.
 
 ## Key concepts
 
-**Defining a protocol:**
+### `defprotocol` declares a contract
+
+A protocol lists functions with no implementation. Elixir then dispatches each call on the data type of the first argument.
 
 ```elixir
 defprotocol Describable do
-  @doc "Returns a human-readable description of a value."
+  @doc "Describes a value for people."
   def describe(value)
 end
 ```
 
-This defines `Describable.describe/1` but provides no implementation. The protocol is now available as a dispatch target.
-
-**Implementing a protocol:**
+### `defimpl` implements it for one type
 
 ```elixir
 defimpl Describable, for: Integer do
@@ -28,13 +26,19 @@ defimpl Describable, for: BitString do
   def describe(s), do: "string \"#{s}\""
 end
 
-Describable.describe(42)       # => "integer 42"
-Describable.describe("hello")  # => "string \"hello\""
+Describable.describe(42)
+# => "integer 42"
+Describable.describe("hello")
+# => "string \"hello\""
 ```
 
-`for:` accepts any type: `Integer`, `Float`, `BitString`, `List`, `Map`, `Atom`, `Tuple`, `Function`, `PID`, `Any`, or a struct name.
+`for:` accepts `Integer`, `Float`, `BitString`, `List`, `Map`, `Atom`, `Tuple`, `Function`, `PID`, `Any`, or a struct name.
 
-**Implementing for your own struct:**
+### You can implement a protocol for any type
+
+You can add `Describable` to `Integer` without a change to `Integer`. This works for types from libraries you do not control. In Java, you need a wrapper class or a utility method instead.
+
+### A struct can have its own implementation
 
 ```elixir
 defmodule Circle do
@@ -42,11 +46,14 @@ defmodule Circle do
 end
 
 defimpl Describable, for: Circle do
-  def describe(%Circle{radius: r}), do: "circle with radius #{r}"
+  def describe(%Circle{radius: r}),
+    do: "circle with radius #{r}"
 end
 ```
 
-**`@derive` shortcut** lets a struct opt into a protocol if the protocol defines a fallback using `Any`:
+### `@derive` uses the `Any` fallback
+
+When a protocol sets `@fallback_to_any true` and has an `Any` implementation, a struct can opt in with `@derive`.
 
 ```elixir
 defprotocol Printable do
@@ -64,66 +71,61 @@ defmodule Point do
 end
 ```
 
-**Protocols vs Behaviours:**
+### Protocols dispatch on data, behaviours on modules
 
-- **Protocol**: polymorphism across data types. You dispatch on the *data*. No process required.
-- **Behaviour**: a contract for module implementations — primarily used for OTP callbacks (`GenServer`, `Supervisor`). You dispatch on the *module*, not data.
-
-Use a protocol when different *types* need to respond to the same operation. Use a behaviour when different *modules* need to plug into the same framework.
-
-## vs other languages
-
-| | Elixir Protocol | Go Interface | Haskell Typeclass | Java Interface |
-|---|---|---|---|---|
-| Dispatch on | Data type | Structural (implicit) | Type at compile time | Object type |
-| Open extensibility | Yes — add impls anywhere | Yes — implicit | Yes — orphan instances | No — must implement at definition |
-| Retroactive impl | Yes | Yes (implicit) | Yes (with caveats) | No |
-| Performance | Runtime dispatch (fast) | Interface table (fast) | Dictionary-passing | vtable |
-
-The big advantage over Go and Java: you can implement a protocol for a type you don't own. You can add `Describable` to `Integer` without touching the Integer source. In Java you'd need a wrapper class or a utility method.
+A protocol is for different data types that respond to the same operation. It needs no process. A behaviour is a contract for modules that plug into a framework, such as `GenServer` or `Supervisor`.
 
 ## Watch out
 
-- **Every module — including a `defimpl` block — auto-imports `Kernel`.** `Kernel` defines `byte_size/1`, `bit_size/1`, `map_size/1`, `tuple_size/1`, and `length/1` as regular functions. If your protocol declares a function with one of these names, every `defimpl` block gets a compile error: `imported Kernel.byte_size/1 conflicts with local function`. The fix is to pick a protocol function name that doesn't shadow a `Kernel` built-in (this lesson uses `byte_length/1` for exactly this reason) — or, if you must keep the name, add `import Kernel, except: [byte_size: 1]` to the `defimpl` block.
-- Protocols dispatch on the *concrete* type at runtime — `defimpl ..., for: Integer` only matches integers, not floats. There's no numeric coercion the way `+` has for `Integer`/`Float`.
-- Forgetting a `defimpl` for a type you pass in raises `Protocol.UndefinedError` at the call site, not at compile time. Protocols are open, so the compiler can't check exhaustiveness.
+- Every module, including a `defimpl` block, imports `Kernel`. `Kernel` defines `byte_size/1`, `bit_size/1`, `map_size/1`, `tuple_size/1` and `length/1`.
+- A protocol function with one of these names clashes with the import. A call to it in a `defimpl` fails to compile.
+- The error is `imported Kernel.byte_size/1 conflicts with local function`.
+- Pick a name that is not in `Kernel`. This lesson uses `byte_length/1` for that reason.
+- To keep the name, add `import Kernel, except: [byte_size: 1]` to the `defimpl` block.
+- `for: Integer` matches only integers, not floats. Protocols do not convert numbers.
+- A missing `defimpl` raises `Protocol.UndefinedError` at runtime. Any module can add an implementation later, so the compiler cannot check all types.
 
 ## The task
 
-Define a `Serializable` protocol and implement it for several built-in types, mimicking a lightweight logging/serialization layer.
+Define a `Serializable` protocol for a small logging layer. It has two functions:
 
-**Protocol:**
-- `Serializable.serialize(value)` — returns a string representation suitable for logging or storage.
-- `Serializable.byte_length(value)` — returns the byte size of the serialized string form.
+- `serialize(value)` returns a string form of `value`.
+- `byte_length(value)` returns the byte size of that string form.
 
-**Implementations to write:**
+Implement both functions for four types:
 
-1. For `Integer`: serialize as `"int:#{n}"`.
-   ```elixir
-   Serializable.serialize(42)   # => "int:42"
-   Serializable.serialize(-7)   # => "int:-7"
-   ```
-2. For `Float`: serialize as `"float:#{n}"`, using `:erlang.float_to_binary(n, decimals: 2)` for consistent two-decimal formatting.
-   ```elixir
-   Serializable.serialize(3.14)  # => "float:3.14"
-   Serializable.serialize(1.0)   # => "float:1.00"
-   ```
-3. For `BitString` (strings): serialize as `"str:#{s}"`.
-   ```elixir
-   Serializable.serialize("hello")  # => "str:hello"
-   Serializable.serialize("")       # => "str:"
-   ```
-4. For `List`: serialize as `"list:[#{items}]"`, where `items` is each element's own serialized form, comma-joined.
-   ```elixir
-   Serializable.serialize([1, 2, 3])   # => "list:[int:1,int:2,int:3]"
-   Serializable.serialize([])          # => "list:[]"
-   Serializable.serialize([1, "a"])    # => "list:[int:1,str:a]"  — mixed types both dispatch correctly
-   ```
+1. `Integer`: return `"int:#{n}"`.
+2. `Float`: return `"float:#{f}"`, where `f` is `:erlang.float_to_binary(n, decimals: 2)`.
+3. `BitString`: return `"str:#{s}"`.
+4. `List`: return `"list:[#{items}]"`. `items` is the serialized form of each element, joined with commas and no spaces.
+5. For every type, `byte_length/1` returns `byte_size(serialize(value))`. `byte_size/1` here is the `Kernel` function.
 
-**`byte_length/1`** — for every type above, derive the result from `byte_size(serialize(value))` (the `Kernel` built-in, called on the serialized string — not the protocol function of the same near-name).
+A list can mix types, and each element dispatches to its own implementation. An empty string gives `"str:"`. An empty list gives `"list:[]"`.
 
 ```elixir
-Serializable.byte_length(42)          # => byte_size("int:42")        => 6
-Serializable.byte_length("hello")     # => byte_size("str:hello")     => 9
-Serializable.byte_length([1, 2])      # => byte_size("list:[int:1,int:2]")
+Serializable.serialize(42)    # => "int:42"
+Serializable.serialize(0)     # => "int:0"
+Serializable.serialize(-7)    # => "int:-7"
+Serializable.serialize(3.14)
+# => "float:3.14"
+Serializable.serialize(1.0)
+# => "float:1.00"
+Serializable.serialize("hello")
+# => "str:hello"
+Serializable.serialize("")    # => "str:"
+Serializable.serialize([1, 2, 3])
+# => "list:[int:1,int:2,int:3]"
+Serializable.serialize([])
+# => "list:[]"
+Serializable.serialize([1, "a"])
+# => "list:[int:1,str:a]"
+
+# byte_size("int:42")
+Serializable.byte_length(42)       # => 6
+# byte_size("str:hello")
+Serializable.byte_length("hello")  # => 9
+# byte_size("list:[int:1,int:2]")
+Serializable.byte_length([1, 2])   # => 18
+# byte_size("float:1.00")
+Serializable.byte_length(1.0)      # => 10
 ```

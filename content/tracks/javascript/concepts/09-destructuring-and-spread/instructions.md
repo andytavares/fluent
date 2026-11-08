@@ -1,142 +1,171 @@
-# Destructuring & Spread
+## What you build
 
-## What you'll learn
-
-Lesson 3 used destructuring in passing; this lesson makes it the subject. Destructuring is syntax for extracting values from arrays and objects into variables. Spread (`...`) copies elements out of an iterable into another array or object. Both are core ES2015+ patterns that appear throughout modern JavaScript — you've already used rest parameters (lesson 2) and object spread (lesson 3); here you'll combine every variant.
+You write six small functions. Each one fits one form of destructuring or spread. You already met rest parameters in Functions and object spread in Arrays & Objects. This lesson builds on **Classes**.
 
 ## Key concepts
 
-**Array destructuring:**
-```js
-const [first, second, ...rest] = [1, 2, 3, 4, 5];
-// first = 1, second = 2, rest = [3, 4, 5]
+### Destructuring extracts values into variables
 
-const [a, , b] = [10, 20, 30];  // skip element with empty slot
+Destructuring takes values out of an array or object. Spread (`...`) copies elements into another array or object. ES2015 added both.
+
+### Array destructuring works by position
+
+`...rest` collects the remaining elements. An empty slot skips one element.
+
+```js
+const [first, second, ...rest] =
+  [1, 2, 3, 4, 5];
+// first = 1, second = 2,
+// rest = [3, 4, 5]
+
+// Skip an element with an empty slot
+const [a, , b] = [10, 20, 30];
 // a = 10, b = 30
 ```
 
-**Default values:**
+### A default fills an `undefined` value
+
 ```js
 const [x = 0, y = 0] = [42];
-// x = 42, y = 0  (undefined triggers the default)
+// x = 42, y = 0
 ```
 
-**Object destructuring:**
+### Object destructuring works by name
+
+You can rename a property and give it a default.
+
 ```js
-const { name, age } = { name: "Alice", age: 30, role: "admin" };
+const { name, age } = {
+  name: "Alice", age: 30, role: "admin",
+};
 // name = "Alice", age = 30
 
-const { name: fullName, role = "user" } = { name: "Bob" };
-// fullName = "Bob", role = "user"  (renamed + default)
+const { name: fullName, role = "user" } =
+  { name: "Bob" };
+// fullName = "Bob", role = "user"
 ```
 
-**Computed keys in destructuring** — extract a property whose name is in a variable:
+### A computed key reads a property named in a variable
+
 ```js
 const key = "score";
 const { [key]: value } = { score: 97 };
 // value = 97
 ```
 
-**Nested destructuring, and destructuring in parameters and loops:**
+### Destructuring nests, and works in parameters and loops
+
 ```js
-const { address: { city } } = { address: { city: "NY", zip: "10001" } };
+const { address: { city } } = {
+  address: { city: "NY", zip: "10001" },
+};
 
-for (const [k, v] of Object.entries({ a: 1, b: 2 })) { /* k, v */ }
+const obj = { a: 1, b: 2 };
+for (const [k, v] of Object.entries(obj)) {
+  // use k and v
+}
 
-const labels = pairs.map(([key]) => key);  // destructure in the callback
+// Destructure in the callback
+const labels = pairs.map(([key]) => key);
 ```
 
-**Spread in arrays:**
+### Spread copies into arrays and objects
+
+In an object, later keys win.
+
 ```js
 const a = [1, 2, 3];
-const b = [...a, 4, 5];    // [1, 2, 3, 4, 5]
-const c = [0, ...a, ...b]; // spread multiple
+// [1, 2, 3, 4, 5]
+const b = [...a, 4, 5];
+// Spread more than one array
+const c = [0, ...a, ...b];
+
+const base = { color: "red", size: "M" };
+const custom = { ...base, color: "blue" };
+// { color: "blue", size: "M" }
 ```
 
-**Spread in objects:**
-```js
-const defaults = { color: "red", size: "M" };
-const custom   = { ...defaults, color: "blue" };
-// { color: "blue", size: "M" } — later keys win
-```
+### Rest parameters collect the remaining arguments
 
-**Function rest parameters:**
 ```js
-function sum(...nums) {       // rest: collects remaining args into an array
+function sum(...nums) {
   return nums.reduce((a, b) => a + b, 0);
 }
-sum(1, 2, 3, 4);  // 10
+sum(1, 2, 3, 4); // 10
 ```
 
-**vs other languages:** Python has similar tuple unpacking and `*args`. Go has no destructuring but has multiple return values. Java has no destructuring. TypeScript adds static types on top of the same syntax.
+Python has tuple unpacking and `*args`. Go has multiple return values but no destructuring, Java has none, and TypeScript adds types to the same syntax.
 
 ## Watch out
 
-- Spread and destructuring copies are **shallow**: `{ ...obj }` copies top-level keys; nested objects are still shared references, and a spread-merge replaces nested objects wholesale rather than deep-merging them.
+- Spread copies are shallow. Nested objects stay shared, and a spread merge replaces a nested object instead of merging it.
 - Destructuring `null` or `undefined` throws a `TypeError`: `const { a } = null` crashes.
-- Defaults trigger only on `undefined` — `const [x = 5] = [null]` gives `x = null`.
-- Rest destructuring (`[, ...rest]`) builds a **new** array — the source is untouched. Mutating methods like `splice` are the opposite.
+- A default applies only on `undefined`. `const [x = 5] = [null]` gives `x = null`.
+- Rest destructuring (`[, ...rest]`) builds a new array and leaves the source unchanged. `splice` does the opposite.
 
 ## The task
 
-You're building six small utilities. Each is a natural fit for one destructuring or spread form (noted per function) — the tests check behavior, but practice the syntax.
+Write six functions in `stub.js`. Each fits one destructuring or spread form, given in brackets. The tests check behavior only.
 
-**`head(arr)`** — returns the first element of `arr`. Throws `Error("empty array")` if `arr` is empty. (Array destructuring: `const [first] = arr`.)
+1. `head(arr)` returns the first element of `arr` (array destructuring).
+2. `tail(arr)` returns a new array of all elements after the first (rest destructuring).
+3. `unzip(pairs)` takes an array of `[key, value]` pairs and returns `[keys, values]` (destructuring in a `for...of` loop).
+4. `mergeWithDefaults(defaults, overrides)` returns a new object with every key of both inputs (object spread).
+5. `sumRest(...nums)` returns the sum of any count of numbers (rest parameters).
+6. `pluck(arr, key)` returns a new array of `obj[key]` for each object, in order (computed key in the `map` callback).
+
+`head([])` throws `Error("empty array")`.
+
+`tail` does not change the input. It returns `[]` for 0 or 1 elements.
+
+`unzip` keeps the order of the keys and of the values. An empty input gives `[[], []]`.
+
+In `mergeWithDefaults`, a key in `overrides` wins. Neither input changes. The merge is shallow, so a nested object in `overrides` replaces the default.
+
+`sumRest()` returns `0`.
+
+`pluck` gives `undefined` where an object has no `key`.
 
 ```js
-head([10, 20, 30]);  // 10
-head([42]);          // 42
-head([]);            // throws Error("empty array")
-```
+head([10, 20, 30]) // 10
+head([42])         // 42
+// Throws Error("empty array")
+head([]);
 
-**`tail(arr)`** — returns a **new** array of all elements after the first; the input array is not mutated. Returns `[]` when `arr` has 0 or 1 elements. (Rest destructuring: `const [, ...rest] = arr`.)
-
-```js
-tail([1, 2, 3, 4]);  // [2, 3, 4]
-tail([1]);           // []
-tail([]);            // []
-
+tail([1, 2, 3, 4]) // [2, 3, 4]
+tail([1])          // []
+tail([])           // []
 const src = [1, 2, 3];
-tail(src);           // [2, 3]
-src;                 // [1, 2, 3] — unchanged
-```
+tail(src)          // [2, 3]
+src                // [1, 2, 3]
 
-**`unzip(pairs)`** — given an array of two-element `[key, value]` pairs, returns a two-element array `[keys, values]`: all first elements in order, then all second elements in order. Returns `[[], []]` for an empty input. (Destructure each pair in the loop: `for (const [k, v] of pairs)`.)
+unzip([["a", 1], ["b", 2], ["c", 3]])
+// [["a", "b", "c"], [1, 2, 3]]
+unzip([]) // [[], []]
 
-```js
-unzip([["a", 1], ["b", 2], ["c", 3]]);  // [["a", "b", "c"], [1, 2, 3]]
-unzip([]);                              // [[], []]
-```
-
-**`mergeWithDefaults(defaults, overrides)`** — returns a **new** object containing every key of `defaults`, with any key also present in `overrides` taking the override's value. Neither input object is mutated. The merge is shallow: a nested object in `overrides` replaces the default wholesale. (Object spread: later spreads win.)
-
-```js
-mergeWithDefaults({ color: "red", size: "M" }, { color: "blue" });
+mergeWithDefaults(
+  { color: "red", size: "M" },
+  { color: "blue" })
 // { color: "blue", size: "M" }
-
-mergeWithDefaults({ a: 1, b: 2 }, {});   // { a: 1, b: 2 }
-
-// Shallow: nested objects are replaced, not deep-merged
-mergeWithDefaults({ theme: { dark: true, font: 12 } }, { theme: { dark: false } });
-// { theme: { dark: false } } — font is gone
-
+mergeWithDefaults({ a: 1, b: 2 }, {})
+// { a: 1, b: 2 }
+// Shallow: font is gone
+mergeWithDefaults(
+  { theme: { dark: true, font: 12 } },
+  { theme: { dark: false } })
+// { theme: { dark: false } }
 const defaults = { x: 1 };
 mergeWithDefaults(defaults, { x: 99 });
-defaults.x;  // 1 — inputs are not mutated
-```
+defaults.x // 1
 
-**`sumRest(...nums)`** — takes any number of numeric arguments and returns their sum; returns `0` when called with no arguments. (Rest parameters.)
+sumRest(1, 2, 3, 4) // 10
+sumRest(7)          // 7
+sumRest()           // 0
 
-```js
-sumRest(1, 2, 3, 4);  // 10
-sumRest(7);           // 7
-sumRest();            // 0
-```
-
-**`pluck(arr, key)`** — returns a new array of `obj[key]` for each object in `arr`, in order; positions where the key is missing hold `undefined`. (Destructure with a computed key in the `map` callback: `({ [key]: value }) => value`.)
-
-```js
-pluck([{ name: "Alice" }, { name: "Bob" }], "name");  // ["Alice", "Bob"]
-pluck([{ a: 1 }, { b: 2 }], "a");                     // [1, undefined]
-pluck([], "name");                                    // []
+pluck([{ name: "Alice", age: 30 },
+       { name: "Bob", age: 25 }], "name")
+// ["Alice", "Bob"]
+pluck([{ a: 1 }, { b: 2 }], "a")
+// [1, undefined]
+pluck([], "name") // []
 ```

@@ -1,7 +1,7 @@
 {
   "slug": "go",
   "title": "Go Fundamentals",
-  "description": "Learn Go from first principles — syntax, types, concurrency, and the standard library — culminating in a real CRUD API capstone project.",
+  "description": "Learn Go from first principles: syntax, types, concurrency and the standard library. The track ends with a capstone: a CRUD API against a live database.",
   "language": "go",
   "status": "published"
 }

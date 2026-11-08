@@ -1,12 +1,12 @@
-# Exception Handling
+## What you build
 
-## What you'll learn
-
-Ruby's `begin/rescue/ensure/raise` model, the exception hierarchy, how to define custom exception classes, and the `retry` mechanism.
+You write a custom exception class, a parser that raises two error types, and a helper that retries a failing block. This lesson builds on **Blocks, Procs & Lambdas**.
 
 ## Key concepts
 
-### Basic rescue
+### `begin`, `rescue` and `ensure` handle exceptions
+
+`rescue` catches an exception class. `ensure` runs whether or not the code raised, like `finally` in Java or JavaScript.
 
 ```ruby
 begin
@@ -18,11 +18,9 @@ ensure
 end
 ```
 
-`ensure` is `finally` from Java/JS. It runs whether or not an exception was raised.
+### A method body needs no `begin`
 
-### rescue inside a method
-
-When the entire method body is the guarded region, you can skip `begin`:
+When the whole method body is the guarded code, put `rescue` straight in the method.
 
 ```ruby
 def parse_int(str)
@@ -35,153 +33,163 @@ parse_int("42")   # => 42
 parse_int("abc")  # => nil
 ```
 
-### Rescuing multiple exception types
+### One `rescue` can catch many classes
+
+List the classes, or rescue a parent class. A parent class also catches all its subclasses.
 
 ```ruby
+begin
+  Integer(input)
 rescue TypeError, ArgumentError => e
-  # handles either
-```
+  puts e.message
+end
 
-Or with a hierarchy — rescuing a parent class also catches all subclasses:
-
-```ruby
+begin
+  risky_call
 rescue StandardError => e
-  # catches most runtime errors (but not SignalException, SystemExit, etc.)
+  # Not SignalException or SystemExit
+  puts e.message
+end
 ```
 
-### raise
+### `raise` takes a class and a message
+
+`raise "message"` is short for `raise RuntimeError, "message"`. A bare `raise` inside `rescue` raises the current exception again.
 
 ```ruby
-raise ArgumentError, "value must be positive"
-raise                # re-raises the current exception (only inside rescue)
-raise RuntimeError   # raises with no message
+raise ArgumentError, "must be positive"
+raise RuntimeError
+# Inside rescue only:
+raise
 ```
 
-Raising with a class and message is the idiom. `raise "message"` is shorthand for `raise RuntimeError, "message"`.
+### A custom exception inherits from `StandardError`
 
-### Custom exceptions
-
-Inherit from `StandardError` (or a more specific class) for application errors:
+Inherit from `StandardError`, or a more specific class, for application errors. Call `super` with the message.
 
 ```ruby
-class InsufficientFundsError < StandardError
+class NoFundsError < StandardError
   attr_reader :amount
 
   def initialize(amount)
     @amount = amount
-    super("Insufficient funds: need #{amount} more")
+    super("Insufficient funds: need " \
+          "#{amount} more")
   end
 end
 
 def withdraw(balance, amount)
-  shortfall = amount - balance
-  raise InsufficientFundsError.new(shortfall) if shortfall > 0
+  short = amount - balance
+  if short > 0
+    raise NoFundsError.new(short)
+  end
   balance - amount
 end
-```
 
-Catching it:
-
-```ruby
 begin
   withdraw(50, 100)
-rescue InsufficientFundsError => e
-  puts e.message   # => "Insufficient funds: need 50 more"
-  puts e.amount    # => 50
+rescue NoFundsError => e
+  e.message
+  # => "Insufficient funds: need 50 more"
+  e.amount  # => 50
 end
 ```
 
-### retry
+### `retry` runs the `begin` block again
 
-`retry` re-executes the `begin` block from the top. Limit retries to avoid infinite loops:
+`retry` starts the `begin` block again from the top. Count the attempts outside the block, or it can loop forever. Java, Python and Go have no `retry` keyword.
 
 ```ruby
 attempts = 0
-
 begin
   attempts += 1
   result = flaky_network_call
-rescue TimeoutError
+rescue Timeout::Error
   retry if attempts < 3
-  raise  # give up after 3 attempts
+  # Give up after 3 attempts
+  raise
 end
 ```
 
-### Exception hierarchy (simplified)
+### `StandardError` is the class to rescue
+
+This tree shows the main classes only.
 
 ```
 Exception
-├── SignalException (SIGINT etc.)
+├── SignalException
 ├── SystemExit
-└── StandardError          ← rescue this or subclasses for app errors
-    ├── RuntimeError       ← default for bare `raise "msg"`
+└── StandardError
+    ├── RuntimeError
     ├── ArgumentError
     ├── TypeError
     ├── NameError
     │   └── NoMethodError
     ├── IOError
     ├── ZeroDivisionError
-    └── ...your custom classes
+    └── your custom classes
 ```
 
-Never `rescue Exception` — it catches signals and `SystemExit`, which breaks Ctrl-C and `exit`. Always rescue `StandardError` or a more specific class.
+`rescue Exception` also catches signals and `SystemExit`, so Ctrl-C and `exit` stop working. Rescue `StandardError` or a more specific class.
 
-## vs other languages
+### Raise for exceptional cases only
 
-| | Ruby | Java | Python | Go |
-|---|---|---|---|---|
-| Syntax | `begin/rescue/ensure` | `try/catch/finally` | `try/except/finally` | explicit error return values |
-| Re-raise | `raise` (no args) | `throw` (no args in Java 7+) | `raise` (no args) | return the original error |
-| Custom exception | `< StandardError` | `extends Exception` | `(Exception)` subclass | implement `error` interface |
-| Retry | `retry` keyword | manual loop | manual loop | manual loop |
-| Checked exceptions | No | Yes | No | No |
-
-Go engineers should note: Ruby exceptions are zero-cost when not raised (exceptions are exceptional). The idiomatic approach in Ruby is to raise for truly exceptional conditions and use `nil` / sentinel values for expected failures — similar to Go's `ok` returns, but without the enforced call-site checking.
+Idiomatic Ruby raises for exceptional conditions. For expected failures, it returns `nil` or a sentinel value, like the `ok` result in Go, but the caller gets no forced check.
 
 ## Watch out
 
-- `rescue` clauses are checked top-to-bottom, first match wins — put more specific exception classes before `StandardError`. A bare `rescue` (no class named) only catches `StandardError` and subclasses, never `Exception` directly.
-- `Integer("abc")` raises `ArgumentError`, but `Integer(nil)` raises `TypeError` — if you only rescue `ArgumentError`, a `nil` input will blow past your handler. Decide up front which inputs are possible.
-- `ensure` runs even if the `begin`/method body hits `return` or another exception — don't put a `return` inside `ensure` itself, it silently swallows whatever exception was propagating.
-- `retry` re-runs the **entire** `begin` block from the top, including any side effects already performed (e.g. incrementing a counter again) — track attempt counts outside the retried block if you need to bound them.
+- Ruby checks `rescue` clauses from top to bottom. Put specific classes before `StandardError`.
+- A bare `rescue` catches only `StandardError` and its subclasses, never `Exception`.
+- `Integer("abc")` raises `ArgumentError`, but `Integer(nil)` raises `TypeError`. Rescue only `ArgumentError`, and `nil` gets past it.
+- `ensure` runs even after `return` or another exception.
+- A `return` inside `ensure` discards the exception in flight, with no message.
+- `retry` runs the whole `begin` block again, with its side effects. Count attempts outside that block.
 
 ## The task
 
-Implement a custom exception class and two functions that raise, rescue, and retry.
+Write a custom exception class and two methods in `stub.rb`. They raise, rescue and retry.
 
-**`ValidationError < StandardError`** — a custom exception with `attr_reader :field`. `initialize(field, message)` stores `field` and calls `super` with the combined message `"#{field}: #{message}"`.
+1. `ValidationError < StandardError` has `attr_reader :field`.
+2. `ValidationError#initialize(field, message)` stores `field`. It calls `super` with `"#{field}: #{message}"`.
+3. `parse_positive_integer(str)` parses `str` with `Integer(str)` and returns the integer.
+4. If `str` is not an integer string, it raises `ArgumentError`. An empty string and `"3.14"` raise it too.
+5. If the integer is 0 or less, it raises `RangeError`.
+6. `with_retry(max_attempts, &block)` calls `block` and returns its value on the first success.
+7. If `block` raises a `StandardError`, `with_retry` calls it again, up to `max_attempts` calls in total.
+8. If the last attempt raises, `with_retry` raises that exception to the caller.
 
 ```ruby
-err = ValidationError.new("email", "is invalid")
+err = ValidationError.new(
+  "email", "is invalid"
+)
 err.message  # => "email: is invalid"
 err.field    # => "email"
 err.is_a?(StandardError)  # => true
-```
+ValidationError.new("age", "must be >= 18")
+  .message  # => "age: must be >= 18"
 
-**`parse_positive_integer(str)`** — parses `str` as an integer using `Integer(str)`. Raises `ArgumentError` if `str` is not a valid integer string. Raises `RangeError` if the parsed integer is `<= 0`. Returns the integer on success.
+parse_positive_integer("42")    # => 42
+parse_positive_integer("1")     # => 1
+parse_positive_integer("999")   # => 999
+# Each raises ArgumentError:
+parse_positive_integer("abc")
+parse_positive_integer("")
+parse_positive_integer("3.14")
+# Each raises RangeError:
+parse_positive_integer("0")
+parse_positive_integer("-5")
 
-```ruby
-parse_positive_integer("42")   # => 42
-parse_positive_integer("1")    # => 1
-parse_positive_integer("abc")  # raises ArgumentError
-parse_positive_integer("3.14") # raises ArgumentError — not an integer string
-parse_positive_integer("0")    # raises RangeError
-parse_positive_integer("-5")   # raises RangeError
-```
-
-**`with_retry(max_attempts, &block)`** — calls `block`. If it raises any `StandardError`, retries the call, up to `max_attempts` total attempts. If the final attempt still raises, re-raises that exception to the caller. Returns `block`'s return value on the first successful call.
-
-```ruby
 calls = 0
 with_retry(3) do
   calls += 1
   raise "fail" if calls < 3
   "success"
 end
-# => "success", calls == 3  (succeeded on the 3rd attempt)
+# => "success", calls is 3
 
-with_retry(1) { "immediate" }  # => "immediate", block called once
+with_retry(1) { "immediate" }
+# => "immediate", block called once
 
-with_retry(2) { raise "always fails" }
-# raises RuntimeError after 2 attempts
+# RuntimeError after 3 calls:
+with_retry(3) { raise "persistent" }
 ```

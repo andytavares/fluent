@@ -1,27 +1,27 @@
-# Procedures & Calling Conventions
+## What you build
 
-## What you'll learn
-
-How `call`/`ret` work mechanically, the System V AMD64 ABI argument and return register assignment, and which registers you must save vs. which you can trash freely.
+You write `apply_twice`, a procedure that calls a function pointer two times and returns `fn(fn(x))`. It keeps the pointer safe across a call in a callee-saved register. This lesson builds on **The Stack**.
 
 ## Key concepts
 
-### `call` and `ret`
+### `call` pushes the return address, `ret` pops it
 
-`call label` pushes the return address (`rip + instruction size`) onto the stack, then jumps to `label`. `ret` pops that address back into `rip`.
+`call label` pushes the address of the next instruction, then jumps to `label`. `ret` pops that address into `rip`.
 
 ```nasm
-call my_func    ; push rip_next; jmp my_func
-; execution resumes here after ret
+; push next rip; jmp my_func
+call my_func
+; execution continues here after ret
 
 my_func:
     ; do work
-    ret         ; pop return address into rip
+    ; pop the return address into rip
+    ret
 ```
 
-### System V AMD64 ABI — argument registers
+### The first six arguments go in registers
 
-The Linux/macOS 64-bit calling convention passes the first six integer/pointer arguments in registers, in this order:
+The System V AMD64 ABI is the 64-bit calling convention on Linux and macOS. It passes the first six integer or pointer arguments in this order:
 
 | Argument | Register |
 |----------|----------|
@@ -31,16 +31,16 @@ The Linux/macOS 64-bit calling convention passes the first six integer/pointer a
 | 4th | `rcx` |
 | 5th | `r8` |
 | 6th | `r9` |
-| 7th+ | pushed on stack, right-to-left |
+| 7th and later | on the stack, right to left |
 
-Return value: `rax` (and `rdx` for 128-bit returns).
+The return value goes in `rax`, and in `rdx` too for a 128-bit value.
 
 ```nasm
-; Calling: int result = add(3, 4)
+; int result = add_ints(3, 4)
 mov  rdi, 3
 mov  rsi, 4
 call add_ints
-; result now in rax
+; the result is in rax
 
 add_ints:
     mov  rax, rdi
@@ -48,69 +48,92 @@ add_ints:
     ret
 ```
 
-### Caller-saved vs callee-saved registers
+### A callee can change caller-saved registers
 
-This is the most operationally important part of the ABI:
+This split is the most important part of the ABI in practice.
 
-**Caller-saved** (volatile — callee may trash freely):
-`rax`, `rcx`, `rdx`, `rsi`, `rdi`, `r8`, `r9`, `r10`, `r11`
+- **Caller-saved** (volatile): `rax`, `rcx`, `rdx`, `rsi`, `rdi`, `r8`, `r9`, `r10`, `r11`. A callee can change them.
+- **Callee-saved** (non-volatile): `rbx`, `rbp`, `r12`, `r13`, `r14`, `r15`. A callee must keep their values.
 
-**Callee-saved** (non-volatile — callee must preserve):
-`rbx`, `rbp`, `r12`, `r13`, `r14`, `r15`
-
-If your procedure uses `rbx` or `r12`–`r15`, you must `push` them at entry and `pop` them before `ret`. If you call another function that might clobber `rdi` or `rsi`, save them yourself before the call.
+If your procedure uses `rbx` or `r12`–`r15`, `push` them at entry and `pop` them before `ret`. To keep `rdi` or `rsi` across a call, save them yourself before the call.
 
 ```nasm
 my_proc:
-    push r12          ; callee-saved: save
-    mov  r12, rdi     ; keep first arg safe across nested calls
-
-    call some_other_func   ; would trash rdi, rsi, rax, etc.
-
-    mov  rax, r12     ; r12 still has original rdi
-    pop  r12          ; callee-saved: restore
+    ; callee-saved: save
+    push r12
+    ; keep the first argument across calls
+    mov  r12, rdi
+    ; can change rdi, rsi, rax
+    call some_other_func
+    ; r12 still holds the old rdi
+    mov  rax, r12
+    ; callee-saved: restore
+    pop  r12
     ret
 ```
 
-### `rsp` alignment reminder
+### `rsp` must be 16-byte aligned before each `call`
 
-Before any `call`, `rsp` must be 16-byte aligned. After `call` pushes the return address, `rsp` is 8-byte aligned at function entry. `push rbp` restores alignment. If you allocate local space, use multiples of 16.
+At entry, `rsp % 16 == 8`, because `call` pushed the return address. `push rbp` restores the alignment. Local space must be a multiple of 16.
 
-## vs other languages
+```nasm
+; at entry: rsp % 16 == 8
+push rbp
+; now rsp % 16 == 0
+call helper
+```
 
-In C, Go, Java, and Rust the compiler manages all of this. When GCC compiles a C function it emits exactly these push/pop sequences for callee-saved registers, exactly these `mov rdi, ...` assignments before a call, and exactly this `mov rax, ...` for the return value. Reading compiler output with `objdump -d` or Godbolt is now directly legible to you.
+### Compilers follow the same convention
 
-Windows x64 uses a different ABI: first four args in `rcx, rdx, r8, r9` with a mandatory 32-byte shadow space. Assembly that works on Linux will not work on Windows without changes.
+GCC emits these pushes and pops for callee-saved registers, these `mov rdi, ...` before a call, and this `mov rax, ...` for the return value. You can now read `objdump -d` and Godbolt output. Windows x64 uses a different ABI: `rcx`, `rdx`, `r8`, `r9` for the first four arguments, and a 32-byte shadow space.
+
+```nasm
+; Windows x64: first argument
+mov  rcx, 3
+; Linux and macOS: first argument
+mov  rdi, 3
+```
+
+### `call reg` calls a function pointer
+
+An indirect call through a register works like `call label`. A function pointer needs no special syntax.
+
+```nasm
+; rbx holds a function address
+call rbx
+```
 
 ## Watch out
 
-- Caller-saved registers (`rax`, `rcx`, `rdx`, `rsi`, `rdi`, `r8`–`r11`) can be overwritten by **any** call, including one you make yourself into a function pointer whose implementation you don't control. If you need a value after a `call`, it must be in a callee-saved register or on the stack beforehand — not left in `rdi`/`rsi`/`rax`.
-- Whichever callee-saved register you `push` at entry, you must `pop` in the exact reverse order before `ret` — popping out of order silently swaps register contents with no error from the assembler.
-- `rsp` must stay 16-byte aligned across every `call`, including nested ones. An odd number of unbalanced `push`es before a `call` can crash *inside* the callee if it uses SSE instructions, far from where the misalignment was introduced.
-- `call reg` (an indirect call through a register) is exactly as valid as `call label` — don't assume function pointers require special syntax.
+- Any call can change caller-saved registers, including a call through a function pointer you do not control.
+- To use a value after a `call`, keep it in a callee-saved register or on the stack first.
+- Pop callee-saved registers in the reverse order of the pushes. The wrong order swaps their values, and the assembler gives no error.
+- An odd number of pushes before a `call` breaks alignment. The crash can happen inside the callee, far from the cause.
 
 ## The task
 
-Implement `apply_twice`, which calls a provided function pointer twice, passing the result of the first call as the argument to the second — i.e., it computes `fn(fn(x))`:
+Write `apply_twice`. It calls a one-argument function `fn` two times. The second call gets the result of the first call.
+
+1. The inputs are `rdi = fn`, a function address, and `rsi = x`.
+2. `fn` takes its argument in `rdi` and returns its result in `rax`.
+3. Call `fn(x)`, then call `fn` with that result.
+4. Return `fn(fn(x))` in `rax`.
+5. A call to `fn` can change `rdi` and `rsi`. Keep `fn` in a callee-saved register: `rbx` or `r12`–`r15`.
+6. `push` that register at entry, and `pop` it before `ret`.
+
+The test calls `apply_twice` with a doubling function and a function that adds 2.
 
 ```nasm
-; int64_t apply_twice(int64_t (*fn)(int64_t), int64_t x)
-; rdi = function pointer, rsi = x
-; Returns fn(fn(x)) in rax
+; int64_t apply_twice(
+;     int64_t (*fn)(int64_t), int64_t x)
 apply_twice:
     ; TODO
+    ret
+
+; double_val(x) = x * 2
+apply_twice(double_val, 3)  ; 12
+apply_twice(double_val, 1)  ; 4
+apply_twice(double_val, 0)  ; 0
+; inc2(x) = x + 2
+apply_twice(inc2, 10)       ; 14
 ```
-
-Register contract: `rdi` holds a callable address, `rsi` holds `x`. Both are caller-saved, so a call through `fn` may destroy them — you must preserve the function pointer across the first call yourself, using a callee-saved register (`rbx`, `r12`–`r15`) that you `push` at entry and `pop` before `ret`.
-
-```nasm
-int64_t double_val(int64_t x) { return x * 2; }
-apply_twice(double_val, 3);   // double_val(double_val(3)) = double_val(6) = 12
-apply_twice(double_val, 1);   // 4
-apply_twice(double_val, 0);   // 0
-
-int64_t inc2(int64_t x) { return x + 2; }
-apply_twice(inc2, 10);        // inc2(inc2(10)) = inc2(12) = 14
-```
-
-The function pointer is a callable address in `rdi`. You'll need to save `rdi` (caller-saved) across the first `call` using a callee-saved register.

@@ -1,35 +1,24 @@
-# Pods
+## What you build
 
-## What you'll learn
-
-The Pod is the atomic unit Kubernetes schedules — not the container. Every
-other workload object (Deployment, StatefulSet, Job) is ultimately a machine
-that stamps out Pods. If you don't understand what a Pod actually is — what
-it shares, what it isolates, and why it exists as a layer above "container" —
-everything built on top of it (rollouts, probes, resource limits) will feel
-arbitrary. By the end of this lesson you'll write a complete, correct Pod
-manifest from scratch.
+You write a complete Pod manifest in `stub.yaml`: one `nginx` container with a port, an environment variable and a restart policy. The Pod is the smallest unit that Kubernetes schedules, and every other workload creates Pods.
 
 ## Key concepts
 
-**A Pod is one or more containers that share a network namespace, IPC
-namespace, and (optionally) volumes.** Containers in the same Pod:
+### A Pod is one or more containers that share a network
 
-- Share one IP address and port space — `localhost:8080` in one container
-  reaches port 8080 in another container in the same Pod.
-- Can share mounted volumes to exchange files.
-- Are always scheduled together, on the same node, and live and die together
-  as a unit — you cannot schedule half a Pod.
+Containers in one Pod share one IP address and one port space. They can share mounted volumes to exchange files. Kubernetes schedules them together on one node, and they start and stop as one unit.
 
-This is why a Pod is not "just a container with extra YAML." A single
-container *is* effectively a Pod with one member, but the model exists to
-support **multi-container patterns** — a sidecar shipping logs, an init
-container preparing config, a service mesh proxy — all of which need
-localhost-level access to your app's container. Docker Compose's "service"
-and a raw `docker run` don't have this notion of a shared network sandbox
-between otherwise-independent containers.
+```
+Pod web (10.1.0.7)
+  container app   listens on 8080
+  container proxy calls localhost:8080
+```
 
-**Minimal Pod spec:**
+### Pods exist for multi-container patterns
+
+A single container is a Pod with one member. The model supports sidecars that ship logs, init containers that prepare config, and service mesh proxies. Each of these needs `localhost` access to your app. A `docker run` container gets its own network namespace unless you join it by hand with `--network container:<id>`.
+
+### A minimal Pod manifest has four top-level fields
 
 ```yaml
 apiVersion: v1
@@ -42,81 +31,57 @@ spec:
   containers:
     - name: web
       image: nginx:1.25
-      ports:
-        - containerPort: 8080
-      env:
-        - name: APP_ENV
-          value: "production"
-  restartPolicy: Always
 ```
 
-Field by field:
+Pod is a core API object, so `apiVersion` is `v1`, not a group such as `apps/v1`. `metadata.name` must be a valid DNS subdomain: lowercase alphanumerics and `-`. `metadata.labels` holds key/value pairs for selection.
 
-- `apiVersion: v1` — Pod is a core API object, not part of a versioned group
-  like `apps/v1`.
-- `metadata.name` — must be a valid DNS subdomain (lowercase, alphanumeric,
-  `-`). `metadata.labels` — key/value pairs used for selection (covered in
-  depth next lesson).
-- `spec.containers` — a **list**, even for a single container. Each entry
-  needs at least `name` and `image`.
-- `ports` — this is *documentation*, not enforcement. Kubernetes does not
-  block traffic to ports you didn't declare here; `containerPort` just
-  advertises what the container listens on so other tooling (Services,
-  `kubectl describe`) can show it.
-- `env` — a list of `name`/`value` pairs injected as environment variables
-  into that specific container. (Later lessons cover pulling these from
-  ConfigMaps/Secrets instead of inlining values.)
-- `restartPolicy` — governs what the kubelet does when a container in the
-  Pod exits. `Always` (default, and the only legal value for Deployments),
-  `OnFailure` (restart only on non-zero exit — typical for Jobs), or `Never`.
-  This applies to every container in the Pod; you cannot mix policies across
-  containers in the same Pod.
+### `spec.containers` is a list
 
-## vs other tools
+The field is a list, even for one container. Each entry needs at least `name` and `image`.
 
-| | Kubernetes Pod | `docker run` container | Docker Compose service |
-|---|---|---|---|
-| Scheduling unit | Pod (1+ containers) | Single container | Single container (per replica) |
-| Shared network by default | Yes, across containers in a Pod | No — each container gets its own netns unless joined manually | Yes, across the whole compose project via a bridge network |
-| Multi-container coupling | First-class (sidecars, init containers) | Manual (`--network container:<id>`) | Loose — services are still independently addressable, not localhost-shared |
-| Restart semantics | `restartPolicy` per Pod, enforced by kubelet | `--restart` flag, enforced by Docker daemon | `restart:` key, enforced by Compose |
+### `ports` is documentation, not enforcement
 
-The key mental shift coming from `docker run`/Compose: in Kubernetes you
-almost never think about "a container" as the deployable thing. You think
-about "a Pod," and multi-container Pods (sidecars sharing localhost) are a
-normal, first-class pattern rather than a hack.
+`containerPort` advertises the port that the container listens on. Tools such as Services and `kubectl describe` show it. Kubernetes does not block traffic to a port that you leave out.
+
+```yaml
+ports:
+  - containerPort: 8080
+```
+
+### `env` sets variables for one container
+
+`env` is a list of `name`/`value` pairs. Kubernetes injects them as environment variables into that container only. A later concept loads these values from ConfigMaps and Secrets.
+
+```yaml
+env:
+  - name: APP_ENV
+    value: "production"
+```
+
+### `restartPolicy` tells the kubelet what to do when a container exits
+
+The values are `Always` (the default), `OnFailure` and `Never`. `OnFailure` restarts only after a non-zero exit, which is typical for Jobs. The Pod policy applies to all app containers and regular init containers. A Deployment allows only `Always`.
 
 ## Watch out
 
-- **You will almost never create a bare Pod in production.** Bare Pods are
-  not self-healing — if the node dies, the Pod is gone for good; nothing
-  recreates it. Every real workload goes through a controller (Deployment,
-  StatefulSet, Job) that manages Pods for you. This lesson uses a bare Pod
-  only because it's the smallest unit worth understanding in isolation — the
-  next lesson introduces the controller that makes Pods durable.
-- **`ports` is informational.** Forgetting it doesn't break connectivity
-  within the cluster; forgetting the Service that routes to the Pod does
-  (covered later).
-- **One namespace, many resources.** `metadata.name` must be unique per
-  namespace per resource *kind* — you can have a Pod and a Service both named
-  `web` in the same namespace.
+- A bare Pod does not heal itself. If its node fails, nothing creates it again.
+- Production workloads use a controller, such as a Deployment, StatefulSet or Job. This concept uses a bare Pod only to show the smallest unit.
+- A missing `ports` entry does not break traffic in the cluster. A missing Service does.
+- `metadata.name` is unique per namespace and per kind. A Pod and a Service can both have the name `web`.
 
 ## The task
 
-Write a single Pod manifest that a monitoring sidecar pattern would build on
-later. Produce YAML with:
+Write a Pod manifest in `stub.yaml`. A later monitoring sidecar builds on it.
 
-- `apiVersion: v1`, `kind: Pod`
-- `metadata.name: web`
-- `metadata.labels` containing `app: web`
-- `spec.containers` with exactly one container:
-  - `name: web`
-  - `image: nginx:1.25`
-  - `ports` containing one entry with `containerPort: 8080`
-  - `env` containing one entry: `name: APP_ENV`, `value: "production"`
-- `spec.restartPolicy: Always`
+1. Set `apiVersion: v1` and `kind: Pod`.
+2. Set `metadata.name` to `web`.
+3. Add the label `app: web` under `metadata.labels`.
+4. Add exactly one container under `spec.containers`, with `name: web` and `image: nginx:1.25`.
+5. Give the container one `ports` entry with `containerPort: 8080`.
+6. Give the container one `env` entry with `name: APP_ENV` and `value: "production"`.
+7. Set `spec.restartPolicy` to `Always`.
 
-Example of the expected shape (fill in `stub.yaml` to match this exactly):
+The file must match this content:
 
 ```yaml
 apiVersion: v1

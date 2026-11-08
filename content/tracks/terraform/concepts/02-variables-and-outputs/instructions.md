@@ -1,28 +1,26 @@
-# Variables & Outputs
+## What you build
 
-## What you'll learn
-
-How Terraform parameterizes configurations with `variable` blocks and surfaces results with `output` blocks. Variables are the public API of a module; outputs are the public API it returns to its caller.
+You define the inputs and outputs of a small module: three variables and two outputs. Variables are the public API of a module, and outputs are what it returns to its caller. This lesson builds on **Providers & Resources**.
 
 ## Key concepts
 
-### `variable` blocks
+### A `variable` block declares an input
 
 ```hcl
 variable "environment" {
   type        = string
-  description = "Deployment environment (staging or production)."
+  description = "staging or production"
   default     = "staging"
 }
 ```
 
-- `type` enforces the shape: `string`, `number`, `bool`, `list(string)`, `map(string)`, `object({...})`, `set(string)`.
-- `default` makes the variable optional. Without it, Terraform prompts (or errors in CI unless `-var` is passed).
-- `description` shows up in `terraform plan` output and auto-generated docs.
+- `type` sets the shape: `string`, `number`, `bool`, `list(string)`, `map(string)`, `set(string)` or `object({...})`.
+- `default` makes the variable optional. With no default, Terraform prompts for a value. In CI, it fails unless you pass `-var`.
+- `description` documents the purpose of the variable and the value it expects.
 
-Reference with `var.environment`.
+Read the value with `var.environment`.
 
-### Validation blocks
+### A `validation` block checks the value
 
 ```hcl
 variable "instance_type" {
@@ -30,15 +28,17 @@ variable "instance_type" {
   default = "t3.micro"
 
   validation {
-    condition     = contains(["t3.micro", "t3.small", "t3.medium"], var.instance_type)
-    error_message = "instance_type must be one of: t3.micro, t3.small, t3.medium."
+    condition = contains([
+      "t3.micro", "t3.small", "t3.medium",
+    ], var.instance_type)
+    error_message = "Not an allowed type."
   }
 }
 ```
 
-Validation runs at plan time, before any API call is made. The `condition` is any expression that returns `bool`.
+The `condition` is any expression that returns a `bool`. Terraform checks it at plan time, before any API call. CloudFormation's `AllowedValues` lists fixed values only; a Terraform `condition` can use the full expression language.
 
-### Sensitive variables
+### `sensitive` hides a value in the output
 
 ```hcl
 variable "db_password" {
@@ -47,44 +47,43 @@ variable "db_password" {
 }
 ```
 
-Terraform redacts the value in plan/apply output and state file display. It does **not** encrypt the value in `terraform.tfstate` on disk — that's the backend's job.
+Terraform redacts the value in the plan and apply output. It does **not** encrypt the value in `terraform.tfstate`. Encryption at rest is the job of the backend.
 
-### `output` blocks
+### An `output` block returns a value
 
 ```hcl
 output "vpc_id" {
   value       = aws_vpc.main.id
-  description = "The ID of the created VPC."
+  description = "The ID of the VPC."
 }
 
 output "db_endpoint" {
-  value     = aws_db_instance.primary.endpoint
+  value     = aws_db_instance.main.endpoint
   sensitive = true
 }
 ```
 
-Outputs are printed at the end of `terraform apply` and accessible via `terraform output`. When this module is called from another module, the caller reads outputs with `module.network.vpc_id`.
-
-## vs other tools
-
-| Tool | Equivalent concept |
-|------|--------------------|
-| **CloudFormation** | `Parameters` (input) and `Outputs` (output) — same idea, YAML-only, no type system beyond basic CF types |
-| **Pulumi** | Config values (`pulumi.Config`) and stack outputs; typed, but read from code not HCL |
-| **Helm** | `values.yaml` with `--set` overrides; no built-in validation blocks |
-
-Terraform's validation block is more powerful than CloudFormation's `AllowedValues` — it can express arbitrary conditions using the full expression language.
+Terraform prints outputs at the end of `terraform apply`, and `terraform output` shows them again. A module that calls this module reads them as `module.network.vpc_id`.
 
 ## Watch out
 
-- **A variable with no `default` is a required input.** Omitting `default` on `db_password` is intentional here — it forces every caller to supply a value rather than silently deploying with an empty password. Don't add a `default` to "fix" a plan-time prompt; that defeats the point of `sensitive`.
-- **`type` is not optional in practice.** You can omit it (Terraform infers `any`), but then a caller passing a number where you expected a string won't be caught until it breaks something downstream. Always declare `type`.
-- **`validation.condition` must reference `var.<name>` of the *same* variable it's attached to** — you cannot validate one variable's block against another variable directly (use a `precondition` elsewhere for cross-variable checks).
-- **`sensitive = true` only redacts CLI/UI output.** It does not encrypt the value at rest in `terraform.tfstate`. Anyone with read access to the state file (or the backend) can still see it in plaintext.
+- A variable with no `default` is a required input. Do not add a default to stop the prompt for a secret.
+- If you omit `type`, Terraform accepts any type. A wrong type then fails later, far from the cause. Always declare `type`.
+- Before Terraform 1.9, a `condition` can reference only its own variable. Terraform 1.9 and later accepts references to other input variables.
+- `sensitive = true` hides the value in CLI output only. Anyone who can read the state file sees it in plain text.
 
 ## The task
 
-You're defining the input/output surface for a small module: three variables (a public region config, a validated instance size, a secret) and two outputs that echo the non-secret ones back.
+Define the inputs and outputs of a small module. It has a region, a validated instance size, a secret and two outputs.
+
+1. `variable "region"` has `type = string`, `default = "us-east-1"` and a `description`.
+2. `variable "instance_type"` has `type = string` and `default = "t3.micro"`.
+3. `instance_type` has a `validation` block. Its `condition` uses `contains([...], var.instance_type)`.
+4. The condition allows only `"t3.micro"`, `"t3.small"` and `"t3.medium"`. The block also sets an `error_message`.
+5. `variable "db_password"` has `type = string` and `sensitive = true`.
+6. `db_password` has no `default`, so every caller must supply it.
+7. `output "region"` has `value = var.region`.
+8. `output "instance_type"` has `value = var.instance_type` and a `description`.
 
 ```hcl
 variable "region" {
@@ -92,11 +91,11 @@ variable "region" {
 }
 
 variable "instance_type" {
-  # type, default, and a validation { } block
+  # type, default, validation { }
 }
 
 variable "db_password" {
-  # type, sensitive — required (no default)
+  # type, sensitive; no default
 }
 
 output "region" {
@@ -107,11 +106,3 @@ output "instance_type" {
   # value, description
 }
 ```
-
-Fill it in so that:
-
-1. `variable "region"` has `type = string`, `default = "us-east-1"`, and a `description`.
-2. `variable "instance_type"` has `type = string`, `default = "t3.micro"`, and a `validation` block whose `condition` uses `contains([...], var.instance_type)` to allow only `"t3.micro"`, `"t3.small"`, or `"t3.medium"`, plus an `error_message`.
-3. `variable "db_password"` has `type = string`, `sensitive = true`, and **no `default`** (it must be a required input).
-4. `output "region"` has `value = var.region`.
-5. `output "instance_type"` has `value = var.instance_type` and a `description`.

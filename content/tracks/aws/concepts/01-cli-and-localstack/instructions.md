@@ -1,35 +1,36 @@
-# CLI & LocalStack
+## What you build
 
-## What you'll learn
-
-This track teaches AWS the way you'll actually practice it here: every command runs against **LocalStack**, an open-source emulator that implements the real AWS APIs on your laptop, with zero cloud spend and zero risk of a surprise bill. You'll learn the `aws` CLI's plumbing — endpoints, credentials, profiles, output formats, and JMESPath queries — all of which carry over unchanged to real AWS.
+You write `stub.sh`, a script that sets up the `aws` CLI for LocalStack and checks that it works. Every command in this track runs against LocalStack, so you spend no money and risk no surprise bill. The CLI skills carry over unchanged to real AWS.
 
 ## Key concepts
 
-### What LocalStack actually is
+### LocalStack runs real AWS APIs on your machine
 
-LocalStack runs a set of Docker containers that speak the real AWS wire protocol (the same signed HTTP requests the `aws` CLI and every SDK send to `amazonaws.com`). Point any AWS client at LocalStack's endpoint instead of AWS's, and — for the services it supports — the client can't tell the difference. It isn't a mock library or a stub; it's an actual implementation of S3, DynamoDB, Lambda, SQS, IAM, and dozens of other services, running locally.
-
-```bash
-docker run -d --name localstack -p 4566:4566 localstack/localstack
-```
-
-Every service (S3, DynamoDB, Lambda, ...) is reachable through a **single port, 4566** — LocalStack routes based on the request's signature, not the port.
-
-### The `--endpoint-url` flag
-
-Real AWS resolves the endpoint automatically from the service and region (e.g. `s3.us-east-1.amazonaws.com`). Against LocalStack you override that with `--endpoint-url`:
+LocalStack is an open-source emulator. It speaks the real AWS wire protocol: the same signed HTTP requests that the `aws` CLI and every SDK send to `amazonaws.com`. It is not a mock library. It implements S3, DynamoDB, Lambda, SQS, IAM and dozens of other services.
 
 ```bash
-aws --endpoint-url http://localhost:4566 s3 ls
-aws --endpoint-url http://localhost:4566 dynamodb list-tables
+docker run -d --name localstack \
+  -p 4566:4566 localstack/localstack
 ```
 
-Every command in this track passes `--endpoint-url http://localhost:4566`. In production you'd simply omit the flag — the rest of the command is identical. This is the entire point of practicing against LocalStack: the muscle memory transfers 1:1.
+Every service is on **one port, 4566**. LocalStack routes each request by its signature, not by the port.
 
-### Credentials, without a real account
+### `--endpoint-url` points the CLI at LocalStack
 
-The CLI refuses to run without *some* credentials configured, but LocalStack doesn't validate them — any non-empty string works:
+Real AWS finds the endpoint from the service and region, for example `s3.us-east-1.amazonaws.com`. For LocalStack, you override it with `--endpoint-url`:
+
+```bash
+ENDPOINT_URL=http://localhost:4566
+aws --endpoint-url "$ENDPOINT_URL" s3 ls
+aws --endpoint-url "$ENDPOINT_URL" \
+  dynamodb list-tables
+```
+
+Every command in this track passes this flag. In production, you remove the flag and the rest of the command stays the same.
+
+### Any non-empty credentials work
+
+The CLI does not run without credentials. LocalStack does not check them, so any non-empty string works:
 
 ```bash
 export AWS_ACCESS_KEY_ID=test
@@ -37,11 +38,11 @@ export AWS_SECRET_ACCESS_KEY=test
 export AWS_DEFAULT_REGION=us-east-1
 ```
 
-Against real AWS these would be actual IAM credentials (never hardcode real ones in scripts — see the IAM and Secrets Manager concepts later in this track).
+On real AWS, these are real IAM credentials. Never hardcode real credentials in a script. The IAM and Secrets Manager concepts later in this track show the safe ways.
 
-### Profiles
+### A profile stores a named set of credentials
 
-`aws configure --profile localstack` writes a named credential/region block to `~/.aws/credentials` and `~/.aws/config`. Any command can then target it with `--profile localstack` instead of relying on environment variables or the `default` profile:
+`aws configure --profile localstack` writes a named block to `~/.aws/credentials` and `~/.aws/config`. Any command can then use `--profile localstack`, instead of environment variables or the `default` profile:
 
 ```bash
 aws configure --profile localstack
@@ -50,78 +51,90 @@ aws configure --profile localstack
 # Default region name: us-east-1
 # Default output format: json
 
-aws --profile localstack --endpoint-url http://localhost:4566 sts get-caller-identity
+aws --profile localstack \
+  --endpoint-url "$ENDPOINT_URL" \
+  sts get-caller-identity
 ```
 
-Profiles matter the moment you juggle more than one account — production, staging, and a personal sandbox, say. Environment variables are simpler for single-purpose scripts (like this track's exercises); profiles are what you reach for interactively.
+Profiles help when you work with more than one account, for example production, staging and a personal sandbox. Environment variables are simpler for single-purpose scripts, like the scripts in this track. Use profiles when you work interactively.
 
-### Output formats and `--query`
+### `--output` sets the format of the response
 
-The CLI supports three output formats:
+The CLI has three output formats:
 
-| Format | Use case |
+| Format | Use |
 |---|---|
-| `json` (default) | Scripting, piping to `jq` |
-| `text` | Tab-separated, easy to `awk`/`cut` |
-| `table` | Human-eyeballing in a terminal |
+| `json` (default) | Scripts, `jq` |
+| `text` | Tab-separated, for `awk` or `cut` |
+| `table` | Reading in a terminal |
 
-`--query` applies a [JMESPath](https://jmespath.org/) expression to the response **before** formatting — it's not a separate filtering step you bolt on after, it's built into every API call:
+### `--query` filters the response before the CLI formats it
+
+`--query` applies a [JMESPath](https://jmespath.org/) expression to the response. The CLI applies it before it formats the output. It is part of every command, not a separate step after the call.
 
 ```bash
 # Full response
-aws --endpoint-url http://localhost:4566 s3api list-buckets
+aws --endpoint-url "$ENDPOINT_URL" \
+  s3api list-buckets
 
-# Just the bucket names, as a flat list
-aws --endpoint-url http://localhost:4566 s3api list-buckets \
+# Only the bucket names, as a flat list
+aws --endpoint-url "$ENDPOINT_URL" \
+  s3api list-buckets \
   --query 'Buckets[].Name' --output text
 ```
 
-`Buckets[].Name` reads as "for every element of the `Buckets` array, take its `Name` field." JMESPath supports filters too — `Buckets[?Name==\`my-bucket\`]` — but the projection syntax above (`[]` to flatten, `.Field` to project) covers most day-to-day scripting.
+`Buckets[].Name` means "for each element of the `Buckets` array, take its `Name` field." `[]` flattens and `.Field` projects. JMESPath also has filters, for example ``Buckets[?Name==`my-bucket`]``. Projections cover most daily scripts.
 
-### `aws sts get-caller-identity` — the health check
+### `sts get-caller-identity` is the health check
 
-Before doing anything else against a new endpoint, confirm you're talking to it:
+Before you do anything against a new endpoint, confirm that you can reach it:
 
 ```bash
-aws --endpoint-url http://localhost:4566 sts get-caller-identity
+aws --endpoint-url "$ENDPOINT_URL" \
+  sts get-caller-identity
 ```
 
-Against real AWS this returns your actual account ID, user/role ARN, and user ID — it's the fastest way to answer "which account/credentials am I actually using right now?" Against LocalStack it returns a fixed dummy identity, but the round-trip confirms the container is up and reachable.
+On real AWS, it returns your account ID, user or role ARN, and user ID. It is the fastest way to see which account and credentials you use now. On LocalStack, it returns a fixed dummy identity. The round trip confirms that the container runs and answers.
 
-## vs other tools
+### Each CLI command maps to one API action
 
-| | AWS CLI + LocalStack | AWS Console | Terraform against LocalStack |
-|---|---|---|---|
-| Feedback loop | Seconds, scriptable | Manual clicking, not reproducible | Plan/apply cycle, slower per-iteration |
-| What it teaches | The exact API calls the SDKs make | High-level intent, hides the API shape | Declarative end-state, hides individual calls |
-| Best for | Learning the service semantics, debugging, one-off ops | Exploration, visualizing what exists | Repeatable infrastructure provisioning |
-
-This track deliberately uses the CLI, not Terraform or the Console: every `aws` command maps directly to one API action, which is the fastest way to build a mental model of what each service actually does under the hood. Once you know the API shape, Terraform's resource arguments (and every SDK's method signatures) stop feeling arbitrary — they're the same fields you just typed by hand.
+This track uses the CLI, not Terraform or the Console. Each `aws` command maps to one API action, so you learn what each service does. The Console hides the API shape, and Terraform hides the individual calls. After you know the API, Terraform arguments and SDK method signatures use the same fields that you typed by hand.
 
 ## Watch out
 
-- **A missing `--endpoint-url` against LocalStack fails differently than you'd expect** — the CLI doesn't error immediately; it tries to reach real AWS with your fake `test`/`test` credentials and returns an authentication failure. If you see `InvalidAccessKeyId` or a DNS-looking timeout, check you didn't forget the flag on that one command.
-- **`--query` operates on the raw JSON structure, not the CLI's pretty-printed table.** Run a command once without `--query` to see the actual field names and nesting before you write the JMESPath expression.
-- **Region still matters against LocalStack**, even though nothing physically lives in `us-east-1`. Resources are namespaced per region+account in LocalStack's internal state just like real AWS — create a bucket in one region and query it with a different `AWS_DEFAULT_REGION` and it won't be found.
+- You forget `--endpoint-url` on one command. The CLI then calls real AWS with your fake `test` credentials. You get `InvalidAccessKeyId` or a timeout that looks like a DNS error.
+- You write `--query` against the table output. `--query` works on the raw JSON structure. Run the command once without `--query` to see the real field names and nesting.
+- You change `AWS_DEFAULT_REGION` and cannot find your bucket. LocalStack keeps resources per region and account, like real AWS.
 
 ## The task
 
-Write a script, `stub.sh`, that sets up and verifies a LocalStack CLI environment. Fill in the TODOs so the script:
+Write `stub.sh`, a script that sets up and checks a LocalStack CLI environment. Fill in the TODOs so that the script does these steps:
 
-1. Exports three environment variables LocalStack accepts as dummy credentials: `AWS_ACCESS_KEY_ID=test`, `AWS_SECRET_ACCESS_KEY=test`, `AWS_DEFAULT_REGION=us-east-1`.
-2. Defines a reusable variable `ENDPOINT_URL=http://localhost:4566`.
-3. Runs a health check: `aws --endpoint-url "$ENDPOINT_URL" sts get-caller-identity`.
-4. Creates a bucket named `fluent-cli-demo`: `aws --endpoint-url "$ENDPOINT_URL" s3 mb s3://fluent-cli-demo`.
-5. Lists all buckets in human-readable table form: `aws --endpoint-url "$ENDPOINT_URL" s3api list-buckets --output table`.
-6. Lists just the bucket names as flat text using a JMESPath query: `aws --endpoint-url "$ENDPOINT_URL" s3api list-buckets --query 'Buckets[].Name' --output text`.
+1. Export the dummy credentials `AWS_ACCESS_KEY_ID=test` and `AWS_SECRET_ACCESS_KEY=test`.
+2. Export `AWS_DEFAULT_REGION=us-east-1`.
+3. Define the variable `ENDPOINT_URL=http://localhost:4566`.
+4. Run the health check `sts get-caller-identity`.
+5. Create the bucket `fluent-cli-demo` with `s3 mb`.
+6. List all buckets with `s3api list-buckets --output table`.
+7. List only the bucket names as flat text, with a JMESPath query and `--output text`.
 
-### Run it for real
-
-With Docker installed:
+Every `aws` command uses `--endpoint-url "$ENDPOINT_URL"`.
 
 ```bash
-docker run -d --name localstack -p 4566:4566 localstack/localstack
-bash stub.sh   # once filled in
+export AWS_ACCESS_KEY_ID=test
+export AWS_SECRET_ACCESS_KEY=test
+export AWS_DEFAULT_REGION=us-east-1
+ENDPOINT_URL=http://localhost:4566
+
+aws --endpoint-url "$ENDPOINT_URL" \
+  sts get-caller-identity
+aws --endpoint-url "$ENDPOINT_URL" \
+  s3 mb s3://fluent-cli-demo
+aws --endpoint-url "$ENDPOINT_URL" \
+  s3api list-buckets --output table
+aws --endpoint-url "$ENDPOINT_URL" \
+  s3api list-buckets \
+  --query 'Buckets[].Name' --output text
 ```
 
-You should see a dummy caller identity, then `fluent-cli-demo` appear in both the table and the flat-text bucket list.
+To run it against a real LocalStack, start the container, then run `bash stub.sh`. You see a dummy caller identity. Then `fluent-cli-demo` shows in the table and in the flat list.

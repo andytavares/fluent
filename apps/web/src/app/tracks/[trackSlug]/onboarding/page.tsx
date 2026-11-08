@@ -68,7 +68,7 @@ export default function OnboardingPage() {
     }
   }
 
-  // "Skip this concept" in placement → end test-out, go to lesson list
+  // "Go to the lessons" in placement → end test-out, go to lesson list
   async function handleSkipToLessons() {
     if (enrollmentId) {
       await skipPlacement.mutateAsync({ enrollmentId });
@@ -106,7 +106,7 @@ export default function OnboardingPage() {
           Welcome to {trackTitle}
         </h1>
         <p className="mb-8 text-center text-[var(--color-text-secondary)]">
-          How much experience do you have with this language?
+          How well do you know {trackTitle}?
         </p>
         <ConfidenceSelector value={confidence} onChange={setConfidence} />
         {createEnrollment.error && (
@@ -133,7 +133,7 @@ export default function OnboardingPage() {
           <div>
             <h1 className="text-lg font-semibold text-[var(--color-text-primary)]">Test out</h1>
             <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
-              Pass each challenge to skip it. Skip any time to go straight to lessons.
+              Pass a task to mark its concept complete. Go to the lessons at any time.
             </p>
           </div>
           <span className="text-sm font-mono text-[var(--color-text-secondary)]">

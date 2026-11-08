@@ -126,7 +126,6 @@ fluent/
 | Node.js | 20 LTS+ | All services and tooling |
 | pnpm | 9+ | Package manager (required — do not use npm or yarn) |
 | Docker + Compose | 24+ | PostgreSQL, Redis, Judge0, Temporal |
-| Go | 1.22+ | Content linter: runs `go build` and `go test` on exercises |
 | kubectl | any | Capstone runner: provisions K8s Jobs |
 | k6 | latest | Load testing (`tests/load/concurrent-runs.js`) |
 

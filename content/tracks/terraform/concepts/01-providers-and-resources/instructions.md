@@ -1,14 +1,12 @@
-# Providers & Resources
+## What you build
 
-## What you'll learn
-
-How Terraform structures a configuration: the `terraform {}` block pins your provider versions, the `provider` block configures credentials and regions, and `resource` blocks declare the infrastructure objects you want to exist.
+You write the root module for a small AWS network: a `terraform {}` block, an `aws` provider, a VPC and a subnet. The root module is the directory you run `terraform init`, `plan` and `apply` in.
 
 ## Key concepts
 
-### The `terraform {}` block
+### The `terraform {}` block pins versions
 
-Every root module should declare which providers it needs and what versions are acceptable. Terraform downloads matching plugins from the registry during `terraform init`.
+Every root module declares the providers it needs and the versions it accepts. Terraform downloads matching provider plugins from the registry during `terraform init`.
 
 ```hcl
 terraform {
@@ -23,11 +21,11 @@ terraform {
 }
 ```
 
-The `source` string is `<namespace>/<type>` — defaults to the public registry at `registry.terraform.io`. Private registries use `<hostname>/<namespace>/<type>`.
+The `source` string is `<namespace>/<type>`. Terraform looks it up in the public registry at `registry.terraform.io`. A private registry uses `<hostname>/<namespace>/<type>`.
 
-### The `provider` block
+### The `provider` block configures the plugin
 
-Configures the provider plugin itself — region, credentials, assumed role, etc. Most real configs pull sensitive values from environment variables rather than hardcoding them here.
+The `provider` block sets the region, the credentials and the role to assume. Most real configurations read sensitive values from environment variables, not from this block.
 
 ```hcl
 provider "aws" {
@@ -35,11 +33,11 @@ provider "aws" {
 }
 ```
 
-You can declare multiple configurations of the same provider using `alias` and reference them with `provider = aws.secondary` on a resource.
+To use two configurations of one provider, give the second one an `alias`. A resource then selects it with `provider = aws.secondary`.
 
-### The `resource` block
+### A `resource` block declares one object
 
-The fundamental unit of Terraform. A resource block declares one infrastructure object:
+The resource is the basic unit of Terraform. Each block declares one infrastructure object.
 
 ```hcl
 resource "aws_s3_bucket" "logs" {
@@ -52,12 +50,14 @@ resource "aws_s3_bucket" "logs" {
 }
 ```
 
-The two labels are `<type>` and `<name>`. Together they form the **resource address**: `aws_s3_bucket.logs`. Every attribute you set becomes an argument sent to the provider's API. Attributes the provider returns (like ARNs) become **exported attributes** you can reference elsewhere.
+The two labels are `<type>` and `<name>`. Together they form the **resource address**, here `aws_s3_bucket.logs`. Terraform sends each argument you set to the provider's API. The values the provider returns, such as ARNs, are **exported attributes**.
 
-### Referencing a resource
+### A reference creates a dependency
+
+Use `<type>.<name>.<attribute>` to read an exported attribute of another resource.
 
 ```hcl
-resource "aws_s3_bucket_versioning" "logs" {
+resource "aws_s3_bucket_versioning" "log" {
   bucket = aws_s3_bucket.logs.id
 
   versioning_configuration {
@@ -66,51 +66,46 @@ resource "aws_s3_bucket_versioning" "logs" {
 }
 ```
 
-`aws_s3_bucket.logs.id` is a **resource reference** — Terraform automatically creates an implicit dependency and applies `aws_s3_bucket.logs` first.
+`aws_s3_bucket.logs.id` is a **resource reference**. Terraform adds an implicit dependency and creates `aws_s3_bucket.logs` first.
 
-## vs other tools
+### The plan shows the change before it happens
 
-| Tool | Mental model |
-|------|-------------|
-| **CloudFormation** | YAML/JSON templates; providers are baked in (AWS only); stack drift is harder to detect |
-| **Pulumi** | Same graph model, but resources are objects in a real programming language (TS/Python/Go); no HCL |
-| **Ansible** | Procedural playbooks; not declarative — order of tasks matters; weak drift detection |
-| **CDK** | Compiles to CloudFormation; type-safe but tied to AWS and CF's limitations |
-
-Terraform's key difference: the **plan** step separates intent from execution. You always see an exact diff before anything is created, changed, or destroyed.
+`terraform plan` separates intent from execution. You see the exact diff before Terraform creates, changes or destroys anything. CloudFormation, Pulumi, Ansible and CDK manage infrastructure too, but Ansible runs ordered procedural tasks, and CloudFormation and CDK support AWS only.
 
 ## Watch out
 
-- **Two labels, not one.** `resource "aws_vpc" "main"` — the first string is always the resource *type* (defined by the provider), the second is *your* name for this instance. Swap them or drop one and it's a parse error.
-- **Version constraints are strings.** `version = ~> 5.0` (unquoted) is invalid HCL — it must be `version = "~> 5.0"`. Every scalar value in HCL follows this: strings need quotes, `true`/`false`/numbers don't.
-- **References only work between declared resources.** `aws_vpc.main.id` resolves only if a `resource "aws_vpc" "main"` block exists in the same module. Typo the name and Terraform reports "reference to undeclared resource" at plan time — not a silent null.
-- **`required_providers` lives inside `terraform {}`**, not beside it. A top-level `required_providers {}` block outside `terraform {}` is simply ignored (and, in recent Terraform versions, a parse error).
+- A resource has two labels. The first is the type from the provider; the second is your name. Drop one and Terraform reports a parse error.
+- Version constraints are strings. `version = ~> 5.0` without quotes is invalid HCL. Write `version = "~> 5.0"`.
+- Strings need quotes in HCL. `true`, `false` and numbers do not.
+- A reference works only if the resource block exists in the same module. A typo gives "reference to undeclared resource" at plan time.
+- `required_providers` goes inside `terraform {}`, not beside it.
 
 ## The task
 
-You're writing the root module for a small AWS network — the file `terraform init` / `plan` / `apply` would run against. Structure it like this:
+Write the root module for a small AWS network. Use this structure:
+
+1. The `terraform {}` block requires Terraform `>= 1.5.0`.
+2. It also requires the `aws` provider with `source = "hashicorp/aws"` and version `"~> 5.0"`.
+3. The `aws` provider block sets `region = "us-west-2"`.
+4. `resource "aws_vpc" "main"` sets `cidr_block = "10.0.0.0/16"`.
+5. The VPC has a `tags` map with `Name = "main-vpc"` and `Environment = "production"`.
+6. `resource "aws_subnet" "public"` sets `cidr_block = "10.0.1.0/24"`.
+7. The subnet sets `vpc_id = aws_vpc.main.id`. Use the reference, not a hardcoded ID string.
 
 ```hcl
 terraform {
-  # required_version and required_providers go here
+  # required_version, required_providers
 }
 
 provider "aws" {
-  # region goes here
+  # region
 }
 
 resource "aws_vpc" "main" {
-  # cidr_block and tags go here
+  # cidr_block, tags
 }
 
 resource "aws_subnet" "public" {
-  # vpc_id (a reference to the VPC) and cidr_block go here
+  # vpc_id (a reference), cidr_block
 }
 ```
-
-Fill it in so that:
-
-1. The `terraform {}` block requires Terraform `>= 1.5.0` and the `hashicorp/aws` provider (`source = "hashicorp/aws"`) at version `~> 5.0`.
-2. The `aws` provider block sets `region = "us-west-2"`.
-3. `resource "aws_vpc" "main"` sets `cidr_block = "10.0.0.0/16"` and a `tags` map containing `Name = "main-vpc"` and `Environment = "production"`.
-4. `resource "aws_subnet" "public"` sets `vpc_id` to a **reference** to the VPC's exported `id` attribute (`aws_vpc.main.id` — not a hardcoded string) and `cidr_block = "10.0.1.0/24"`.

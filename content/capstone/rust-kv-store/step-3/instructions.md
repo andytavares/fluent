@@ -1,15 +1,15 @@
 # Step 3 — GET a key
 
-Now that keys can be set, add a read path. This is the first endpoint that
-reads existing rows rather than writing new ones — and the first place
-expiry actually matters: an expired key has to behave exactly like a key
-that was never set.
+Clients can now set keys. This step adds a read path. It is the first
+endpoint that reads existing rows. It is also the first place where
+expiry matters: an expired key must behave exactly like a key that
+nobody set.
 
 ## The task
 
-Add a handler for `GET /kv/:key` that fetches a key's current value.
+Add a handler for `GET /kv/:key`. It fetches the current value of a key.
 
-**Sample request/response (found):**
+**Sample request and response (found):**
 
 ```
 GET /kv/greeting
@@ -17,10 +17,14 @@ GET /kv/greeting
 200 OK
 Content-Type: application/json
 
-{"key":"greeting","value":"hello world","expires_at":null}
+{
+  "key": "greeting",
+  "value": "hello world",
+  "expires_at": null
+}
 ```
 
-**Sample request/response (not found or expired):**
+**Sample request and response (not found or expired):**
 
 ```
 GET /kv/stale
@@ -33,62 +37,66 @@ Content-Type: application/json
 
 ### Parsing the path
 
-You're matching paths by hand off the request line's path component
-(`/kv/greeting`). Strip the `/kv/` prefix — whatever remains is the key
-(keys in this capstone may contain colons, like `user:1`, so don't split
-on `:`):
+You match paths by hand on the path part of the request line
+(`/kv/greeting`). Remove the `/kv/` prefix. The rest is the key. Keys in
+this capstone can contain colons, such as `user:1`, so do not split on
+`:`:
 
 ```rust
 let path = "/kv/greeting";
-if let Some(key) = path.strip_prefix("/kv/") {
+let key = path.strip_prefix("/kv/");
+if let Some(key) = key {
     // look up key
 }
 ```
 
 ### Filtering expiry in SQL, not in Rust
 
-You could fetch the row, read `expires_at` back into Rust, and compare it
-against the current time yourself — but that means trusting your
-application server's clock to agree with the database's, and repeating
-the same comparison in every handler that reads a key. It's simpler and
-more correct to make expiry part of the `WHERE` clause itself, so an
-expired row simply isn't a match:
+You can fetch the row, read `expires_at` into Rust, and compare it with
+the current time. But then the clock of your application server must
+agree with the clock of the database. You also repeat the same
+comparison in every handler that reads a key. It is simpler and more
+correct to put expiry in the `WHERE` clause, so an expired row does not
+match:
 
 ```rust
+const GET_LIVE: &str = "
+SELECT key, value, expires_at::text
+FROM kv_entries
+WHERE key = $1
+  AND (expires_at IS NULL
+       OR expires_at > NOW())";
+
 let row = client
-    .query_opt(
-        "SELECT key, value, expires_at::text
-         FROM kv_entries
-         WHERE key = $1 AND (expires_at IS NULL OR expires_at > NOW())",
-        &[&key],
-    )
+    .query_opt(GET_LIVE, &[&key])
     .expect("query failed");
 
 match row {
     Some(row) => {
         let key: String = row.get(0);
         let value: String = row.get(1);
-        let expires_at: Option<String> = row.get(2);
+        let expires_at: Option<String> =
+            row.get(2);
         // build 200 response
     }
     None => {
-        // build 404 response with {"error":"not found"}
+        // 404 with {"error":"not found"}
     }
 }
 ```
 
-`query_opt` returns `Result<Option<Row>, Error>` — `None` now means either
-"no such key" or "the key expired," and your handler doesn't need to tell
-those apart. That single `WHERE` clause is the one place expiry logic
-lives; every later endpoint that reads keys reuses the same condition.
+`query_opt` returns `Result<Option<Row>, Error>`. `None` now means "no
+such key" or "the key expired". Your handler does not need to tell them
+apart. That one `WHERE` clause is the only place for expiry logic. Every
+later endpoint that reads keys uses the same condition.
 
 Requirements:
 
-- Return `200` with the key's current value as JSON if it exists and
-  hasn't expired.
-- Return `404` with body `{"error": "not found"}` if the key doesn't exist
-  **or** if it exists but `expires_at` is in the past.
-- Filter expiry in the SQL query itself (`expires_at IS NULL OR
-  expires_at > NOW()`), not by fetching the row and checking the timestamp
-  in Rust.
-- Reuse the same database connection you set up in Step 2.
+- If the key exists and has not expired, return `200` with its current
+  value as JSON.
+- Return `404` with body `{"error": "not found"}` if the key does not
+  exist, **or** if it exists and `expires_at` is in the past.
+- Filter expiry in the SQL query itself
+  (`expires_at IS NULL OR expires_at > NOW()`). Do not fetch the row and
+  check the timestamp in Rust.
+- Use the same database connection from Step 2.

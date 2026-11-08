@@ -1,75 +1,82 @@
-# Brokers and KRaft
+## What you build
 
-## What you'll learn
-
-Every Kafka behavior you configure eventually runs on a **broker** — a JVM process that owns some partitions, serves reads/writes, and participates in cluster metadata. This lesson covers broker identity, the listener/advertised-listener split that trips up nearly everyone the first time they run Kafka behind a proxy or in a container, and KRaft — the Raft-based consensus mode that replaced ZooKeeper as of Kafka 3.3+ (and is the *only* mode as of Kafka 4.0).
+You write `server.properties` for one node of a 3-node KRaft cluster. A **broker** is a JVM process that owns partitions, serves reads and writes, and takes part in cluster metadata. This lesson builds on **Topics, Partitions, and Offsets**.
 
 ## Key concepts
 
-**A broker is identified by `node.id`** (the modern name for what used to be `broker.id` in ZooKeeper mode). It must be a unique non-negative integer across the cluster. Brokers use this id in partition leader/replica metadata (`Leader: 2`, `Replicas: [1,2,3]`) — it's how the cluster refers to "which machine."
+### `node.id` identifies a broker
 
-**Listeners are where the broker binds sockets; advertised listeners are what it tells clients to connect to.** This split exists because the address a broker binds to (often `0.0.0.0` or an internal interface) is frequently *not* the address a client should use to reach it — think Docker port mapping, a load balancer, or a broker with separate internal/external NICs.
+`node.id` is the modern name for `broker.id` from ZooKeeper mode. It must be a unique non-negative integer in the cluster. Partition metadata uses it to name machines, for example `Leader: 2` and `Replicas: [1,2,3]`.
+
+### Listeners bind sockets; advertised listeners tell clients where to connect
+
+The broker binds to the addresses in `listeners`, often `0.0.0.0` or an internal interface. Clients often cannot use that address. Docker port mapping, a load balancer, or separate internal and external NICs all cause this gap.
 
 ```properties
-listeners=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-advertised.listeners=PLAINTEXT://broker-3.prod.internal:9092
+listeners=PLAINTEXT://0.0.0.0:9092,\
+  CONTROLLER://0.0.0.0:9093
+advertised.listeners=\
+  PLAINTEXT://broker-3.prod.internal:9092
 ```
 
-The connection sequence that makes this matter: a client bootstraps against *any* broker, asks "who's the leader for partition X?", and the broker answers with the address from **its own `advertised.listeners`** — not the socket the client happened to connect through. If that advertised address isn't reachable from the client (e.g., it's a Docker-internal hostname and the client is outside the container network), the client fails after the *first* connection succeeds, which is exactly why this bug is so confusing to debug: bootstrap works, then everything after it times out.
+A client first connects to *any* broker and asks for the leader of a partition. The broker answers with the address in **its own `advertised.listeners`**, not the socket the client used. If the client cannot reach that address, the first connection works and every request after it times out.
 
-**KRaft replaces ZooKeeper with a built-in Raft-based metadata quorum.** Historically, Kafka brokers stored cluster metadata (topic configs, partition assignments, ACLs) in an external ZooKeeper ensemble. Since Kafka 3.3 KRaft is production-ready and the default for new clusters; Kafka 4.0 removed ZooKeeper support entirely. In KRaft mode, a subset of nodes act as the **controller quorum** using Raft consensus directly inside Kafka — no external system.
+### KRaft replaces ZooKeeper with a built-in Raft quorum
+
+Older Kafka clusters stored metadata in an external ZooKeeper ensemble: topic configs, partition assignments and ACLs. In KRaft mode, some nodes form the **controller quorum** and run Raft consensus inside Kafka. KRaft is production ready for new clusters since Kafka 3.3. Kafka 4.0 removed ZooKeeper support.
 
 ```properties
 process.roles=broker,controller
 node.id=3
-controller.quorum.voters=1@broker-1.internal:9093,2@broker-2.internal:9093,3@broker-3.internal:9093
+controller.quorum.voters=\
+  1@broker-1.internal:9093,\
+  2@broker-2.internal:9093,\
+  3@broker-3.internal:9093
 controller.listener.names=CONTROLLER
 ```
 
-- `process.roles` — `broker`, `controller`, or `broker,controller` (a "combined" node doing both — common for small/dev clusters; larger production clusters often run **dedicated controller-only nodes** to isolate metadata-plane load from data-plane load).
-- `controller.quorum.voters` — the fixed list of `{node.id}@{host}:{port}` for every node that participates in the Raft quorum. This list must be identical across every node's config in the cluster (it's how each node finds the quorum on startup).
-- One controller is elected **active controller** (the Raft leader for metadata) at any time; the others are quorum followers, ready to take over on failure — this replaces ZooKeeper's own leader election.
+- `process.roles` is `broker`, `controller`, or `broker,controller`. A combined node does both, which is common for small and dev clusters. Large production clusters often run **dedicated controller nodes** to keep metadata load away from data traffic.
+- `controller.quorum.voters` lists each quorum member as `{node.id}@{host}:{port}`. The list must be identical on every node, because each node finds the quorum from it at startup.
+- One controller is the **active controller**, the Raft leader for metadata. The others follow and take over on failure. This replaces ZooKeeper's leader election.
 
-**`inter.broker.listener.name`** tells brokers which listener to use when talking to *each other* (replication traffic, etc.) — this can differ from the listener clients use, e.g., an internal-only network for broker-to-broker traffic and a public one for clients.
+Without ZooKeeper, there is no extra system to operate. Controller failover uses Raft leader election, and the metadata log supports more partitions than ZooKeeper did. KRaft works like the Raft metadata log in etcd, which backs Kubernetes, but runs inside the Kafka process.
 
-## vs other systems
+### `inter.broker.listener.name` picks the listener between brokers
 
-| | ZooKeeper mode (legacy) | KRaft mode |
-|---|---|---|
-| Metadata store | External ZooKeeper ensemble | Internal Raft quorum among Kafka nodes |
-| Extra system to operate | Yes (separate ZK cluster) | No |
-| Controller failover | ZK-mediated leader election | Raft leader election, sub-second |
-| Max partitions (practical) | Lower — ZK read/write is a bottleneck | Higher — metadata log scales better |
-| Status | Removed in Kafka 4.0 | Default since 3.3+, only option in 4.0+ |
-
-If you've operated etcd-backed systems (Kubernetes itself, Consul), KRaft's quorum concept will feel familiar — it's the same Raft-log-of-metadata-changes idea, just embedded in Kafka's own process instead of a separate binary.
+Brokers use this listener for traffic to each other, such as replication. It can differ from the client listener. For example, brokers can talk on an internal network while clients use a public one.
 
 ## Watch out
 
-- **The advertised-listeners bug is the #1 "Kafka doesn't work in Docker/K8s" issue.** If you don't set `advertised.listeners` explicitly, Kafka defaults to advertising whatever it bound to, which inside a container is often a hostname or IP unreachable from outside. Always set it explicitly for anything beyond a single-process local dev setup.
-- **`controller.quorum.voters` must match, byte-for-byte, across every node in the cluster.** A typo or a mismatched port on just one node causes that node to silently fail to join the quorum.
-- **You cannot mix ZooKeeper mode and KRaft mode in one cluster**, and migrating an existing ZK cluster to KRaft is a defined, multi-step migration procedure — not a config flag flip.
+- An unset `advertised.listeners` is the top cause of "Kafka fails in Docker or Kubernetes". Kafka then advertises its bind address.
+- Clients outside a container often cannot reach its bind address. Set `advertised.listeners` for anything beyond a one-process local setup.
+- `controller.quorum.voters` must match byte for byte on every node. One typo or wrong port, and that node silently fails to join.
+- You cannot mix ZooKeeper mode and KRaft mode in one cluster.
+- A move from ZooKeeper to KRaft is a multi-step migration procedure, not one config flag.
 
 ## The task
 
-Write `server.properties` for **node 3** of a 3-node KRaft cluster where every node is a **combined** broker+controller. The cluster's controller quorum is:
+Write `stub.properties` with the `server.properties` for **node 3** of a 3-node KRaft cluster. Every node is a combined broker and controller. The controller quorum is:
 
 - node 1 at `broker-1.internal:9093`
 - node 2 at `broker-2.internal:9093`
 - node 3 at `broker-3.internal:9093` (this node)
 
-Requirements:
+Follow these rules:
 
-- This node's id is `3`.
-- It acts as both broker and controller.
-- It binds a client-facing `PLAINTEXT` listener on port `9092` and a `CONTROLLER` listener on port `9093`, both bound to `0.0.0.0` so they accept connections on any interface.
-- Clients outside the container network must reach this broker at `broker-3.internal:9092` — set the advertised listener accordingly (the controller listener is never advertised to clients, only the broker listener is).
-- The controller quorum voters list includes all three nodes, in `node.id@host:port` form.
-- `controller.listener.names` is set to `CONTROLLER`.
-- Broker-to-broker (inter-broker) traffic uses the `PLAINTEXT` listener.
-- Log data is stored at `/var/lib/kafka/data`.
+1. Set the node id to `3`.
+2. Make the node both a broker and a controller.
+3. Bind a `PLAINTEXT` listener on port `9092` and a `CONTROLLER` listener on port `9093`.
+4. Bind both listeners to `0.0.0.0`, so they accept connections on any interface.
+5. Advertise `PLAINTEXT://broker-3.internal:9092` to clients.
+6. Do not advertise the `CONTROLLER` listener. Clients never use it.
+7. List all three nodes as quorum voters, in `node.id@host:port` form.
+8. Set `controller.listener.names` to `CONTROLLER`.
+9. Send broker-to-broker traffic over the `PLAINTEXT` listener.
+10. Store log data at `/var/lib/kafka/data`.
 
-Use exactly these keys:
+The file must not contain the text `TODO`.
+
+Use exactly this content:
 
 ```properties
 node.id=3

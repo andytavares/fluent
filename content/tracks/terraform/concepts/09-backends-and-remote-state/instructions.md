@@ -1,16 +1,12 @@
-# Backends & Remote State
+## What you build
 
-## What you'll learn
-
-How to store Terraform state remotely so teams can collaborate safely, how state locking prevents concurrent apply conflicts, and how to read another stack's state outputs using `terraform_remote_state`.
+You store the state of a root module in S3 and read the state of another team's network layer. Remote state lets a team work together, and locking stops two applies from writing at once. This lesson builds on **State Management**.
 
 ## Key concepts
 
-### The `backend` block
+### The `backend` block sets where state lives
 
-Backends control where state is stored and how operations like `terraform plan` run. Without a backend config, state is stored locally in `terraform.tfstate`. That's fine for solo experiments — not for teams.
-
-The backend block goes inside `terraform {}`:
+A backend controls where Terraform stores state. With no backend, state is in a local `terraform.tfstate` file. That is correct for solo experiments, not for teams. The `backend` block goes inside `terraform {}`.
 
 ```hcl
 terraform {
@@ -18,7 +14,7 @@ terraform {
 
   backend "s3" {
     bucket         = "my-tf-state-prod"
-    key            = "network/terraform.tfstate"
+    key            = "network.tfstate"
     region         = "us-east-1"
     encrypt        = true
     dynamodb_table = "terraform-state-lock"
@@ -26,113 +22,121 @@ terraform {
 }
 ```
 
-`encrypt = true` enables server-side encryption of the state file in S3. `dynamodb_table` enables state locking — Terraform writes a lock record before any operation that writes state and removes it on completion. If two engineers run `apply` simultaneously, the second one waits or errors rather than corrupting state.
+`encrypt = true` turns on server-side encryption of the state file in S3. `dynamodb_table` turns on state locking. Terraform writes a lock record before it writes state and removes it at the end. A second `apply` at the same time waits or fails; it does not corrupt state.
+
+Terraform 1.11 deprecates `dynamodb_table`. `use_lockfile = true` locks with a file in S3 instead. You can set both while you migrate.
 
 ### Common backends
 
-| Backend | Lock support | Notes |
-|---------|-------------|-------|
-| `s3` | Yes (DynamoDB) | Most common for AWS teams |
-| `gcs` | Yes (native) | GCP equivalent |
-| `azurerm` | Yes (blob lease) | Azure |
-| `http` | Optional | Generic REST API; used by GitLab |
-| `cloud` (Terraform Cloud) | Yes | HCP Terraform; handles runs server-side |
-| `local` | No | Default; no sharing |
+| Backend | Locking | Notes |
+|---------|---------|-------|
+| `s3` | Yes | Most common on AWS |
+| `gcs` | Yes, native | GCP |
+| `azurerm` | Yes, blob lease | Azure |
+| `http` | Optional | REST API; GitLab |
+| `local` | No | The default |
 
-### Backend configuration and partial configuration
+HCP Terraform uses a `cloud` block inside `terraform {}`, not a `backend` block. It runs plans and applies on its servers.
 
-Backend config can't use variables or locals — it's evaluated before the rest of the config. For values you don't want in source control (bucket names, regions), use partial configuration:
+### Partial configuration keeps values out of code
 
-```hcl
-# terraform {}  with empty backend "s3" {}
-terraform init -backend-config="bucket=my-tf-state-prod" \
-               -backend-config="key=network/terraform.tfstate"
-```
-
-Or a `-backend-config` file:
+Terraform reads the backend before the rest of the configuration, so a backend cannot use variables or locals. To keep a bucket name or a region out of source control, leave the block empty. Then pass the values to `terraform init`.
 
 ```bash
-terraform init -backend-config=prod.backend.hcl
+# With an empty backend "s3" {} block
+terraform init \
+  -backend-config=bucket=my-tf-state-prod \
+  -backend-config=key=network.tfstate
 ```
 
-### `terraform_remote_state` data source
+You can also put the values in a file.
 
-Read outputs from another root module's state without coupling the configs:
+```bash
+terraform init \
+  -backend-config=prod.backend.hcl
+```
+
+### `terraform_remote_state` reads another state
+
+This data source reads the outputs of another root module's state. The configurations stay separate.
 
 ```hcl
 data "terraform_remote_state" "network" {
   backend = "s3"
   config = {
     bucket = "my-tf-state-prod"
-    key    = "network/terraform.tfstate"
+    key    = "network.tfstate"
     region = "us-east-1"
   }
 }
 
+locals {
+  net = (
+    data.terraform_remote_state.network
+    .outputs
+  )
+}
+
 resource "aws_instance" "app" {
-  subnet_id = data.terraform_remote_state.network.outputs.public_subnet_id
+  subnet_id = local.net.public_subnet_id
   vpc_security_group_ids = [
-    data.terraform_remote_state.network.outputs.app_sg_id
+    local.net.app_sg_id,
   ]
 }
 ```
 
-The consuming module needs read access to the state bucket but doesn't need to know anything about how the network was built.
+The task's check reads one line, so the task writes the full reference: `data.terraform_remote_state.network.outputs.public_subnet_id`.
 
-### State locking in practice
+The consumer needs read access to the state bucket. It needs no knowledge of how the network was built. CloudFormation's `Fn::ImportValue` works in one account and region; `terraform_remote_state` can read any output across accounts and regions.
 
-- Lock is acquired at the start of `apply`, `plan -out`, and `destroy`.
-- If a process crashes mid-apply, the lock may remain. Use `terraform force-unlock <lock-id>` to release it — only do this when you're certain no apply is actually running.
-- `terraform state push` bypasses the normal locking flow, which is why it's dangerous.
+### Locking in practice
 
-## vs other tools
-
-| Tool | Remote state / sharing |
-|------|----------------------|
-| **CloudFormation** | `Fn::ImportValue` across stacks in the same account/region — no cross-account without custom resources |
-| **Pulumi** | Stack references (`StackReference`) in Pulumi Cloud or self-managed backends |
-| **Ansible** | Stateless; share data via inventory, host vars, or external stores |
-| **CDK** | Shares through CF exports — same limitations as CF |
-
-`terraform_remote_state` is more flexible than CF exports: it works cross-account, cross-region, and can share any output, not just CF export values.
+- Terraform locks state for every operation that can write state.
+- A crash during an apply can leave the lock in place. `terraform force-unlock <lock-id>` releases it.
+- Use `force-unlock` only for your own lock, when you are sure no apply runs. Otherwise two writers can change state.
+- `terraform state push` overwrites the remote state. `-force` skips its lineage and serial checks, which is why it is dangerous.
 
 ## Watch out
 
-- **A `backend` block can't reference variables, locals, or resources.** It's evaluated before the rest of the configuration graph exists, so `bucket = var.state_bucket` is invalid — backend values must be literals (or supplied out-of-band via `-backend-config`).
-- **`data.terraform_remote_state.<name>.outputs.<key>`** — note the `.outputs.` segment. Forgetting it (`data.terraform_remote_state.network.public_subnet_id`) is the most common mistake; the remote state's outputs are nested one level deeper than a normal data source's attributes.
-- **Reading a remote state only exposes its declared `output` blocks**, nothing else. If the network stack never outputs `public_subnet_id`, no amount of correct syntax on the consumer side will make it appear.
-- **`encrypt = true` and a lock table are not optional in any team setting.** Skipping `dynamodb_table` means two concurrent `apply` runs can corrupt the same state file with no warning.
+- A `backend` block cannot reference variables, locals or resources. `bucket = var.state_bucket` is invalid. Use literals or `-backend-config`.
+- Remote outputs are under `.outputs.`. `data.terraform_remote_state.network.public_subnet_id` is the most common mistake.
+- Remote state exposes only declared `output` blocks. A value the network stack does not output is not available.
+- A team setup needs `encrypt = true` and locking. With no lock, two concurrent applies can corrupt the state with no warning.
 
 ## The task
 
-You're configuring a root module that stores its own state in S3 and reads another team's state (the network layer) to wire an EC2 instance into an existing subnet.
+Configure a root module that stores its state in S3. It reads the network team's state to place an EC2 instance in a subnet.
+
+1. `terraform { backend "s3" { ... } }` sets `bucket = "my-tf-state-prod"` and `key = "app/terraform.tfstate"`.
+2. The backend also sets `region = "us-east-1"`, `encrypt = true` and `dynamodb_table = "terraform-state-lock"`.
+3. `data "terraform_remote_state" "network"` sets `backend = "s3"`.
+4. Its `config` map sets `bucket = "my-tf-state-prod"`, `key = "network/terraform.tfstate"` and `region = "us-east-1"`.
+5. The bucket and region match this module's backend. The `key` differs: it is the network layer's state file.
+6. `resource "aws_instance" "app"` sets `ami = "ami-0c55b159cbfafe1f0"` and `instance_type = "t3.micro"`.
+7. The instance sets `subnet_id = data.terraform_remote_state.network.outputs.public_subnet_id`.
+8. `output "instance_id"` has `value = aws_instance.app.id`.
 
 ```hcl
 terraform {
   backend "s3" {
-    # bucket, key, region, encrypt, dynamodb_table
+    # bucket, key, region,
+    # encrypt, dynamodb_table
   }
 }
 
 data "terraform_remote_state" "network" {
-  backend = "..."
+  backend = "s3"
   config = {
-    # bucket, key, region — same backend, different key
+    # bucket, key, region
   }
 }
 
 resource "aws_instance" "app" {
-  # ami, instance_type, subnet_id (from the remote state's outputs)
+  # ami, instance_type
+  # subnet_id from the remote outputs
 }
 
 output "instance_id" {
   # value
 }
 ```
-
-Fill it in so that:
-
-1. `terraform { backend "s3" { ... } }` sets `bucket = "my-tf-state-prod"`, `key = "app/terraform.tfstate"`, `region = "us-east-1"`, `encrypt = true`, `dynamodb_table = "terraform-state-lock"`.
-2. `data "terraform_remote_state" "network"` sets `backend = "s3"` and a `config` map with `bucket = "my-tf-state-prod"`, `key = "network/terraform.tfstate"`, `region = "us-east-1"` — the same bucket/region as this module's own backend, but a different `key` (a different state file, for the network layer).
-3. `resource "aws_instance" "app"` sets `ami = "ami-0c55b159cbfafe1f0"`, `instance_type = "t3.micro"`, and `subnet_id = data.terraform_remote_state.network.outputs.public_subnet_id`.
-4. `output "instance_id"` has `value = aws_instance.app.id`.

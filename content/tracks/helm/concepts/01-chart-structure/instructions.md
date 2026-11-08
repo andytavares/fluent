@@ -1,105 +1,119 @@
-# Chart Structure
+## What you build
 
-## What you'll learn
-
-A Helm chart is a directory tree with a strict layout. Helm reads specific files by convention — there is no config file pointing at your templates; the directory structure *is* the config. Understanding what each file does and when Helm reads it prevents the frustrating "why is my change not showing up" class of bugs.
+You write the `Chart.yaml` and the `values.yaml` of a chart named `webapp`. The chart has one dependency on the Bitnami `redis` chart.
 
 ## Key concepts
 
-**The canonical layout:**
+### The directory layout is the configuration
+
+Helm reads files by their place in the chart directory. No configuration file points at your templates. If a file is in the wrong place, Helm does not read it, and your change does not show.
 
 ```
 mychart/
-  Chart.yaml          # required — chart metadata
-  values.yaml         # default values, overridable at install time
-  charts/             # unpacked chart dependencies
-  templates/          # Go template files rendered against values
-  templates/_helpers.tpl   # named templates (not rendered directly)
-  templates/NOTES.txt      # printed to stdout after install
+  # Required: chart metadata
+  Chart.yaml
+  # Defaults; you override them at install
+  values.yaml
+  # Unpacked chart dependencies
+  charts/
+  # Go templates rendered against values
+  templates/
+  # Named templates, not rendered alone
+  templates/_helpers.tpl
+  # Printed after install
+  templates/NOTES.txt
 ```
 
-**Chart.yaml** — every field matters:
+### `Chart.yaml` holds the chart metadata
+
+Each field has a job. `apiVersion: v1` is for Helm 2 only, so always use `v2`. A `library` chart exports only named templates.
 
 ```yaml
-apiVersion: v2          # v1 = Helm 2 only; always use v2
-name: myapp             # must match the directory name
+apiVersion: v2
+# Must match the directory name
+name: myapp
 description: A production-ready app chart
-type: application       # or "library" — library charts export named templates only
-version: 1.2.0          # chart version (semver) — bump on every chart change
-appVersion: "4.7.1"     # version of the app being packaged — informational only
+# "application" or "library"
+type: application
+# Chart semver: bump on every change
+version: 1.2.0
+# The packaged app version: information
+appVersion: "4.7.1"
 dependencies:
   - name: postgresql
     version: "12.x.x"
-    repository: "https://charts.bitnami.com/bitnami"
+    repository: >-
+      https://charts.bitnami.com/bitnami
     condition: postgresql.enabled
 ```
 
-`version` vs `appVersion`: `version` is the chart's own semver; `appVersion` tracks what you're packaging. They can and do drift independently.
+### `version` and `appVersion` are different
 
-**values.yaml** — the contract between chart author and operator:
+`version` is the semver of the chart. `appVersion` is the version of the app the chart packages. The two change independently.
+
+### `values.yaml` holds the defaults
+
+`values.yaml` is the contract between the chart author and the operator. Every value in it is a default. The operator overrides values with `-f custom-values.yaml` or `--set key=value`.
 
 ```yaml
 replicaCount: 1
 
 image:
   repository: myregistry/myapp
-  tag: ""           # intentionally empty — set at deploy time
+  # Empty on purpose: set at deploy time
+  tag: ""
   pullPolicy: IfNotPresent
 
 service:
   type: ClusterIP
   port: 80
 
-resources: {}       # empty map — operator fills this in per environment
+# Empty map: the operator fills it in
+resources: {}
 ```
 
-Everything in `values.yaml` is the default. Operators override with `-f custom-values.yaml` or `--set key=value`.
+### `charts/` holds the dependencies
 
-**The `charts/` directory** holds vendored (unpacked) subchart tarballs. `helm dependency update` populates it from `Chart.yaml`'s `dependencies` block. Commit `charts/` or treat it like a lockfile — your choice, but be consistent.
+`helm dependency update` reads the `dependencies` block of `Chart.yaml` and puts the subchart archives in `charts/`. You can commit `charts/` or treat it like a lockfile. Choose one and be consistent.
 
-**`_helpers.tpl`** — files starting with `_` are not rendered as standalone manifests. They exist solely to hold `{{- define "..." }}` blocks that other templates call. By convention, the main helpers file is `_helpers.tpl`.
+### Files that start with `_` do not render
 
-## vs other tools
+Helm does not render `_helpers.tpl` as a manifest. The file holds `{{- define "..." }}` blocks that other templates call. By convention, the main helpers file is `_helpers.tpl`.
 
-| | Helm | Kustomize | Raw manifests |
-|---|---|---|---|
-| Parameterization | Go templates + values files | Strategic merge patches | Copy-paste + sed |
-| Packaging | `.tgz` pushed to OCI/chart repo | No packaging — git refs | No packaging |
-| Conditionals | Full Go template logic | Limited (components) | None |
-| Dependencies | `Chart.yaml` dependencies block | Bases via remote refs | None |
+### Helm compared with Kustomize
 
-Kustomize is declarative and merge-based — good for ops teams applying overlays they don't own. Helm is programmable — good for app teams shipping reusable charts. The two aren't mutually exclusive; many teams run `helm template | kubectl apply -k`.
+Kustomize merges patches onto manifests and has no packages, while Helm renders Go templates and ships charts as `.tgz` packages. Many teams use both: `helm template | kubectl apply -k`.
 
 ## Watch out
 
-- **`name` in `Chart.yaml` isn't cosmetic.** Helm uses it (with `.Release.Name`) to build default resource names and label values throughout the chart. A chart directory named `webapp/` with `name: my-app` inside `Chart.yaml` is legal but confusing — keep them in sync.
-- **`version` must be valid semver** (`MAJOR.MINOR.PATCH`, optionally with a pre-release suffix). `helm lint` and `helm package` reject `version: 1.0` or `version: latest`. `appVersion` has no such restriction — it's a free-form string, which is why it's usually quoted (`appVersion: "2.3.1"`) to stop YAML from parsing something like `2.3` as a float and dropping the trailing zero.
-- **`dependencies` in `Chart.yaml` only *declares* subcharts** — it doesn't fetch them. Nothing downloads `charts/redis-17.x.x.tgz` until you run `helm dependency update`. A chart with a `dependencies` block but an empty `charts/` directory will fail to install.
-- **`values.yaml` has no schema by default** — a typo like `replicaCont: 2` is silently ignored; the template that reads `.Values.replicaCount` just falls back to whatever default (or nil) it has. (`values.schema.json`, covered in a later concept, closes this gap.)
+- `name` in `Chart.yaml` is not cosmetic. Helm uses it with `.Release.Name` to build resource names and labels.
+- A directory `webapp/` with `name: my-app` is legal but confusing. Keep the two names the same.
+- `version` must be valid semver: `MAJOR.MINOR.PATCH`, with an optional pre-release suffix. `helm lint` and `helm package` reject `1.0` and `latest`.
+- `appVersion` is a free-form string. Quote it, or YAML reads `2.30` as the float `2.3`.
+- The `dependencies` block only declares subcharts. Nothing downloads them until you run `helm dependency update`.
+- A chart with a `dependencies` block and an empty `charts/` directory fails to install.
+- `values.yaml` has no schema by default. Helm ignores a typo like `replicaCont: 2` without an error.
+- The template that reads `.Values.replicaCount` then gets its default or nil. A later concept adds `values.schema.json` to close this gap.
 
 ## The task
 
-Fill in `Chart.yaml` with the correct fields for a chart named `webapp` that:
+Write the two files of a chart named `webapp` in `stub.yaml`. Put `Chart.yaml` first, then a `---` line, then `values.yaml`.
 
-- Uses `apiVersion: v2`
-- Has chart version `0.1.0`
-- Has app version `2.3.1`
-- Is of type `application`
-- Has a short description
-- Lists a dependency on `redis` version `"17.x.x"` from `https://charts.bitnami.com/bitnami` with the condition `redis.enabled`
+1. `Chart.yaml` sets `apiVersion: v2`, `name: webapp` and `type: application`.
+2. `Chart.yaml` sets the chart `version` to `0.1.0` and `appVersion` to `"2.3.1"`.
+3. `Chart.yaml` has a non-empty `description`.
+4. `Chart.yaml` lists one dependency: `redis`, version `"17.x.x"`, from `https://charts.bitnami.com/bitnami`.
+5. The `redis` dependency has the condition `redis.enabled`.
+6. `values.yaml` sets `replicaCount: 2`.
+7. `values.yaml` has an `image` block: `repository: myregistry/webapp`, `tag: ""` and `pullPolicy: IfNotPresent`.
+8. `values.yaml` has a `redis` block with `enabled: true`.
 
-Also provide a `values.yaml` with:
-
-- `replicaCount: 2`
-- `image.repository: myregistry/webapp`, `image.tag: ""`, `image.pullPolicy: IfNotPresent`
-- `redis.enabled: true`
-
-Both files are separated by a `---` document divider in the stub, matching how they'd exist as separate files in a real chart directory. The finished `Chart.yaml` should read:
+The `redis:` block must come after the `---` line. It belongs to `values.yaml`, not to `Chart.yaml`.
 
 ```yaml
 apiVersion: v2
 name: webapp
-description: A production-ready web application chart
+description: A web application chart
 type: application
 version: 0.1.0
 appVersion: "2.3.1"
@@ -108,11 +122,7 @@ dependencies:
     version: "17.x.x"
     repository: "https://charts.bitnami.com/bitnami"
     condition: redis.enabled
-```
-
-And `values.yaml`:
-
-```yaml
+---
 replicaCount: 2
 
 image:

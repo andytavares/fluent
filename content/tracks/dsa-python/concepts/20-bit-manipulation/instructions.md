@@ -1,68 +1,70 @@
-# Bit Manipulation
+## What you build
 
-## What you'll learn
-
-The bit-level toolkit interviews expect — XOR cancellation, `n & (n - 1)`, mask building, common-prefix reasoning — plus the part that's specific to Python: **integers have no fixed width**. There's no ToInt32, no automatic wraparound, no sign bit unless you build one. That's a relief for arithmetic (`add_binary` never worries about precision) and a trap for anything that's supposed to simulate a fixed-width register (`reverse_bits`, per-bit counting on negative numbers) — those need an explicit mask, and you decode the sign back out by hand.
+You write four bit-level functions: binary string addition, a set-bit count, XOR cancellation and the AND of a range. You also learn the Python-specific part: integers have no fixed width, so nothing truncates a value to 32 bits for you. This lesson builds on **Arrays & Strings**.
 
 ## Key concepts
 
-### Python ints are unbounded — nothing truncates for you
+### Python integers have no fixed width
 
-`& | ^ ~ << >>` operate on Python's arbitrary-precision integers directly; there's no hidden conversion to a 32-bit or 64-bit word the way JavaScript's ToInt32 or C's `int` would do it:
+Python integers have arbitrary precision. The operators `& | ^ ~ << >>` work on the whole value. No hidden conversion to a 32-bit word happens, as JavaScript's ToInt32 or C's `int` does.
 
 ```python
-2 ** 32 & 0xFFFFFFFF   # 0            — masking off the low 32 bits explicitly
-(2 ** 31) & 0xFFFFFFFF # 2147483648   — stays positive; Python has no int32 sign bit
-1 << 31                # 2147483648   — never silently negative
+# 0: you mask off the low 32 bits
+2 ** 32 & 0xFFFFFFFF
+# 2147483648: no int32 sign bit
+(2 ** 31) & 0xFFFFFFFF
+# 2147483648: never negative
+1 << 31
 ```
 
-If a problem is defined in terms of a 32-bit register (Hamming Weight, Reverse Bits), you must build that window yourself with `& 0xFFFFFFFF`. Nothing does it for you, and nothing stops you from forgetting to.
+This has two results. Arithmetic never overflows. A problem defined on a 32-bit register needs a window that you build yourself with `& 0xFFFFFFFF`.
 
-### Emulating a fixed-width window: mask in, decode out
+### Negative numbers have infinite leading ones
 
-Two moves cover almost every "pretend this is a 32-bit int" problem:
+Python treats a negative integer as two's complement with infinitely many leading 1 bits. So `~x == -x - 1`, and `-1 & x == x`. `>>` copies the sign bit, and Python has no `>>>`. A loop with `n >>= 1` on negative input copies the sign bit forever and never reaches 0.
+
+### `x & 0xFFFFFFFF` keeps a 32-bit window
+
+The mask keeps the low 32 bits, and the result is never negative. If the problem uses signed 32-bit values, decode the sign by hand.
 
 ```python
-masked = value & 0xFFFFFFFF          # keep only the low 32 bits
-
-# Two's-complement decode: if bit 31 is set, the 32-bit value represents
-# a negative number in the original (signed) problem domain.
+masked = value & 0xFFFFFFFF
+# bit 31 set: a negative int32
 if masked & 0x80000000:
     signed = masked - (1 << 32)
 else:
     signed = masked
 ```
 
-You only need the decode step when the *problem* is defined over signed 32-bit integers and your computation built the answer bit-by-bit (as in Single Number II, walkthrough below). If the problem is defined over an **unsigned** range (Hamming Weight, Reverse Bits both take `0 <= n <= 2**32 - 1` and return a value in the same range), skip the decode — the masked value already *is* the answer.
+For an unsigned problem, such as Number of 1 Bits, skip the decode. The masked value is the answer.
 
-### Negative numbers and Python's bitwise operators
+### XOR cancels pairs
 
-Python represents negative integers as if they had infinitely many leading 1 bits (true two's complement, just not width-limited): `~x == -x - 1`, and `-1 & anything == anything`. This makes XOR-based cancellation work correctly on negative inputs with zero extra code — `x ^ x == 0` holds no matter the sign. It also means a right-shift loop that expects to reach exactly `0` (`while n: n >>= 1`) never terminates on a negative `n`, because `>>` sign-extends forever. Mask first if you need a bounded loop over a value that might be negative.
-
-### XOR — cancellation and parity
-
-`^` is associative, commutative, `x ^ x == 0`, and `x ^ 0 == x`. That makes XOR a running "toggle log": fold it over a list and every value appearing an even number of times vanishes. One line finds the unique element among pairs:
+`^` is associative and commutative, `x ^ x == 0` and `x ^ 0 == x`. So XOR is a running toggle log. Fold it over a list, and every value that appears an even number of times disappears. One line finds the unique element among pairs:
 
 ```python
-from functools import reduce
 reduce(lambda acc, x: acc ^ x, nums, 0)
 ```
 
-### `n & (n - 1)` — clear the lowest set bit
+`reduce` comes from `functools`.
 
-Subtracting 1 flips the lowest set bit to 0 and everything below it to 1; ANDing keeps all *other* bits intact:
+### `n & (n - 1)` clears the lowest set bit
 
-    n     = 10110100
-    n - 1 = 10110011
-    n&n-1 = 10110000
+Subtracting 1 flips the lowest set bit to 0 and every bit below it to 1. The AND keeps all other bits.
 
-Loop it to count set bits in O(number of set bits); test `n & (n - 1) == 0` for power-of-two checks (`n > 0` required); in range-AND problems it strips right-end noise fast. Its sibling `n & -n` *isolates* the lowest set bit — and on Python's unbounded negative representation that isolation still works correctly, unlike a fixed-width language where `-n` would need explicit two's-complement construction.
+```
+n       = 10110100
+n - 1   = 10110011
+n&(n-1) = 10110000
+```
 
-### Simulating arithmetic on bits
+Loop it to count set bits in O(number of set bits). Test `n & (n - 1) == 0` to check for a power of two. In range-AND problems, it strips the low bits fast. Its sibling `n & -n` isolates the lowest set bit.
 
-Binary addition per column: digit sum = `a + b + carry`, write `sum & 1` (or `sum % 2`), carry `sum >> 1` (or `sum // 2`). This is exactly grade-school addition and it works on binary *strings* of any length. Python's `int(s, 2)` could parse a whole binary string at once without any precision loss (unlike JavaScript's `Number`) — but the manual carry walk is still the expected technique here: it's O(max(m, n)) and is the shape every "combine two representations digit by digit" problem takes, string or not.
+### Binary addition works column by column
 
-### Complexity of the flagship problems
+For each column, the digit sum is `a + b + carry`. Write `sum & 1` (or `sum % 2`), and carry `sum >> 1` (or `sum // 2`). This is grade-school addition, and it works on binary strings of any length. `int(s, 2)` parses a long binary string with no precision loss, but the column walk is the technique the task checks.
+
+### Complexity of the main problems
 
 | Problem | Time | Space | Core idea |
 |---------|------|-------|-----------|
@@ -73,179 +75,245 @@ Binary addition per column: digit sum = `a + b + carry`, write `sum & 1` (or `su
 
 ## Watch out
 
-- **Nothing masks for you.** A problem that says "32-bit unsigned integer" means you apply `& 0xFFFFFFFF` yourself wherever the value might otherwise grow past 32 bits (built via left shifts) or come in already large.
-- **`while n:` with `n >>= 1` never terminates on negative `n`** — sign extension refills the top forever. Mask to `0xFFFFFFFF` first if the value could be negative, or use `n & (n - 1)` (which strictly reduces the set-bit count even for negatives, though "set-bit count" of a negative Python int is infinite unless you've masked it into a fixed width first).
-- **Building a value with left shifts can silently grow past your intended width.** Python won't clip it — mask explicitly: `result = (result << 1 | bit) & 0xFFFFFFFF`.
-- **Reading a masked value's sign requires an explicit decode.** `value & 0xFFFFFFFF` is always non-negative in Python (it's just a number, no sign bit exists structurally) — checking `masked & 0x80000000` and subtracting `1 << 32` is how you recover "this represents a negative number in a signed 32-bit domain."
-- **`x % 2` is fine for parity in Python**, unlike some languages — Python's `%` always returns a non-negative result for a positive modulus (`-3 % 2 == 1`), so `x % 2 == 1` correctly tests "odd" even for negative `x`. (`x & 1` still works too, and is the more bit-manipulation-idiomatic choice.)
-- **Don't reach for `bin()`/`int(s, 2)` as a substitute for understanding the manual technique** — they're correct and fast in Python (no precision ceiling), but the interview is testing the per-column/per-bit algorithm, not the standard library.
+- On negative input, `n >>= 1` never ends a `while n:` loop. The sign bit refills forever.
+- Mask with `0xFFFFFFFF` first when the value can be negative.
+- Nothing masks for you. A value built with `<<` grows past 32 bits unless you apply `& 0xFFFFFFFF`.
+- `value & 0xFFFFFFFF` is never negative. To read a signed int32, check `0x80000000` and subtract `1 << 32`.
+- `x % 2` is a safe odd test in Python. `-3 % 2 == 1`, because `%` takes the sign of the divisor.
+- `x & 1` also works, and it is the bit-level idiom.
+- `bin()` and `int(s, 2)` are correct, but they skip the per-bit technique the task asks for.
 
 ## Problem walkthroughs
 
 ### Add Binary ★
 
-**Problem.** Given two binary strings `a` and `b` (only `'0'`/`'1'`, no leading zeros except `"0"` itself), return their sum as a binary string. Inputs may be hundreds of digits long.
+**Problem.** Given two binary strings `a` and `b`, return their sum as a binary string. The strings hold only `'0'` and `'1'`, with no leading zeros except `"0"` itself. Inputs can be hundreds of digits long.
 
 **Example.**
 
-    a = "11",   b = "1"    → "100"
-    a = "1010", b = "1011" → "10101"
+```
+a = "11",   b = "1"    → "100"
+a = "1010", b = "1011" → "10101"
+```
 
 **Steps.**
-1. Add column by column, exactly like decimal addition by hand — this is the expected technique regardless of the fact that Python's own integers could hold a 200-digit binary number exactly.
-2. Set indexes `i = len(a) - 1`, `j = len(b) - 1`, `carry = 0`, and a list of output digits.
-3. While `i >= 0 or j >= 0 or carry`: `total = carry + (int(a[i]) if i >= 0 else 0) + (int(b[j]) if j >= 0 else 0)`; append `total & 1`; set `carry = total >> 1`; decrement both indexes.
-4. The digits were produced least-significant first — reverse and join. (Appending to a list and reversing once is O(n); prepending to a string every iteration is O(n²).)
-5. The `or carry` in the loop condition handles the final overflow column (`"11" + "1"` needs a fourth digit) with no special case.
 
-**Complexity.** O(max(m, n)) time and space — one pass over the longer string.
+1. Add column by column, like decimal addition by hand. Python integers can hold the whole value, but the column walk is the technique to learn.
+2. Set `i = len(a) - 1`, `j = len(b) - 1` and `carry = 0`. Start an output list of digits.
+3. While `i >= 0 or j >= 0 or carry`: add `carry` and the digits `int(a[i])` and `int(b[j])` into `total`. Use 0 for an index below 0. Append `total & 1`, set `carry = total >> 1` and decrement both indexes.
+4. The loop makes the least-significant digit first, so reverse and join. One reverse of a list is O(n). Prepending to a string on every iteration is O(n²).
+5. The `or carry` in the loop condition handles the final overflow column with no special case. `"11" + "1"` needs a fourth digit.
+
+**Complexity.** O(max(m, n)) time and space: one pass over the longer string.
 
 ### Reverse Bits
 
-**Problem.** Given a 32-bit unsigned integer, return the unsigned integer whose 32-bit representation is the reversal (bit 0 ↔ bit 31, bit 1 ↔ bit 30, …).
+**Problem.** Given a 32-bit unsigned integer, return the unsigned integer whose 32 bits are in reverse order. Bit 0 swaps with bit 31, bit 1 with bit 30, and so on.
 
 **Example.**
 
-    0b00000010100101000001111010011100 (43261596)
-    → 0b00111001011110000010100101000000 (964176192)
+```
+0b00000010100101000001111010011100
+  (43261596)
+→ 0b00111001011110000010100101000000
+  (964176192)
+```
 
 **Steps.**
-1. Loop exactly 32 times — leading zeros of the input become trailing bits of the output, so you cannot stop early at `n == 0`.
-2. Each iteration: `result = (result << 1) | (n & 1)` — make room, bring in the input's lowest bit — then `n >>= 1` (safe here because the problem guarantees `n >= 0`, so no sign-extension risk).
-3. **This is the step Python needs that JavaScript doesn't**: after the loop, mask explicitly — `result &= 0xFFFFFFFF`. In JavaScript, `<<` automatically wraps to a 32-bit window (via ToInt32) and `>>> 0` reinterprets it as unsigned; in Python `result` just keeps growing unless you truncate it yourself. Since this problem's output is defined as unsigned, the masked value *is* the final answer — no sign decode needed.
-4. Follow-up ("called many times"): reverse byte-by-byte with a 256-entry lookup table, or use the O(log 32) mask-swap ladder (swap halves, then quarters, …).
 
-**Complexity.** O(32) = O(1) time / O(1) space.
+1. Loop exactly 32 times. Leading zeros of the input become trailing bits of the output. You can stop early at `n == 0`, but the result then still needs shifting. A fixed 32 iterations is simpler and also constant.
+2. On each iteration, set `result = (result << 1) | (n & 1)`. That makes room and brings in the lowest input bit. Then set `n >>= 1`. The input is never negative, so no sign bit refills.
+3. Return `result`. After exactly 32 iterations, it fits in 32 bits, and Python gives it no sign. A loop with more shifts needs `& 0xFFFFFFFF`.
+4. Follow-up for many calls: reverse byte by byte with a 256-entry lookup table. Or use the O(log 32) mask-swap ladder: swap halves, then quarters, and so on.
+
+**Complexity.** O(32) = O(1) time, O(1) space.
 
 ### Number of 1 Bits ★
 
-**Problem.** Return the number of set bits (the population count / Hamming weight) in the 32-bit representation of a non-negative integer `n` (up to 2³² − 1).
+**Problem.** Return the number of set bits in the 32-bit form of a non-negative integer `n`, up to 2³² − 1. This count is also the population count, or Hamming weight.
 
 **Example.**
 
-    11         (0b1011)  → 3
-    2147483648 (bit 31)  → 1
+```
+11 (0b1011)         → 3
+2147483648 (bit 31) → 1
+```
 
 **Steps.**
-1. The input is already constrained to `0 <= n <= 2**32 - 1` — a valid unsigned 32-bit value — so no masking is needed just to read it. (Contrast with a signed-32-bit-input version, where you'd mask first.)
-2. Loop while `n != 0`: `n = n & (n - 1)`, increment a counter. Each iteration erases exactly the lowest set bit, so the loop runs once per 1-bit — 32 times worst case, not 32 times always.
-3. Alternative: `bin(n).count("1")` — correct and idiomatic in real code; know the manual technique for the interview, mention the one-liner as the production answer.
-4. Alternative loop: 32 fixed iterations of `count += n & 1; n >>= 1` — correct, just always 32 steps regardless of how many bits are set.
 
-**Complexity.** O(set bits) time / O(1) space.
+1. The input is already in `0 <= n <= 2**32 - 1`, a valid unsigned 32-bit value. You need no mask to read it.
+2. Loop while `n != 0`: set `n = n & (n - 1)` and increment a counter. Each iteration erases exactly the lowest set bit. So the loop runs once per 1-bit: at most 32 times, not always 32 times.
+3. `bin(n).count("1")` is the production one-liner. Know the manual loop for the interview.
+4. The alternative is 32 iterations of `count += n & 1; n >>= 1`. It is correct, but always takes 32 steps. Know both, and say why you chose one.
+
+**Complexity.** O(set bits) time, O(1) space.
 
 ### Single Number ★
 
-**Problem.** Every element of `nums` appears exactly twice except one, which appears once. Find it in O(n) time and O(1) space — a hash map is the obvious answer and explicitly not allowed.
+**Problem.** Every element of `nums` appears exactly twice, except one that appears once. Find it in O(n) time and O(1) space. A hash map is the obvious answer, and the problem does not allow it.
 
 **Example.**
 
-    [2,2,1]     → 1
-    [4,1,2,1,2] → 4
+```
+[2,2,1]     → 1
+[4,1,2,1,2] → 4
+```
 
 **Steps.**
-1. XOR the entire list into an accumulator starting at 0.
-2. Commutativity lets you mentally reorder the fold so each pair sits together: `x ^ x == 0`, pairs annihilate, and `acc ^ 0 == acc` leaves the singleton untouched.
-3. Return the accumulator. Works with negatives unchanged — Python's `^` operates correctly on its infinite-precision two's-complement representation of negative ints with no masking required.
 
-**Complexity.** O(n) time / O(1) space — the canonical XOR-cancellation problem.
+1. XOR the whole list into an accumulator that starts at 0.
+2. Commutativity lets you reorder the fold so each pair sits together. `x ^ x == 0`, so pairs cancel. `acc ^ 0 == acc`, so the single value stays.
+3. Return the accumulator. It works with negatives, because XOR treats the two's complement pattern as bits.
+
+**Complexity.** O(n) time, O(1) space. This is the standard XOR-cancellation problem.
 
 ### Single Number II
 
-**Problem.** Same setup, but every other element appears exactly **three** times; one appears once. Same O(n)/O(1) bar. The singleton may be negative.
+**Problem.** The same setup, but every other element appears exactly three times. One element appears once. The same O(n) time and O(1) space limit applies.
 
 **Example.**
 
-    [2,2,3,2]        → 3
-    [0,1,0,1,0,1,99] → 99
+```
+[2,2,3,2]        → 3
+[0,1,0,1,0,1,99] → 99
+```
 
 **Steps.**
-1. XOR alone can't help — triples don't cancel. Generalize: for each of the 32 bit positions, count how many list elements have that bit set. Elements appearing 3× contribute multiples of 3 to every position; the singleton's bits are the positions where `count % 3 == 1`.
-2. Per-position version: for bit `i` in `range(32)`, sum `(x >> i) & 1` over the list; if the total mod 3 is 1, set bit `i` in the result with `result |= 1 << i`.
-3. **This is where the two's-complement decode matters**: if the singleton is negative, bit 31 of the true answer is set, but the loop above only ever OR's in *positive* contributions — it builds the unsigned 32-bit pattern of the answer. Once the loop finishes, decode the sign: if `result & 0x80000000`, the true value is `result - (1 << 32)`; otherwise it's `result` unchanged. Skipping this step returns a large positive number instead of the correct negative one.
-4. The slick two-variable automaton (`ones`, `twos`: `ones = (ones ^ x) & ~twos; twos = (twos ^ x) & ~ones`) tracks the count-mod-3 state in O(1) per element with no inner loop — worth knowing by name, but derive the counting version (and its sign decode) first.
 
-**Complexity.** O(32n) = O(n) time / O(1) space.
+1. XOR alone cannot help, because triples do not cancel. Instead, count for each of the 32 bit positions how many elements have that bit set. A value that appears 3 times adds a multiple of 3 to each position. The single value's bits are the positions where `count % 3 == 1`.
+2. For bit `i` in `range(32)`, sum `(x >> i) & 1` over the list. If the total mod 3 is 1, set bit `i` in the result with `result |= 1 << i`.
+3. If bit 31 is set, the answer is negative, but `result` holds the unsigned pattern. Decode it: if `result & 0x80000000`, return `result - (1 << 32)`.
+4. A two-variable automaton tracks the count mod 3 in O(1) per element, with no inner loop: `ones = (ones ^ x) & ~twos; twos = (twos ^ x) & ~ones`. Know it by name, but derive the counting version first.
+
+**Complexity.** O(32n) = O(n) time, O(1) space.
 
 ### Bitwise AND of Numbers Range ★
 
-**Problem.** Given `left <= right` (both in `[0, 2³¹ − 1]`), return the AND of **every** integer in `[left, right]` — conceptually `left & (left+1) & … & right`, but the range can span two billion values.
+**Problem.** Given `left <= right`, both in `[0, 2³¹ − 1]`, return the AND of every integer in `[left, right]`. That is `left & (left+1) & … & right`, but the range can hold two billion values.
 
 **Example.**
 
-    left = 5, right = 7          → 4    (0b101 & 0b110 & 0b111 = 0b100)
-    left = 0, right = 2**31 - 1  → 0
+```
+left = 5, right = 7 → 4
+  (0b101 & 0b110 & 0b111 = 0b100)
+left = 0, right = 2**31 - 1 → 0
+```
 
 **Steps.**
-1. Key insight: the AND of a range is the **common binary prefix** of `left` and `right`, padded with zeros. Below the highest differing bit, every pattern occurs somewhere in the range (crossing from `…0111` to `…1000` zeroes each position at least once), so all lower bits AND to 0.
-2. Shift both endpoints right in lockstep (`left >>= 1; right >>= 1`; both inputs are non-negative, so no sign-extension concern), counting steps, until `left == right` — what remains *is* the common prefix.
-3. Return `left << shift` to pad the prefix back to position. The result can't overflow a signed 32-bit window in the *problem's* domain: the prefix restored to its original position is ≤ `right` ≤ 2³¹ − 1 — but note Python itself would happily represent a larger value too; the bound comes from the math, not the language.
-4. Kernighan variant worth knowing: `while left < right: right &= right - 1` then `return right` — repeatedly clearing `right`'s lowest set bit also converges on the common prefix.
 
-**Complexity.** O(log n) ≤ 31 iterations / O(1) space — never enumerate the range.
+1. The AND of a range is the common binary prefix of `left` and `right`, with zeros below it. Below the highest differing bit, each position is 0 somewhere in the range. For example, crossing from `…0111` to `…1000` zeroes each low position. So all lower bits AND to 0.
+2. Shift both endpoints right together, and count the steps, until `left == right`. What remains is the common prefix.
+3. Return `left << shift` to move the prefix back to its position. The result is ≤ `right` ≤ 2³¹ − 1.
+4. Know the Kernighan variant: `while left < right: right &= right - 1`, then return `right`. Clearing the lowest set bit of `right` again and again also reaches the common prefix.
+
+**Complexity.** O(log n), at most 31 iterations, and O(1) space. Never enumerate the range.
 
 ## Interview follow-ups
 
-- After **Single Number**: "Two elements appear once, the rest twice?" (XOR all → `a ^ b`; split the list by any set bit of that XOR — `xor & -xor` — and reduce each side separately.)
-- After **Single Number II**: "Every element k times except one?" (per-bit counting mod k works for any k; the two-variable trick is specific to k = 3; the sign-decode step is needed for any k whenever negatives are allowed.)
-- After **Number of 1 Bits**: "Popcount for every number 0..n?" (DP: `count[i] = count[i >> 1] + (i & 1)` — O(n) total.)
-- After **Bitwise AND of Numbers Range**: "OR of a range instead?" (common prefix again, but the differing suffix becomes all *ones*: prefix + `(1 << shift) - 1`.)
-- General Python: "Why doesn't `reverse_bits` need a sign decode but `Single Number II` does?" (Reverse Bits' output is defined as unsigned — the masked bit pattern *is* the answer. Single Number II's output is a signed int that might be negative — the mask only gives you the bit pattern; you still have to interpret it.)
+- After Single Number: "Two elements appear once, the rest twice." XOR all to get `a ^ b`. Split the list by any set bit of that XOR, `xor & -xor`, and reduce each side separately.
+- After Single Number II: "Every element appears k times except one." Per-bit counting mod k works for any k. The two-variable trick works only for k = 3.
+- After Number of 1 Bits: "Give the popcount for every number 0..n." Use dynamic programming: `count[i] = count[i >> 1] + (i & 1)`, O(n) in total.
+- After Bitwise AND of Numbers Range: "Give the OR of a range." Use the common prefix again, but the differing suffix becomes all ones: prefix + `(1 << shift) - 1`.
+- Python: "Why does Single Number II need a sign decode, but Reverse Bits does not?" Reverse Bits returns an unsigned value. Single Number II returns a signed value that can be negative.
 
 ## The task
 
-Four bit problems. No hash maps, no sorting, no shortcuts through `int(s, 2)` for the string problem — each has a stated bit-level technique and complexity bar.
+Write four bit functions. Do not use hash maps, sorting or `int(s, 2)` on the binary strings. Each function has a bit-level technique and a complexity limit.
 
 ### `add_binary(a, b)`
 
-`a` and `b` are binary strings (`'0'`/`'1'` only, no leading zeros except `"0"` itself). Return their sum as a binary string, same format. Add the strings column by column with a carry — the manual technique, not `int(a, 2) + int(b, 2)`. O(max(m, n)) time.
+`a` and `b` are binary strings. They hold only `'0'` and `'1'`, with no leading zeros except `"0"` itself.
+
+1. Return their sum as a binary string in the same format.
+2. Inputs can be hundreds of digits long.
+3. Do not convert with `int(a, 2) + int(b, 2)`. Add the strings column by column with a carry.
+4. Run in O(max(m, n)) time.
 
 ```python
-add_binary("11", "1")       # "100"
+add_binary("11", "1")  # "100"
 add_binary("1010", "1011")  # "10101"
-add_binary("0", "0")        # "0"
-add_binary("1" * 100, "1")  # "1" + "0" * 100
+add_binary("0", "0")  # "0"
+# "1" + "0" * 100
+add_binary("1" * 100, "1")
 ```
 
-Edge cases: `"0" + "0"` (return `"0"`, not `"00"`), very different lengths, a final carry creating an extra digit, 100+ digit inputs.
+Edge cases:
+
+- `"0" + "0"`: return `"0"`, not `"00"`.
+- Very different lengths.
+- A final carry that adds an extra digit.
+- Inputs of 100 or more digits.
 
 ### `hamming_weight(n)`
 
-Return the number of set bits in the 32-bit representation of `n`, where `0 <= n <= 2**32 - 1`. Use `n & (n - 1)` to clear the lowest set bit each iteration (or shift-and-mask with `n & 1` / `n >>= 1`), looping until `n == 0`.
+`0 <= n <= 2**32 - 1`.
+
+1. Return the number of set bits in the 32-bit form of `n`.
+2. Values with bit 31 set, 2147483648 and up, are in range. Python never reads them as negative.
+3. Clear the lowest set bit with `n & (n - 1)` until `n` is 0. Or test `n & 1` and shift with `>>`.
 
 ```python
-hamming_weight(11)          # 3   (0b1011)
-hamming_weight(128)         # 1   (0b10000000)
-hamming_weight(0)           # 0
-hamming_weight(4294967293)  # 31  (all bits except bit 1)
-hamming_weight(2147483648)  # 1   (only bit 31)
+# 3: 0b1011
+hamming_weight(11)
+# 1: 0b10000000
+hamming_weight(128)
+hamming_weight(0)  # 0
+# 31: all bits except bit 1
+hamming_weight(4294967293)
+# 1: only bit 31
+hamming_weight(2147483648)
 ```
 
-Edge cases: 0, exactly one bit set (including bit 31 alone), all 32 bits set (4294967295 → 32).
+Edge cases:
+
+- 0.
+- Exactly one bit set, including bit 31 alone.
+- All 32 bits set: 4294967295 gives 32.
 
 ### `single_number(nums)`
 
-Every element of `nums` appears exactly twice, except one element that appears exactly once. Return that element in O(n) time and **O(1) extra space** — no dict/set tally. XOR the list: pairs cancel, the singleton survives.
+Every element of `nums` appears exactly twice, except one element that appears exactly once.
+
+1. Return that element.
+2. Run in O(n) time and O(1) extra space. Do not use a dict, a set or a `Counter` tally.
+3. XOR the list: pairs cancel, and the single value stays.
 
 ```python
-single_number([2, 2, 1])        # 1
+single_number([2, 2, 1])  # 1
 single_number([4, 1, 2, 1, 2])  # 4
-single_number([1])              # 1
-single_number([-3, 7, -3])      # 7
+single_number([1])  # 1
+single_number([7, -3, 7])  # -3
 ```
 
-Edge cases: single-element list, negative values, the singleton at the start, middle, or end.
+Edge cases:
+
+- A single-element list.
+- Negative values.
+- The single value at the start, in the middle or at the end.
 
 ### `range_bitwise_and(left, right)`
 
-Return the bitwise AND of all integers in the inclusive range `[left, right]`, with `0 <= left <= right <= 2**31 - 1`. The range may contain billions of numbers, so looping over it is out — the answer is the common binary prefix of `left` and `right` with zeros below it: shift both right until they're equal, then shift back.
+`0 <= left <= right <= 2**31 - 1`.
+
+1. Return the bitwise AND of all integers in the inclusive range `[left, right]`.
+2. The range can hold billions of numbers, so do not loop over it.
+3. The answer is the common binary prefix of `left` and `right`, with zeros below it.
+4. Shift both right until they are equal, then shift back.
 
 ```python
-range_bitwise_and(5, 7)          # 4
-range_bitwise_and(0, 0)          # 0
-range_bitwise_and(6, 6)          # 6   (left == right → the number itself)
-range_bitwise_and(1, 2147483647) # 0
-range_bitwise_and(1500000000, 2000000000)  # 1073741824  (only shared bit 30 survives)
+range_bitwise_and(5, 7)  # 4
+range_bitwise_and(0, 0)  # 0
+# 6: left == right gives the number
+range_bitwise_and(6, 6)
+range_bitwise_and(1, 2147483647)  # 0
+# 1073741824: only bit 30 is shared
+range_bitwise_and(1500000000, 2000000000)
 ```
 
-Edge cases: `left == right`, `left = 0` (always 0), a range crossing a power of two (result 0), the full `[1, 2**31 - 1]` range, large near-equal endpoints.
+Edge cases:
+
+- `left == right`: return the number itself.
+- `left = 0`: always 0.
+- A range that crosses a power of two: 0.
+- The full range `[1, 2**31 - 1]`.
+- Large endpoints that are close together.

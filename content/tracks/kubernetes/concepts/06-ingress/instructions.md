@@ -1,24 +1,20 @@
-# Ingress
+## What you build
 
-## What you'll learn
-
-A Service gives you one stable endpoint per app. Real deployments usually
-need to route many hostnames/paths, on port 443, with TLS termination, to
-many different Services — without provisioning a separate cloud load
-balancer for each one. Ingress is the API object that describes that
-routing; an **Ingress controller** is the separate piece of software that
-actually reads it and configures a reverse proxy (or cloud LB) accordingly.
+You write an Ingress that terminates TLS, sends `/api` to one Service and sends everything else to another. One Ingress routes many hosts and paths to many Services, without a cloud load balancer per Service. This lesson builds on **Services**.
 
 ## Key concepts
 
-**Ingress requires a controller — the resource alone does nothing.**
-Creating an Ingress object with no controller running in the cluster (no
-ingress-nginx, no Traefik, no cloud-provider ALB controller) just sits there
-inert; nothing watches it. Check `kubectl get ingressclass` to see what's
-installed. This is the single most common "why doesn't my Ingress work"
-issue for people new to the object.
+### An Ingress needs a controller
 
-**Anatomy of an Ingress:**
+The Ingress object describes the routes. An Ingress controller, such as ingress-nginx, Traefik or a cloud ALB controller, reads it and configures a proxy. Without a controller, nothing watches the Ingress and it does nothing. This is the most common cause of a broken Ingress.
+
+```
+kubectl get ingressclass
+```
+
+### A controller compiles the Ingress into proxy config
+
+You do not write `nginx.conf` directly. You write a spec, and the controller turns it into proxy config, often `nginx.conf`. Tuning for one proxy goes in controller-specific annotations, not in the portable `spec.rules` fields.
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -49,71 +45,51 @@ spec:
         number: 80
 ```
 
-- **`ingressClassName`** — which controller should handle this Ingress
-  (a cluster can run more than one, e.g. an internal and an external
-  nginx-ingress). Without it, whichever controller is marked the cluster
-  default picks it up (or nothing does, if there's no default).
-- **`rules[].host`** — the Host header to match. Omit it to match any host.
-- **`pathType`** — `Prefix` (matches `/api`, `/api/v1`, `/api/anything` —
-  segment-aware, `/apiv2` does *not* match `/api`), `Exact` (matches the
-  literal path only, no children), or `ImplementationSpecific` (controller
-  decides — avoid unless you have a specific reason).
-- **`tls[].hosts` + `secretName`** — terminates TLS for the listed hosts
-  using a cert/key stored in a Secret of type `kubernetes.io/tls` (Secrets
-  are next lesson). The controller handles the handshake; your backend Pods
-  usually receive plain HTTP.
-- **`defaultBackend`** — catches any request that matches no rule (wrong
-  host, unmatched path). Without one, unmatched requests get the
-  controller's own 404, which is fine, but a `defaultBackend` lets you serve
-  a branded error page or a catch-all service instead.
+### `ingressClassName` picks the controller
 
-## vs other tools
+A cluster can run more than one controller, for example an internal and an external ingress-nginx. Without this field, the default IngressClass handles the Ingress. If there is no default, no controller does.
 
-| | Kubernetes Ingress | nginx.conf / Apache vhost | Cloud ALB rules |
-|---|---|---|---|
-| Config format | Declarative K8s object | Imperative config file | Console/Terraform rules |
-| Requires separate controller | Yes — the resource is inert alone | No — nginx *is* the proxy | No — ALB *is* the LB |
-| Multi-tenant routing | Host + path rules across many Services | vhost blocks | Listener rules |
-| TLS termination | `tls:` block + Secret | `ssl_certificate` directives | ACM cert attached to listener |
+### `rules[].host` matches the Host header
 
-The conceptual leap for people coming from hand-rolled nginx: you're not
-writing the proxy config directly — you're writing a spec that a controller
-*compiles into* a proxy config (usually still nginx.conf under the hood).
-Direct nginx-specific tuning goes through controller-specific annotations,
-not the portable `spec.rules` fields.
+Leave out `host` to match any host.
+
+### `pathType` sets how paths match
+
+- `Prefix` matches by path element. `/api` matches `/api`, `/api/` and `/api/v1`, but not `/apiv2`.
+- `Exact` matches only the literal path.
+- `ImplementationSpecific` lets the controller decide. Avoid it without a specific reason.
+
+### `tls` terminates HTTPS
+
+`tls[].hosts` lists the hosts. `secretName` names a Secret of type `kubernetes.io/tls` with the certificate and key. The controller does the TLS handshake, and the backend Pods usually get plain HTTP. A later concept covers Secrets.
+
+### `defaultBackend` catches unmatched requests
+
+It serves requests that match no rule, such as a wrong host or an unmatched path. Without it, the controller returns its own 404. Use it for a branded error page or a catch-all Service.
 
 ## Watch out
 
-- **`path: /api` with `pathType: Prefix` matches `/apiv2` in some naive
-  mental models but not in Kubernetes** — Prefix matching is
-  path-element-aware (`/api/`, `/api`, `/api/x` match; `/apiv2` does not).
-- **Multiple Ingress objects can target the same host** — most controllers
-  merge rules across all Ingress objects for that host, which can produce
-  surprising precedence if two teams both claim `path: /`. Check your
-  controller's conflict-resolution docs (usually longest-path-wins).
-- **No `ingressClassName` and no default IngressClass configured** means the
-  Ingress is created but never picked up by any controller — `kubectl get
-  ingress` shows it with no `ADDRESS`, forever.
-- **TLS secret must exist and be of type `kubernetes.io/tls`** with `tls.crt`
-  and `tls.key` keys — a missing or wrong-shaped Secret makes the controller
-  fall back to a self-signed cert or fail the handshake, depending on
-  implementation.
+- `path: /api` with `pathType: Prefix` does not match `/apiv2`. Prefix matching works by path element.
+- Most controllers merge the rules of all Ingress objects for one host. Two teams that both claim `path: /` get surprising precedence.
+- Read your controller's conflict rules. The longest path usually wins.
+- With no `ingressClassName` and no default IngressClass, no controller picks up the Ingress. `kubectl get ingress` shows no `ADDRESS` forever.
+- The TLS Secret must exist, with type `kubernetes.io/tls` and keys `tls.crt` and `tls.key`.
+- With a missing or wrong Secret, the controller uses a self-signed certificate or fails the handshake.
 
 ## The task
 
-Write an Ingress for an API gateway that terminates TLS and routes `/api` to
-a backend service, with a fallback for anything else:
+Write an Ingress in `stub.yaml` for an API gateway. It terminates TLS, routes `/api` to the `api` Service, and sends everything else to `web`.
 
-- `apiVersion: networking.k8s.io/v1`, `kind: Ingress`
-- `metadata.name: web`
-- `spec.ingressClassName: nginx`
-- `spec.tls` with one entry: `hosts: [api.example.com]`,
-  `secretName: api-tls`
-- `spec.rules` with one entry: `host: api.example.com`, one HTTP path:
-  `path: /api`, `pathType: Prefix`, backing service `name: api`, `port.number: 80`
-- `spec.defaultBackend.service.name: web`, `port.number: 80`
+1. Set `apiVersion: networking.k8s.io/v1` and `kind: Ingress`.
+2. Set `metadata.name` to `web` and `spec.ingressClassName` to `nginx`.
+3. Add one `spec.tls` entry with the host `api.example.com` and `secretName: api-tls`.
+4. Add one `spec.rules` entry with `host: api.example.com`.
+5. Give the rule one HTTP path: `path: /api` with `pathType: Prefix`.
+6. Send that path to the Service `name: api` with `port.number: 80`.
+7. Set `spec.defaultBackend` to the Service `name: web` with `port.number: 80`.
+8. Write the `api` backend before the `defaultBackend` block.
 
-Expected shape:
+The file must match this content:
 
 ```yaml
 apiVersion: networking.k8s.io/v1

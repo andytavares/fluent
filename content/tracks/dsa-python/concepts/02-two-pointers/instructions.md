@@ -1,58 +1,79 @@
-# Two Pointers
+## What you build
 
-## What you'll learn
-
-Building on the write-pointer idea from Arrays & Strings, this concept covers the full two-pointer pattern: opposite-direction (converging) pointers, same-direction (fast/slow) pointers, and the pivot-plus-converging-pair reduction that takes 3Sum from O(n³) to O(n²). You'll be able to recognize when sorted order or structural symmetry lets you replace a nested loop with a single pass.
+You write four converging-pointer functions: `is_palindrome`, `two_sum_ii`, `container_with_most_water` and `three_sum`. Each one replaces a nested loop with one pass, because sorted order or symmetry tells you which pointer to move. This lesson builds on **Arrays & Strings**.
 
 ## Key concepts
 
-Two pointers eliminates nested loops by exploiting sorted order or structural symmetry. The core insight: in a sorted structure, one comparison tells you which pointer *must* move — moving the other one provably cannot help. That monotonicity is what makes convergence safe: every step discards a set of candidate pairs that cannot contain the answer.
+### One comparison tells you which pointer to move
 
-### Opposite-direction (converging) — palindromes, pair sums, container water
+In a sorted or symmetric structure, one comparison shows which pointer must move. A move of the other pointer cannot help. This monotonicity makes convergence safe: each step discards a set of pairs that cannot hold the answer.
+
+### Opposite-direction pointers converge from the ends
+
+Use this form for palindromes, pair sums and container water.
 
 ```python
 left, right = 0, len(arr) - 1
 while left < right:
-    value = combine(arr[left], arr[right])
-    if value == target:
-        ...  # found it / record it
-    elif value < target:
-        left += 1   # need something bigger — only left can provide it
+    v = combine(arr[left], arr[right])
+    if v == target:
+        # Found it: record it.
+        ...
+    elif v < target:
+        # Need a bigger value: only left
+        # can provide it.
+        left += 1
     else:
-        right -= 1  # need something smaller — only right can provide it
+        # Need a smaller value: only right
+        # can provide it.
+        right -= 1
 ```
 
-O(n): each iteration retires one index, and no discarded pair could have been the answer.
+The loop is O(n). Each iteration retires one index, and no discarded pair can be the answer.
 
-### Same-direction (fast/slow) — subsequence matching, in-place filtering
+### Same-direction pointers: fast scans, slow matches
+
+Use this form for subsequence matching and in-place filtering.
 
 ```python
-slow = 0  # next write / match position
-for fast in range(len(arr)):
+# n: input length; matches: your test
+# Next write or match position.
+slow = 0
+for fast in range(n):
     if matches(arr[fast]):
         slow += 1
 ```
 
-`fast` scans everything; `slow` only advances on a match. This is the write pointer from Arrays & Strings generalized to *two different sequences* (is `s` a subsequence of `t`?) as well as one.
+`fast` scans every element. `slow` advances only on a match. This is the write pointer from **Arrays & Strings**, extended to two sequences, for example "is `s` a subsequence of `t`?".
 
-### Pivot + converging pair — 3Sum and friends
+### A pivot plus a converging pair solves 3Sum
 
-Sort, fix one element as the pivot, then run converging pointers on the rest:
+Sort the list, fix one element as the pivot, then run converging pointers on the rest.
 
 ```python
 nums.sort()
-for i in range(len(nums) - 2):
+n = len(nums)
+for i in range(n - 2):
+    # Skip duplicate pivots.
     if i > 0 and nums[i] == nums[i - 1]:
-        continue  # skip duplicate pivots
-    left, right = i + 1, len(nums) - 1
+        continue
+    left, right = i + 1, n - 1
     while left < right:
-        total = nums[i] + nums[left] + nums[right]
+        total = (nums[i] + nums[left]
+                 + nums[right])
         if total == 0:
-            result.append([nums[i], nums[left], nums[right]])
-            while left < right and nums[left] == nums[left + 1]:
-                left += 1   # skip dups
-            while left < right and nums[right] == nums[right - 1]:
-                right -= 1  # skip dups
+            result.append([
+                nums[i], nums[left],
+                nums[right]])
+            # Skip duplicates on both ends.
+            while (left < right and
+                   nums[left]
+                   == nums[left + 1]):
+                left += 1
+            while (left < right and
+                   nums[right]
+                   == nums[right - 1]):
+                right -= 1
             left += 1
             right -= 1
         elif total < 0:
@@ -74,166 +95,177 @@ Each pivot costs O(n), so k-sum costs O(n^(k-1)) instead of O(n^k).
 
 ## Watch out
 
-- **`list.sort()`/`sorted()` are correct for numbers by default** in Python (no lexicographic surprise like JavaScript), but `sort()` mutates in place and returns `None` — never write `nums = nums.sort()`.
-- **Infinite loops**: if pointers don't advance on the "match" branch (palindrome check, 3Sum after recording a triplet), the loop never terminates.
-- **3Sum duplicate skipping**: the inner `while` loops must keep checking `left < right` while skipping, or the pointers cross. Skip duplicate pivots only when `i > 0`.
-- **Container With Most Water**: always move the *shorter* pointer. Moving the taller one shrinks width without any chance of raising the height (which is capped by the shorter line).
-- **Two Sum II returns 1-based indexes** — off-by-one if you forget the `+ 1`.
-- **`str.isalnum()`** returns `True` for any Unicode letter or digit, `False` for punctuation and whitespace — exactly the predicate Valid Palindrome needs, no regex required.
+- In Python, `list.sort()` sorts in place and returns `None`. `nums = nums.sort()` sets `nums` to `None`.
+- If the pointers do not advance on the match branch, the loop never ends. This applies to the palindrome check and to 3Sum after a recorded triplet.
+- In 3Sum, the inner skip loops must keep the `left < right` check, or the pointers cross.
+- In 3Sum, skip a duplicate pivot only when `i > 0`.
+- In Container With Most Water, always move the shorter line. A move of the taller line shrinks the width, and the shorter line still caps the height.
+- Two Sum II returns 1-based indexes. Without the `+ 1`, every answer is off by one.
+- `str.isalnum()` is `True` for letters and digits and `False` for punctuation and spaces. Valid Palindrome needs no regex.
 
 ## Problem walkthroughs
 
 ### Valid Palindrome ★
 
-**Problem.** Given a string `s`, return `True` if it reads the same forwards and backwards after ignoring every non-alphanumeric character and treating letters case-insensitively.
+**Problem.** Given a string `s`, return `True` if it reads the same forwards and backwards. Ignore every non-alphanumeric character, and compare letters without case.
 
 **Example.**
 
-    "A man, a plan, a canal: Panama" → True
-    "race a car"                     → False
+```text
+"A man, a plan, a canal: Panama"
+  -> True
+"race a car" -> False
+```
 
 **Steps.**
-1. Set `left = 0`, `right = len(s) - 1`.
-2. Inside a `while left < right` loop: advance `left` past non-alphanumeric characters, then retreat `right` past non-alphanumeric characters (both inner loops must re-check `left < right`).
-3. Compare `s[left].lower()` with `s[right].lower()`; return `False` on mismatch.
-4. On a match, advance both pointers and continue. Return `True` when they meet.
-5. Skipping in place — instead of building a cleaned string — keeps space O(1) and is the point of the exercise.
+1. Set `left = 0` and `right = len(s) - 1`.
+2. Inside a `while left < right` loop, advance `left` past non-alphanumeric characters. Then move `right` back past non-alphanumeric characters. Both inner loops must check `left < right` again.
+3. Compare `s[left].lower()` with `s[right].lower()`. Return `False` on a mismatch.
+4. On a match, move both pointers and continue. Return `True` when they meet.
+5. The pointers skip characters in place instead of building a cleaned string. That keeps space at O(1), which is the point of the problem.
 
-**Complexity.** O(n) time / O(1) space — each pointer crosses each character at most once.
+**Complexity.** O(n) time / O(1) space. Each pointer crosses each character at most once.
 
 ### Is Subsequence
 
-**Problem.** Return `True` if `s` is a subsequence of `t`: all of `s`'s characters appear in `t` in the same relative order (not necessarily contiguous).
+**Problem.** Return `True` if `s` is a subsequence of `t`. All characters of `s` appear in `t` in the same relative order, but not always next to each other.
 
 **Example.**
 
-    s = "abc", t = "ahbgdc" → True
-    s = "axc", t = "ahbgdc" → False
+```text
+s = "abc", t = "ahbgdc" -> True
+s = "axc", t = "ahbgdc" -> False
+```
 
 **Steps.**
-1. Two same-direction pointers: `i` into `s` (the pattern), `j` into `t` (the text).
-2. Walk `j` across all of `t`; whenever `t[j] == s[i]`, advance `i`.
-3. Return `i == len(s)` — every pattern character found a match, in order.
-4. Greedy matching is safe: taking the *earliest* possible match for `s[i]` never hurts, because it leaves the largest possible suffix of `t` for the remaining pattern.
+1. Use two same-direction pointers: `i` into `s` (the pattern) and `j` into `t` (the text).
+2. Walk `j` across all of `t`. When `t[j] == s[i]`, advance `i`.
+3. Return `i == len(s)`. Every pattern character found a match, in order.
+4. Greedy matching is safe. The earliest match for `s[i]` leaves the largest suffix of `t` for the rest of the pattern.
 
 **Complexity.** O(|t|) time / O(1) space.
 
 ### Two Sum II ★
 
-**Problem.** `numbers` is sorted ascending and 1-indexed. Find the two distinct positions whose values sum to `target` and return them as `[index1, index2]` with `index1 < index2`, both **1-based**. Exactly one solution exists; you may not use the same element twice; O(1) extra space required.
+**Problem.** `numbers` is in ascending order. Find the two distinct positions whose values sum to `target`. Return them as 1-based `[index1, index2]` with `index1 < index2`. Exactly one solution exists. You cannot use the same element twice. Use O(1) extra space.
 
 **Example.**
 
-    numbers = [2,7,11,15], target = 9 → [1,2]
-    numbers = [2,3,4],      target = 6 → [1,3]
+```text
+[2,7,11,15], target 9 -> [1,2]
+[2,3,4], target 6 -> [1,3]
+```
 
 **Steps.**
-1. Set `left = 0`, `right = len(numbers) - 1`.
+1. Set `left = 0` and `right = len(numbers) - 1`.
 2. Compute `total = numbers[left] + numbers[right]`.
-3. If `total == target`, return `[left + 1, right + 1]` (convert to 1-based).
-4. If `total < target`, increment `left` — the sum must grow, and `right` already pairs the current `left` with the largest available value.
-5. If `total > target`, decrement `right` — symmetric argument.
-6. Why nothing is missed: when `left` advances, every pair `(left, x)` for `x < right` had `total < target` too (values only get smaller), so the discarded pairs were all invalid.
+3. If `total == target`, return `[left + 1, right + 1]` to convert to 1-based indexes.
+4. If `total < target`, increment `left`. The sum must grow, and `right` already pairs `left` with the largest available value.
+5. If `total > target`, decrement `right`. The argument is the mirror of step 4.
+6. Nothing is lost. When `left` advances, every pair `(left, x)` with `x < right` also had `total < target`. So all the discarded pairs were invalid.
 
-**Complexity.** O(n) time / O(1) space — this is exactly the inner loop of 3Sum.
+**Complexity.** O(n) time / O(1) space. This loop is exactly the inner loop of 3Sum.
 
 ### Container With Most Water ★
 
-**Problem.** `heights[i]` is the height of a vertical line at position `i`. Pick two lines so that together with the x-axis they hold the most water: area = min of the two heights × distance between them. Return the maximum area.
+**Problem.** `heights[i]` is the height of a vertical line at position `i`. Two lines and the x-axis hold water. The area is the smaller height times the distance between the lines. Return the largest area.
 
 **Example.**
 
-    [1,8,6,2,5,4,8,3,7] → 49   (lines at index 1 and 8: min(8,7) × 7)
+```text
+[1,8,6,2,5,4,8,3,7] -> 49
+(index 1 and 8: min(8,7) × 7)
+```
 
 **Steps.**
-1. Start with the widest container: `left = 0`, `right = len(heights) - 1`, `max_area = 0`.
-2. Each iteration, compute `min(heights[left], heights[right]) * (right - left)` and fold it into `max_area`.
-3. Move the pointer at the **shorter** line inward (either one on a tie).
-4. Why that's safe: the shorter line caps the area of every container it could form with anything inside the current window — narrower width, height still capped. So discarding it loses no candidate that could beat the current best.
+1. Start with the widest container: `left = 0`, `right = len(heights) - 1` and `max_area = 0`.
+2. In each iteration, compute `min(heights[left], heights[right]) * (right - left)` and fold it into `max_area`.
+3. Move the pointer at the shorter line inward. On a tie, move either one.
+4. This is safe. The shorter line caps the area of every container it can form inside the current window. Those containers are narrower, and the height cap stays. So no discarded container can beat the current best.
 
-**Complexity.** O(n) time / O(1) space — one converging pass.
+**Complexity.** O(n) time / O(1) space. One converging pass.
 
 ### 3Sum ★
 
-**Problem.** Given `nums`, return all **unique** triplets `[a, b, c]` of values (taken from three distinct indexes) with `a + b + c == 0`. The output must contain no duplicate triplets, in any order.
+**Problem.** Given `nums`, return all unique triplets `[a, b, c]` of values from three distinct indexes with `a + b + c == 0`. The output has no duplicate triplets. Any order is fine.
 
 **Example.**
 
-    [-1,0,1,2,-1,-4] → [[-1,-1,2],[-1,0,1]]
-    [0,0,0]          → [[0,0,0]]
+```text
+[-1,0,1,2,-1,-4]
+  -> [[-1,-1,2],[-1,0,1]]
+[0,0,0] -> [[0,0,0]]
+```
 
 **Steps.**
-1. Sort ascending. Sorting enables both the converging pair and duplicate skipping.
-2. Loop pivot `i` from 0 to `len(nums) - 3`. Skip duplicate pivots: `if i > 0 and nums[i] == nums[i - 1]: continue`. Optional early exit: `if nums[i] > 0: break` — three positives can't sum to zero.
-3. For each pivot, run Two Sum II's converging loop on `[i + 1, len(nums) - 1]` with target `-nums[i]`: advance `left` when the sum is negative, retreat `right` when positive.
-4. On a hit, record `[nums[i], nums[left], nums[right]]`, then skip duplicates on **both** inner pointers (`while left < right and nums[left] == nums[left + 1]: left += 1`, mirror for `right`) before advancing both.
-5. The three duplicate-skips (pivot, left, right) are what guarantee uniqueness without a dedupe set.
+1. Sort in ascending order with `nums.sort()`. The sort enables both the converging pair and the duplicate skips.
+2. Loop the pivot `i` from 0 to `len(nums) - 3`. Skip duplicate pivots with `if i > 0 and nums[i] == nums[i - 1]: continue`. You can also exit early with `if nums[i] > 0: break`, because three positive values cannot sum to zero.
+3. For each pivot, run the Two Sum II loop on `[i + 1, len(nums) - 1]` with target `-nums[i]`. Advance `left` when the sum is negative. Move `right` back when it is positive.
+4. On a hit, record `[nums[i], nums[left], nums[right]]`. Skip duplicates on both inner pointers, then advance both.
+5. The three duplicate skips (pivot, left, right) make the output unique without a dedupe set.
 
-**Complexity.** O(n²) time (O(n log n) sort + O(n) per pivot) / O(1) auxiliary space excluding the output.
+**Complexity.** O(n²) time (O(n log n) sort plus O(n) per pivot) / O(1) extra space, without the output.
 
 ## Interview follow-ups
 
 After 3Sum:
-- "What if you can't sort the array?" — hash-set inner loop: O(n²) time but O(n) space.
-- "4Sum?" — one more pivot loop around the same core: O(n³) instead of O(n⁴).
-- "3Sum closest?" — same skeleton; track the sum minimizing `abs(sum - target)` instead of collecting exact hits.
+- "What if you cannot sort the list?" Use a hash set in the inner loop: O(n²) time, but O(n) space.
+- "4Sum?" Add one more pivot loop around the same core: O(n³) instead of O(n⁴).
+- "3Sum closest?" Use the same skeleton. Track the sum that minimizes `|sum - target|` instead of exact hits.
 
 After Container With Most Water:
-- "Prove no better pair is skipped." — exchange argument on the shorter line (walkthrough step 4).
-- "Heights can be 0?" — area for that pair is 0; the algorithm needs no special case.
+- "Prove you skip no better pair." Use the exchange argument on the shorter line (walkthrough step 4).
+- "Can heights be 0?" The area for that pair is 0. The algorithm needs no special case.
 
 After Two Sum II:
-- "Unsorted input?" — that's classic Two Sum: hash map (`dict`), O(n) time, O(n) space. Sorting first costs O(n log n) *and* loses the original indexes.
+- "Unsorted input?" That is classic Two Sum: a hash map, O(n) time and O(n) space. A sort first costs O(n log n) and loses the original indexes.
 
 ## The task
 
-Four converging-pointer classics. Each must run in the stated time and O(1) extra space (3Sum's output excluded).
+You write four converging-pointer functions. Each runs in the stated time with O(1) extra space. The 3Sum output does not count as extra space.
 
-### `is_palindrome(s)`
+1. `is_palindrome(s: str) -> bool` returns `True` if `s` is a palindrome after you ignore case and all non-alphanumeric characters. Otherwise it returns `False`.
+2. A string with no alphanumeric characters, such as `""` or `" "`, counts as a palindrome.
+3. Skip the other characters with the pointers. Do not build a cleaned copy of the string. Use O(n) time.
+4. `two_sum_ii(numbers: list[int], target: int) -> list[int]` takes `numbers` in ascending order. It returns the 1-based indexes `[index1, index2]` of two distinct elements that sum to `target`.
+5. `index1 < index2`. Exactly one solution exists. Two equal values at different positions are fine. Use O(n) time, O(1) space and no hash map.
+6. `container_with_most_water(heights: list[int]) -> int` takes non-negative heights, with length 2 or more. Lines at `i < j` hold `min(heights[i], heights[j]) * (j - i)` water. Return the largest amount. Use O(n) time.
+7. `three_sum(nums: list[int]) -> list[list[int]]` returns all unique triplets of values `[a, b, c]` from three distinct indexes with `a + b + c == 0`. Use O(n²) time.
+8. The `three_sum` output has no duplicate triplets. The order of triplets, and of values inside a triplet, does not matter.
 
-Return `True` if `s` is a palindrome after ignoring all non-alphanumeric characters and case; `False` otherwise. A string with no alphanumeric characters at all (including `""` and `" "`) counts as a palindrome. Skip the junk characters with the pointers themselves — do not build a cleaned copy of the string. O(n) time.
+Edge cases:
+
+- `is_palindrome`: an empty string returns `True`. Handle a single character and digits mixed with letters. Case rules apply only to letters, so `"0P"` is not a palindrome.
+- `two_sum_ii`: handle negative numbers, duplicate values that form the pair and a pair at the two ends.
+- `container_with_most_water`: handle exactly two lines, zero heights, the best pair away from the ends and equal heights. An area of 0 is a valid answer.
+- `three_sum`: fewer than three elements returns `[]`. Handle no valid triplet, heavy duplicates and input that is all positive or all negative.
 
 ```python
-is_palindrome("A man, a plan, a canal: Panama")  # True
-is_palindrome("race a car")                      # False
-is_palindrome(" ")                               # True
-is_palindrome("0P")                              # False
-```
+s = "A man, a plan, a canal: Panama"
+is_palindrome(s)             # True
+is_palindrome("race a car")  # False
+is_palindrome(" ")           # True
+is_palindrome("0P")          # False
+is_palindrome("12321")       # True
 
-Edge cases: empty string (`True`), single character, digits mixed with letters (`"12321"` is a palindrome; case-insensitivity applies only to letters).
-
-### `two_sum_ii(numbers, target)`
-
-`numbers` is sorted in ascending order. Return the **1-based** indexes `[index1, index2]` (`index1 < index2`) of the two distinct elements that sum exactly to `target`. Exactly one solution exists for every input you'll receive; the same element may not be used twice (two equal *values* at different positions are fine). O(n) time, O(1) space — no hash map.
-
-```python
 two_sum_ii([2, 7, 11, 15], 9)  # [1, 2]
 two_sum_ii([2, 3, 4], 6)       # [1, 3]
 two_sum_ii([-1, 0], -1)        # [1, 2]
+two_sum_ii([1, 1, 2], 2)       # [1, 2]
+
+h = [1, 8, 6, 2, 5, 4, 8, 3, 7]
+container_with_most_water(h)
+# 49
+container_with_most_water([1, 1])
+# 1
+container_with_most_water([0, 2, 0])
+# 0
+
+three_sum([-1, 0, 1, 2, -1, -4])
+# [[-1, -1, 2], [-1, 0, 1]]
+three_sum([0, 1, 1])          # []
+three_sum([0, 0, 0])          # [[0, 0, 0]]
+three_sum([-2, 0, 0, 2, 2])
+# [[-2, 0, 2]]
+three_sum([])                 # []
 ```
-
-Edge cases: negative numbers, duplicate values forming the pair (`[1, 1, 2]` with target `2` → `[1, 2]`), the pair sitting at the two ends of the list.
-
-### `container_with_most_water(heights)`
-
-`heights` is a list of non-negative line heights (length ≥ 2). Two lines at indexes `i < j` hold `min(heights[i], heights[j]) * (j - i)` water. Return the maximum over all pairs. O(n) time.
-
-```python
-container_with_most_water([1, 8, 6, 2, 5, 4, 8, 3, 7])  # 49
-container_with_most_water([1, 1])                       # 1
-container_with_most_water([0, 2, 0])                    # 0
-```
-
-Edge cases: exactly two lines, zero heights (area 0 is a valid answer), the best pair not at the ends, all heights equal.
-
-### `three_sum(nums)`
-
-Return all unique triplets of values `[a, b, c]` drawn from three distinct indexes of `nums` such that `a + b + c == 0`. No duplicate triplets in the output; triplet order and ordering within a triplet don't matter. O(n²) time.
-
-```python
-three_sum([-1, 0, 1, 2, -1, -4])  # [[-1, -1, 2], [-1, 0, 1]]
-three_sum([0, 1, 1])              # []
-three_sum([0, 0, 0])              # [[0, 0, 0]]
-```
-
-Edge cases: fewer than three elements (`[]`), no valid triplet, heavy duplicates (`[-2, 0, 0, 2, 2]` → only `[[-2, 0, 2]]`), all-positive or all-negative input (`[]`).

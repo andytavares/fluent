@@ -1,21 +1,17 @@
-# Data Sources
+## What you build
 
-## What you'll learn
-
-How `data` blocks let you read existing infrastructure — things Terraform didn't create and shouldn't destroy — and thread that information into resources you do manage.
+You connect an EC2 instance to infrastructure your team does not own: an existing VPC and the latest Ubuntu AMI. `data` blocks read objects that Terraform did not create and must not destroy. This lesson builds on **Variables & Outputs**.
 
 ## Key concepts
 
-### `data` vs `resource`
+### `data` reads, `resource` owns
 
-The distinction is ownership:
+- A `resource` block declares an object that Terraform **creates, updates and destroys**.
+- A `data` block is a **read-only lookup**. Terraform queries the provider's API and returns the result.
 
-- `resource` blocks declare objects Terraform **creates, updates, and destroys**.
-- `data` blocks are **read-only lookups** — Terraform queries the provider's API during plan and returns the result. No apply needed.
+A common case: your team manages the application, but the network team owns the VPC. You look up the VPC with a data source instead of hardcoding its ID.
 
-A common pattern: you manage your application infra in Terraform, but your networking team owns the VPC. You look it up via a data source rather than hardcoding IDs.
-
-### Basic data source syntax
+### A `filter` block selects the object
 
 ```hcl
 data "aws_vpc" "shared" {
@@ -26,7 +22,7 @@ data "aws_vpc" "shared" {
 }
 ```
 
-The two labels are `<type>` and `<name>`. Reference attributes with `data.<type>.<name>.<attribute>`:
+The two labels are `<type>` and `<name>`. Read an attribute with `data.<type>.<name>.<attribute>`.
 
 ```hcl
 resource "aws_subnet" "app" {
@@ -35,14 +31,13 @@ resource "aws_subnet" "app" {
 }
 ```
 
-### Lookup by ID
-
-When you know the exact ID, skip the filter:
+### Owners and a name pattern find an AMI
 
 ```hcl
 data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["099720109477"] # Canonical
+  # Canonical
+  owners      = ["099720109477"]
 
   filter {
     name   = "name"
@@ -51,15 +46,15 @@ data "aws_ami" "ubuntu" {
 }
 ```
 
-Then: `ami = data.aws_ami.ubuntu.id`
+A resource then uses `ami = data.aws_ami.ubuntu.id`.
 
-### Data sources execute during plan
+### Terraform reads data sources during plan
 
-Unlike resources, data sources are read during `terraform plan`, not `terraform apply`. This means if a data source targets something that doesn't exist yet, plan fails. You can defer execution with `depends_on` (covered in concept 05) or the `lifecycle { postcondition {} }` block.
+Terraform reads a data source during `terraform plan`, not `terraform apply`. It defers the read to apply when an argument depends on a value known only at apply time. `depends_on` also defers the read until its dependencies finish. Concept 05 covers `depends_on`.
 
-### `terraform_remote_state` — a special data source
+### `terraform_remote_state` reads another state
 
-This reads outputs from another Terraform state file, letting root modules share data without coupling their configs:
+This special data source reads the outputs of another state file. Root modules share data without sharing configuration.
 
 ```hcl
 data "terraform_remote_state" "network" {
@@ -72,58 +67,57 @@ data "terraform_remote_state" "network" {
 }
 
 resource "aws_instance" "app" {
-  subnet_id = data.terraform_remote_state.network.outputs.public_subnet_id
+  # HCL ignores newlines inside parentheses
+  subnet_id = (
+    data.terraform_remote_state.network
+    .outputs.public_subnet_id
+  )
 }
 ```
 
-## vs other tools
-
-| Tool | Equivalent |
-|------|-----------|
-| **CloudFormation** | `Fn::ImportValue` reads exported stack outputs — tightly coupled to CF stacks only |
-| **Pulumi** | `StackReference` for cross-stack state; provider SDKs have `get*` functions for read-only lookups |
-| **Ansible** | `gather_facts` + `ec2_instance_info` tasks — imperative, runs at task execution time |
-
-Terraform's data sources are cleaner than CloudFormation's cross-stack exports because they can query arbitrary provider APIs, not just other CF stacks.
+CloudFormation's `Fn::ImportValue` reads only other stacks' exports; a Terraform data source can query any provider API.
 
 ## Watch out
 
-- **`data` blocks read during plan, not apply.** If the object your `filter` targets doesn't exist yet — including one being created earlier in the *same* apply — the plan fails with "no matching resource found." Data sources are for things that already exist independently of this run.
-- **`filter` is itself a nested block, not an attribute.** `filter { name = "..." ; values = [...] }` — you can repeat the `filter` block multiple times inside one `data` block to AND multiple conditions together.
-- **Data source attributes are read-only outputs of a query, not something you set.** You never write `ami = "ami-123"` inside a `data "aws_ami"` block — you write filter *criteria*, and the provider returns attributes like `id` for you to reference elsewhere.
-- **Referencing `data.<type>.<name>.<attr>`** looks just like a resource reference (`data.` prefix instead of nothing) — mixing them up (writing `aws_vpc.main.id` when you meant `data.aws_vpc.main.id`) is a common typo that produces "undeclared resource."
+- A data source with literal arguments reads during plan. If the object does not exist yet, the plan fails.
+- Use data sources for objects that exist independently of this run.
+- `filter` is a nested block, not an attribute. Repeat it to combine conditions with AND.
+- You do not set attributes such as `id` in a `data` block. You write criteria, and the provider returns the attributes.
+- A data reference needs the `data.` prefix. `aws_vpc.main.id` for a data source gives "undeclared resource".
 
 ## The task
 
-You're wiring an EC2 instance to infrastructure your team doesn't own: an existing VPC (looked up by tag) and the latest Ubuntu AMI (looked up by owner + name pattern).
+Connect an EC2 instance to an existing VPC and the latest Ubuntu AMI. Look up the VPC by tag, and the AMI by owner and name pattern.
+
+1. `data "aws_vpc" "main"` has a `filter` block with `name = "tag:Name"` and `values = ["production-vpc"]`.
+2. `data "aws_ami" "ubuntu"` sets `most_recent = true`.
+3. It sets `owners = ["099720109477"]`. This is the account ID of Canonical.
+4. It has a `filter` block with `name = "name"` and this name pattern in `values`: `"ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"`.
+5. `resource "aws_instance" "web"` sets `ami = data.aws_ami.ubuntu.id`. Do not hardcode an AMI ID.
+6. It sets `instance_type = "t3.micro"`.
+7. It has a `tags` map with one key, for example `VpcId`, set to `data.aws_vpc.main.id`.
+8. `output "vpc_id"` has `value = data.aws_vpc.main.id`.
 
 ```hcl
 data "aws_vpc" "main" {
   filter {
-    # name and values go here
+    # name, values
   }
 }
 
 data "aws_ami" "ubuntu" {
-  # most_recent, owners go here
+  # most_recent, owners
 
   filter {
-    # name and values go here
+    # name, values
   }
 }
 
 resource "aws_instance" "web" {
-  # ami (from the data source), instance_type, and a tag referencing the VPC lookup go here
+  # ami, instance_type, tags
 }
 
 output "vpc_id" {
-  # value goes here
+  # value
 }
 ```
-
-Fill it in so that:
-
-1. `data "aws_vpc" "main"` has a `filter` block matching tag `Name` = `"production-vpc"` (i.e. `name = "tag:Name"`, `values = ["production-vpc"]`).
-2. `data "aws_ami" "ubuntu"` sets `most_recent = true`, `owners = ["099720109477"]` (Canonical's account ID), and a `filter` block matching `name = "name"`, `values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]`.
-3. `resource "aws_instance" "web"` sets `ami = data.aws_ami.ubuntu.id` (a reference, not a hardcoded AMI ID), `instance_type = "t3.micro"`, and a `tags` map containing a key (e.g. `VpcId`) whose value is `data.aws_vpc.main.id`.
-4. `output "vpc_id"` has `value = data.aws_vpc.main.id`.

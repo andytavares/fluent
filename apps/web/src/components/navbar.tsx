@@ -4,23 +4,28 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { trpc } from "@/lib/trpc/client";
 
+function useTrackTitle(slug: string | undefined, enrolledTitle: string | undefined) {
+  const tracksQuery = trpc.tracks.listTracks.useQuery(undefined, {
+    enabled: slug !== undefined && enrolledTitle === undefined,
+  });
+  return enrolledTitle ?? tracksQuery.data?.find((track) => track.slug === slug)?.title ?? slug;
+}
+
+function useActiveTrack(pathname: string, profileFailed: boolean) {
+  const trackSlug = pathname.match(/^\/tracks\/([^/]+)/)?.[1];
+  const enrollmentsQuery = trpc.enrollments.listEnrollments.useQuery(undefined, {
+    enabled: !profileFailed,
+  });
+  const enrollments = enrollmentsQuery.data ?? [];
+  const enrollment = trackSlug ? enrollments.find((e) => e.track.slug === trackSlug) : enrollments[0];
+  const activeTrackSlug = trackSlug ?? enrollment?.track.slug;
+  return { activeTrackSlug, activeTrackTitle: useTrackTitle(activeTrackSlug, enrollment?.track.title) };
+}
+
 export function Navbar() {
   const pathname = usePathname();
   const profileQuery = trpc.profile.getProfile.useQuery();
-
-  const trackSlugMatch = pathname.match(/^\/tracks\/([^/]+)/);
-  const trackSlug = trackSlugMatch?.[1];
-
-  const enrollmentsQuery = trpc.enrollments.listEnrollments.useQuery(undefined, {
-    enabled: !profileQuery.isError,
-  });
-
-  const enrollment = trackSlug
-    ? enrollmentsQuery.data?.find((e) => e.track.slug === trackSlug)
-    : enrollmentsQuery.data?.[0];
-
-  const activeTrackSlug = trackSlug ?? enrollment?.track.slug;
-  const activeTrackTitle = enrollment?.track.title ?? activeTrackSlug;
+  const { activeTrackSlug, activeTrackTitle } = useActiveTrack(pathname, profileQuery.isError);
 
   const navLink = (href: string, label: string, active: boolean) => (
     <Link

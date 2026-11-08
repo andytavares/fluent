@@ -7,7 +7,7 @@
     "content-linter": "./dist/cli.js"
   },
   "scripts": {
-    "build": "esbuild src/cli.ts --bundle --platform=node --target=node20 --outfile=dist/cli.js",
+    "build": "esbuild src/cli.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/cli.js",
     "dev": "echo 'content-linter: no dev server (run: node dist/cli.js <exercise-folder>)'",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",

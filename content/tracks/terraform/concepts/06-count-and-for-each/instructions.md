@@ -1,12 +1,10 @@
-# count & for_each
+## What you build
 
-## What you'll learn
-
-How to create multiple instances of a resource from a single block using `count` (index-based) and `for_each` (key-based), and why the choice matters when resources are added or removed mid-list.
+You create repeated resources three ways: subnets keyed by name, instances keyed by environment, and identical Elastic IPs. `count` gives index-based instances, and `for_each` gives key-based instances. This lesson builds on **Locals & depends_on**.
 
 ## Key concepts
 
-### `count`
+### `count` makes N numbered instances
 
 ```hcl
 resource "aws_instance" "web" {
@@ -20,18 +18,22 @@ resource "aws_instance" "web" {
 }
 ```
 
-This creates three instances addressed as `aws_instance.web[0]`, `aws_instance.web[1]`, `aws_instance.web[2]`.
+The addresses are `aws_instance.web[0]`, `aws_instance.web[1]` and `aws_instance.web[2]`.
 
-`count` can also be used as a boolean — `count = var.enable_monitoring ? 1 : 0` creates the resource conditionally.
+`count = var.enable_monitoring ? 1 : 0` creates the resource only when the condition is true.
 
-**The problem with count and lists:** if you remove `web-1` from the middle of a list, Terraform renumbers everything after it. `web[2]` becomes `web[1]`, which Terraform interprets as a destroy + recreate. This causes unintended churn.
+### Removing from the middle renumbers `count`
 
-### `for_each`
+Remove `web-1` from the middle of a list, and every later index shifts down. `web[2]` becomes `web[1]`. Terraform destroys and recreates those instances.
+
+### `for_each` makes one instance per key
 
 ```hcl
 variable "buckets" {
-  type    = set(string)
-  default = ["raw", "processed", "archive"]
+  type = set(string)
+  default = [
+    "raw", "processed", "archive",
+  ]
 }
 
 resource "aws_s3_bucket" "data" {
@@ -39,14 +41,15 @@ resource "aws_s3_bucket" "data" {
   bucket   = "myapp-${each.key}"
 
   tags = {
-    Purpose = each.value  # for sets, each.key == each.value
+    # For a set, each.key == each.value
+    Purpose = each.value
   }
 }
 ```
 
-Instances are addressed by key: `aws_s3_bucket.data["raw"]`, `aws_s3_bucket.data["processed"]`. Removing `"raw"` from the set destroys only that bucket — others are untouched.
+The addresses use the key: `aws_s3_bucket.data["raw"]` and `aws_s3_bucket.data["processed"]`. Remove `"raw"`, and Terraform destroys only that bucket.
 
-### `for_each` with maps
+### `for_each` over a map gives keys and values
 
 ```hcl
 variable "environments" {
@@ -68,93 +71,76 @@ resource "aws_instance" "env" {
 }
 ```
 
-`each.key` is the map key (`"staging"`), `each.value` is the map value (`"t3.micro"`).
+`each.key` is the map key, `"staging"`. `each.value` is the map value, `"t3.micro"`.
 
-### `toset()` before `for_each`
+### `toset()` turns a list into a set
 
-`for_each` requires a `set` or `map` — not a `list`. Lists can contain duplicates and maintain order, which doesn't map cleanly to HCL's keyed instances. Convert with `toset()`:
+`for_each` needs a set or a map, not a list. A list can hold duplicates and has an order, so it does not map to keyed instances.
 
 ```hcl
 for_each = toset(var.availability_zones)
 ```
 
-### When to use which
+### Choose by identity
 
 | Situation | Use |
 |-----------|-----|
-| N identical resources (e.g., 3 replicas) | `count` |
-| Resources differ by a stable identifier | `for_each` |
-| Optional resource (0 or 1) | `count = condition ? 1 : 0` |
-| Resources from a map of config | `for_each` with map |
+| N identical resources | `count` |
+| A stable name or ID | `for_each` |
+| An optional resource | `count = cond ? 1 : 0` |
+| A map of configuration | `for_each` on a map |
 
-Default to `for_each` for anything keyed by a name or ID. Use `count` only when the resources are truly interchangeable.
-
-## vs other tools
-
-| Tool | Multiple resources |
-|------|-------------------|
-| **CloudFormation** | No native loops — use nested stacks or macros (complex); condition functions for optional resources |
-| **Pulumi** | Normal `for` loops in code; much more natural, but mixes infrastructure and application logic |
-| **Helm** | `{{- range .Values.items }}` Go template loops — string rendering only |
-| **Bicep** | `[for item in items: { ... }]` — similar to Terraform's for expression |
-
-Terraform's `for_each` is more stable than `count` for the same reason database rows have primary keys instead of sequence numbers.
+Use `for_each` for anything keyed by a name or an ID. Use `count` only for interchangeable resources. Database rows use primary keys instead of sequence numbers for the same reason.
 
 ## Watch out
 
-- **`for_each` requires a `set(string)` or `map`, never a `list`.** Passing a `list(string)` variable straight to `for_each` is a plan-time error — wrap it in `toset()` first (or restructure it as a map if you need keys and values that differ).
-- **Inside a `for_each` block, `each.key` and `each.value` — not `count.index`.** Inside a `count` block, `count.index` — not `each.key`. Mixing the two vocabularies up is the single most common error when converting one to the other.
-- **For a `set(string)`, `each.key == each.value`** (both are the string itself). For a `map`, they differ: `each.key` is the map key, `each.value` is the value at that key. Know which one you're iterating before reaching for `each.value`.
-- **`count.index` is a plain 0-based integer**, with no guaranteed stable identity — removing `aws_eip.nat[0]` shifts every later resource's index down by one, which Terraform treats as destroying and recreating them. This is exactly the "count churn" problem the Key concepts section describes.
+- `for_each` on a `list(string)` fails at plan time. Wrap the list in `toset()`, or use a map.
+- Inside `for_each`, use `each.key` and `each.value`. Inside `count`, use `count.index`. Mixing them is the most common error.
+- For a set, `each.key` equals `each.value`. For a map, they differ.
+- `count.index` is a 0-based integer with no stable identity. Removing `aws_eip.nat[0]` recreates every later instance.
+- A variable `default` must be a literal value. Write `["public"]`, not `toset(["public"])`. The `type` converts it.
 
 ## The task
 
-You're provisioning three kinds of repeated resources that each call for a different multiplicity strategy: subnets keyed by name, instances keyed by environment, and interchangeable Elastic IPs.
+Create three kinds of repeated resources. Each one uses a different way to repeat.
+
+1. `variable "subnet_names"` has `type = set(string)`.
+2. Its default is `["public", "private", "data"]`.
+3. `variable "environments"` has `type = map(string)`.
+4. Its default maps `staging` to `"t3.micro"` and `production` to `"t3.large"`.
+5. `resource "aws_subnet" "app"` uses `for_each = var.subnet_names` and sets `vpc_id = "vpc-placeholder"`.
+6. Its `cidr_block` uses `each.key`. Any valid HCL pattern is correct.
+7. The subnet has a tag `Name = each.key`.
+8. `resource "aws_instance" "env"` uses `for_each = var.environments`.
+9. It sets `ami = "ami-placeholder"` and `instance_type = each.value`.
+10. The instance has a tag `Name = each.key`.
+11. `resource "aws_eip" "nat"` uses `count = 2` and a tag `Index = count.index`.
 
 ```hcl
 variable "subnet_names" {
-  # type = set(string), default = toset([...])
+  # type, default
 }
 
 variable "environments" {
-  # type = map(string), default = { ... }
+  # type, default
 }
 
 resource "aws_subnet" "app" {
-  for_each = ...  # var.subnet_names
-
-  vpc_id     = "vpc-placeholder"
-  cidr_block = "..." # uses each.key
-
-  tags = {
-    Name = ... # each.key
-  }
+  # for_each
+  vpc_id = "vpc-placeholder"
+  # cidr_block with each.key
+  # tags: Name = each.key
 }
 
 resource "aws_instance" "env" {
-  for_each = ...  # var.environments
-
-  ami           = "ami-placeholder"
-  instance_type = ... # each.value
-
-  tags = {
-    Name = ... # each.key
-  }
+  # for_each
+  ami = "ami-placeholder"
+  # instance_type = each.value
+  # tags: Name = each.key
 }
 
 resource "aws_eip" "nat" {
-  count = ... # 2
-
-  tags = {
-    Index = ... # count.index
-  }
+  # count = 2
+  # tags: Index = count.index
 }
 ```
-
-Fill it in so that:
-
-1. `variable "subnet_names"` has `type = set(string)` and default `toset(["public", "private", "data"])`.
-2. `variable "environments"` has `type = map(string)` and a default mapping `staging` to `"t3.micro"` and `production` to `"t3.large"`.
-3. `resource "aws_subnet" "app"` uses `for_each = var.subnet_names`, sets `vpc_id = "vpc-placeholder"`, a `cidr_block` that incorporates `each.key` somehow (any pattern that's valid HCL is fine — the point is using the key, not a specific CIDR), and a tag `Name = each.key`.
-4. `resource "aws_instance" "env"` uses `for_each = var.environments`, sets `ami = "ami-placeholder"`, `instance_type = each.value`, and a tag `Name = each.key`.
-5. `resource "aws_eip" "nat"` uses `count = 2` and a tag `Index = count.index`.

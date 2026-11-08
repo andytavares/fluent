@@ -1,93 +1,119 @@
-# Union Types & Narrowing
+## What you build
 
-## What you'll learn
-
-Lesson 2 showed generics parameterizing over "any one type"; a union type `A | B` says a value is *one of several specific* types. TypeScript tracks which branch of a union you're in at any point in your code — this is called **narrowing** — and gives you the correct, specific type within each branch without a single cast.
+You build a `Result<T>` type that holds either a value or an error, with four functions that use it. A union type `A | B` says a value is one of several specific types. This lesson builds on **Functions & Generics**.
 
 ## Key concepts
 
-**Union types:**
+### A union type lists the allowed types
+
+A value of type `string | number` is a string or a number.
+
 ```ts
 type StringOrNumber = string | number;
 
-function display(value: StringOrNumber): string {
-  return String(value);
+function show(v: StringOrNumber): string {
+  return String(v);
 }
 ```
 
-**Narrowing with `typeof`:**
+### Narrowing gives each branch a specific type
+
+TypeScript tracks which member of the union a value is at each point in the code. This is narrowing. A `typeof` check narrows the value without a cast.
+
 ```ts
-function double(value: string | number): string | number {
+function double(
+  value: string | number,
+): string | number {
   if (typeof value === "string") {
-    return value.repeat(2);   // TypeScript knows value is string here
+    // value is string here
+    return value.repeat(2);
   }
-  return value * 2;            // TypeScript knows value is number here
+  // value is number here
+  return value * 2;
 }
 ```
 
-**Discriminated unions** — a shared literal field ("discriminant") that tags each variant, letting the compiler narrow on a `switch` or `if`:
+### A discriminated union tags each variant
+
+Each variant has a shared literal field, the discriminant. A `switch` or `if` on that field narrows to one variant.
+
 ```ts
 type Shape =
-  | { kind: "circle";    radius: number }
-  | { kind: "rectangle"; width: number; height: number };
+  | { kind: "circle"; radius: number }
+  | { kind: "rect"; w: number; h: number };
 
 function area(s: Shape): number {
   switch (s.kind) {
-    case "circle":    return Math.PI * s.radius ** 2;
-    case "rectangle": return s.width * s.height;
+    case "circle":
+      return Math.PI * s.radius ** 2;
+    case "rect":
+      return s.w * s.h;
   }
 }
 ```
 
-**`never` at the end of an exhaustive switch** — if you add a new variant and forget a case, TypeScript reports an error, catching the omission at compile time instead of at runtime:
+### `never` makes a `switch` exhaustive
+
+Assign the value to `never` in the `default` case. If you add a variant and forget its case, the compiler reports an error.
+
 ```ts
 default:
-  const _: never = s;  // compile error if any case is unhandled
+  // Compile error if a case is missing
+  const _: never = s;
   return _;
 ```
 
-**vs other languages:** There are no null-pointer exceptions by default in strict TypeScript — `null` and `undefined` are their own types in the union, not implicit members of every type. You must explicitly narrow them away before use. This is the same idea as Rust's `Option<T>` or Kotlin's nullable types (`T?`), just expressed with plain unions instead of a wrapper type.
+### `null` and `undefined` are separate types
+
+With strict null checks, `null` and `undefined` are not members of every type. You must narrow them away before use. Rust's `Option<T>` and Kotlin's `T?` express the same idea.
+
+```ts
+function len(s: string | null): number {
+  if (s === null) return 0;
+  return s.length;
+}
+```
 
 ## Watch out
 
-- Narrowing is control-flow-based, not variable-based: if you extract `const isOk = result.ok` and branch on `isOk` instead of `result.ok` directly, TypeScript loses the connection and won't narrow `result` for you.
-- A `switch` without a `default: const _: never = ...` check compiles fine even if a case is missing — the exhaustiveness guarantee only exists if you write it. It is opt-in, not automatic.
-- Discriminated unions need a genuinely shared **literal** field. If the two branches don't share a common tag (e.g. one has `type: "a"` and the other has `kind: "b"`), TypeScript can't narrow between them at all — you're stuck checking individual properties.
+- A saved condition such as `const isOk = result.ok` narrows `result` only in TypeScript 4.4 or later.
+- Reassign `result` after you save the condition, and the narrowing is lost.
+- A `switch` with a missing case compiles. Only the `never` check makes it exhaustive, and you must write it.
+- Narrowing needs a shared literal field. Variants tagged `type: "a"` and `kind: "b"` do not narrow.
 
 ## The task
 
-You're building a `Result<T>` type — a common pattern for representing "either a value or an error" without throwing exceptions for expected failures.
+Build a `Result<T>` type. It holds either a value or an error, so expected failures need no exception.
 
 ```ts
 type Result<T> =
-  | { ok: true;  value: T }
+  | { ok: true; value: T }
   | { ok: false; error: string };
 ```
 
-**`ok<T>(value: T): Result<T>`** — wraps a success value.
+1. `ok<T>(value: T): Result<T>` returns `{ ok: true, value }`.
+2. `err<T>(message: string): Result<T>` returns `{ ok: false, error: message }`.
+3. In `err`, `T` is the type the value has on success.
+4. `map<T, U>(result: Result<T>, fn: (value: T) => U): Result<U>` applies `fn` to an `ok` value and wraps the output.
+5. `map` returns an error result unchanged and does not call `fn`.
+6. `unwrap<T>(result: Result<T>): T` returns the value of an `ok` result.
+7. For an error result, `unwrap` throws an `Error` whose message is the error string.
+
+`fn` can change the type, so `T` and `U` can differ.
 
 ```ts
-ok(42);      // { ok: true, value: 42 }
-ok("hi");    // { ok: true, value: "hi" }
-```
+ok(42);   // { ok: true, value: 42 }
+err<number>("not found");
+// { ok: false, error: "not found" }
 
-**`err<T>(message: string): Result<T>`** — wraps an error message. `T` is not constrained by the message — it describes what the value *would have been* had the call succeeded.
+map(ok(5), (n) => n * 2);
+// { ok: true, value: 10 }
+map(ok(42), (n) => String(n));
+// { ok: true, value: "42" }
+map(err<number>("oops"), (n) => n * 2);
+// { ok: false, error: "oops" }
 
-```ts
-err<number>("not found");   // { ok: false, error: "not found" }
-```
-
-**`map<T, U>(result: Result<T>, fn: (value: T) => U): Result<U>`** — if `result` is `ok`, applies `fn` to the value and wraps the result; if `result` is an error, returns the error unchanged (and does **not** call `fn`).
-
-```ts
-map(ok(5), (n) => n * 2);          // { ok: true, value: 10 }
-map(ok(42), (n) => String(n));     // { ok: true, value: "42" } — T can change to U
-map(err<number>("oops"), (n) => n * 2); // { ok: false, error: "oops" } — fn never runs
-```
-
-**`unwrap<T>(result: Result<T>): T`** — returns the value if `ok`; otherwise **throws** an `Error` whose message is the wrapped error string.
-
-```ts
-unwrap(ok(99));           // 99
-unwrap(err("boom"));      // throws Error("boom")
+unwrap(ok(99));       // 99
+unwrap(err("boom"));
+// throws Error("boom")
 ```

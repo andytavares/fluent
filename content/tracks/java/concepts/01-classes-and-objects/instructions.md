@@ -1,18 +1,20 @@
-# Classes & Objects
+## What you build
 
-## What you'll learn
-
-Java is a class-based, object-oriented language. Every piece of code lives inside a class. A class defines fields (data) and methods (behavior). Access modifiers (`public`, `private`, `protected`) control what is visible from outside the class. This is the foundation the rest of the track builds on.
+You write a `Rectangle` class with a constructor, three methods and a `toString()` override. Java is a class-based, object-oriented language, and all code lives inside a class.
 
 ## Key concepts
 
-**Defining a class:**
+### A class holds fields and methods
+
+Fields hold the data and methods hold the behavior. Access modifiers (`public`, `private`, `protected`) control what code outside the class can see.
+
 ```java
 public class Circle {
-    private final double radius;  // private field, immutable after construction
+    // Private; fixed after construction
+    private final double radius;
 
     public Circle(double radius) {
-        this.radius = radius;      // constructor
+        this.radius = radius;
     }
 
     public double area() {
@@ -21,11 +23,28 @@ public class Circle {
 }
 ```
 
-**Constructors** have the same name as the class and no return type. Use `this.field = value` when parameter names shadow field names.
+### A constructor has the class name and no return type
 
-**`final` fields** can only be assigned once — either at declaration or in the constructor. Prefer `final` for fields that represent intrinsic, unchanging properties of an object.
+When a parameter name shadows a field name, write `this.field = value` to set the field.
 
-**toString:** Override `Object.toString()` to produce a human-readable representation — very useful for logging and debugging.
+```java
+public Circle(double radius) {
+    this.radius = radius;
+}
+```
+
+### A `final` field gets one assignment
+
+You assign a `final` field once: at its declaration or in the constructor. Use `final` for properties of the object that do not change.
+
+```java
+private final double radius;
+```
+
+### `toString()` gives a readable form
+
+Override `Object.toString()` to return a readable description of the object. It helps with logging and debugging.
+
 ```java
 @Override
 public String toString() {
@@ -33,41 +52,52 @@ public String toString() {
 }
 ```
 
-**vs other languages:** Java objects always live on the heap and are accessed through references. There is no stack-allocated object syntax. The JVM's garbage collector handles deallocation — you never call `free` or `delete`.
+### Objects live on the heap
+
+You reach every Java object through a reference, and Java has no syntax for objects on the stack. The garbage collector frees memory, so you never call `free` or `delete`.
+
+```java
+Circle c = new Circle(2.0);
+// c holds a reference, not the object
+```
 
 ## Watch out
 
-- **`==` on objects compares references, not content.** Two `Rectangle` instances with identical fields are `==`-unequal unless you override `equals()`. This task only compares primitive `double`s, so `==` is fine there — but remember the distinction the moment you work with objects.
-- **Forgetting to override `toString()`** leaves you with Java's default: `Solution$Rectangle@1b6d3586` — the class name plus a hash code, useless for debugging.
-- **Double formatting:** string-concatenating a `double` prints its full decimal form — `3.0`, not `3`. `"Rectangle(width=" + 3.0 + ")"` produces `"Rectangle(width=3.0)"`, not `"Rectangle(width=3)"`. Match this exactly when building strings from doubles.
+- `==` on objects compares references, not content. Two equal-looking objects are not `==` unless they are the same object.
+- This task compares only primitive `double` values, so `==` is correct there.
+- Without a `toString()` override, Java prints the class name and a hash code, for example `Solution$Rectangle@1b6d3586`.
+- String concatenation prints a `double` with its decimal part: `3.0`, not `3`.
 
 ## The task
 
-You're modeling a 2D rectangle as a Java class inside `Solution.java`. Implement the nested class `Rectangle`:
+Model a 2D rectangle. Write the nested class `Rectangle` inside the class `Solution`.
 
-**Constructor `Rectangle(double width, double height)`** — stores both dimensions.
+1. `Rectangle(double width, double height)` stores both dimensions.
+2. `double getArea()` returns `width * height`.
+3. `double getPerimeter()` returns `2 * (width + height)`.
+4. `boolean isSquare()` returns `true` when `width` equals `height`.
+5. `String toString()` returns `"Rectangle(width=W, height=H)"`.
+6. `W` and `H` are the values as Java prints a `double`, for example `3.0`.
 
-**`double getArea()`** — returns `width * height`.
-
-**`double getPerimeter()`** — returns `2 * (width + height)`.
-
-**`boolean isSquare()`** — returns `true` when `width` equals `height`.
-
-**`String toString()`** — returns `"Rectangle(width=W, height=H)"` where `W` and `H` are the numeric field values printed as Java prints a `double` (e.g. `3.0`, not `3`).
+A zero width is valid and gives an area of `0.0`.
 
 ```java
 Rectangle r1 = new Rectangle(3, 4);
-r1.getArea();        // 12.0
-r1.getPerimeter();    // 14.0
-r1.isSquare();        // false
-r1.toString();        // "Rectangle(width=3.0, height=4.0)"
+r1.getArea();       // 12.0
+r1.getPerimeter();  // 14.0
+r1.isSquare();      // false
+// "Rectangle(width=3.0, height=4.0)"
+r1.toString();
 
 Rectangle r2 = new Rectangle(5, 5);
-r2.isSquare();        // true — equal dimensions
-r2.toString();        // "Rectangle(width=5.0, height=5.0)"
+r2.getArea();       // 25.0
+r2.getPerimeter();  // 20.0
+r2.isSquare();      // true
+// "Rectangle(width=5.0, height=5.0)"
+r2.toString();
 
 Rectangle r3 = new Rectangle(0, 7);
-r3.getArea();         // 0.0   — zero width is a valid edge case
-r3.getPerimeter();    // 14.0
-r3.isSquare();        // false
+r3.getArea();       // 0.0
+r3.getPerimeter();  // 14.0
+r3.isSquare();      // false
 ```

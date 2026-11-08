@@ -1,16 +1,17 @@
-# Borrowing & References
+## What you build
 
-## What you'll learn
-
-References let you use a value without taking ownership of it. Rust's borrow checker enforces a strict set of rules on references at compile time — the rules that make data races impossible.
+You write three functions that read and change data through references, without ownership. The borrow checker checks the reference rules at compile time, and these rules prevent data races. This lesson builds on **Ownership**.
 
 ## Key concepts
 
-**Shared references `&T`.** You can have as many read-only references to a value as you like. The borrow checker ensures the original value lives at least as long as the reference.
+### A shared reference `&T` borrows a value to read it
+
+You can have any number of read-only references to a value. The borrow checker makes sure the value lives at least as long as each reference.
 
 ```rust
 fn print_len(s: &String) {
-    println!("{}", s.len()); // s is borrowed, not moved
+    // s is borrowed, not moved
+    println!("{}", s.len());
 }
 
 let owned = String::from("hello");
@@ -18,7 +19,9 @@ print_len(&owned);
 println!("{}", owned); // still valid
 ```
 
-**Mutable references `&mut T`.** You can have exactly one mutable reference to a value at a time — and while it exists, no shared references may be active.
+### A mutable reference `&mut T` borrows a value to change it
+
+You can have only one mutable reference to a value at a time. While it exists, no shared reference can be active.
 
 ```rust
 fn shout(s: &mut String) {
@@ -30,28 +33,38 @@ shout(&mut msg);
 println!("{}", msg); // "hello!"
 ```
 
-**The borrow checker rules (compile-time):**
-- At any given moment: either **one `&mut T`**, or **any number of `&T`** — never both.
-- A reference must not outlive the value it refers to (no dangling pointers).
+### The borrow checker has two rules
+
+1. At any moment, you have either one `&mut T` or any number of `&T`, never both.
+2. A reference must not outlive its value, so no reference can dangle.
+
+C++ lets you hold a `const&` and a non-const reference to the same data together. Rust forbids this, and so it removes iterator invalidation bugs.
 
 ```rust
 let r;
 {
     let x = 5;
     r = &x;
-} // x dropped here
-println!("{}", r); // error[E0597]: `x` does not live long enough
+} // Rust drops x here
+// error[E0597]: `x` does not live
+// long enough
+println!("{}", r);
 ```
 
-**Slices `&[T]`.** A slice is a reference to a contiguous sequence — a fat pointer (pointer + length). `&str` is just `&[u8]` with a UTF-8 guarantee. Slices don't own their data.
+### A slice `&[T]` borrows a contiguous sequence
+
+A slice is a fat pointer: a pointer and a length. It does not own its data. A `&str` is a slice of UTF-8 bytes.
 
 ```rust
 let v = vec![1, 2, 3, 4, 5];
-let middle: &[i32] = &v[1..4]; // [2, 3, 4]
+// [2, 3, 4]
+let middle: &[i32] = &v[1..4];
 println!("{:?}", middle);
 ```
 
-**String slices `&str`.** You almost always want `&str` as a function parameter instead of `&String` — it's more flexible because it accepts both `String` borrows and string literals.
+### Take `&str` as a parameter, not `&String`
+
+A `&str` parameter accepts a borrowed `String` and a string literal. A `&String` parameter accepts only a borrowed `String`.
 
 ```rust
 fn first_word(s: &str) -> &str {
@@ -62,46 +75,45 @@ fn first_word(s: &str) -> &str {
 }
 ```
 
-## vs other languages
-
-| | Rust | C++ | Go | Java |
-|---|---|---|---|---|
-| Pointer aliasing | **statically prevented** | unrestricted (UB risk) | unrestricted | unrestricted |
-| Dangling pointer | **compile error** | silent UB | impossible (GC) | impossible (GC) |
-| Mutable aliasing | **impossible** | common pattern | possible | possible |
-| Fat pointers (slice) | `&[T]` — ptr + len | `std::span<T>` (C++20) | slice header | array + separate len |
-
-In C++ you can hold a `const&` and a non-const reference to the same data simultaneously. Rust forbids this entirely. That's the trade-off that eliminates iterator invalidation bugs.
-
 ## Watch out
 
-- Prefer `&str` over `&String` in function signatures. `&String` only accepts an actual `String`'s reference; `&str` accepts that too (via deref coercion) *and* string literals, so it's strictly more flexible for a parameter type.
-- You cannot hold a `&mut T` and any `&T` to the same data at the same time — not "at the same time" as in simultaneously read, but for any overlapping span in the code, even if you never actually use both. The compiler tracks the reference's last use, not its lexical scope, but two references whose live ranges overlap and where one is mutable will not compile.
-- Indexing a slice out of bounds (`slice[10]` on a 3-element slice) panics at runtime — it is not a compile-time check. Use `.get(i)` (returns `Option<&T>`) when the index isn't guaranteed to be in range.
+- A `&String` parameter rejects string literals. A `&str` parameter accepts both, through deref coercion.
+- A `&mut T` and a `&T` to the same data cannot have overlapping live ranges. That code does not compile.
+- A reference lives until its last use, not until the end of its block.
+- An out-of-bounds index on a slice panics at runtime. The compiler does not check it.
+- Use `.get(i)` when the index can be out of range. It returns `Option<&T>`.
 
 ## The task
 
-Implement three functions:
+Write three functions that use references and slices.
+
+1. `fn first(slice: &[i32]) -> i32` returns the first element of `slice`.
+2. If `slice` is empty, `first` returns `0`.
+3. `fn append(s: &mut String, suffix: &str)` adds `suffix` to the end of `s` in place. It returns nothing.
+4. `fn str_len(s: &str) -> usize` returns the length of `s` in bytes. It does not take ownership.
+
+`append` with an empty suffix leaves `s` unchanged. `str_len` also accepts a borrowed `String`.
 
 ```rust
-// Return the first element of a slice, or 0 if empty.
-fn first(slice: &[i32]) -> i32
+first(&[10, 20, 30])  // 10
+first(&[5])           // 5
+first(&[-7, 1, 2])    // -7
+first(&[])            // 0
 
-// Append a suffix to the string in place (takes &mut String).
-fn append(s: &mut String, suffix: &str)
+let mut s = String::from("hello");
+append(&mut s, " world");
+s  // "hello world"
 
-// Return the length (byte length) of a string slice without taking ownership.
-fn str_len(s: &str) -> usize
-```
+let mut e = String::from("");
+append(&mut e, "start");
+e  // "start"
 
-```rust
-first(&[10, 20, 30]); // 10
-first(&[]);            // 0
+let mut f = String::from("foo");
+append(&mut f, "");
+f  // "foo"
 
-let mut greeting = String::from("hello");
-append(&mut greeting, " world");
-greeting; // "hello world"
-
-str_len("Rust");  // 4
-str_len("");      // 0
+str_len("Rust")  // 4
+str_len("")      // 0
+let owned = String::from("hello");
+str_len(&owned)  // 5
 ```

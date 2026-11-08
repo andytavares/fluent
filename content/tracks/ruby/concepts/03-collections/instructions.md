@@ -1,79 +1,83 @@
-# Collections
+## What you build
 
-## What you'll learn
-
-Ruby's Array and Hash APIs — the core functional iteration methods, destructuring, and `each_with_object` for accumulator patterns.
+You write four functions that sum squares, filter words, invert a hash and group words by first letter. This lesson builds on **Methods & Blocks**.
 
 ## Key concepts
 
-### Array basics
+### Arrays start at index 0
 
-Arrays are ordered, dynamically typed, and zero-indexed.
+An array keeps its order and holds values of any type. A negative index counts from the end. `1..3` includes the end, and `1...3` excludes it.
 
 ```ruby
 nums = [1, 2, 3, 4, 5]
-nums[0]     # => 1
-nums[-1]    # => 5
-nums[1..3]  # => [2, 3, 4]  (inclusive range)
-nums[1...3] # => [2, 3]     (exclusive range)
+nums[0]      # => 1
+nums[-1]     # => 5
+nums[1..3]   # => [2, 3, 4]
+nums[1...3]  # => [2, 3]
+
+# Append, same as nums << 6
+nums.push(6)
+# Remove and return the last
+nums.pop
+# Remove and return the first
+nums.shift
+# Prepend
+nums.unshift(0)
 ```
 
-Common mutation:
+### `map`, `select`, `reject` and `reduce` return new values
+
+These methods do not change the original array. `select` is the Ruby name for `filter` in JavaScript and Python.
 
 ```ruby
-nums.push(6)   # append, alias: nums << 6
-nums.pop       # remove and return last
-nums.shift     # remove and return first
-nums.unshift(0)  # prepend
-```
-
-### Functional iteration
-
-These return new arrays without mutating the original:
-
-```ruby
-[1, 2, 3].map { |n| n * 2 }     # => [2, 4, 6]
+[1, 2, 3].map { |n| n * 2 }
+# => [2, 4, 6]
 [1, 2, 3].select { |n| n > 1 }  # => [2, 3]
 [1, 2, 3].reject { |n| n > 1 }  # => [1]
-[1, 2, 3].reduce(0) { |sum, n| sum + n }  # => 6
-# or with a symbol shorthand:
-[1, 2, 3].reduce(:+)  # => 6
+[1, 2, 3].reduce(0) { |s, n| s + n }
+# => 6
+[1, 2, 3].reduce(:+)            # => 6
 ```
 
-`flat_map` is `map` followed by a one-level flatten:
+### `flat_map` maps, then flattens one level
 
 ```ruby
-[[1, 2], [3, 4]].flat_map { |a| a.map { |n| n * 10 } }
+[[1, 2], [3, 4]].flat_map do |a|
+  a.map { |n| n * 10 }
+end
 # => [10, 20, 30, 40]
 ```
 
-### each_with_object
+### `each_with_object` builds a mutable result
 
-When you need to build up a result object while iterating, `each_with_object` is cleaner than `reduce` for mutable accumulators:
+When you build up a result object, `each_with_object` is cleaner than `reduce`. `Hash.new(0)` makes a hash whose missing keys give `0` instead of `nil`.
 
 ```ruby
 words = ["foo", "bar", "foo", "baz"]
-counts = words.each_with_object(Hash.new(0)) do |word, acc|
+counts = words.each_with_object(
+  Hash.new(0)
+) do |word, acc|
   acc[word] += 1
 end
 # => {"foo"=>2, "bar"=>1, "baz"=>1}
 ```
 
-`Hash.new(0)` creates a hash whose missing keys default to `0` instead of `nil`.
+### Hashes keep insertion order
 
-### Hash basics
-
-Hashes are ordered (since Ruby 1.9) key-value stores. Symbol keys use the `key:` shorthand in literals:
+Hashes keep insertion order since Ruby 1.9. A literal with `key:` makes symbol keys. A missing key gives `nil` with `[]`, but `fetch` raises `KeyError`.
 
 ```ruby
 config = { host: "localhost", port: 5432 }
 config[:host]           # => "localhost"
 config[:missing]        # => nil
 config.fetch(:missing)  # raises KeyError
-config.fetch(:missing, "default")  # => "default"
+config.fetch(:missing, "default")
+# => "default"
 ```
 
-String and symbol keys are different:
+### String keys and symbol keys differ
+
+`"name"` and `:name` are two different keys.
 
 ```ruby
 h = { "name" => "Alice", name: "Bob" }
@@ -81,84 +85,84 @@ h["name"]  # => "Alice"
 h[:name]   # => "Bob"
 ```
 
-### Hash iteration and transformation
+### Hashes have their own transforms
+
+`transform_values` (Ruby 2.4 or later) maps the values and keeps the keys. `select` on a hash returns a hash.
 
 ```ruby
-{ a: 1, b: 2 }.map { |k, v| [k, v * 10] }.to_h
+h = { a: 1, b: 2 }
+h.map { |k, v| [k, v * 10] }.to_h
 # => {a: 10, b: 20}
 
-# idiomatic Ruby 2.6+:
-{ a: 1, b: 2 }.transform_values { |v| v * 10 }
+h.transform_values { |v| v * 10 }
 # => {a: 10, b: 20}
 
-{ a: 1, b: 2 }.select { |k, v| v > 1 }
+h.select { |k, v| v > 1 }
 # => {b: 2}
 ```
 
-### Array decomposition
+### Assignment can split an array
+
+`*` collects the rest of the values, like `...rest` in JavaScript.
 
 ```ruby
 first, *rest = [1, 2, 3, 4]
-# first => 1, rest => [2, 3, 4]
+# first is 1, rest is [2, 3, 4]
 
 a, b = [10, 20]
-# a => 10, b => 20
+# a is 10, b is 20
 ```
-
-## vs other languages
-
-| | Ruby | Python | JavaScript | Go |
-|---|---|---|---|---|
-| Hash / dict literal | `{ key: val }` | `{"key": val}` | `{ key: val }` | `map[K]V{k: v}` |
-| Missing key | `nil` | `KeyError` | `undefined` | zero value |
-| Map function name | `.map` | `map()` builtin | `.map` | no builtin — use loop |
-| Filter function name | `.select` | `filter()` | `.filter` | no builtin |
-| Splat / spread | `*rest` in assign | `*rest` | `...rest` | none |
-
-One trap: `Hash[]` and `{}` are both valid hash literals, but `{}` at the start of a statement is parsed as a block, not a hash. Always use parentheses or assign to a variable when a bare `{}` would be ambiguous.
 
 ## Watch out
 
-- `Hash.new(0)` is safe for numeric counters, but **never** use `Hash.new([])` for an accumulator — every missing key returns the *same* array object, so pushing into one key's "array" mutates every other missing key too. Use `Hash.new { |h, k| h[k] = [] }` instead when the default must be a fresh mutable object per key.
-- `h[:missing]` returns `nil` silently; `h.fetch(:missing)` raises `KeyError`. Prefer `fetch` when a missing key is a bug, `[]` when `nil` is a legitimate "not present" result.
-- `{ "name" => "Alice", name: "Bob" }` has two distinct keys — `"name"` (String) and `:name` (Symbol) never collide. Mixing string-keyed and symbol-keyed hashes (e.g. `JSON.parse` output vs. a literal) is a common source of `nil`-where-value-expected bugs.
-- `nums[10]` on a 3-element array returns `nil`, not an error — Ruby never raises `IndexError` for `Array#[]` reads out of range (only for `Array#fetch`).
+- `Hash.new([])` gives every missing key the same array. A push for one key changes all of them.
+- For a fresh array per key, use `Hash.new { |h, k| h[k] = [] }`.
+- `h[:missing]` returns `nil`, and `h.fetch(:missing)` raises `KeyError`. Use `fetch` when a missing key is a bug.
+- `JSON.parse` output has string keys, and a literal has symbol keys. A lookup with the wrong type returns `nil`.
+- `nums[10]` on a 3-element array returns `nil`. Only `Array#fetch` raises `IndexError`.
+- `{}` right after a method name is a block, not a hash: `puts {}` passes an empty block. Use parentheses: `puts({})`.
 
 ## The task
 
-Implement four functions covering array iteration, hash transformation, and grouping.
+Write four functions in `stub.rb`. They use array iteration, hash transformation and grouping.
 
-**`sum_of_squares(nums)`** — returns the sum of the square of each number in the `nums` array.
+1. `sum_of_squares(nums)` returns the sum of the square of each number in `nums`.
+2. `words_longer_than(words, min_length)` returns the words whose length is strictly greater than `min_length`.
+3. `words_longer_than` keeps the original order.
+4. `invert_hash(h)` returns a new `Hash` with the keys and values swapped. All values in `h` are unique.
+5. `group_by_first_letter(words)` returns a `Hash` from each first letter, as a `String`, to an `Array` of words.
+6. Each group keeps the original order of its words.
+
+Empty input gives `0`, `[]` or `{}`. A letter that starts no word is not a key, so it reads as `nil`.
 
 ```ruby
-sum_of_squares([1, 2, 3, 4])   # => 30   (1 + 4 + 9 + 16)
+sum_of_squares([1, 2, 3, 4])   # => 30
 sum_of_squares([5])            # => 25
-sum_of_squares([])             # => 0
 sum_of_squares([-1, -2, -3])   # => 14
-```
+sum_of_squares([])             # => 0
 
-**`words_longer_than(words, min_length)`** — returns the subset of `words` whose length is **strictly greater than** `min_length`, preserving original order.
+words_longer_than(
+  ["hi", "hello", "hey", "greetings"], 3
+)
+# => ["hello", "greetings"]
+words_longer_than(["apple", "fig"], 3)
+# => ["apple"]
+words_longer_than(["a", "bb", "ccc"], 5)
+# => []
+words_longer_than([], 2)       # => []
 
-```ruby
-words_longer_than(["hi", "hello", "hey", "greetings"], 3)  # => ["hello", "greetings"]
-words_longer_than(["a", "bb", "ccc"], 5)                   # => []
-words_longer_than([], 2)                                   # => []
-```
+invert_hash({ a: 1, b: 2 })
+# => {1 => :a, 2 => :b}
+invert_hash({ "foo" => "x" })
+# => {"x" => "foo"}
+invert_hash({})                # => {}
 
-**`invert_hash(h)`** — returns a new `Hash` with keys and values swapped. Assume all values in `h` are unique (so the inversion is well-defined).
-
-```ruby
-invert_hash({ a: 1, b: 2, c: 3 })   # => { 1 => :a, 2 => :b, 3 => :c }
-invert_hash({ "foo" => "x" })       # => { "x" => "foo" }
-invert_hash({})                     # => {}
-```
-
-**`group_by_first_letter(words)`** — returns a `Hash` mapping each first letter (as a `String`) to an `Array` of the words that start with it, preserving each word's original relative order within its group.
-
-```ruby
-group_by_first_letter(["apple", "avocado", "banana", "apricot"])
-# => { "a" => ["apple", "avocado", "apricot"], "b" => ["banana"] }
-
-group_by_first_letter([])
-# => {}
+g = group_by_first_letter(
+  ["apple", "avocado", "banana", "apricot"]
+)
+g["a"]
+# => ["apple", "avocado", "apricot"]
+g["b"]  # => ["banana"]
+g["c"]  # => nil
+group_by_first_letter([])      # => {}
 ```

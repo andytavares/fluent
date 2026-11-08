@@ -1,67 +1,85 @@
-# Schema Management
+## What you build
 
-## What you'll learn
-
-Kafka itself is schema-agnostic — a record's value is just bytes. That's exactly why schema management matters: producers and consumers are decoupled in time (a consumer might read data written months ago by a producer version that no longer exists), so *something* has to enforce that today's producer and yesterday's consumer can still understand each other's bytes. This lesson covers the schema registry model and compatibility modes — the actual mechanism that makes safe schema evolution possible.
+You configure an Avro producer for the `orders` topic in `stub.properties`, with schema registry integration. Kafka stores a record value as bytes and knows no schema. A schema registry makes sure today's producer and yesterday's consumer still understand each other. This lesson builds on **Producers** and **Retention and Compaction**.
 
 ## Key concepts
 
-**In a decoupled log, the schema is a contract across time, not just across a single request/response.** In a synchronous API, a client and server negotiate compatibility live, per call. In Kafka, a producer writes a record today; a consumer might read it a year from now, written by a producer version that's since been redeployed twice. There's no live negotiation — compatibility has to be enforced *before* an incompatible schema is ever allowed to reach the topic, or you find out about it in production when an old consumer chokes on new data.
+### The schema is a contract across time
 
-**The schema registry stores schemas under subjects, each with a version history and an id.** A **subject** is typically `{topic}-value` or `{topic}-key` (the default `TopicNameStrategy`) — the registry doesn't version "schemas" in the abstract, it versions "the schema used for this topic's values (or keys)." Each time a compatible new schema is registered under a subject, it gets the next **version** number and a globally unique **schema id**. Serialized records carry only the small schema id (not the full schema) as a prefix — the consumer looks the id up in the registry (cached locally after the first lookup) to get the full schema needed to deserialize. This is what keeps messages small even though schemas can be large and change over time.
+In a synchronous API, the client and server check compatibility live, on each call. In Kafka, a consumer can read a record a year after a producer wrote it. That producer version can be gone. Nothing negotiates at read time, so the registry must block an incompatible schema before it reaches the topic. Otherwise, an old consumer fails on new data in production.
+
+### The registry versions schemas per subject
+
+A **subject** is usually `{topic}-value` or `{topic}-key`, from the default `TopicNameStrategy`. The registry versions "the schema for this topic's values", not schemas in the abstract. Each compatible new schema gets the next **version** number and a globally unique **schema id**.
+
+A record carries only the small schema id as a prefix, not the full schema. The consumer looks up the id in the registry and caches the result. Messages stay small, even with large schemas that change.
 
 ```
-producer: serialize record with schema id 47 -> [magic byte][schema id: 47][avro bytes...]
-consumer: read schema id 47 from the record -> fetch schema 47 from registry (cached) -> deserialize
+producer, schema id 47:
+  [magic byte][id 47][avro bytes...]
+consumer:
+  read id 47 -> fetch schema 47
+  (cached) -> deserialize
 ```
 
-**Compatibility modes decide what schema changes are allowed for a subject, checked at registration time:**
+### Compatibility modes decide which changes the registry accepts
 
-| Mode | Allows | Guarantees |
-|---|---|---|
-| `BACKWARD` | New schema can read data written with the **previous** schema. | Consumers upgrade first, safely — they understand old data with the new schema. |
-| `FORWARD` | Data written with the **new** schema can be read by the **previous** schema. | Producers upgrade first, safely — old consumers keep working against new data. |
-| `FULL` | Both backward and forward. | Producers and consumers can upgrade in either order. |
-| `BACKWARD_TRANSITIVE` / `FORWARD_TRANSITIVE` / `FULL_TRANSITIVE` | Same as above, but checked against **every previous version**, not just the immediately prior one. | Protects against a schema being compatible with v2 but not v1 — a real gap plain `BACKWARD` doesn't catch. |
+The registry checks the mode when you register a new schema for a subject:
 
-**Concrete evolution examples** (Avro, the most common case in practice):
+- **`BACKWARD`**: the new schema can read data written with the previous schema. Consumers upgrade first.
+- **`FORWARD`**: the previous schema can read data written with the new schema. Producers upgrade first.
+- **`FULL`**: both. Producers and consumers upgrade in any order.
+- **`BACKWARD_TRANSITIVE`**, **`FORWARD_TRANSITIVE`**, **`FULL_TRANSITIVE`**: the same checks against every earlier version, not only the last one.
 
-- **Adding a field with a default value** — `BACKWARD` compatible. A new-schema consumer reading old data just uses the default for the missing field. This is the single safest, most common evolution.
-- **Adding a field with no default** — **not** `BACKWARD` compatible. Old data has no value for that field and no default to fall back to — the new schema can't deserialize it.
-- **Removing a field** — `BACKWARD` compatible only if the removed field had a default in the *old* schema (so the old schema itself could be "read" ignoring that field going forward is fine, but going the other way — new consumer reading old data with the now-removed field present — needs the reader schema to just ignore extra fields, which Avro does by default, so this direction is generally fine either way in practice). This is why field defaults are the load-bearing detail in almost every real evolution decision, not the field name or type alone.
-- **Changing a field's type** (e.g., `int` → `string`) — generally **not** compatible in any mode without an explicit, registry-supported type-promotion path (Avro allows a few numeric widenings like `int`→`long`, but arbitrary type changes require a new field, not renaming/retyping an old one in place).
+The transitive modes close a real gap. A schema can be compatible with v2 but not with v1, and plain `BACKWARD` does not catch that.
 
-**Serialization format choice: Avro vs Protobuf vs JSON Schema.**
+### Field defaults decide most Avro evolutions
 
-| | Avro | Protobuf | JSON Schema |
-|---|---|---|---|
-| Schema definition | `.avsc` (JSON) | `.proto` | JSON Schema |
-| Wire format | Compact binary | Compact binary | Plain JSON (larger) |
-| Schema required to deserialize | Yes, always (schema id lookup) | No — self-describing via generated code, though registry integration still tracks compatibility | No — self-describing |
-| Ecosystem fit | Deep, historical default in the Kafka/Confluent ecosystem, first-class Kafka Streams/KSQL support | Strong if you already have gRPC/Protobuf elsewhere in your stack | Best when human-readable payloads matter more than size/speed (debugging, low-volume topics) |
-| Compatibility checking | Registry-native, mature | Registry-native, mature | Registry-native, less commonly used for this purpose |
+Avro is the most common case:
 
-Avro remains the most common default specifically in Kafka-centric shops because of how deeply the ecosystem (Kafka Streams, ksqlDB, Kafka Connect converters) assumes it; Protobuf is the common choice when a company standardizes on it across both RPC and streaming; JSON Schema trades wire efficiency for human readability.
+- **Add a field with a default**: `BACKWARD` compatible. A new consumer uses the default for old data. This is the safest, most common change.
+- **Add a field with no default**: not `BACKWARD` compatible. Old data has no value and there is no default.
+- **Remove a field**: `BACKWARD` compatible, because the new reader ignores the extra field in old data. It is `FORWARD` compatible only when the old schema gave the field a default. An old reader then fills in the missing value.
+- **Change a field's type**, for example `int` to `string`: not compatible in any mode. Avro allows a few numeric widenings, such as `int` to `long`. For other type changes, add a new field.
 
-## vs other systems
+The default, not the field name or type, is the detail that decides almost every evolution.
 
-This problem doesn't exist in a synchronous request/response API (REST/gRPC) the same way, because client and server negotiate compatibility on every call, live — an incompatible client simply fails its next request, immediately, and you find out right away. Kafka's asynchronous, long-lived-log model means an incompatible schema change can silently corrupt or break consumption of data written *before* anyone notices — which is why registry-enforced compatibility checks at write time (not read time) are the standard defense.
+### Avro, Protobuf and JSON Schema trade size for readability
+
+- **Avro**: `.avsc` schemas in JSON and compact binary on the wire. The consumer always needs the schema, through the id lookup. It is the historic default of the Kafka ecosystem: Kafka Streams, ksqlDB and Connect converters assume it.
+- **Protobuf**: `.proto` schemas and compact binary. Generated code decodes the data, and the registry still tracks compatibility. It is the common choice when a company also uses gRPC.
+- **JSON Schema**: plain JSON on the wire, so larger messages. Payloads are readable, which helps debugging and low-volume topics.
+
+All three have registry-native compatibility checks. Avro and Protobuf checks are mature; JSON Schema checks are less common.
 
 ## Watch out
 
-- **`auto.register.schemas=true` (a common default in dev) lets any producer silently register a new schema version on first use** — fine for local development, dangerous in production, where schema changes should go through the same review/CI process as any other contract change. Set it `false` in production and register schemas explicitly as part of your deploy pipeline.
-- **Plain `BACKWARD`/`FORWARD` only checks against the immediately previous version, not the whole history** — a schema can pass a `BACKWARD` check against v2 while still being incompatible with v1's actual data. Use the `_TRANSITIVE` variants when your topic has meaningfully long retention and you can't guarantee every historical version was itself perfectly compatible with its immediate predecessor.
-- **A field default in the schema is not the same as a sensible default in your application** — Avro will happily deserialize old data with `0` or `""` for a newly added field; whether that's semantically correct for your domain is your call to make, not the registry's.
+- `auto.register.schemas=true` lets any producer register a new schema version on first use.
+- Auto-registration is fine for local development and dangerous in production.
+- In production, set `auto.register.schemas=false`. Register schemas through your review and deploy pipeline.
+- Plain `BACKWARD` and `FORWARD` check only the last version. Use `_TRANSITIVE` for topics with long retention.
+- A schema default is not always a correct domain value. Avro fills `0` or `""`, and you decide if that is correct.
 
 ## The task
 
-Configure Avro serialization with schema registry integration for a producer writing to the `orders` topic, requiring that new consumers can always read data written by older producer versions (the standard, safest evolution direction), and that schema changes never register implicitly from a running producer.
+A producer writes Avro records to the `orders` topic. New consumers must always read data from older producer versions. A running producer must never register a schema.
 
-Write `stub.properties` with:
+Write `stub.properties` with these lines:
 
-- `key.serializer=org.apache.kafka.common.serialization.StringSerializer`
-- `value.serializer=io.confluent.kafka.serializers.KafkaAvroSerializer`
-- `schema.registry.url=http://schema-registry:8081`
-- `auto.register.schemas=false` (schemas are registered explicitly via CI/deploy pipeline, not implicitly by a running producer)
-- A commented design-answer line stating the compatibility mode: `# compatibility-mode=BACKWARD`
-- A commented design-answer line stating the safe evolution rule this setup relies on: `# evolution-rule=new-fields-must-have-defaults`
+1. `key.serializer` set to the Kafka `StringSerializer`.
+2. `value.serializer` set to the Confluent `KafkaAvroSerializer`.
+3. `schema.registry.url=http://schema-registry:8081`.
+4. `auto.register.schemas=false`. The deploy pipeline registers schemas. Do not set it to `true`.
+5. A comment with the compatibility mode: `# compatibility-mode=BACKWARD`.
+6. A comment with the evolution rule: `# evolution-rule=new-fields-must-have-defaults`.
+
+Use exactly this content:
+
+```properties
+key.serializer=org.apache.kafka.common.serialization.StringSerializer
+value.serializer=io.confluent.kafka.serializers.KafkaAvroSerializer
+schema.registry.url=http://schema-registry:8081
+auto.register.schemas=false
+# compatibility-mode=BACKWARD
+# evolution-rule=new-fields-must-have-defaults
+```

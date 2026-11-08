@@ -1,93 +1,166 @@
-# Functional Interfaces
+## What you build
 
-## What you'll learn
-
-Building on streams and concurrency (concepts 4, 9), both of which already use lambdas informally: a functional interface in Java is any interface with exactly one abstract method. Lambda expressions and method references can be used wherever a functional interface is expected. The `java.util.function` package gives names to the common shapes so you rarely need to declare your own. This concept formalizes what you've been using implicitly.
+You write five small methods that filter, transform, sort and compose with `java.util.function` types. Streams and thread pools already take lambdas, and this lesson names the types behind them. This lesson builds on **Concurrency**.
 
 ## Key concepts
 
-**The built-in functional interfaces:**
+### One abstract method makes a functional interface
+
+A functional interface has exactly one abstract method. You can pass a lambda or a method reference wherever Java expects a functional interface.
+
+```java
+Runnable task =
+    () -> System.out.println("run");
+```
+
+### `java.util.function` names the common shapes
+
+The package covers the common function shapes, so you rarely declare your own interface.
+
 ```java
 import java.util.function.*;
 
-Function<String, Integer>  parse  = Integer::parseInt;   // T → R
-Predicate<String>          blank  = String::isBlank;      // T → boolean
-Consumer<String>           print  = System.out::println;  // T → void
-Supplier<List<String>>     list   = ArrayList::new;        // () → T
-UnaryOperator<Integer>     square = n -> n * n;             // T → T
-BiFunction<Integer, Integer, Integer> add = Integer::sum;  // (T, U) → R
+// T → R
+Function<String, Integer> parse =
+    Integer::parseInt;
+// T → boolean
+Predicate<String> blank =
+    String::isBlank;
+// T → void
+Consumer<String> print =
+    System.out::println;
+// () → T
+Supplier<List<String>> list =
+    ArrayList::new;
+// T → T
+UnaryOperator<Integer> square =
+    n -> n * n;
+// (T, U) → R
+BiFunction<Integer, Integer, Integer>
+    add = Integer::sum;
 ```
 
-**Composing functions:**
-```java
-Function<String, String> trim       = String::trim;
-Function<String, String> upperCase  = String::toUpperCase;
-Function<String, String> trimThenUp = trim.andThen(upperCase);
+### Functions and predicates compose
 
-Predicate<String> notBlank  = Predicate.not(String::isBlank);
-Predicate<String> shortWord = s -> s.length() < 5;
-Predicate<String> both      = notBlank.and(shortWord);
+`andThen` chains two functions. `and`, `or` and `Predicate.not` combine predicates.
+
+```java
+Function<String, String> trim =
+    String::trim;
+Function<String, String> up =
+    String::toUpperCase;
+Function<String, String> trimThenUp =
+    trim.andThen(up);
+
+Predicate<String> notBlank =
+    Predicate.not(String::isBlank);
+Predicate<String> shortWord =
+    s -> s.length() < 5;
+Predicate<String> both =
+    notBlank.and(shortWord);
 ```
 
-**`Comparator.comparing`:**
+### `Comparator.comparing` builds a comparator
+
+`Comparator.comparing` takes a key function. `thenComparing` adds a tie-breaker.
+
 ```java
-List<String> words = List.of("banana", "apple", "cherry");
+List<String> words = List.of(
+    "banana", "apple", "cherry");
 words.stream()
-     .sorted(Comparator.comparing(String::length).thenComparing(Comparator.naturalOrder()))
-     .toList();
+    .sorted(Comparator
+        .comparing(String::length)
+        .thenComparing(
+            Comparator.naturalOrder()))
+    .toList();
 ```
 
-**Custom `@FunctionalInterface`:**
+### You can declare your own
+
+`@FunctionalInterface` marks an interface as a lambda target. Default and static methods do not count as abstract methods.
+
 ```java
 @FunctionalInterface
 interface Validator<T> {
     boolean validate(T value);
-    // can have default/static methods — still functional
+    // Default and static methods are OK
 }
 
-Validator<String> notEmpty = s -> !s.isEmpty();
+Validator<String> notEmpty =
+    s -> !s.isEmpty();
 ```
 
-**vs other languages:** JavaScript functions are first-class by default. Python has `lambda` and `functools`. Go has first-class function values. Java's approach is more verbose — functional interfaces are full types, which means stronger type safety and better tooling integration, but more ceremony. TypeScript function types (`(x: T) => R`) are closer to the JS style.
+### Function types are full interfaces
+
+JavaScript, Python, Go and TypeScript use plain function values, but a Java functional interface is a full type with more ceremony and stronger checks.
+
+```java
+// TypeScript: (x: string) => number
+Function<String, Integer> len =
+    String::length;
+```
 
 ## Watch out
 
-- **`Function.andThen` vs `Function.compose` run in opposite orders.** `f.andThen(g)` computes `g(f(x))` (f first, then g); `f.compose(g)` computes `f(g(x))` (g first, then f). Mixing these up silently produces the wrong pipeline order.
-- **`Comparator.comparingInt`/`comparing` builds a *new* `Comparator` each call** — it doesn't mutate anything. `list.sort(cmp)` mutates `list` in place, but building `cmp` itself is pure.
-- **`@FunctionalInterface` is a compile-time check, not a requirement.** Any interface with exactly one abstract method already works as a lambda target; the annotation just makes the compiler reject accidental additions of a second abstract method.
+- `andThen` and `compose` run in opposite orders. A mix-up gives the wrong pipeline order.
+- `f.andThen(g)` computes `g(f(x))`: `f` first. `f.compose(g)` computes `f(g(x))`: `g` first.
+- `Comparator.comparing` and `comparingInt` build a new `Comparator` on each call. They change nothing.
+- `list.sort(cmp)` changes `list` in place. Building `cmp` has no side effects.
+- `@FunctionalInterface` is a compile-time check, not a requirement.
+- Any interface with one abstract method is a lambda target. The annotation rejects a second abstract method.
 
 ## The task
 
-You're building a small toolkit of composable functions and predicates over `java.util.function` types. Implement the following static methods in `Solution.java`:
+Build a small toolkit of composable functions and predicates. Write these static methods in the class `Solution`.
 
-**`static List<String> filterAndTransform(List<String> items, Predicate<String> keep, Function<String, String> transform)`** — returns a list containing `transform(item)` for each `item` where `keep.test(item)` is `true`, preserving input order.
+1. `static List<String> filterAndTransform(List<String> items, Predicate<String> keep, Function<String, String> transform)` filters and maps.
+2. It returns `transform(item)` for each `item` where `keep.test(item)` is `true`, in input order.
+3. `static <T> List<T> applyToAll(List<T> items, UnaryOperator<T> op)` returns a new list with `op` applied to each element.
+4. `static Comparator<String> byLengthThenAlpha()` orders strings by length, shortest first.
+5. `byLengthThenAlpha` orders strings of equal length alphabetically.
+6. `static Predicate<String> longerThan(int n)` is `true` only when the length is strictly greater than `n`.
+7. `static Function<String, String> pipeline(List<Function<String, String>> fns)` composes `fns` left to right.
+8. `pipeline(List.of(f, g, h)).apply(x)` equals `h(g(f(x)))`.
 
-**`static <T> List<T> applyToAll(List<T> items, UnaryOperator<T> op)`** — returns a new list with `op` applied to every element of `items`.
-
-**`static Comparator<String> byLengthThenAlpha()`** — returns a `Comparator<String>` that orders strings by length ascending, breaking ties alphabetically.
-
-**`static Predicate<String> longerThan(int n)`** — returns a `Predicate<String>` that is `true` exactly when the string's length is strictly greater than `n`.
-
-**`static Function<String, String> pipeline(List<Function<String, String>> fns)`** — composes all functions in `fns` left-to-right into a single `Function`, so `pipeline(List.of(f, g, h)).apply(x)` equals `h(g(f(x)))`. An empty list returns the identity function.
+An empty list gives an empty result from `filterAndTransform` and `applyToAll`. An empty list gives the identity function from `pipeline`.
 
 ```java
-List<String> words = List.of("apple", "hi", "banana", "ok", "cherry");
-filterAndTransform(words, longerThan(3), String::toUpperCase);
-// ["APPLE", "BANANA", "CHERRY"] — "hi" and "ok" filtered out (length <= 3)
+List<String> words = List.of("apple",
+    "hi", "banana", "ok", "cherry");
+// ["APPLE", "BANANA", "CHERRY"]
+filterAndTransform(words,
+    longerThan(3), String::toUpperCase);
 
-applyToAll(List.of(1, 2, 3, 4), n -> n * 2);  // [2, 4, 6, 8]
+// [2, 4, 6, 8]
+applyToAll(List.of(1, 2, 3, 4),
+    n -> n * 2);
+// []
+applyToAll(List.of(), n -> n);
 
-Comparator<String> cmp = byLengthThenAlpha();
-List<String> sorted = new ArrayList<>(List.of("banana", "apple", "hi", "ok", "cherry"));
+Comparator<String> cmp =
+    byLengthThenAlpha();
+cmp.compare("hi", "apple");     // < 0
+cmp.compare("apple", "mango");  // < 0
+List<String> sorted = new ArrayList<>(
+    List.of("banana", "apple", "hi",
+        "ok", "cherry"));
 sorted.sort(cmp);
-// ["hi", "ok", "apple", "banana", "cherry"]
-//   length 2,2      5       6        6     — "banana" < "cherry" alphabetically
+// ["hi", "ok", "apple", "banana",
+//  "cherry"]
 
 Predicate<String> gt3 = longerThan(3);
-gt3.test("apple");  // true  — length 5 > 3
-gt3.test("abc");    // false — length 3 is not > 3
+gt3.test("apple");  // true
+gt3.test("hi");     // false
+gt3.test("abc");    // false
 
-Function<String, String> pipe = pipeline(List.of(String::trim, String::toUpperCase, s -> s + "!"));
+Function<String, String> pipe =
+    pipeline(List.of(String::trim,
+        String::toUpperCase,
+        s -> s + "!"));
 pipe.apply("  hello  ");  // "HELLO!"
-pipeline(List.of()).apply("x");  // "x" — empty list = identity
+// "x": identity
+pipeline(List.of()).apply("x");
+// "WORLD"
+pipeline(List.of(String::toUpperCase))
+    .apply("world");
 ```

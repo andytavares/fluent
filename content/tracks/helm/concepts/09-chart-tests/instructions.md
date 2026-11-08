@@ -1,91 +1,119 @@
-# Chart Tests
+## What you build
 
-## What you'll learn
-
-`helm test` runs a set of Pods that verify a release is functioning correctly after install. These are not unit tests of your templates — they're integration tests that run against live Kubernetes resources in a real (or local) cluster. They're the difference between "helm install reported success" and "the application is actually answering requests."
+You write two test Pods that `helm test` runs against a live release. One checks the HTTP health endpoint, and one checks the database connection. This lesson builds on **Dependencies**.
 
 ## Key concepts
 
-**What a test is** — any Pod template annotated with `helm.sh/hook: test`. When you run `helm test <release-name>`, Helm creates the Pod, waits for it to complete, and reports success or failure based on the container's exit code.
+### `helm test` runs Pods against a live release
+
+Chart tests are not unit tests of your templates. They are integration tests against live resources in a real or local cluster. They show the difference between "`helm install` succeeded" and "the app answers requests".
+
+### A test is a Pod with the `test` hook
+
+A test is a Pod template with the annotation `helm.sh/hook: test`. `helm test <release-name>` creates the Pod and waits for it to complete. The exit code of the container sets success or failure.
 
 ```yaml
+{{- $url := printf "http://%s-webapp:%v"
+      .Release.Name .Values.service.port }}
 apiVersion: v1
 kind: Pod
 metadata:
   name: {{ .Release.Name }}-test-connection
   annotations:
     "helm.sh/hook": test
-    "helm.sh/hook-delete-policy": before-hook-creation
+    "helm.sh/hook-delete-policy": >-
+      before-hook-creation
 spec:
   restartPolicy: Never
   containers:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['--spider', 'http://{{ .Release.Name }}-webapp:{{ .Values.service.port }}']
+      args:
+        - '--spider'
+        - {{ $url | quote }}
 ```
 
-**Convention: `templates/tests/` subdirectory** — test templates should live in `templates/tests/` to keep them separate from main resources. Helm renders everything in `templates/` regardless of subdirectory, so this is organizational only.
+### Put tests in `templates/tests/`
 
-**`helm.sh/hook-delete-policy: before-hook-creation`** — without this, re-running `helm test` fails because the Pod already exists. `before-hook-creation` deletes any existing test Pod before creating a new one. Unlike install hooks, you generally do *not* want `hook-succeeded` here — keeping the Pod around after success lets you inspect its logs.
+By convention, test templates go in `templates/tests/`. Helm renders every file in `templates/` and its subdirectories, so this directory only keeps the files in order.
 
-**What to test** — write test containers that verify observable behavior, not internal implementation:
+### `before-hook-creation` lets you run tests again
+
+Without it, a second `helm test` fails because the Pod already exists. `before-hook-creation` deletes the old test Pod before Helm creates a new one. Unlike install hooks, do not add `hook-succeeded` here. A Pod that stays after success keeps its logs for you.
+
+### Test what the user sees
+
+Test observable behavior, not internal implementation.
 
 ```yaml
-# Good: tests that the service responds on the expected port
-command: ['curl', '-sf', 'http://{{ .Release.Name }}-svc/health']
+# Good: the service answers on its port
+command: ['curl', '-sf',
+  'http://{{ .Release.Name }}-svc/health']
 
-# Good: tests that a database connection works
-command: ['psql', '-h', '{{ .Release.Name }}-postgresql', '-U', 'app', '-c', 'SELECT 1']
+# Good: a database connection works
+command: ['psql', '-h',
+  '{{ .Release.Name }}-postgresql',
+  '-U', 'app', '-c', 'SELECT 1']
 
-# Avoid: tests that just check a Pod is Running (kubectl does this already)
+# Avoid: a check that a Pod is Running.
+# kubectl already does this.
 ```
 
-**Multiple test pods** — you can define several test Pods. Helm runs them all and aggregates results. Use `helm.sh/hook-weight` to control execution order if tests depend on each other.
+### A chart can have many test Pods
 
-**`helm test --logs`** — passes all container logs to stdout after the test run. Essential for debugging failures. Include informative output in your test containers (`echo "Testing connection to..."` before the actual check).
+Helm runs all test Pods and collects the results. If tests depend on each other, set the order with `helm.sh/hook-weight`.
 
-**Running tests in CI** — the pattern:
+### `helm test --logs` prints the container logs
+
+The flag prints all container logs after the test run, which you need to debug failures. Print useful output in your test containers, for example `echo "Testing connection to..."` before the check.
+
+### Run tests in CI after `--wait`
+
+`--wait` makes Helm wait until all Deployments are ready. Without it, test Pods can run before the app serves traffic.
 
 ```bash
-helm upgrade --install myapp ./chart -f ci-values.yaml --wait
+helm upgrade --install myapp ./chart \
+  -f ci-values.yaml --wait
 helm test myapp --logs
 ```
 
-`--wait` ensures all Deployments are ready before tests start. Without it, test pods may run before the app is serving traffic.
+### Tests ship with the chart
 
-## vs other tools
-
-Raw Kubernetes manifests have no built-in test mechanism. You'd write separate scripts or use tools like `kuttl` or `chainsaw`. Kustomize has no equivalent. Argo CD has post-sync hooks that can serve a similar purpose. The advantage of `helm test` is that tests are bundled with the chart — whoever installs the chart gets the tests for free and can verify the installation without understanding the application internals.
+Raw manifests and Kustomize have no test mechanism, so you write scripts or use `kuttl` or `chainsaw`. Argo CD post-sync hooks can do a similar job. With `helm test`, each user of the chart gets the tests and can check the installation.
 
 ## Watch out
 
-- **`test` is a hook type, so everything from the hooks concept applies** — annotations not labels, weights for ordering, and delete policies. The one difference: leaving the Pod around after success (no `hook-succeeded` delete policy) is *intentional* here, so `helm test --logs` has something to read.
-- **A test Pod that never terminates hangs `helm test` until timeout.** Always set a container command that exits (curl/psql/wget with explicit flags like `--max-time` or `-w`) rather than a long-running process — there's no `restartPolicy: Never` equivalent that saves you from a container that just never exits on its own.
-- **Test pods run with whatever the *current* release's values are**, not the values from the install that's being tested against — if you `helm test` right after `helm upgrade`, the test Pod picks up the new values, which is usually what you want but matters if a test hardcodes an assumption from a previous version.
-- **`command` as a YAML list vs a single string produces very different results.** `command: ['curl', '--fail', 'http://...']` runs `curl` directly; `command: ['sh', '-c', 'curl --fail http://...']` runs it through a shell (needed if you want shell features like `&&` or `$VAR` expansion). Pick the list form unless you actually need shell semantics — it avoids a whole class of quoting bugs.
+- `test` is a hook type. Annotations, weights and delete policies from the Hooks concept apply.
+- Do not add `hook-succeeded` to a test. Keep the Pod so `helm test --logs` can read it.
+- A test Pod that never stops makes `helm test` wait until the timeout.
+- Use a command that exits, with a limit like `--max-time`. `restartPolicy: Never` does not stop a container that never exits.
+- A test Pod uses the values of the current release. After `helm upgrade`, the test uses the new values.
+- A test that hardcodes an assumption from an earlier version can then fail.
+- `command: ['curl', '--fail', 'http://...']` runs `curl` directly.
+- `command: ['sh', '-c', 'curl --fail http://...']` runs it in a shell. You need that for `&&` or `$VAR`.
+- Use the list form unless you need a shell. It prevents quoting bugs.
 
 ## The task
 
-Write a `templates/tests/test-connection.yaml` that:
+Write two test Pods in `stub.yaml`: `templates/tests/test-connection.yaml`, a `---` line, then `templates/tests/test-db-connection.yaml`.
 
-- Creates a Pod named `{{ .Release.Name }}-test-connection`
-- Annotates it with `helm.sh/hook: test` and `helm.sh/hook-delete-policy: before-hook-creation`
-- Sets `restartPolicy: Never`
-- Has one container named `curl` using image `curlimages/curl:latest`
-- The container command: `['curl', '--fail', '--silent', '--max-time', '5', 'http://{{ include "webapp.fullname" . }}:{{ .Values.service.port }}/health']`
+1. Name the first Pod `{{ .Release.Name }}-test-connection`.
+2. Give both Pods `"helm.sh/hook": test` and `"helm.sh/hook-delete-policy": before-hook-creation`.
+3. Set `restartPolicy: Never` on both Pods.
+4. The first Pod has one container, `curl`, with the image `curlimages/curl:latest`.
+5. Its command is `['curl', '--fail', '--silent', '--max-time', '5', 'http://{{ include "webapp.fullname" . }}:{{ .Values.service.port }}/health']`.
+6. Name the second Pod `{{ .Release.Name }}-test-db`. Add `"helm.sh/hook-weight": "1"`, so it runs after the first.
+7. The second Pod uses the image `postgres:15-alpine`.
+8. Its command is `['psql', '-h', '{{ .Release.Name }}-postgresql', '-U', '{{ .Values.postgresql.auth.username }}', '-c', 'SELECT 1']`.
+9. Set the env variable `PGPASSWORD` with a `secretKeyRef`: name `{{ .Release.Name }}-postgresql`, key `password`.
+10. Remove every `TODO` comment.
 
-Also write a `templates/tests/test-db-connection.yaml` that:
-
-- Creates a Pod named `{{ .Release.Name }}-test-db`
-- Same hook annotations as above, plus `helm.sh/hook-weight: "1"` (runs after the HTTP test)
-- Uses image `postgres:15-alpine`
-- Command: `['psql', '-h', '{{ .Release.Name }}-postgresql', '-U', '{{ .Values.postgresql.auth.username }}', '-c', 'SELECT 1']`
-- Sets environment variable `PGPASSWORD` from a secretKeyRef pointing to `{{ .Release.Name }}-postgresql` secret, key `password`
-
-For a release named `myapp` with `.Values.service.port: 8080` and `.Values.postgresql.auth.username: platform`, running `helm test myapp` executes both Pods and reports their results. The first renders as:
+`helm test` needs a Pod that cannot restart. Otherwise it cannot tell when to report success.
 
 ```yaml
+# Release myapp, service.port 8080,
+# webapp.fullname = myapp-webapp
 apiVersion: v1
 kind: Pod
 metadata:
@@ -106,5 +134,3 @@ spec:
         - "5"
         - http://myapp-webapp:8080/health
 ```
-
-(assuming `webapp.fullname` resolves to `myapp-webapp`). The second Pod adds `"helm.sh/hook-weight": "1"` so it runs after the first, and references the same release's PostgreSQL credentials Secret. Both must set `restartPolicy: Never` — `helm test` treats a Pod that could restart as ambiguous about when to report success.

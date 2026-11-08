@@ -1,8 +1,25 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { mkdtemp, writeFile, mkdir, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { validateExerciseFolder } from "./validator.js";
+import { checkBuildsOn, checkFolderBuildsOn, validateExerciseFolder } from "./validator.js";
+
+const VALID_INSTRUCTIONS = [
+  "This is a test concept with enough content to pass the linter validation check.",
+  "",
+  "## What you build",
+  "",
+  "A greeter.",
+  "",
+  "## The task",
+  "",
+  "Write `greet`.",
+  "",
+  "```go",
+  "func greet() string",
+  "```",
+  "",
+].join("\n");
 
 async function createValidFolder(base: string): Promise<string> {
   const dir = await mkdtemp(join(base, "exercise-"));
@@ -10,7 +27,7 @@ async function createValidFolder(base: string): Promise<string> {
     join(dir, "config.json"),
     JSON.stringify({ slug: "test", title: "Test", position: 1, has_testout: false, status: "published" }),
   );
-  await writeFile(join(dir, "instructions.md"), "# Test\n\nThis is a test exercise with enough content to pass the linter validation check.");
+  await writeFile(join(dir, "instructions.md"), VALID_INSTRUCTIONS);
   await writeFile(join(dir, "stub.go"), "package main\n\nfunc main() {}");
   await writeFile(join(dir, "exemplar.go"), "package main\n\nfunc main() {}");
   await writeFile(join(dir, "stub_test.go"), "package main\nimport \"testing\"\nfunc TestStub(t *testing.T) {}");
@@ -96,12 +113,119 @@ describe("Content linter validator", () => {
       join(dir, "config.json"),
       JSON.stringify({ slug: "py", title: "Py", position: 1, has_testout: false, status: "published" }),
     );
-    await writeFile(join(dir, "instructions.md"), "# Py\n\nThis is a python exercise with enough content to pass the linter length validation.");
+    await writeFile(join(dir, "instructions.md"), VALID_INSTRUCTIONS);
     await writeFile(join(dir, "stub.py"), "def solve():\n    pass\n");
     await writeFile(join(dir, "exemplar.py"), "def solve():\n    return 1\n");
     await writeFile(join(dir, "solution_test.py"), "import stub\n");
     const errors = await validateExerciseFolder(dir, "python");
     const critical = errors.filter((e) => !e.code.startsWith("W"));
     expect(critical).toHaveLength(0);
+  });
+
+  it("E012: reports error when no line is exactly '## The task'", async () => {
+    const dir = await createValidFolder(tmpBase);
+    await writeFile(join(dir, "instructions.md"), VALID_INSTRUCTIONS.replace("## The task", "## The task:"));
+    const errors = await validateExerciseFolder(dir);
+    expect(errors.some((e) => e.code === "E012")).toBe(true);
+  });
+
+  it("E013: reports error when the task section has no fenced code block", async () => {
+    const dir = await createValidFolder(tmpBase);
+    const withCodeBeforeTask = "# Test\n\n```go\nx := 1\n```\n\n## The task\n\nWrite `greet`.\n\n## Hints\n\nNone.\n";
+    await writeFile(join(dir, "instructions.md"), withCodeBeforeTask);
+    const errors = await validateExerciseFolder(dir);
+    expect(errors.some((e) => e.code === "E013")).toBe(true);
+  });
+
+  it("E014: reports error when the first non-empty line is a level-1 title", async () => {
+    const dir = await createValidFolder(tmpBase);
+    await writeFile(join(dir, "instructions.md"), "\n\n# Test\n\n" + VALID_INSTRUCTIONS);
+    const errors = await validateExerciseFolder(dir);
+    expect(errors.some((e) => e.code === "E014")).toBe(true);
+  });
+
+  it("E014: accepts a lesson that starts with a level-2 heading", async () => {
+    const dir = await createValidFolder(tmpBase);
+    await writeFile(join(dir, "instructions.md"), VALID_INSTRUCTIONS);
+    const errors = await validateExerciseFolder(dir);
+    expect(errors.some((e) => e.code === "E014")).toBe(false);
+  });
+
+  it("W002: reports one warning with the count and first line of code lines wider than 43", async () => {
+    const dir = await createValidFolder(tmpBase);
+    const wide = "x".repeat(44);
+    const content = VALID_INSTRUCTIONS + `\n\`\`\`go\n${"y".repeat(43)}\n${wide}\n\t${"z".repeat(40)}\n\`\`\`\n`;
+    await writeFile(join(dir, "instructions.md"), content);
+    const errors = await validateExerciseFolder(dir);
+    const warnings = errors.filter((e) => e.code === "W002");
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]?.message).toContain("2 code line(s)");
+    expect(warnings[0]?.message).toContain("line 17");
+  });
+
+  it("W002: ignores wide lines outside fenced code blocks", async () => {
+    const dir = await createValidFolder(tmpBase);
+    await writeFile(join(dir, "instructions.md"), VALID_INSTRUCTIONS + "\n" + "w".repeat(80) + "\n");
+    const errors = await validateExerciseFolder(dir);
+    expect(errors.some((e) => e.code === "W002")).toBe(false);
+  });
+});
+
+describe("checkBuildsOn (E015)", () => {
+  const builds = (body: string) => `# T\n\n## What you build\n\n${body}\n\n## The task\n\n\`\`\`go\nx\n\`\`\`\n`;
+
+  it("accepts position 1 with only the section", () => {
+    expect(checkBuildsOn(builds("A greeter."), 1, [])).toBeNull();
+  });
+
+  it("reports E015 when the section is missing", () => {
+    expect(checkBuildsOn("# T\n\n## The task\n\nx\n", 1, [])?.code).toBe("E015");
+  });
+
+  it("reports E015 when a later concept does not say 'builds on'", () => {
+    expect(checkBuildsOn(builds("Extends Variables with loops."), 2, ["Variables"])?.code).toBe("E015");
+  });
+
+  it("reports E015 when a later concept names no earlier title", () => {
+    expect(checkBuildsOn(builds("This builds on earlier work."), 2, ["Variables"])?.code).toBe("E015");
+  });
+
+  it("ignores earlier titles that appear only outside the section", () => {
+    const text = builds("This builds on earlier work.") + "\nSee Variables.\n";
+    expect(checkBuildsOn(text, 2, ["Variables"])?.code).toBe("E015");
+  });
+
+  it("accepts a later concept that builds on an earlier title", () => {
+    expect(checkBuildsOn(builds("This builds on Variables."), 3, ["Basics", "Variables"])).toBeNull();
+  });
+});
+
+type ConceptFixture = { folder: string; title: string; intro: string };
+
+async function writeConcept(trackDir: string, fixture: ConceptFixture): Promise<string> {
+  const { folder, title, intro } = fixture;
+  const dir = join(trackDir, "concepts", folder);
+  await mkdir(dir, { recursive: true });
+  const position = parseInt(folder, 10);
+  const slug = folder.slice(3);
+  await writeFile(join(dir, "config.json"), JSON.stringify({ slug, title, position, has_testout: false, status: "published" }));
+  await writeFile(join(dir, "instructions.md"), `## What you build\n\n${intro}\n\n## The task\n\n\`\`\`go\nf()\n\`\`\`\n`);
+  return dir;
+}
+
+describe("checkFolderBuildsOn (E015 for one folder, as CI runs it)", () => {
+  it("reports E015 when a later concept names no earlier concept", async () => {
+    const trackDir = await mkdtemp(join(tmpBase, "track-"));
+    await writeConcept(trackDir, { folder: "01-basics", title: "Basics", intro: "You write a greeter." });
+    const dir = await writeConcept(trackDir, { folder: "02-loops", title: "Loops", intro: "You write a counter." });
+    const error = await checkFolderBuildsOn(dir);
+    expect(error?.code).toBe("E015");
+  });
+
+  it("accepts a later concept that builds on an earlier title", async () => {
+    const trackDir = await mkdtemp(join(tmpBase, "track-"));
+    await writeConcept(trackDir, { folder: "01-basics", title: "Basics", intro: "You write a greeter." });
+    const dir = await writeConcept(trackDir, { folder: "02-loops", title: "Loops", intro: "This lesson builds on **Basics**." });
+    expect(await checkFolderBuildsOn(dir)).toBeNull();
   });
 });

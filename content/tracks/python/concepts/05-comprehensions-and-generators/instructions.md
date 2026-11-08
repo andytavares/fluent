@@ -1,110 +1,124 @@
-# Comprehensions & Generators
+## What you build
 
-## What you'll learn
-
-Python's comprehension syntax is a first-class language feature, not syntactic sugar for `map`/`filter`. Generator expressions and `yield` let you build lazy pipelines that process data without loading it all into memory.
+You write `squares_of_evens`, `running_total` and `flatten`. They use a list comprehension, a generator function and `yield from`. This lesson builds on **Classes & Objects**.
 
 ## Key concepts
 
-**List, dict, and set comprehensions:**
+### A comprehension builds a collection in one expression
+
+Comprehensions are a language feature, not sugar for `map` and `filter`. They are expressions, so they can go anywhere an expression can go. Python has list, dict and set comprehensions.
+
 ```python
 squares = [x ** 2 for x in range(10)]
-evens   = [x for x in range(20) if x % 2 == 0]
+evens = [x for x in range(20)
+         if x % 2 == 0]
 
-word_len = {word: len(word) for word in ["cat", "elephant", "dog"]}
-unique_lengths = {len(w) for w in ["cat", "elephant", "dog"]}
+words = ["cat", "elephant", "dog"]
+word_len = {w: len(w) for w in words}
+unique_lengths = {len(w) for w in words}
 ```
 
-Nested comprehensions read left-to-right, same order as the equivalent `for` loops:
+### Nested comprehensions read left to right
+
+The `for` clauses come in the same order as nested `for` loops.
+
 ```python
 flat = [x for row in matrix for x in row]
-# equivalent to:
+# The same as:
 # for row in matrix:
 #     for x in row:
 #         flat.append(x)
 ```
 
-**Generator expressions — lazy evaluation:**
-```python
-# List comprehension: evaluates all 1M items immediately
-total = sum([x ** 2 for x in range(1_000_000)])
+### A generator expression is lazy
 
-# Generator expression: computes one at a time
-total = sum(x ** 2 for x in range(1_000_000))  # note: no extra []
+Parentheses in place of brackets give a generator expression. It returns a generator object: an iterator that computes each value on demand. It does not load all values into memory.
+
+```python
+# Builds all 1M items first
+sum([x ** 2 for x in range(1_000_000)])
+
+# Computes one item at a time.
+# No extra [] inside sum().
+sum(x ** 2 for x in range(1_000_000))
 ```
 
-A generator expression returns a generator object — an iterator that yields values on demand.
+### `yield` makes a generator function
 
-**`yield` — generator functions:**
+A call to a function with `yield` returns a generator object and runs none of the body. Each `next()` runs the body to the next `yield`, then pauses there. When the body ends, the generator raises `StopIteration`.
+
 ```python
-def fibonacci() -> Generator[int, None, None]:
+from typing import Generator
+
+def fibonacci() -> Generator[
+    int, None, None
+]:
     a, b = 0, 1
     while True:
         yield a
         a, b = b, a + b
 
 gen = fibonacci()
-[next(gen) for _ in range(8)]  # [0, 1, 1, 2, 3, 5, 8, 13]
+[next(gen) for _ in range(8)]
+# [0, 1, 1, 2, 3, 5, 8, 13]
 ```
 
-A function containing `yield` returns a generator object when called. Execution is suspended at each `yield` and resumed on the next call to `next()`.
+JavaScript `function*` generators return `{value, done}` objects from `.next()` in place of `StopIteration`.
 
-**`yield from` — delegating to sub-generators:**
+### `yield from` hands off to another iterable
+
+`yield from it` yields each value of `it`. It is shorter than `for x in it: yield x`. It also passes `send()` and `throw()` through to a sub-generator.
+
 ```python
 def chain(*iterables):
     for it in iterables:
         yield from it
 
-list(chain([1, 2], [3, 4], [5]))  # [1, 2, 3, 4, 5]
+list(chain([1, 2], [3, 4], [5]))
+# [1, 2, 3, 4, 5]
 ```
-
-`yield from` is cleaner than a nested `for x in it: yield x` loop and also threads `send()` and `throw()` through to the sub-generator.
-
-## vs other languages
-
-| Feature | Python | JavaScript | Java | Go |
-|---|---|---|---|---|
-| List comprehension | `[x for x in ...]` | `.map()` / `.filter()` | streams | manual loop |
-| Lazy sequence | generator expression | generators (`function*`) | `Stream<T>` (lazy) | channels |
-| Generator function | `yield` | `yield` in `function*` | No direct equivalent | goroutine + channel |
-| Delegate generator | `yield from` | `yield*` | No | No |
-
-Python comprehensions are expressions — they can appear anywhere an expression is valid. JavaScript `function*` generators require explicit `.next()` and return `{value, done}` objects; Python generators raise `StopIteration` when exhausted.
 
 ## Watch out
 
-- Generators are **single-use**. Once exhausted (fully iterated, or `StopIteration` raised), a second `for` loop or `list()` call over the same generator object yields nothing — you must call the generator function again to get a fresh one.
-- Calling a generator function does not run any of its code — the body only executes as you pull values with `next()` or a `for` loop. A bug inside a generator (e.g. a bad index) won't surface until the relevant `yield` is reached.
-- Nested comprehensions can be misread: `[x for row in matrix for x in row if x > 0]` filters on the **inner** variable — the `if` binds to the loop it trails, not to the whole expression.
-- Don't build a giant list just to throw it at `sum()`/`max()`/`any()` — a generator expression (no brackets) avoids the intermediate list and often needs no code changes beyond removing `[` `]`.
+- A generator works once. After it ends, a second `for` loop or `list()` over it yields nothing.
+- To start again, call the generator function again for a new generator.
+- A call to a generator function runs no code. A bug in the body appears only when iteration reaches it.
+- In `[x for row in m for x in row if x > 0]`, `if` filters the inner `x`.
+- An `if` applies to the loop it follows, not to the whole expression.
+- Do not build a list only to pass it to `sum()`, `max()` or `any()`. Remove the `[` `]` to use a generator expression.
 
 ## The task
 
-Implement three functions covering list comprehensions, generator functions, and `yield from`.
+Write three functions in `stub.py`. They use a list comprehension, a generator function and `yield from`.
 
-**`squares_of_evens(n: int) -> list[int]`** — returns a list of the squares of every even number in `range(0, n)` (0 up to but not including `n`), built with a list comprehension.
+1. `squares_of_evens(n: int) -> list[int]` returns the square of each even number in `range(0, n)`.
+2. `range(0, n)` includes 0 and excludes `n`. Build the list with a list comprehension.
+3. `running_total(numbers: list[float]) -> Generator[float, None, None]` is a generator function. It must use `yield`.
+4. A call to `running_total` returns a generator object. It yields the running total after each number, in order.
+5. `flatten(nested: list[list]) -> list` removes one level of nesting. It returns a plain `list`, not a generator.
+6. Inside `flatten`, use a helper generator with `yield from`. Pass it to `list(...)` before you return.
 
-```python
-squares_of_evens(10)   # [0, 4, 16, 36, 64]   — 0,2,4,6,8 squared
-squares_of_evens(5)    # [0, 4, 16]            — 0,2,4 squared
-squares_of_evens(1)    # [0]
-squares_of_evens(0)    # []
-```
-
-**`running_total(numbers: list[float])`** — a **generator function** (must use `yield`, and calling it must return a generator object) that yields the running cumulative total after each element of `numbers`, in order.
+Empty input gives an empty result for all three functions.
 
 ```python
-list(running_total([1, 2, 3, 4]))   # [1.0, 3.0, 6.0, 10.0]
-list(running_total([]))              # []
-list(running_total([5.0]))           # [5.0]
-list(running_total([10.0, -3.0, -2.0]))  # [10.0, 7.0, 5.0]
-```
+squares_of_evens(10)  # [0, 4, 16, 36, 64]
+squares_of_evens(5)   # [0, 4, 16]
+squares_of_evens(2)   # [0]
+squares_of_evens(1)   # [0]
+squares_of_evens(0)   # []
 
-**`flatten(nested: list[list]) -> list`** — flattens one level of nesting from `nested` and returns a plain `list` (not a generator). Internally, delegate to sublists using `yield from` inside a helper generator, then consume it with `list(...)` before returning.
+list(running_total([1, 2, 3, 4]))
+# [1.0, 3.0, 6.0, 10.0]
+list(running_total([]))     # []
+list(running_total([5.0]))  # [5.0]
+list(running_total([10.0, -3.0, -2.0]))
+# [10.0, 7.0, 5.0]
 
-```python
-flatten([[1, 2], [3, 4], [5]])   # [1, 2, 3, 4, 5]
-flatten([])                       # []
-flatten([[], [], []])             # []
-flatten([[1, 2, 3], [], [4]])     # [1, 2, 3, 4]
+flatten([[1, 2], [3, 4], [5]])
+# [1, 2, 3, 4, 5]
+flatten([])                  # []
+flatten([[], [], []])        # []
+flatten([[1], [2], [3]])     # [1, 2, 3]
+flatten([[1, 2, 3], [], [4]])
+# [1, 2, 3, 4]
 ```

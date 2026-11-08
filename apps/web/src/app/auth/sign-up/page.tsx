@@ -9,7 +9,7 @@ export default function SignUpPage() {
           Create your account
         </h1>
         <p className="mb-6 text-sm text-[var(--color-text-secondary)]">
-          Start learning Go the right way.
+          Write code against real tests from the first lesson.
         </p>
 
         <form

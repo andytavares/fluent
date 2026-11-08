@@ -63,7 +63,7 @@ export default function TrackPathPage() {
         conceptStatesQuery.data.length === 0 ? (
           <div className="rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)] px-4 py-6 text-center">
             <p className="text-sm text-[var(--color-text-secondary)]">
-              No lessons found — this can happen if the track was updated after you enrolled.
+              This track changed after you enrolled. Reset to see the new concepts.
             </p>
             <button
               onClick={() => {

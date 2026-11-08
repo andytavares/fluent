@@ -1,12 +1,13 @@
-# Error Handling
+## What you build
 
-## What you'll learn
-
-Python's `try/except/else/finally` block, the exception class hierarchy, defining custom exceptions, and context managers — both `with` statements and the `contextlib` module.
+You write a custom exception `ParseError`, a function `safe_divide` that translates one exception into another, and a context manager `Accumulator`. This lesson builds on **Classes & Objects**.
 
 ## Key concepts
 
-**Full `try` block anatomy:**
+### A `try` block has four clauses
+
+`except` handles a matching exception. `else` runs only when the `try` body raises nothing. `finally` always runs, so cleanup goes there. A separate `else` makes the intent clear.
+
 ```python
 try:
     result = int(user_input)
@@ -15,16 +16,17 @@ except ValueError as e:
 except (TypeError, OverflowError):
     print("type or overflow problem")
 else:
-    # runs only if no exception was raised
+    # Runs only if nothing raised
     print(f"got {result}")
 finally:
-    # always runs — cleanup goes here
+    # Always runs: cleanup goes here
     print("done")
 ```
 
-The `else` clause is Python-specific and underused. It runs when the `try` block completes without raising — keeping it separate from `finally` makes the intent explicit.
+### Exceptions form a class hierarchy
 
-**Exception hierarchy:**
+An `except` clause also catches every subclass of its type. `SystemExit` and `KeyboardInterrupt` derive from `BaseException`, not from `Exception`.
+
 ```
 BaseException
 ├── SystemExit
@@ -39,50 +41,66 @@ BaseException
     └── ...
 ```
 
-Never catch `BaseException` unless you mean it — `SystemExit` and `KeyboardInterrupt` are subclasses and you almost never want to swallow those. Catching bare `except:` (no type) also catches `BaseException`.
+### Custom exceptions subclass `Exception`
 
-**Custom exceptions:**
+Define one base class for your application, then subclass it. Callers can catch the base class broadly or a subclass narrowly.
+
 ```python
 class AppError(Exception):
-    """Base for all application errors."""
+    """Base for all app errors."""
 
 class ConfigError(AppError):
-    def __init__(self, key: str, message: str) -> None:
-        super().__init__(f"config key '{key}': {message}")
+    def __init__(self, key: str, msg: str):
+        super().__init__(
+            f"config key '{key}': {msg}"
+        )
         self.key = key
 ```
 
-Define a base `AppError` and subclass it. This lets callers catch `AppError` broadly or specific subclasses narrowly.
+### `raise ... from` chains exceptions
 
-**Exception chaining:**
+`raise X from e` sets `__cause__`, and the traceback shows both exceptions. `raise X from None` hides the original exception. Go returns an error value at each call site, but Python exceptions propagate up the stack on their own.
+
 ```python
 try:
     data = json.loads(raw)
 except json.JSONDecodeError as e:
-    raise ConfigError("data", "invalid JSON") from e
+    raise ConfigError(
+        "data", "invalid JSON"
+    ) from e
 ```
-`raise ... from e` sets `__cause__` and produces clean tracebacks. `raise ... from None` suppresses the original.
 
-**Context managers — `with` statement:**
+### `with` runs cleanup for you
+
+A context manager runs setup code on entry and cleanup code on exit. The cleanup runs even if the block raises.
+
 ```python
 with open("file.txt") as f:
     data = f.read()
-# file is closed even if an exception is raised
+# The file is closed, even on error
 ```
 
-Implement `__enter__` and `__exit__` to make a class a context manager:
+### `__enter__` and `__exit__` make a class a context manager
+
+`__enter__` returns the value for `as`. `__exit__` receives the exception type, value and traceback, or three `None` values. If `__exit__` returns a truthy value, Python suppresses the exception.
+
 ```python
 class Timer:
     def __enter__(self):
         self.start = time.perf_counter()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.elapsed = time.perf_counter() - self.start
-        return False  # False = don't suppress the exception
+    def __exit__(self, exc_type, exc, tb):
+        now = time.perf_counter()
+        self.elapsed = now - self.start
+        # False: do not suppress
+        return False
 ```
 
-**`contextlib.contextmanager` — generator-based:**
+### `@contextmanager` builds one from a generator
+
+The code before `yield` is the setup, and the code after it is the cleanup. Put `yield` in a `try` block, so the cleanup runs on error.
+
 ```python
 from contextlib import contextmanager
 
@@ -95,61 +113,64 @@ def managed_resource():
         release(resource)
 ```
 
-## vs other languages
-
-| Feature | Python | Java | Go | JS |
-|---|---|---|---|---|
-| Error model | exceptions | checked + unchecked exceptions | return `(value, error)` | exceptions |
-| Cleanup | `finally` / `with` | `finally` / try-with-resources | `defer` | `finally` |
-| Custom errors | subclass `Exception` | subclass `Exception` | implement `error` interface | subclass `Error` |
-| Error chaining | `raise X from Y` | `initCause` / constructor | wrapping via `fmt.Errorf %w` | No standard |
-| Context managers | `with` / `__enter__/__exit__` | try-with-resources (`Closeable`) | `defer` | No |
-
-Go's error model forces you to handle errors at each call site; Python's exception model lets errors propagate up the call stack automatically. Both have tradeoffs — Python can lead to silent propagation; Go can lead to verbose boilerplate.
-
 ## Watch out
 
-- Bare `except:` (no exception type) catches `BaseException`, including `KeyboardInterrupt` and `SystemExit` — it can make `Ctrl-C` and `sys.exit()` stop working as expected. Always catch a specific type, or at least `Exception`.
-- A `return` inside `finally` silently swallows any exception (and overrides any `return` from the `try`/`except`) — `finally` blocks should handle cleanup, not control flow.
-- `except Exception as e: pass` hides bugs. If you must suppress an error, log it or narrow the exception type — don't catch broadly "just in case."
-- `__exit__` must return a truthy value to **suppress** an exception; returning `None` (the default if you forget a `return`) lets the exception propagate. It's easy to write an `__exit__` that looks like it handles errors but doesn't.
+- A bare `except:` catches `BaseException`. Then `Ctrl-C` and `sys.exit()` can stop working. Catch a specific type, or `Exception`.
+- Do not catch `BaseException` unless you mean to stop `SystemExit` and `KeyboardInterrupt`.
+- A `return` inside `finally` discards any exception. It also replaces any `return` from `try` or `except`.
+- Use `finally` for cleanup, not for control flow.
+- `except Exception as e: pass` hides bugs. To suppress an error, log it or narrow the type.
+- `__exit__` must return a truthy value to suppress an exception. A missing `return` gives `None`, so the exception propagates.
 
 ## The task
 
-Implement three things: a custom exception, a function that translates one exception into another, and a context manager class.
+Write a custom exception, a function that translates an exception, and a context manager class in `stub.py`.
 
-**`class ParseError(ValueError)`** — a custom exception subclassing `ValueError`. Its `__init__(self, raw: str)` stores the original string on a `raw` attribute and passes the message `f"cannot parse: '{raw}'"` to the base class.
+`class ParseError(ValueError)` is a custom exception.
+
+1. `__init__(self, raw: str)` stores the original string in the `raw` attribute.
+2. It passes the message `f"cannot parse: '{raw}'"` to the base class.
+
+`safe_divide(a: float, b: float) -> float` returns `a / b`.
+
+1. If `b == 0`, raise `ValueError("division by zero")`. Do not let `ZeroDivisionError` propagate.
+2. Use `raise ... from None`, so the traceback does not show `ZeroDivisionError` as the cause.
+
+`class Accumulator` is a context manager.
+
+1. `__init__(self, *suppress_types)` stores the exception types to suppress. It sets `self.errors` to `[]`.
+2. `__enter__` returns `self`.
+3. `__exit__` checks the type of the exception from the `with` block with `issubclass`.
+4. If the type is in `suppress_types`, append the type to `self.errors` and suppress the exception.
+5. Any other exception propagates.
+6. A `with` block that raises nothing leaves `errors` empty.
 
 ```python
-try:
-    raise ParseError("abc123")
-except ParseError as e:
-    str(e)    # "cannot parse: 'abc123'"
-    e.raw     # "abc123"
-
 issubclass(ParseError, ValueError)  # True
-```
+str(ParseError("bad_input"))
+# "cannot parse: 'bad_input'"
+ParseError("xyz").raw  # "xyz"
 
-**`safe_divide(a: float, b: float) -> float`** — returns `a / b`. If `b == 0`, raises `ValueError("division by zero")` instead of letting `ZeroDivisionError` propagate — use `raise ... from None` so the original `ZeroDivisionError` doesn't appear in the traceback as the cause.
+safe_divide(10, 2)  # 5.0
+safe_divide(1, 4)   # 0.25
+safe_divide(0, 5)   # 0.0
+safe_divide(5, 0)
+# ValueError("division by zero")
 
-```python
-safe_divide(10, 2)   # 5.0
-safe_divide(1, 4)    # 0.25
-safe_divide(0, 5)    # 0.0
-safe_divide(5, 0)    # raises ValueError("division by zero")
-```
-
-**`class Accumulator`** — a context manager class. Constructor `__init__(self, *suppress_types)` stores the exception types to suppress and initializes an `errors: list` attribute to `[]`. `__enter__` returns `self`. `__exit__` inspects the exception type raised inside the `with` block (if any): if it's one of `suppress_types` (checked with `issubclass`), append that type to `self.errors` and suppress it (the exception does not propagate); otherwise let it propagate normally. A `with` block that raises nothing leaves `errors` empty.
-
-```python
-with Accumulator(ValueError, TypeError) as acc:
+with Accumulator(ValueError) as acc:
     raise ValueError("oops")
-acc.errors   # [ValueError]  — suppressed, doesn't propagate
+acc.errors  # [ValueError]
+
+with Accumulator(ValueError,
+                 TypeError) as acc:
+    raise TypeError("type")
+acc.errors  # [TypeError]
 
 with Accumulator(ValueError) as acc:
     x = 1 + 1
-acc.errors   # []  — no exception was raised
+acc.errors  # []
 
+# TypeError propagates out of the with
 with Accumulator(ValueError):
-    raise TypeError("wrong")   # not in suppress_types — propagates out of the `with`
+    raise TypeError("wrong")
 ```

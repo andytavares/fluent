@@ -1,25 +1,16 @@
-# Artifacts
+## What you build
 
-## What you'll learn
-
-Builds on **step dependencies and gates**: a `depends_on` chain controls
-*when* steps run, but says nothing about *files* moving between them. Two
-steps in a Buildkite build are not guaranteed to share a machine — each job
-can land on a different agent. Artifacts are how you move build output
-(binaries, coverage reports, logs) from the agent that produced it to the
-agent that needs it next.
+You write a build, test and package chain that moves a compiled artifact between steps. `depends_on` controls when steps run, but it moves no files. This lesson builds on **Step Dependencies and Gates**.
 
 ## Key concepts
 
-**Every job gets its own checkout.** Because steps may run on entirely
-different agents, anything an earlier step's shell wrote to disk (a
-compiled binary, a `node_modules` folder, a test report) is invisible to a
-later step unless you explicitly ship it through Buildkite's artifact
-storage.
+### Every job gets its own checkout
 
-**`artifact_paths` — upload declaratively.** Attach this to a command step
-to have the agent upload matching files *after* the step's command
-finishes, whether it passed or failed:
+Each job can land on a different agent. A later step cannot see what an earlier step wrote to disk: a compiled binary, a `node_modules` folder or a test report. To move a file, you send it through Buildkite's artifact storage.
+
+### `artifact_paths` uploads files after the command
+
+Add `artifact_paths` to a command step. The agent uploads the matching files after the command finishes, if it passed or failed.
 
 ```yaml
 steps:
@@ -30,84 +21,46 @@ steps:
       - "dist/**/*"
 ```
 
-The value is one or more [glob patterns](https://buildkite.com/docs/pipelines/configure/glob-pattern-syntax)
-(`**` for recursive directories), as a single semicolon-separated string or
-a YAML list. `artifact_paths` only *uploads* — it never downloads.
+The value is one or more [glob patterns](https://buildkite.com/docs/pipelines/configure/glob-pattern-syntax). `**` matches directories recursively. Write the globs as one semicolon-separated string or as a YAML list. `artifact_paths` only uploads. It never downloads.
 
-**`buildkite-agent artifact upload` / `download` — do it yourself, mid-command.**
-For finer control (uploading before the step ends, or downloading a
-specific file from a specific earlier step), call the agent binary directly
-from your `command`/`commands`:
+### The agent CLI uploads and downloads inside a command
 
-```yaml
-steps:
-  - label: ":test_tube: Test"
-    key: "test"
-    depends_on: "build"
-    commands:
-      - "buildkite-agent artifact download 'dist/**/*' ."
-      - "make test"
+Call `buildkite-agent artifact upload` or `download` from your `command` or `commands`. Use it to upload before the step ends, or to download a file from one earlier step.
+
+```
+buildkite-agent artifact download \
+  'dist/**/*' .
 ```
 
-By default, `artifact download` fetches the most recent matching artifact
-from *anywhere in the current build* — you don't need to know which step
-or agent produced it. Pass `--step <key>` to pin it to a specific step if
-more than one step could have produced a same-named file.
+By default, `artifact download` gets the most recent matching artifact from anywhere in the current build. You do not need to know which step or agent made it. Pass `--step <key>` to pin the source when more than one step can make a file with that name.
 
-**Cross-step artifact flow.** Chain `artifact_paths` (upload) on the
-producing step with `buildkite-agent artifact download` (fetch) on the
-consuming step's command. This is the standard build → test → package
-shape: build compiles once and uploads the output; every downstream step
-(test, package, deploy) downloads it rather than rebuilding.
+### Upload once, download in each later step
 
-**Retention thinking.** Artifacts aren't free or infinite — they're stored
-per build under your organization's retention policy and count toward
-storage usage. Treat `artifact_paths` globs deliberately: upload the
-compiled output and test reports you actually need downstream or for
-debugging, not entire working directories (`node_modules/`, `.git/`) which
-bloat storage and slow every subsequent upload/download.
+Put `artifact_paths` on the step that makes the file. Put `buildkite-agent artifact download` in the command of each step that uses it. Build compiles once and uploads the output. Test, package and deploy download it and do not rebuild.
 
-## vs other tools
+GitHub Actions uses named artifacts in an upload and download step pair. Buildkite has no artifact name: you address an artifact by the path you uploaded it from.
 
-| | Buildkite | GitHub Actions | GitLab CI |
-|---|---|---|---|
-| Declare in step | `artifact_paths:` glob(s) | `actions/upload-artifact` step | `artifacts: paths:` |
-| Fetch in a later job | `buildkite-agent artifact download` (or auto via same job) | `actions/download-artifact` step | Automatic within same pipeline (`dependencies:`) |
-| Cross-pipeline access | REST API, or same-cluster rules | `actions/download-artifact` with `run-id` | `needs:` with `artifacts: true`, or API |
+### Artifacts cost storage
 
-Buildkite's model is more "pull it yourself, by glob, whenever you need it"
-than GitHub Actions' explicit named-artifact upload/download step pair —
-there's no separate "artifact name" concept; you address artifacts by the
-path they were uploaded from.
+Buildkite stores artifacts per build, under your organization's retention policy. They count toward storage usage. Upload the compiled output and test reports you need later. Do not upload whole working directories such as `node_modules/` or `.git/`. They fill storage and slow every upload and download.
 
 ## Watch out
 
-- **`artifact_paths` uploads after the command finishes** — if your command
-  crashes before producing the file, there's nothing to upload; the step's
-  exit status is unaffected by a failed artifact upload (it's best-effort).
-- **`artifact download` defaults to "most recent anywhere in the build"** —
-  in a matrix or parallel build where multiple steps produce a same-named
-  file, pin the source explicitly with `--step`.
-- **Downloaded artifacts land relative to the job's working directory** —
-  the destination argument to `download` is a directory, and glob downloads
-  preserve the uploaded path structure underneath it.
+- `artifact_paths` uploads after the command finishes. If the command crashes before it makes the file, nothing uploads.
+- A failed artifact upload does not change the step's exit status. The upload is best-effort.
+- `artifact download` gets the most recent match in the build. In a matrix or parallel build, pin the source with `--step`.
+- The `download` destination is a directory, relative to the job's working directory. Glob downloads keep the uploaded path structure under it.
 
 ## The task
 
-Write a `pipeline.yml` with three command steps forming a build → test →
-package chain that moves a compiled artifact between them:
+Write a pipeline in `stub.yaml` with three command steps, in this order. Build makes `dist/`, and test and package download it.
 
-1. **Build** — `label: ":hammer: Build"`, `key: "build"`,
-   `command: "make build"`, `artifact_paths: ["dist/**/*"]`.
-2. **Test** — `label: ":test_tube: Test"`, `key: "test"`,
-   `depends_on: "build"`, using `commands:` to first run
-   `"buildkite-agent artifact download 'dist/**/*' ."` then `"make test"`.
-3. **Package** — `label: ":package: Package"`, `key: "package"`,
-   `depends_on: "test"`, using `commands:` to first run
-   `"buildkite-agent artifact download 'dist/**/*' ."` then `"make package"`,
-   and `artifact_paths: ["release/*.tar.gz"]`.
+1. Build: `label: ":hammer: Build"`, `key: "build"`, `command: "make build"`. Its `artifact_paths` list has one entry: `"dist/**/*"`.
+2. Test: `label: ":test_tube: Test"`, `key: "test"`, `depends_on: "build"`. Its `commands:` list runs the download command, then `"make test"`.
+3. Package: `label: ":package: Package"`, `key: "package"`, `depends_on: "test"`. Its `commands:` list runs the download command, then `"make package"`.
+4. Package also has an `artifact_paths` list with one entry: `"release/*.tar.gz"`.
 
-Expected shape:
+The download command is `"buildkite-agent artifact download 'dist/**/*' ."`. Write it on one line, exactly twice.
 
 ```yaml
 steps:

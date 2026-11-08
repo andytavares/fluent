@@ -1,19 +1,12 @@
-# Plugins
+## What you build
 
-## What you'll learn
-
-Builds on **step dependencies and gates** and **conditionals**: you can
-shape *when* steps run. Plugins shape *how* a step's job executes — most
-commonly, running the command inside a container instead of directly on
-the agent's host. This is the standard way Buildkite pipelines get
-Docker-based, reproducible builds without hand-rolling `docker run` in
-every `command`.
+You write a two-step pipeline that builds and tests in a Docker container, then builds and pushes an image. Plugins shape how a step's job runs, most often inside a container instead of on the agent's host. This lesson builds on **Step Dependencies and Gates** and **Conditionals**.
 
 ## Key concepts
 
-**Plugin YAML shape.** The `plugins:` attribute on a command step is a
-list. Each entry's key is `<plugin-name>#<version>` and its value is that
-plugin's configuration map:
+### `plugins:` is a list of name, version and config
+
+The `plugins:` attribute on a command step is a list. Each entry's key is `<plugin-name>#<version>`. Its value is that plugin's configuration map.
 
 ```yaml
 steps:
@@ -24,13 +17,11 @@ steps:
           workdir: "/app"
 ```
 
-A plugin with no configuration is written with `~` (YAML null) as its
-value: `- library-example#v1.0.0: ~`. Multiple plugins on one step run in
-the order they're listed, per lifecycle hook (checkout, command, etc.).
+A plugin with no configuration takes `~` (YAML null) as its value: `- library-example#v1.0.0: ~`. Plugins on one step run in list order, for each lifecycle hook such as checkout and command.
 
-**The `docker` plugin — the workhorse for single-container jobs.** Runs
-the step's `command` inside a container built from `image`, instead of on
-the bare agent host:
+### The `docker` plugin runs the command in one container
+
+The `docker` plugin runs the step's `command` in a container built from `image`, not on the bare agent host. It gives reproducible builds without a hand-written `docker run` in every `command`.
 
 ```yaml
 steps:
@@ -42,11 +33,11 @@ steps:
           workdir: "/app"
 ```
 
-**The `docker-compose` plugin — multi-service jobs.** For anything needing
-more than one container (app + database + cache), the `docker-compose`
-plugin drives a `docker-compose.yml` in your repo. It also supports
-building an image in one step and referencing it (via the build's
-meta-data store) from a later step, without rebuilding:
+GitHub Actions has a `container:` job attribute for this. Buildkite makes containers one plugin among many, so multiple plugins and custom hooks combine the same way.
+
+### The `docker-compose` plugin runs many services
+
+For a job with more than one container, such as app, database and cache, use the `docker-compose` plugin. It drives a `docker-compose.yml` in your repo. One step can build an image, and a later step can use it through the build's meta-data store, with no rebuild.
 
 ```yaml
 steps:
@@ -58,79 +49,42 @@ steps:
 
   - wait
 
-  - label: ":docker: Run tests against built image"
+  - label: ":docker: Test built image"
     command: "test.sh"
     plugins:
       - docker-compose#v5.11.0:
           run: "app"
 ```
 
-Note the second example has no `command` on the first step — plugins run
-regardless of whether a step defines one; a plugin-only step is still a
-valid command step.
+The first step has no `command`. Plugins run without one, so a plugin-only step is still a valid command step.
 
-**Version pinning discipline.** Always pin an exact tag (`#v5.13.0`), never
-a moving reference like `#main` or no version at all. An unpinned plugin
-can change behavior under you the next time an agent checks it out fresh —
-the same "pin your dependencies" discipline you'd apply to any package
-manager, just enforced by convention rather than a lockfile.
+### Pin every plugin to an exact tag
 
-**Writing your own plugin (overview).** A plugin is just a git repository
-with a `plugin.yml` describing its configuration schema, plus one or more
-executable *hooks* (`environment`, `pre-checkout`, `pre-command`,
-`command`, `post-command`, `pre-exit`) — shell scripts Buildkite runs at
-the corresponding point in the job lifecycle, with the plugin's
-configuration exposed as `BUILDKITE_PLUGIN_<NAME>_<KEY>` environment
-variables. You reference your own plugin the same way as a published one,
-by git URL and ref: `github.com/myorg/my-plugin#v1.0.0`. Most teams never
-need to write one — reach for an existing, well-maintained plugin first.
+Always pin an exact tag such as `#v5.13.0`. Never use a moving ref such as `#main`, or no version. An unpinned plugin can change behavior the next time an agent checks it out. The rule is the same as for any package manager, but convention enforces it, not a lockfile.
 
-## vs other tools
+### A plugin is a git repo with hooks
 
-| | Buildkite | GitHub Actions | GitLab CI |
-|---|---|---|---|
-| Reusable step logic | Plugin: git repo + lifecycle hooks, referenced by URL#version | Action: git repo + `action.yml`, referenced by `uses:` | No first-class plugin system — shared logic via `include:` templates |
-| Container execution | `docker`/`docker-compose` plugin wraps the command | `container:` key on a job, or a container-based action | `image:` key on a job |
-| Version pinning | `#<tag-or-sha>` in the plugin reference | `@<tag-or-sha>` in `uses:` | Image tag / include ref |
+A plugin is a git repository with a `plugin.yml` that describes its configuration schema. It has one or more executable hooks: `environment`, `pre-checkout`, `pre-command`, `command`, `post-command` and `pre-exit`. Buildkite runs each hook at that point in the job lifecycle.
 
-The docker/docker-compose plugin pattern is Buildkite's equivalent of
-GitHub Actions' `container:` job attribute — the practical difference is
-that Buildkite treats containerization as *one plugin among many* rather
-than a first-class step attribute, so the same composability (multiple
-plugins, custom hooks) applies uniformly.
+The hooks read the plugin's configuration from `BUILDKITE_PLUGIN_<NAME>_<KEY>` environment variables. You refer to your own plugin by git URL and ref, for example `github.com/myorg/my-plugin#v1.0.0`. Most teams never write one. Use an existing, well-maintained plugin first.
 
 ## Watch out
 
-- **Unpinned plugin versions are a supply-chain risk, not just a
-  correctness one** — `docker#latest` or a bare branch ref can pull in
-  behavior changes (or malicious changes, if the upstream repo is
-  compromised) with zero visibility in your own git history.
-- **Plugins run during checkout/command hooks, before step-level `if:`
-  conditions are evaluated for skipping** — a skipped step's plugins may
-  still execute setup/teardown hooks. Use a `group` step or a dynamic
-  pipeline upload if you need to prevent a plugin from running at all
-  (see the **conditionals** concept).
-- **Not every plugin needs (or accepts) a `command`** — some plugins
-  (like `docker-login`) exist purely to run side effects in their hooks;
-  check the plugin's own README rather than assuming `command` is
-  required.
+- An unpinned plugin is a supply-chain risk. `docker#latest` or a branch ref can pull in changes you never see.
+- If an attacker compromises the upstream plugin repo, an unpinned ref pulls in the malicious change.
+- A shell `if` inside `command` does not stop the step's plugins. Their hooks still run.
+- To skip a step and its plugins, use the step's YAML `if:`, a `group` step or a dynamic pipeline upload.
+- Some plugins, such as `docker-login`, need no `command`. Read the plugin's README before you add one.
 
 ## The task
 
-Write a `pipeline.yml` with two command steps forming a dockerized
-build-and-push chain:
+Write a pipeline in `stub.yaml` with two command steps. The first builds and tests in Docker, and the second builds and pushes an image. Step labels are free text: the checks do not read them, so a label can differ from the stub's comment.
 
-1. **Build and test** — `label: ":docker: Build and test"`,
-   `key: "build-test"`, `command: "npm install && npm test"`, with a
-   `plugins:` list containing the `docker` plugin pinned at `#v5.13.0`
-   configured with `image: "node:20"` and `workdir: "/app"`.
-2. **Compose build and push** — `label: ":docker: Compose build and push"`,
-   `key: "compose-build"`, `depends_on: "build-test"`, with a `plugins:`
-   list containing the `docker-compose` plugin pinned at `#v5.11.0`
-   configured with `build: "app"` and
-   `image-repository: "index.docker.io/myorg/myapp"`.
-
-Expected shape:
+1. Build and test: `label: ":docker: Build and test"`, `key: "build-test"`, `command: "npm install && npm test"`.
+2. Give it a `plugins:` list with `docker#v5.13.0`, configured with `image: "node:20"` and `workdir: "/app"`.
+3. Compose build and push: `label: ":docker: Compose build"`, `key: "compose-build"`, `depends_on: "build-test"`.
+4. Give it a `plugins:` list with `docker-compose#v5.11.0`, configured with `build: "app"`.
+5. Also set `image-repository: "index.docker.io/myorg/myapp"` on that plugin.
 
 ```yaml
 steps:
@@ -142,7 +96,7 @@ steps:
           image: "node:20"
           workdir: "/app"
 
-  - label: ":docker: Compose build and push"
+  - label: ":docker: Compose build"
     key: "compose-build"
     depends_on: "build-test"
     plugins:

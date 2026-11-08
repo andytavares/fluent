@@ -1,28 +1,35 @@
-# Pointers
+## What you build
 
-## What you'll learn
-
-A pointer is a variable that holds the memory address of another variable. Pointers are how C achieves pass-by-reference, how arrays are passed to functions, and how dynamic memory allocation works.
+You write `swap`, `sum_array` and `reverse_array`. Each one reads or changes the caller's memory through pointers. This lesson builds on **Functions**.
 
 ## Key concepts
 
-**Declaring and using a pointer:**
+### A pointer holds an address
+
+A pointer is a variable that holds the memory address of another variable. C uses pointers for pass-by-reference, for array parameters and for dynamic memory.
+
 ```c
 int value = 42;
-int *ptr = &value;   /* ptr holds the address of value */
+// ptr holds the address of value
+int *ptr = &value;
 
-printf("%d\n", *ptr);  /* dereference: prints 42 */
-*ptr = 100;            /* modifies value through ptr */
-printf("%d\n", value); /* prints 100 */
+printf("%d\n", *ptr);  // prints 42
+// Changes value through ptr
+*ptr = 100;
+printf("%d\n", value); // prints 100
 ```
 
-**Address-of (`&`) and dereference (`*`):**
+### `&` takes an address, `*` follows it
+
 | Operator | Meaning |
 |----------|---------|
-| `&x`     | "the address of x" — produces a pointer |
-| `*ptr`   | "the value at ptr" — dereference |
+| `&x`     | The address of `x`. It gives a pointer. |
+| `*ptr`   | The value at `ptr` (dereference). |
 
-**Passing a pointer to a function** lets the function mutate the caller's variable:
+### A pointer parameter lets a function change the caller's variable
+
+Pass the address. The function writes through it.
+
 ```c
 void increment(int *n) {
     (*n)++;
@@ -30,48 +37,69 @@ void increment(int *n) {
 
 int x = 5;
 increment(&x);
-printf("%d\n", x);  /* 6 */
+printf("%d\n", x);  // 6
 ```
 
-**Arrays and pointers:** An array name decays to a pointer to its first element. You can pass an array to a function as `int *arr` or `int arr[]` — they are equivalent:
+### An array name decays to a pointer
+
+An array name becomes a pointer to its first element. The parameters `int *arr` and `int arr[]` are equivalent.
+
 ```c
 int sum(const int *arr, int n) {
     int total = 0;
-    for (int i = 0; i < n; i++) total += arr[i];
+    for (int i = 0; i < n; i++)
+        total += arr[i];
     return total;
 }
 ```
 
-**`const int *p`** — pointer to a constant int (you cannot write `*p = ...` but you can change `p`).  
-**`int *const p`** — constant pointer to int (you can write `*p = ...` but cannot change `p`).
+### `const` can apply to the data or to the pointer
 
-**vs other languages:** Most languages hide pointers behind references, smart pointers, or garbage collection. In C, you manage them directly — power and responsibility in equal measure. A NULL pointer dereference crashes your program; there is no NullPointerException with a stack trace.
+`const int *p` points to a constant `int`. You cannot write `*p = ...`, but you can change `p`. `int *const p` is a constant pointer. You can write `*p = ...`, but you cannot change `p`.
+
+### You manage pointers yourself
+
+Most languages hide pointers behind references, smart pointers or garbage collection. In C, a `NULL` dereference crashes the program. You get no `NullPointerException` and no stack trace.
 
 ## Watch out
 
-- Dereferencing `NULL` (or any pointer that hasn't been set) is undefined behavior — usually a segfault, but the compiler is not required to catch it, and in some cases will silently miscompile around it.
-- A pointer to a local variable becomes **dangling** the instant the function that owns it returns — never return `&local_var` from a function.
-- `arr[i]` and `*(arr + i)` are exactly the same operation in C; pointer arithmetic *is* array indexing. Walking `n` elements from `arr` means valid indices are `0` through `n - 1` — `arr[n]` is one past the end and out of bounds.
-- None of the functions below own their input: `swap`, `sum_array`, and `reverse_array` all operate on caller-allocated memory. No allocation, no `free` — the caller's array/variables outlive the call unchanged in size.
+- Dereferencing `NULL` or an unset pointer is undefined behavior. The compiler does not catch it and can miscompile around it.
+- A pointer to a local variable dangles when its function returns. Never return `&local_var`.
+- `arr[i]` and `*(arr + i)` are the same operation. For `n` elements, `arr[n]` is out of bounds.
+- These functions use memory the caller owns. They do not allocate and do not call `free`.
 
 ## The task
 
-You're given caller-owned memory (stack arrays and local variables) to read or mutate through pointers — none of these functions allocate anything.
+Each function reads or changes memory that the caller owns: stack arrays and local variables. No function allocates memory.
 
-- `void swap(int *a, int *b)` — swap the values at the two addresses; `a` and `b` are non-NULL pointers to existing `int`s
-- `int sum_array(const int *arr, int n)` — return the sum of the `n` integers starting at `arr` (a `const` pointer: the array is read but never modified); if `n == 0`, return `0`
-- `void reverse_array(int *arr, int n)` — reverse the `n` elements of `arr` in place; if `n == 0` or `n == 1`, leave `arr` unchanged
+1. `void swap(int *a, int *b)` swaps the values at the two addresses.
+2. `a` and `b` are non-`NULL` pointers to existing `int` values.
+3. `int sum_array(const int *arr, int n)` returns the sum of the `n` integers that start at `arr`.
+4. `sum_array` only reads the array. If `n == 0`, it returns `0`.
+5. `void reverse_array(int *arr, int n)` reverses the `n` elements of `arr` in place.
+6. If `n` is `0` or `1`, `reverse_array` leaves `arr` unchanged.
+
+Negative values follow the same rules.
 
 ```c
 int x = 3, y = 7;
-swap(&x, &y);              // x == 7, y == 3
+swap(&x, &y);         // x == 7, y == 3
+
+int a = -1, b = 1;
+swap(&a, &b);         // a == 1, b == -1
 
 int nums[] = {1, 2, 3, 4, 5};
-sum_array(nums, 5);         // 15
-sum_array(nums, 0);         // 0  — no elements to sum
+sum_array(nums, 5);   // 15
+sum_array(nums, 1);   // 1
+sum_array(nums, 0);   // 0
 
-reverse_array(nums, 5);     // nums becomes {5, 4, 3, 2, 1}
+int neg[] = {-1, -2, -3};
+sum_array(neg, 3);    // -6
 
-int single[] = {42};
-reverse_array(single, 1);   // single unchanged: {42}
+// nums becomes {5, 4, 3, 2, 1}
+reverse_array(nums, 5);
+
+int one[] = {42};
+reverse_array(one, 1); // one == {42}
+reverse_array(one, 0); // one == {42}
 ```

@@ -1,31 +1,26 @@
-# Probes
+## What you build
 
-## What you'll learn
-
-Kubernetes cannot tell whether your app is healthy by staring at the
-container process — `docker ps`-style "is it running" is not the same
-question as "can it serve traffic right now." Probes let you answer that
-question yourself, but the three probe types gate three completely
-different behaviors. Confusing them is the single most common cause of
-"my healthy Pods keep getting killed" incidents.
+You write a Pod for a slow-starting app with a liveness, a readiness and a startup probe. A running process is not the same as a process that can serve traffic. Each probe type controls a different action, and mixing them up kills healthy Pods. This lesson builds on **Services** and **Rollout Strategies**.
 
 ## Key concepts
 
-**What each probe actually gates:**
+### A failed `livenessProbe` restarts the container
 
-| Probe | On failure | Purpose |
-|---|---|---|
-| `livenessProbe` | kubelet **kills and restarts** the container | "Is this process stuck/deadlocked? Restart it." |
-| `readinessProbe` | Pod is **removed from Service Endpoints** (not killed) | "Can this Pod take traffic right now?" |
-| `startupProbe` | kubelet **kills and restarts** the container, but only counts *after* startup succeeds elsewhere it just holds off liveness/readiness | "Is the app still starting up? Don't judge it yet." |
+The kubelet kills and restarts the container. Use it only when the process is truly stuck and a restart is the only fix, such as a deadlock.
 
-Readiness failing does **not** restart anything — the Pod keeps running,
-just gets no traffic until it passes again. This is the probe you want for
-"warming up a cache" or "temporarily overloaded, back off traffic." Liveness
-failing is destructive — only use it for "this process is truly wedged and
-a restart is the only fix" (deadlock, unrecoverable panic loop).
+### A failed `readinessProbe` removes the Pod from Service endpoints
 
-**Probe mechanisms** — any probe type can use any of these:
+The kubelet does not restart anything. The Pod keeps running, but gets no traffic until the probe passes again. Use it while the app warms a cache or backs off under load.
+
+### A `startupProbe` holds the other probes back
+
+Liveness and readiness checks do not run until the startup probe succeeds. If it fails `failureThreshold` times, the kubelet kills the container as a failed startup. After one success, the startup probe never runs again for that container.
+
+### Every probe type can use three mechanisms
+
+- `httpGet` succeeds on a 2xx or 3xx response. Any other response fails.
+- `tcpSocket` succeeds when a TCP connection opens. It has no HTTP meaning.
+- `exec` runs a command in the container. Exit code 0 succeeds.
 
 ```yaml
 livenessProbe:
@@ -50,93 +45,51 @@ startupProbe:
   periodSeconds: 10
 ```
 
-- `httpGet` — 2xx/3xx response = success, anything else = failure.
-- `tcpSocket` — TCP connection succeeds = success (no HTTP semantics).
-- `exec` — a command inside the container; exit code 0 = success.
+### Five fields control timing
 
-**Timing fields, precisely:**
+- `initialDelaySeconds` is the wait after container start before the first probe.
+- `periodSeconds` is the interval between probes. The default is 10.
+- `timeoutSeconds` is the wait for a response before a failure. The default is 1, often too short for a busy app.
+- `failureThreshold` is the number of failures in a row before the action.
+- `successThreshold` is the number of successes in a row to become healthy again. The default is 1, and liveness and startup require 1.
 
-- `initialDelaySeconds` — wait this long after container start before the
-  *first* probe fires.
-- `periodSeconds` — how often to probe (default 10).
-- `timeoutSeconds` — how long to wait for a probe response before counting
-  it a failure (default 1 — often too aggressive for a busy app).
-- `failureThreshold` — consecutive failures before acting (restart for
-  liveness/startup, Endpoints removal for readiness).
-- `successThreshold` — consecutive successes needed to flip back to healthy
-  (default 1; must be 1 for liveness/startup).
+### `startupProbe` is for slow-starting apps
 
-**`startupProbe` exists specifically for slow-starting apps.** Before it was
-added, you had one bad choice: set `initialDelaySeconds` on the liveness
-probe long enough for the slowest possible startup (JVM warmup, large cache
-load), which meant *every* restart — even a fast one — waited that same long
-delay before liveness protection kicked in. `startupProbe` decouples this:
-liveness and readiness are disabled entirely until `startupProbe` succeeds
-(or exhausts `failureThreshold * periodSeconds`, at which point the
-container is killed as a failed startup). Once it succeeds once, it's never
-checked again for that container's lifetime, and liveness/readiness take
-over normally.
+Without it, the liveness `initialDelaySeconds` must cover the slowest startup, such as JVM warm-up or a large cache load. Every restart then waits that long before liveness protects it. The startup probe allows up to `failureThreshold * periodSeconds` for startup. Here that is `30 * 10 = 300` seconds.
 
-## The classic failure mode: liveness that kills healthy Pods under load
+### A strict liveness probe can cause an outage under load
 
-A liveness probe with `timeoutSeconds: 1` hitting `/healthz` on an app that,
-under real production load, occasionally takes 1.5s to respond (GC pause,
-a slow dependency) will start failing — not because the app is broken, but
-because it's busy. The kubelet restarts it. Now you have *fewer* healthy
-Pods handling the *same* load, so the remaining Pods get busier, so more
-liveness probes time out, so more restarts happen. This cascading
-liveness-induced outage is real and common. Guardrails:
+Take a liveness probe with `timeoutSeconds: 1`. Under load, the app sometimes takes 1.5 seconds, because of a GC pause or a slow dependency. The probe fails, and the kubelet restarts a busy but working container. Fewer Pods carry the same load, so more probes time out and more restarts follow.
 
-- Liveness checks should test "is the process alive," not "is a downstream
-  dependency healthy." A liveness probe that calls out to a database means a
-  database blip restarts your entire fleet simultaneously.
-- Give liveness generous `timeoutSeconds`/`failureThreshold` — it should be
-  the last resort, not the first line of defense. Readiness is where you put
-  strict, fast, dependency-aware checks (removing an overloaded Pod from
-  rotation is safe; restarting it is not).
-- Never point liveness and readiness at the same endpoint with the same
-  thresholds if that endpoint checks downstream dependencies.
+### Keep liveness simple and lenient
 
-## vs other tools
+- A liveness check tests that the process is alive, not that a dependency is healthy.
+- A liveness probe that calls a database restarts the whole fleet when the database has a short outage.
+- Give liveness generous `timeoutSeconds` and `failureThreshold`. It is the last resort.
+- Put strict, fast, dependency-aware checks in readiness. Removing an overloaded Pod from rotation is safe; restarting it is not.
+- Do not point liveness and readiness at one dependency-checking endpoint with the same thresholds.
 
-| | Kubernetes probes | AWS ALB target group health check | Docker `HEALTHCHECK` |
-|---|---|---|---|
-| Distinct liveness/readiness | Yes — different failure actions | One health check, one action (deregister) | One check, informational (`unhealthy` status) only unless orchestrated |
-| Startup grace period | `startupProbe` (dedicated mechanism) | `HealthCheckGracePeriod` (single value) | No native equivalent |
-| Failure action | Restart (liveness) or deregister (readiness) | Deregister only | No automatic action without an external orchestrator |
-
-Kubernetes' liveness/readiness split is more expressive than most platforms'
-single health check — the tradeoff is you must actually think about which
-endpoint means which thing, rather than reusing one `/health` for
-everything.
+A Docker `HEALTHCHECK` only reports `unhealthy`, and an ALB health check only deregisters. Kubernetes splits restart from deregister, so decide what each endpoint means.
 
 ## Watch out
 
-- **Never call downstream dependencies from a liveness endpoint.** A
-  transient database outage should reduce readiness (stop taking traffic),
-  not trigger a fleet-wide restart storm.
-- **`timeoutSeconds` defaults to 1 second** — too tight for many real
-  endpoints under load. Set it explicitly.
-- **A missing `startupProbe` on a slow-starting app forces you to inflate
-  `initialDelaySeconds`** on liveness, which then applies to every restart,
-  not just the first boot.
+- Do not call dependencies from a liveness endpoint. A database outage then restarts the whole fleet.
+- `timeoutSeconds` defaults to 1 second. That is too short for many endpoints under load, so set it.
+- Without a `startupProbe`, a slow app needs a large liveness `initialDelaySeconds`. That delay then applies to every restart.
 
 ## The task
 
-Write a Pod for an app with a slow startup that needs all three probes
-properly separated:
+Write a Pod in `stub.yaml` for an app with a slow startup. It needs three separate probes.
 
-- `apiVersion: v1`, `kind: Pod`, `metadata.name: app`
-- one container: `name: app`, `image: app:1.0`
-- `livenessProbe`: `httpGet.path: /healthz`, `httpGet.port: 8080`,
-  `initialDelaySeconds: 15`, `periodSeconds: 10`, `timeoutSeconds: 2`,
-  `failureThreshold: 3`
-- `readinessProbe`: `httpGet.path: /ready`, `httpGet.port: 8080`,
-  `periodSeconds: 5`, `failureThreshold: 3`
-- `startupProbe`: `httpGet.path: /startupz`, `httpGet.port: 8080`,
-  `failureThreshold: 30`, `periodSeconds: 10`
+1. Set `apiVersion: v1`, `kind: Pod` and `metadata.name: app`.
+2. Add one container with `name: app` and `image: app:1.0`.
+3. Give every probe an `httpGet` on `port: 8080`.
+4. `livenessProbe`: path `/healthz`, `initialDelaySeconds: 15`, `periodSeconds: 10`.
+5. Also give `livenessProbe` the fields `timeoutSeconds: 2` and `failureThreshold: 3`.
+6. `readinessProbe`: path `/ready`, `periodSeconds: 5`, `failureThreshold: 3`.
+7. `startupProbe`: path `/startupz`, `failureThreshold: 30`, `periodSeconds: 10`.
 
-Expected shape:
+The file must match this content:
 
 ```yaml
 apiVersion: v1

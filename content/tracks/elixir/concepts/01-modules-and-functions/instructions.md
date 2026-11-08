@@ -1,24 +1,29 @@
-# Modules & Functions
+## What you build
 
-## What you'll learn
-
-How Elixir organizes code into modules, how to define public and private functions, how default arguments work, how to add runtime guards to function heads, and how the pipe operator `|>` replaces deeply nested calls.
+You write a `MathUtils` module with four functions: `square/1`, `cube/1`, `sum_of_squares/2` and `factorial/1`. You use public functions, multiple clauses, a guard and the pipe operator `|>`.
 
 ## Key concepts
 
-**Defining a module and functions:**
+### A module groups functions
+
+`defmodule` defines a module. `def` defines a public function. `defp` defines a private function that only code in the same module can call.
 
 ```elixir
 defmodule Greeter do
   def hello(name), do: "Hello, #{name}!"
 
-  defp shout(str), do: String.upcase(str)   # private — not callable outside this module
+  # Private: not callable outside Greeter
+  defp shout(str), do: String.upcase(str)
 end
 ```
 
-`def` is public; `defp` is private. Both compile down to regular functions — there are no access modifiers at the call site beyond the module boundary.
+### Modules are namespaces, not objects
 
-**Default arguments** use `\\` syntax:
+Elixir has no classes and no `this` or `self`. Every function gets all its data as arguments. For polymorphism, Elixir uses protocols or behaviours.
+
+### `\\` sets a default argument
+
+Elixir evaluates a default value on each call, not once at compile time. A default such as `\\ DateTime.utc_now()` is safe, unlike Python's mutable default arguments.
 
 ```elixir
 def greet(name, greeting \\ "Hello") do
@@ -26,23 +31,36 @@ def greet(name, greeting \\ "Hello") do
 end
 ```
 
-When a function has multiple clauses, defaults are declared in a bare function head:
+When a function has more than one clause, declare the defaults in a bare function head:
 
 ```elixir
 def greet(name, greeting \\ "Hello")
-def greet(name, greeting), do: "#{greeting}, #{name}!"
+
+def greet(name, greeting),
+  do: "#{greeting}, #{name}!"
 ```
 
-**Guard clauses** restrict which clause matches:
+### A function can have many clauses
+
+Elixir tries the clauses from top to bottom and runs the first one that matches. Many clauses replace overloading in other languages.
+
+```elixir
+def factorial(0), do: 1
+def factorial(n), do: n * factorial(n - 1)
+```
+
+### A guard restricts a clause
+
+A `when` guard adds a condition to a clause. Guards accept only a fixed set of expressions: comparisons, `is_*` type checks, arithmetic and boolean logic.
 
 ```elixir
 def abs_val(n) when n < 0, do: -n
 def abs_val(n), do: n
 ```
 
-Guards are limited to a safe whitelist of expressions (comparisons, type checks, arithmetic) — arbitrary function calls are not allowed inside `when`.
+### `|>` passes a result to the next call
 
-**The pipe operator `|>`** threads the result of each expression as the first argument of the next:
+The pipe operator puts the value on its left in as the first argument of the call on its right. Elixir code uses it for most data transformations.
 
 ```elixir
 "  hello world  "
@@ -53,68 +71,52 @@ Guards are limited to a safe whitelist of expressions (comparisons, type checks,
 # => "Hello World"
 ```
 
-This is the Elixir idiom for data transformation pipelines. You will see it everywhere.
+### `&` captures a function
 
-**Capturing function references** with `&`:
+`&` makes a function value from a named function or from a short expression.
 
 ```elixir
-&String.upcase/1        # named function reference, arity 1
-&(&1 * 2)               # anonymous function shorthand
-fn x -> x * 2 end      # explicit anonymous function
+# Named function, arity 1
+&String.upcase/1
+# Anonymous shorthand
+&(&1 * 2)
+# Full anonymous function
+fn x -> x * 2 end
 ```
-
-## vs other languages
-
-| | Elixir | Python / Ruby | Go / Java |
-|---|---|---|---|
-| Module system | `defmodule` — compile-time namespace | class or module file | package / class |
-| Private | `defp` | `_` convention / `private` | unexported / `private` |
-| Overloading | Multiple clauses with guards | Not native | Not native |
-| Pipelines | `|>` built-in | method chaining on objects | explicit variable threading |
-
-Coming from JavaScript or Python: there is no `this` or `self`. Every function receives all its data as arguments. Modules are namespaces, not objects.
-
-Coming from Java/C#: there are no classes. If you want polymorphism, use protocols (concept 09) or behaviours.
 
 ## Watch out
 
-- Clause order matters. `def factorial(0), do: 1` must come before the general recursive clause, or the general clause (which doesn't check for `0`) would match first and recurse forever.
-- Guards can only use a safe whitelist (comparisons, `is_*` type checks, basic arithmetic and boolean logic). Calling a regular function — even your own — inside `when` is a compile error.
-- `\\ ` default values are evaluated **per-call**, not once at compile time — safe for expressions like `\\ DateTime.utc_now()`, unlike Python's infamous mutable-default-argument trap.
+- Clause order matters. Put `factorial(0)` before the general clause, or the general clause matches 0 and recurses forever.
+- A regular function call inside `when` is a compile error. This is true for your own functions too.
+- Elixir evaluates a `\\` default on each call. It does not share one value between calls.
 
 ## The task
 
-Implement four functions in the `MathUtils` module.
+Write four functions in the `MathUtils` module.
 
-**`square(n)`** — returns `n * n`.
+1. `square(n)` returns `n * n`.
+2. `cube(n)` returns `n * n * n`.
+3. `sum_of_squares(a, b)` returns `a * a + b * b`. Write it as a pipeline with `|>`. Build `[a, b]`, map `square/1` over it, then sum.
+4. `factorial(n)` returns `n!`, the product `1 * 2 * ... * n`.
+5. `factorial(0)` is its own clause and returns 1.
+6. `factorial(n)` with `n < 0` raises `ArgumentError`. Use a guard clause, not `if` or `cond`.
 
-```elixir
-MathUtils.square(4)   # => 16
-MathUtils.square(0)   # => 0
-MathUtils.square(-3)  # => 9
-```
-
-**`cube(n)`** — returns `n * n * n`.
-
-```elixir
-MathUtils.cube(3)    # => 27
-MathUtils.cube(0)    # => 0
-MathUtils.cube(-2)   # => -8
-```
-
-**`sum_of_squares(a, b)`** — returns the sum of the squares of `a` and `b`. Implement it as a pipeline using `|>` (e.g. build `[a, b]`, map `square/1` over it, then sum).
+Zero and negative numbers work for `square/1` and `cube/1`.
 
 ```elixir
-MathUtils.sum_of_squares(3, 4)  # => 25   (9 + 16)
-MathUtils.sum_of_squares(0, 0)  # => 0
-```
-
-**`factorial(n)`** — returns `n!` (the product `1 * 2 * ... * n`) for non-negative integers. Implement `factorial(0)` as its own clause returning `1`, and use a guard clause (`when n < 0`) to `raise ArgumentError` for negative input — do not use `if`/`cond` for the negative check.
-
-```elixir
-MathUtils.factorial(0)   # => 1
-MathUtils.factorial(1)   # => 1
-MathUtils.factorial(5)   # => 120
-MathUtils.factorial(10)  # => 3_628_800
-MathUtils.factorial(-1)  # raises ArgumentError
+MathUtils.square(5)            # => 25
+MathUtils.square(0)            # => 0
+MathUtils.square(-3)           # => 9
+MathUtils.cube(3)              # => 27
+MathUtils.cube(0)              # => 0
+MathUtils.cube(-2)             # => -8
+MathUtils.sum_of_squares(3, 4) # => 25
+MathUtils.sum_of_squares(0, 0) # => 0
+MathUtils.factorial(0)         # => 1
+MathUtils.factorial(1)         # => 1
+MathUtils.factorial(5)         # => 120
+MathUtils.factorial(10)
+# => 3_628_800
+MathUtils.factorial(-1)
+# raises ArgumentError
 ```

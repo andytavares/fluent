@@ -1,14 +1,12 @@
-# Variables & Types
+## What you build
 
-## What you'll learn
-
-How Ruby's dynamic type system works, the difference between strings and symbols, how nil behaves, and how Ruby handles numeric types.
+You write four small functions that inspect runtime types, make symbols, divide safely and interpolate strings.
 
 ## Key concepts
 
-### Dynamic typing with no declarations
+### Assignment is the declaration
 
-Ruby variables need no type annotation and no keyword like `let` or `var`. Assignment is the declaration.
+A Ruby variable needs no type annotation and no keyword like `let` or `var`.
 
 ```ruby
 name = "Alice"
@@ -18,151 +16,131 @@ active = true
 nothing = nil
 ```
 
-### Symbols
+### A symbol is one shared object
 
-Symbols are Ruby's most distinctive type for newcomers. A symbol like `:status` is an immutable, interned identifier. Two symbols with the same name are the same object — guaranteed. They're cheap to compare and ideal as hash keys, flags, or named parameters.
-
-```ruby
-:ok == :ok        # => true
-:ok.object_id == :ok.object_id  # => true — same object in memory
-
-"ok".object_id == "ok".object_id  # => false — two heap allocations
-```
-
-Convert between them:
+A symbol like `:status` is an immutable, interned identifier. Two symbols with the same name are always the same object. They are cheap to compare, so Ruby code uses them as hash keys, flags and named parameters.
 
 ```ruby
-:hello.to_s   # => "hello"
-"hello".to_sym  # => :hello
+:ok == :ok
+# => true
+:ok.object_id == :ok.object_id
+# => true: one object in memory
+"ok".object_id == "ok".object_id
+# => false: two heap allocations
+
+:hello.to_s      # => "hello"
+"hello".to_sym   # => :hello
 ```
 
-### Frozen strings
+### String literals are mutable
 
-String literals are mutable by default, which can be surprising:
+By default, you can change a string literal in place. Freeze a string to make it immutable, so the runtime can intern it like a symbol.
 
 ```ruby
 s = "hello"
-s << " world"   # mutates s in place
+s << " world"
 s  # => "hello world"
-```
 
-Freeze a string to make it immutable and allow the runtime to intern it (like a symbol):
-
-```ruby
 GREETING = "hello".freeze
-GREETING << " world"  # raises FrozenError
+# Raises FrozenError:
+GREETING << " world"
 ```
 
-In files with `# frozen_string_literal: true` at the top, all string literals are frozen automatically.
+A file with `# frozen_string_literal: true` at the top freezes all its string literals.
 
-### String interpolation
+### Only double quotes interpolate
 
-Use `#{}` inside double-quoted strings. Single-quoted strings are literal — no interpolation, no escape sequences except `\\` and `\'`.
+Use `#{}` inside double-quoted strings. Single-quoted strings are literal: no interpolation, and no escape sequences except `\\` and `\'`.
 
 ```ruby
 lang = "Ruby"
-puts "Hello from #{lang}!"       # => Hello from Ruby!
-puts 'Hello from #{lang}!'       # => Hello from #{lang}!
-puts "Two plus two is #{2 + 2}"  # => Two plus two is 4
+puts "Hello from #{lang}!"
+# Hello from Ruby!
+puts 'Hello from #{lang}!'
+# Hello from #{lang}!
+puts "Two plus two is #{2 + 2}"
+# Two plus two is 4
 ```
 
-### Integer and Float
+### Integers never overflow
 
-Ruby integers are arbitrary precision — no overflow. Integer division truncates (same as C, Java, Go).
+Ruby integers have arbitrary precision. Division of two integers gives an integer and rounds toward negative infinity. Use `fdiv` for a float result.
 
 ```ruby
-10 / 3      # => 3  (integer division)
-10.0 / 3    # => 3.3333...
-10.fdiv(3)  # => 3.3333...  (explicit float division from integers)
+10 / 3      # => 3
+-7 / 2      # => -4
+10.0 / 3    # => 3.3333333333333335
+10.fdiv(3)  # => 3.3333333333333335
+
+-5.abs        # => 5
+2 ** 10       # => 1024
+255.to_s(16)  # => "ff"
 ```
 
-Useful integer methods:
+### `nil` is an object
+
+`nil` is the one instance of `NilClass`, not a null pointer. Only `nil` and `false` are falsy. `0`, `""` and `[]` are all truthy, unlike in Python or JavaScript.
 
 ```ruby
--5.abs      # => 5
-2 ** 10     # => 1024
-255.to_s(16)  # => "ff"  (hex string)
+nil.nil?  # => true
+nil.to_s  # => ""
+nil.to_a  # => []
+nil.to_i  # => 0
 ```
 
-### nil
+### Check and convert types with methods
 
-`nil` is an object (instance of `NilClass`), not a pointer or a keyword for absence of value. It's falsy. Only `nil` and `false` are falsy in Ruby — `0`, `""`, and `[]` are all truthy.
-
-```ruby
-nil.nil?     # => true
-nil.to_s     # => ""
-nil.to_a     # => []
-nil.to_i     # => 0
-```
-
-### Type predicates and conversion
+`is_a?` checks a class and its ancestors. The `to_*` methods convert between types.
 
 ```ruby
 42.is_a?(Integer)   # => true
 42.is_a?(Numeric)   # => true
 "hi".is_a?(String)  # => true
 
-"42".to_i   # => 42
-42.to_s     # => "42"
-3.14.to_i   # => 3
+"42".to_i  # => 42
+42.to_s    # => "42"
+3.14.to_i  # => 3
 ```
-
-## vs other languages
-
-| | Ruby | Python | JavaScript | Go |
-|---|---|---|---|---|
-| Undefined vs nil | Only `nil` | `None` | `undefined` + `null` | zero values per type |
-| Falsy values | `nil`, `false` only | `None`, `0`, `""`, `[]` | `null`, `undefined`, `0`, `""`, `NaN` | no implicit truthiness |
-| Integer overflow | Never (arbitrary precision) | Never | At 2^53 (floats) | Wraps (int64) |
-| Symbols | Yes — `:name` | No (use strings or enums) | No | No |
-| String mutability | Mutable by default | Immutable | Immutable | Immutable |
-
-The "only `nil` and `false` are falsy" rule catches everyone coming from Python or JavaScript. `0` is truthy. `""` is truthy. `[]` is truthy. Plan accordingly.
 
 ## Watch out
 
-- `if value` treats every non-`nil`, non-`false` value as true — including `0` and `""`. Coming from Python or JS, this is the single most common source of bugs in ported code.
-- `"a".to_sym` and `"a"` are never `==` — a symbol and a string with the same characters are different objects of different classes. Hash lookups with the wrong key type (`h["name"]` vs `h[:name]`) silently return `nil` instead of raising.
-- `<<` mutates a string in place; `+` does not. `s = "a"; t = s; s << "b"` also changes what `t` sees, because both variables reference the same string object.
-- `10 / 3` truncates toward zero like integer division in C — but `-7 / 2` is `-4` in Ruby (floors), not `-3` (truncates), because `Integer#/` floors. Use `.fdiv` when you want the exact float result.
+- `if value` is true for every value except `nil` and `false`. `0` and `""` are true, which breaks code ported from Python or JavaScript.
+- A symbol and a string with the same characters are never `==`. `h["name"]` on a symbol-keyed hash returns `nil` and raises nothing.
+- `<<` changes a string in place, and `+` makes a new one. After `t = s; s << "b"`, `t` also shows the change.
+- `-7 / 2` is `-4` in Ruby, not `-3` as in C. Use `fdiv` when you need the exact float result.
 
 ## The task
 
-Implement four small utility functions that exercise Ruby's type system, symbols, `nil`, and string interpolation.
+Write four functions in `stub.rb`. They use runtime types, symbols, `nil` and string interpolation.
 
-**`describe_type(value)`** — returns a `String` describing `value`'s runtime type: `"integer"`, `"float"`, `"string"`, `"symbol"`, `"boolean"` (for both `true` and `false`), or `"nil"`.
+1. `describe_type(value)` returns the type of `value` as a string. It returns `"integer"`, `"float"`, `"string"`, `"symbol"`, `"boolean"` or `"nil"`.
+2. `describe_type` returns `"boolean"` for both `true` and `false`.
+3. `to_symbol(str)` converts a `String` to a `Symbol`. An empty string gives `:""`.
+4. `safe_divide(a, b)` returns `a.fdiv(b)`, a float.
+5. `safe_divide` returns `nil` when `b` is zero. It must not raise `ZeroDivisionError`.
+6. `interpolate_greeting(name, lang)` returns `"Hello, #{name}! Welcome to #{lang}."` with string interpolation.
+
+Negative numbers, zero and empty strings follow the same rules.
 
 ```ruby
 describe_type(42)     # => "integer"
-describe_type(3.14)   # => "float"
-describe_type("hi")   # => "string"
+describe_type(-0.5)   # => "float"
+describe_type("")     # => "string"
 describe_type(:ok)    # => "symbol"
-describe_type(true)   # => "boolean"
 describe_type(false)  # => "boolean"
 describe_type(nil)    # => "nil"
-```
 
-**`to_symbol(str)`** — converts a `String` to a `Symbol`.
-
-```ruby
-to_symbol("hello")    # => :hello
 to_symbol("foo_bar")  # => :foo_bar
 to_symbol("")         # => :""
-```
 
-**`safe_divide(a, b)`** — returns `a.fdiv(b)` (float division), but returns `nil` instead of raising when `b` is zero.
+safe_divide(10, 2)    # => 5.0
+safe_divide(1, 2)     # => 0.5
+safe_divide(-5, 2)    # => -2.5
+safe_divide(10, 0)    # => nil
+safe_divide(0, 0)     # => nil
 
-```ruby
-safe_divide(10, 3)   # => 3.3333333333333335
-safe_divide(10, 2)   # => 5.0
-safe_divide(10, 0)   # => nil  — no ZeroDivisionError
-safe_divide(0, 0)    # => nil
-safe_divide(-5, 2)   # => -2.5
-```
-
-**`interpolate_greeting(name, lang)`** — returns `"Hello, #{name}! Welcome to #{lang}."` using string interpolation.
-
-```ruby
-interpolate_greeting("Alice", "Ruby")  # => "Hello, Alice! Welcome to Ruby."
-interpolate_greeting("", "Ruby")       # => "Hello, ! Welcome to Ruby."
+interpolate_greeting("Bob", "Go")
+# => "Hello, Bob! Welcome to Go."
+interpolate_greeting("", "Ruby")
+# => "Hello, ! Welcome to Ruby."
 ```

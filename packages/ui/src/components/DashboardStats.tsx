@@ -31,7 +31,7 @@ export function DashboardStats({
 }: DashboardStatsProps) {
   const stats: Stat[] = [
     { label: "Concepts done", value: conceptsDone, description: "mastered or completed" },
-    { label: "Tested out", value: testedOut, description: "skipped via test-out" },
+    { label: "Tested out", value: testedOut, description: "passed by test-out" },
     { label: "Time saved", value: formatTimeSaved(timeSavedMs), description: "vs lesson-only path" },
     {
       label: "Capstone",

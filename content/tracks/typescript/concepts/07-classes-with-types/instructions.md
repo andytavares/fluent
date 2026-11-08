@@ -1,12 +1,12 @@
-# Classes with Types
+## What you build
 
-## What you'll learn
-
-You've used interfaces (lesson 1) to describe object shapes and enums (lesson 6) to model runtime constants; this lesson brings the type system to JavaScript classes. TypeScript extends classes with field type annotations, access modifiers, abstract classes, and first-class interface implementation. The additions are largely erased at compile time — you get compile-time enforcement without runtime overhead.
+You model shapes with an abstract `Shape` base, two subclasses and a resizable circle. TypeScript adds field types, access modifiers, abstract classes and interface implementation to JavaScript classes. The compiler erases most of these additions, so they cost nothing at runtime. This lesson builds on **Types & Interfaces** and **Enums**.
 
 ## Key concepts
 
-**Typed fields and constructor shorthand.** Declaring a parameter with an access modifier in the constructor automatically creates and assigns the corresponding field:
+### Constructor parameters can declare fields
+
+An access modifier on a constructor parameter creates the field and assigns it.
 
 ```ts
 class Point {
@@ -17,16 +17,22 @@ class Point {
 }
 
 const p = new Point(3, 4);
-p.x;  // 3 — field created automatically
+// 3: the field exists
+p.x;
 ```
 
-**Access modifiers:**
-- `public` — accessible everywhere (the default)
-- `private` — accessible only within the class body (compile-time only; use `#name` for runtime enforcement)
-- `protected` — accessible within the class and subclasses
-- `readonly` — can only be assigned during construction
+### Access modifiers control who can use a member
 
-**Abstract classes** define a contract that subclasses must fulfill. They cannot be instantiated directly:
+- `public`: any code can use it. This is the default.
+- `private`: only the class body can use it. Use `#name` for runtime enforcement.
+- `protected`: the class and its subclasses can use it.
+- `readonly`: only the constructor can assign it.
+
+JavaScript has only the `#private` syntax. TypeScript modifiers disappear in the emitted JavaScript.
+
+### An abstract class is a contract for subclasses
+
+You cannot create an instance of an abstract class. A subclass must implement each `abstract` member.
 
 ```ts
 abstract class Shape {
@@ -38,12 +44,18 @@ abstract class Shape {
 }
 
 class Circle extends Shape {
-  constructor(private radius: number) { super(); }
-  area(): number { return Math.PI * this.radius ** 2; }
+  constructor(private radius: number) {
+    super();
+  }
+  area(): number {
+    return Math.PI * this.radius ** 2;
+  }
 }
 ```
 
-**Implementing interfaces.** Unlike structural typing at call sites, the `implements` keyword is an explicit contract that the class fulfills a named interface — the compiler verifies every member:
+### `implements` checks a class against an interface
+
+At call sites, structural typing needs no declaration. `implements` is an explicit contract, and the compiler checks every member.
 
 ```ts
 interface Printable {
@@ -51,64 +63,73 @@ interface Printable {
 }
 
 class Report implements Printable {
-  print(): void { console.log("printing..."); }
+  print(): void {
+    console.log("printing...");
+  }
 }
 ```
 
-**The `override` keyword** (TypeScript 4.3+) marks that a method intentionally overrides a base-class method. The compiler errors if no matching method exists in the parent — preventing silent bugs when base classes are refactored:
+### `override` marks an intended override
+
+TypeScript 4.3 added `override`. The compiler reports an error if the base class has no method with that name. This catches bugs when someone changes the base class.
 
 ```ts
-class Animal { speak(): string { return "..."; } }
+class Animal {
+  speak(): string { return "..."; }
+}
 class Dog extends Animal {
-  override speak(): string { return "woof"; }
+  override speak(): string {
+    return "woof";
+  }
 }
 ```
-
-**vs JavaScript:** JavaScript classes have no type annotations, no access modifiers at the syntax level (only the `#private` runtime proposal), and no abstract classes. TypeScript's access modifiers are purely compile-time — they disappear in the emitted JS.
 
 ## Watch out
 
-- `private` and `protected` are **compile-time only**. `(instance as any).privateField` reads it just fine at runtime, and `JSON.stringify(instance)` serializes private fields too — they are not hidden from anything except the type checker. Use the native `#field` syntax if you need real runtime encapsulation.
-- `override` only produces a compile error for a missing base method when the `noImplicitOverride` compiler flag is enabled. Without that flag, `override` is purely documentation — writing it on a method that doesn't actually override anything compiles silently.
-- An `abstract` class can declare fields and constructors, but you cannot `new` it directly — only a concrete subclass. Forgetting to call `super()` in a subclass constructor before accessing `this` is a runtime error, not a compile error, if the abstract base has no required constructor parameters of its own.
+- `private` and `protected` exist only at compile time. `(obj as any).secret` reads a private field at runtime.
+- `JSON.stringify` includes private fields. Use the native `#field` syntax for real runtime encapsulation.
+- Without `noImplicitOverride`, an override without the `override` keyword compiles silently.
+- An `abstract` class can declare fields and constructors. You still cannot use `new` on it.
+- A subclass constructor must call `super()` before it uses `this`. The compiler reports a missing call.
 
 ## The task
 
-You're modeling shapes with a shared abstract base and a resizable variant.
+Model shapes with a shared abstract base and a resizable circle.
 
-**`abstract class Shape`** — declares `abstract area(): number` (implemented by subclasses) and a concrete `describe(): string` that returns `"Area: <n>"`, where `<n>` is `area()` rounded to 2 decimal places.
+1. `abstract class Shape` declares `abstract area(): number`.
+2. `Shape.describe(): string` returns `"Area: <n>"`, with `area()` rounded to 2 decimal places.
+3. `class Circle extends Shape` takes a private `radius: number`. `area()` returns `Math.PI * radius ** 2`.
+4. `class Rectangle extends Shape` takes private `width` and `height` numbers. `area()` returns `width * height`.
+5. `interface Resizable` declares `scale(factor: number): void`.
+6. `class ResizableCircle extends Circle implements Resizable` takes a starting `radius: number`.
+7. `scale(factor)` multiplies the radius by `factor`.
+8. `getRadius(): number` returns the current radius.
+9. After `scale`, `area()` and `describe()` use the new radius.
+
+Every shape is an `instanceof Shape`, including `ResizableCircle` through `Circle`.
 
 ```ts
-class Circle extends Shape {
-  constructor(private radius: number) { super(); }
-  area(): number { return Math.PI * this.radius ** 2; }
-}
+new Circle(5).area();
+// 78.539... (Math.PI * 25)
 new Circle(1).describe();  // "Area: 3.14"
-```
+new Circle(1) instanceof Shape; // true
 
-**`class Circle extends Shape`** — constructor takes `radius: number` (private); `area()` returns `π × radius²`.
+new Rectangle(3, 4).area();     // 12
+new Rectangle(3, 4).describe();
+// "Area: 12.00"
 
-```ts
-new Circle(5).area();       // ~78.54  (Math.PI * 25)
-new Circle(1) instanceof Shape;  // true
-```
+new ResizableCircle(5).getRadius(); // 5
 
-**`class Rectangle extends Shape`** — constructor takes `width: number` and `height: number` (both private); `area()` returns `width × height`.
-
-```ts
-new Rectangle(3, 4).area();      // 12
-new Rectangle(3, 4).describe();  // "Area: 12.00"
-```
-
-**`interface Resizable`** — declares `scale(factor: number): void`.
-
-**`class ResizableCircle extends Circle implements Resizable`** — a circle whose radius can be scaled after construction. `scale(factor)` multiplies the radius by `factor`; `getRadius(): number` returns the current radius so callers (and tests) can inspect it.
-
-```ts
 const rc = new ResizableCircle(4);
-rc.getRadius();      // 4
 rc.scale(2);
-rc.getRadius();      // 8
-rc.area();           // π × 8² ≈ 201.06
-rc instanceof Shape;  // true — inherits through Circle
+rc.getRadius();  // 8
+
+const r3 = new ResizableCircle(3);
+r3.scale(2);
+r3.area();       // Math.PI * 36
+
+const r1 = new ResizableCircle(1);
+r1.scale(3);
+r1.describe();   // "Area: 28.27"
+r1 instanceof Shape; // true
 ```

@@ -1,41 +1,42 @@
-# Workspaces & Environments
+## What you build
 
-## What you'll learn
-
-How Terraform workspaces let one configuration manage multiple isolated state files, when workspaces are the right tool for environment separation, and when separate root modules are a better answer.
+You write a configuration that sizes, names and tags its resources from the current workspace. Workspaces let one configuration manage several separate state files. This lesson builds on **Backends & Remote State**.
 
 ## Key concepts
 
-### What a workspace is
+### A workspace is a separate state
 
-A workspace is an isolated state file within the same backend. Each workspace has its own `terraform.tfstate`. When you run `terraform apply` in workspace `staging`, it uses a different state than workspace `production` — even though the config files are identical.
+Each workspace has its own state in the same backend. An apply in workspace `staging` uses a different state than workspace `production`, with the same configuration files.
 
 ```bash
-# See current workspace (default: "default")
+# List workspaces; the first is "default"
 terraform workspace list
 
-# Create and switch to a new workspace
+# Create a workspace and switch to it
 terraform workspace new staging
 terraform workspace new production
 
-# Switch between existing workspaces
+# Switch to an existing workspace
 terraform workspace select staging
 
-# Delete a workspace (state must be empty first)
+# Delete a workspace; its state must
+# be empty first
 terraform workspace delete staging
 ```
 
-### `terraform.workspace`
+### `terraform.workspace` holds the name
 
-Inside HCL, read the current workspace name with `terraform.workspace`:
+Read the name of the current workspace with `terraform.workspace`.
 
 ```hcl
 locals {
-  environment  = terraform.workspace
-  name_prefix  = "myapp-${terraform.workspace}"
-  is_prod      = terraform.workspace == "production"
+  environment = terraform.workspace
+  name_prefix = "myapp-${terraform.workspace}"
+  is_prod     = local.environment == "production"
 
-  instance_type = terraform.workspace == "production" ? "t3.large" : "t3.micro"
+  instance_type = (
+    local.is_prod ? "t3.large" : "t3.micro"
+  )
 }
 
 resource "aws_instance" "app" {
@@ -49,43 +50,47 @@ resource "aws_instance" "app" {
 }
 ```
 
-### Workspaces on S3
+### The S3 backend stores each workspace under `env:/`
 
-With an S3 backend, workspaces are stored at:
 ```
-s3://bucket/path/to/terraform.tfstate            # default workspace
-s3://bucket/env:/staging/path/to/terraform.tfstate
-s3://bucket/env:/production/path/to/terraform.tfstate
+# The default workspace
+s3://bucket/path/terraform.tfstate
+# Other workspaces
+s3://bucket/env:/staging/path/...
+s3://bucket/env:/production/path/...
 ```
 
-### When to use workspaces — and when not to
+### Workspaces fit similar environments
 
-**Good fit for workspaces:**
-- Short-lived per-PR preview environments (create workspace, apply, destroy, delete workspace)
-- Small teams where staging and production are nearly identical configs
-- Ephemeral test environments spun up in CI
+Workspaces are a good fit for:
 
-**Use separate root modules instead when:**
-- Environments differ significantly in resource counts, providers, or topology
-- You need independent state locking (one bad production apply shouldn't affect staging state)
-- Different teams own different environments
-- You want explicit `terraform apply -var-file=production.tfvars` review gates
+- Short-lived preview environments per pull request: create, apply, destroy, delete.
+- Small teams whose staging and production configurations are nearly the same.
+- Temporary test environments in CI.
 
-The common anti-pattern: using workspaces to manage fundamentally different infrastructure. If you find yourself writing `if terraform.workspace == "production"` more than two or three times, you likely want separate root modules.
+Use separate root modules instead when:
 
-### Environment isolation patterns
+- Environments differ a lot in resource counts, providers or topology.
+- You need independent state locking, so a bad production apply cannot affect staging.
+- Different teams own different environments.
+- You want a review step per environment, such as `terraform apply -var-file=production.tfvars`.
 
-Two dominant approaches in practice:
+Do not use workspaces for very different infrastructure. More than two or three `terraform.workspace == "production"` checks usually mean you need separate root modules.
 
-**Option 1 — Workspaces (same config):**
+### Two ways to separate environments
+
+Option 1: workspaces, with one configuration.
+
 ```
 infra/
   main.tf
   variables.tf
-# Operated with: terraform workspace select production && terraform apply
 ```
 
-**Option 2 — Separate root modules (different dirs):**
+You run `terraform workspace select production`, then `terraform apply`.
+
+Option 2: separate root modules, one directory each.
+
 ```
 infra/
   staging/
@@ -96,44 +101,50 @@ infra/
     terraform.tfvars
 ```
 
-Option 2 gives you independent blast radius, independent state locking, and the ability to use `terraform plan` in staging before applying the same config in production — with PR reviews per environment.
-
-## vs other tools
-
-| Tool | Environment separation |
-|------|----------------------|
-| **CloudFormation** | Stack names + parameter files; each stack is naturally isolated |
-| **Pulumi** | Stack per environment (`pulumi stack init production`); conceptually identical to TF workspaces |
-| **Helm** | `--namespace` + separate `values-*.yaml` files per environment |
-| **Kustomize** | Overlay directories per environment — closest analog to the "separate roots" pattern |
-
-Pulumi stacks and Terraform workspaces are the same concept. The ergonomics differ: Pulumi stacks are more first-class in the CLI; Terraform workspaces are tacked on and not supported in every backend.
+Option 2 gives each environment its own blast radius and its own lock. You can plan in staging before you apply the same change in production, with a review per environment. Pulumi stacks are the same idea as workspaces; Kustomize overlay directories are closest to Option 2.
 
 ## Watch out
 
-- **`terraform.workspace` is a top-level expression, not `var.workspace` or `local.workspace`.** There's no variable to declare for it — it's built into the language, always available, and always reflects whichever workspace is currently selected.
-- **The default workspace is literally named `"default"`,** not `""` or `"prod"`. If you never run `terraform workspace new`, every apply happens in `"default"` — check for that name explicitly if your logic needs to special-case "no workspace selected yet."
-- **Overusing `terraform.workspace == "production"` conditionals is the anti-pattern this concept warns about.** Once you're threading three or more such checks through a config, you likely want separate root modules (Option 2 above) instead of packing every environment's differences into `if`-like expressions.
-- **Workspaces share the exact same `.tf` files.** If staging and production ever need genuinely different resources (not just different sizes/tags), workspaces can't express that — a resource block either exists for every workspace or none of them.
+- `terraform.workspace` is built in. Do not declare `var.workspace` or `local.workspace` for it.
+- The name of the default workspace is `"default"`, not `""` or `"prod"`. Check for that name if your logic needs it.
+- Three or more `== "production"` checks mean the environments differ too much. Use separate root modules.
+- All workspaces share the same `.tf` files. A resource block exists in every workspace or in none.
+- Not every backend supports workspaces.
 
 ## The task
 
-You're writing a config that adapts its behavior to whichever workspace it's applied in — sizing an instance, naming resources, and tagging them all based on `terraform.workspace`.
+Write a configuration that adapts to the workspace it runs in. It sizes, names and tags resources from `terraform.workspace`.
+
+1. `local.environment` is `terraform.workspace`.
+2. `local.is_prod` is `true` only when `terraform.workspace == "production"`.
+3. `local.instance_type` is `"t3.large"` in production. Otherwise it is `"t3.micro"`.
+4. `local.name_prefix` is `"myapp-${terraform.workspace}"`.
+5. `resource "aws_instance" "app"` sets `instance_type = local.instance_type` and `ami = "ami-0c55b159cbfafe1f0"`.
+6. The instance has tags `Environment = local.environment` and `Name = "${local.name_prefix}-app"`.
+7. `resource "aws_s3_bucket" "state_backup"` sets `bucket = "${local.name_prefix}-state-backup"`.
+8. The bucket has a tag `Environment = local.environment`.
+9. `output "environment"` has `value = local.environment`.
+10. `output "instance_type"` has `value = local.instance_type`.
+
+In workspace `staging`, the values are:
 
 ```hcl
+# environment   = "staging"
+# instance_type = "t3.micro"
+# name_prefix   = "myapp-staging"
+
 locals {
-  environment   = ...  # terraform.workspace
-  is_prod       = ...  # true when workspace is "production"
-  instance_type = ...  # "t3.large" in production, "t3.micro" otherwise
-  name_prefix   = "..." # e.g. "myapp-<workspace>"
+  # environment, is_prod,
+  # instance_type, name_prefix
 }
 
 resource "aws_instance" "app" {
-  # ami, instance_type (from locals), tags (Environment, Name)
+  # ami, instance_type
+  # tags: Environment, Name
 }
 
 resource "aws_s3_bucket" "state_backup" {
-  # bucket (from name_prefix), tags (Environment)
+  # bucket, tags: Environment
 }
 
 output "environment" {
@@ -144,11 +155,3 @@ output "instance_type" {
   # value
 }
 ```
-
-Fill it in so that:
-
-1. `locals.environment = terraform.workspace`, `locals.is_prod` is `true` exactly when `terraform.workspace == "production"`, `locals.instance_type` is `"t3.large"` in production and `"t3.micro"` otherwise, and `locals.name_prefix = "myapp-${terraform.workspace}"`.
-2. `resource "aws_instance" "app"` sets `instance_type = local.instance_type`, `ami = "ami-0c55b159cbfafe1f0"`, and tags `Environment = local.environment` and `Name = "${local.name_prefix}-app"`.
-3. `resource "aws_s3_bucket" "state_backup"` sets `bucket = "${local.name_prefix}-state-backup"` and a tag `Environment = local.environment`.
-4. `output "environment"` has `value = local.environment`.
-5. `output "instance_type"` has `value = local.instance_type`.

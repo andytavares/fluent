@@ -1,12 +1,10 @@
-# Control Flow
+## What you build
 
-## What you'll learn
-
-Go templates have `if/else`, `range`, and `with` for control flow. The critical thing Helm adds on top is **whitespace control** — the `-` in `{{-` and `-}}` — which determines whether the template engine emits blank lines around your logic blocks. Get this wrong and you'll generate invalid YAML or confusing diffs.
+You write a Deployment template with `if`/`else`, `range` and `with` blocks. Optional blocks vanish when their values are not set. This lesson builds on **Built-in Objects**.
 
 ## Key concepts
 
-**`{{- if }} / {{- else }} / {{- end }}`**
+### `if`, `else` and `end` choose a block
 
 ```yaml
 {{- if .Values.ingress.enabled }}
@@ -17,11 +15,24 @@ metadata:
 {{- end }}
 ```
 
-The leading `{{-` strips the newline *before* the tag. The trailing `-}}` strips the newline *after*. Without them, you get blank lines in the rendered YAML — usually harmless, but ugly and sometimes confusing when debugging.
+### Some values are false
 
-Falsy values in Go templates: `false`, `0`, `""`, `nil`, empty slice, empty map. Everything else is truthy. This matches what you'd expect, but note that `"false"` (a non-empty string) is **truthy**.
+`false`, `0`, `""`, `nil`, an empty slice and an empty map are false. All other values are true. The string `"false"` is not empty, so it is true.
 
-**`{{- range }}`** — iterate over slices and maps:
+### `-` removes whitespace next to a tag
+
+Go templates have `if`/`else`, `range` and `with`. Helm templates use the `-` in `{{-` and `-}}` to control whitespace. Without it, the rendered YAML gets blank lines around your logic. Blank lines are mostly harmless, but they make debugging and diffs confusing.
+
+| Syntax | Effect |
+|---|---|
+| `{{ expr }}` | Removes no whitespace |
+| `{{- expr }}` | Removes whitespace before the tag |
+| `{{ expr -}}` | Removes whitespace after the tag |
+| `{{- expr -}}` | Removes both sides |
+
+### `range` loops over a slice or a map
+
+Inside `range`, `.` is the current item.
 
 ```yaml
 # values.yaml
@@ -40,7 +51,9 @@ env:
 {{- end }}
 ```
 
-Inside `range`, `.` is rebound to the current element. Use `$` to access the root scope when you need `.Release.Name` inside a loop:
+### `$` is always the root
+
+Use `$` to read the root inside a loop, for example `$.Release.Name`.
 
 ```yaml
 {{- range .Values.sidecars }}
@@ -48,7 +61,9 @@ Inside `range`, `.` is rebound to the current element. Use `$` to access the roo
 {{- end }}
 ```
 
-**`{{- with }}`** — scope the dot to a value, and skip the block entirely if the value is falsy:
+### `with` sets `.` and skips false values
+
+`with` sets `.` to a value. If the value is false, Helm skips the block. Inside the block, you write `.` and not the full path again.
 
 ```yaml
 {{- with .Values.resources }}
@@ -57,60 +72,43 @@ resources:
 {{- end }}
 ```
 
-`with` is cleaner than `if .Values.resources` followed by using `.Values.resources` inside the block — you can just use `.` inside `with`.
+### Kustomize has no control flow
 
-**Whitespace reference:**
-
-| Syntax | Effect |
-|---|---|
-| `{{ expr }}` | No whitespace stripping |
-| `{{- expr }}` | Strip whitespace/newline *before* this tag |
-| `{{ expr -}}` | Strip whitespace/newline *after* this tag |
-| `{{- expr -}}` | Strip both sides |
-
-## vs other tools
-
-Kustomize has no control flow — you cannot conditionally include a resource based on a value. You use components or overlays, which are separate files. Helm's `if/range/with` let a single template file generate different Kubernetes objects depending on values, which is both its power and the source of most template bugs. If your template logic gets complex, that's often a sign you should split into multiple template files.
+Kustomize cannot include a resource based on a value, so you use components or overlays in separate files. Control flow in one Helm template is powerful, and it causes most template bugs. If the logic grows large, split it into more template files.
 
 ## Watch out
 
-- **`with` rebinds `.` — including `.Release` and `.Values`.** Inside `{{- with .Values.resources }}`, `.` refers to the resources map, so `.Release.Name` no longer works (there's no `Release` key inside `resources`). Use `$.Release.Name` — `$` always refers to the root context, regardless of how many `with`/`range` blocks you're nested inside.
-- **`with` treats an empty map as falsy, `if` does too.** `resources: {}` in `values.yaml` skips a `{{- with .Values.resources }}` block, same as if the key were absent entirely — there's no way to distinguish "explicitly empty" from "not set" using `with`.
-- **Forgetting `{{-}}` on `range`/`if`/`end` produces blank lines, not errors.** A template that ranges over an empty list without `{{- if .Values.env }}` guarding it still renders `env:` followed by nothing underneath — which is invalid YAML (a key with no value and no children is fine, but a key followed by a blank line and then a dedented sibling key is a different structure than intended). Always pair a `range` over a potentially-empty list with an outer `if` when the parent key (`env:`) should disappear entirely if there's nothing to range over.
-- **Whitespace control is about the *tag*, not the content.** `{{- if X }}` strips the newline immediately before the tag; it does not touch whitespace inside the `if` block. If your rendered YAML has unwanted indentation inside a block, that's a content problem (fix the template's own indentation), not a whitespace-control problem.
+- `with` changes `.`. Inside `{{- with .Values.resources }}`, `.Release.Name` does not work.
+- Use `$.Release.Name` inside `with` and `range`. `$` is the root at every depth.
+- `with` and `if` both treat an empty map as false. `resources: {}` skips the block, as an absent key does.
+- `with` cannot tell an explicitly empty map from a missing key.
+- A missing `-` on `range`, `if` or `end` gives blank lines, not errors.
+- A `range` over an empty list still renders the parent `env:` key with nothing under it.
+- Wrap that `range` in an outer `if` when the `env:` key must vanish.
+- `{{- if X }}` removes the newline before the tag only. It does not change the whitespace inside the block.
+- Bad indentation inside a block comes from the template content. Fix the indentation of the template lines.
 
 ## The task
 
-Write a `templates/deployment.yaml` that uses control flow to:
+Write `templates/deployment.yaml` in `stub.yaml`. Control flow keeps empty blocks out of the container spec.
 
-1. **`if`**: Only add a `resources:` block if `.Values.resources` is non-empty, using `{{- with .Values.resources }}`
-2. **`if/else`**: Set `imagePullPolicy` — use `.Values.image.pullPolicy` if set, else `"IfNotPresent"`
-3. **`range`**: Render the `env:` section by ranging over `.Values.env` (each item has `.name` and `.value`), skipping the entire `env:` block with `{{- if .Values.env }}` if the list is empty
-4. **`if`**: Conditionally include a `livenessProbe` block only if `.Values.livenessProbe.enabled` is true
-5. Use `{{-` whitespace control on all control-flow tags to avoid spurious blank lines
+1. Set `imagePullPolicy` with `{{- if .Values.image.pullPolicy }}`. Use the value when it is set, else `IfNotPresent`.
+2. Wrap the `env:` block in `{{- if .Values.env }}`. Inside it, use `{{- range .Values.env }}`.
+3. In the loop, render each item as `- name: {{ .name }}` and `value: {{ .value | quote }}`.
+4. Render `resources:` inside `{{- with .Values.resources }}`. Use `{{- toYaml . | nindent 12 }}`, the indent of the container's fields.
+5. Render `livenessProbe` inside `{{- if .Values.livenessProbe.enabled }}`.
+6. The probe reads `.Values.livenessProbe.path`, `.Values.livenessProbe.port` and `.Values.livenessProbe.initialDelaySeconds`.
+7. Use `{{-` on every `if`, `range`, `with` and `end` tag.
+8. Remove every `TODO` comment.
 
-For example, with this `values.yaml`:
-
-```yaml
-image:
-  repository: myregistry/webapp
-  tag: "2.1.0"
-env:
-  - name: LOG_LEVEL
-    value: debug
-resources:
-  limits:
-    cpu: "500m"
-livenessProbe:
-  enabled: true
-  path: /healthz
-  port: 8080
-  initialDelaySeconds: 5
-```
-
-the container spec renders as:
+With only `image.repository` and `image.tag` set, the output has no `env:`, `resources:` or `livenessProbe:` key.
 
 ```yaml
+# Values: env LOG_LEVEL=debug,
+# resources.limits.cpu "500m",
+# livenessProbe enabled with path
+# /healthz, port 8080 and
+# initialDelaySeconds 5. No pullPolicy.
 containers:
   - name: webapp
     image: myregistry/webapp:2.1.0
@@ -126,6 +124,10 @@ containers:
         path: /healthz
         port: 8080
       initialDelaySeconds: 5
-```
 
-But with a minimal `values.yaml` that only sets `image.repository` and `image.tag` (no `env`, `resources`, or `livenessProbe`), the same template must still render valid YAML with **no `env:` key, no `resources:` key, and no `livenessProbe:` key at all** — those keys must vanish entirely rather than render as empty.
+# Values: only image.repository and tag
+containers:
+  - name: webapp
+    image: myregistry/webapp:2.1.0
+    imagePullPolicy: IfNotPresent
+```

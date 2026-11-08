@@ -1,12 +1,12 @@
-# Control Flow
+## What you build
 
-## What you'll learn
-
-Go collapses the usual `if`/`while`/`for`/`do-while` zoo into just `if`, `for`, and `switch` — `for` alone covers every kind of loop you've written in other languages. You'll learn all three `for` forms and why `switch` in Go doesn't fall through by default, which is the opposite of C, Java, and JavaScript.
+You write `FizzBuzz(n int) string` with a `switch` that has no expression. Go has only three control words: `if`, `for` and `switch`. This lesson builds on **Functions**.
 
 ## Key concepts
 
-**if/else** — no parentheses around the condition, braces are mandatory:
+### `if` has no parentheses
+
+Do not put parentheses around the condition. The braces are mandatory.
 
 ```go
 if x > 0 {
@@ -18,15 +18,24 @@ if x > 0 {
 }
 ```
 
-**for** has three forms, all using the same keyword:
+### `for` is the only loop
+
+Go has no `while` keyword. The `for` keyword has three forms.
 
 ```go
-for i := 0; i < 10; i++ { }   // C-style, three clauses
-for condition { }              // while-style, one clause
-for { }                        // infinite loop, no clauses (break to exit)
+// Three clauses
+for i := 0; i < 10; i++ { }
+
+// One clause: a while loop
+for condition { }
+
+// No clauses: runs until break
+for { }
 ```
 
-**switch** — cases don't fall through by default (each case implicitly breaks):
+### `switch` does not fall through
+
+Each case stops at its end, so you do not write `break`. To continue into the next case, write `fallthrough` as the last statement of the case.
 
 ```go
 switch day {
@@ -37,7 +46,9 @@ case "Sat", "Sun":
 }
 ```
 
-**switch with no expression** works like a cleaner if/else-if chain — this is the idiom for multi-way branching on conditions rather than equality:
+### `switch` with no expression
+
+A `switch` with no value tests each case as a condition. Go code uses it in place of a long `if`/`else if` chain.
 
 ```go
 switch {
@@ -52,19 +63,21 @@ default:
 
 ## Watch out
 
-- Coming from C/Java/JS: Go `switch` cases **do not fall through**. If you actually want fallthrough behavior, you must write the `fallthrough` keyword explicitly as the last statement in a case.
-- There's no `while` keyword — `for condition { }` is the idiomatic while-loop. Writing `while` is a compile error, not a warning.
-- `for i := range someInt` (ranging directly over an integer) only works in Go 1.22+; on Go 1.21 and earlier you must range over a slice, `for i := 0; i < n; i++`, or similar.
-- A `switch` with no `case` matches falls through to nothing unless there's a `default` — there's no implicit error or panic.
+- Go runs the first case that is true. Put `n%15 == 0` first, or `FizzBuzz(15)` returns `"Fizz"`.
+- `while` is a compile error, not a warning.
+- `for i := range 10` needs Go 1.22 or later.
+- A `switch` with no matching case and no `default` does nothing. It does not panic.
 
 ## The task
 
-Implement `FizzBuzz(n int) string`, the classic FizzBuzz check for a single integer `n`:
+Write `FizzBuzz(n int) string`. It returns one word for one integer:
 
-- If `n` is divisible by both 3 and 5, return `"FizzBuzz"`.
-- Else if `n` is divisible by 3, return `"Fizz"`.
-- Else if `n` is divisible by 5, return `"Buzz"`.
-- Otherwise, return `n` formatted as a plain decimal string (use `fmt.Sprintf("%d", n)`).
+1. If `n` divides by 3 and by 5, return `"FizzBuzz"`.
+2. If `n` divides by 3 only, return `"Fizz"`.
+3. If `n` divides by 5 only, return `"Buzz"`.
+4. Otherwise, return `n` as a decimal string. Use `fmt.Sprintf("%d", n)`.
+
+Zero and negative numbers follow the same rules. Zero divides by every integer.
 
 ```go
 FizzBuzz(1)    // "1"
@@ -73,6 +86,6 @@ FizzBuzz(5)    // "Buzz"
 FizzBuzz(15)   // "FizzBuzz"
 FizzBuzz(30)   // "FizzBuzz"
 FizzBuzz(7)    // "7"
-FizzBuzz(0)    // "FizzBuzz" — 0 is divisible by every integer (0 % 3 == 0 and 0 % 5 == 0)
-FizzBuzz(-15)  // "FizzBuzz" — divisibility rules apply to negative numbers too
+FizzBuzz(0)    // "FizzBuzz"
+FizzBuzz(-15)  // "FizzBuzz"
 ```

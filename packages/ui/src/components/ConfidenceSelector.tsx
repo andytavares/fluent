@@ -6,17 +6,17 @@ const CONFIDENCE_LEVELS = [
   {
     value: "beginner",
     label: "Brand new",
-    description: "I'm just getting started with this language.",
+    description: "I am new to this.",
   },
   {
     value: "some",
     label: "Some experience",
-    description: "I've tried it before or know a similar language.",
+    description: "I have used it or something like it.",
   },
   {
     value: "experienced",
     label: "I know this",
-    description: "Test me on the concepts I claim to know and skip ahead.",
+    description: "Test me and skip what I know.",
   },
 ] as const;
 

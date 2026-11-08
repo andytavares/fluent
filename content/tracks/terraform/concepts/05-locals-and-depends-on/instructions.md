@@ -1,29 +1,27 @@
-# Locals & depends_on
+## What you build
 
-## What you'll learn
-
-How `locals` DRY up repeated expressions without exposing them as module inputs, and how `depends_on` handles the rare cases where Terraform's implicit dependency graph isn't enough.
+You connect a Lambda function to an IAM role. The role's policy attachment must finish before Terraform creates the function. `locals` remove repeated expressions, and `depends_on` adds a dependency that no reference shows. This lesson builds on **Expressions & Functions**.
 
 ## Key concepts
 
-### `locals` block
+### `locals` are private named values
 
-Locals are named intermediate values computed within a module. They're not inputs (unlike `variable`) and not exported (unlike `output`) — they're private to the module.
+A local is not an input like a `variable`, and it is not exported like an `output`. Only its own module can read it.
 
 ```hcl
 locals {
-  name_prefix = "${var.project}-${var.environment}"
-  is_prod     = var.environment == "production"
+  name_prefix = "${var.project}-${var.env}"
+  is_prod     = var.env == "production"
 
   common_tags = {
     Project     = var.project
-    Environment = var.environment
+    Environment = var.env
     ManagedBy   = "terraform"
   }
 }
 ```
 
-Reference with `local.<name>` (note: `local`, not `locals`):
+Read a local with `local.<name>`: singular `local`, not `locals`.
 
 ```hcl
 resource "aws_s3_bucket" "app" {
@@ -37,98 +35,98 @@ resource "aws_s3_bucket" "logs" {
 }
 ```
 
-### locals vs variables
+### Variables are inputs, locals are internal
 
 | | `variable` | `local` |
 |---|---|---|
 | Set by caller | Yes | No |
-| Has default | Optional | Always (it's the expression) |
-| Exported by module | Only via `output` | No |
-| Use case | Public interface | Internal computed values |
+| Has a default | Optional | Always: the expression |
+| Exported | Only by an `output` | No |
+| Use | Public interface | Internal values |
 
-Don't use variables for things callers should never control. Don't use locals for things that legitimately vary per deployment — that's what variables are for.
+Do not use a variable for a value callers must never control. Do not use a local for a value that changes per deployment.
 
-### `depends_on` — explicit dependencies
+### `depends_on` adds an explicit dependency
 
-Terraform builds a dependency graph automatically by tracking resource references. Most of the time you don't need `depends_on`. Use it only when a dependency exists that isn't expressed through attribute references — typically IAM propagation or ordering between a resource and a module.
+Terraform builds the dependency graph from references. Use `depends_on` only for a dependency that no attribute reference shows. Typical cases are IAM propagation and the order between a resource and a module.
 
 ```hcl
-resource "aws_iam_role_policy_attachment" "lambda_exec" {
+resource "aws_iam_role_policy_attachment" "exec" {
   role       = aws_iam_role.lambda.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+  policy_arn = var.basic_policy_arn
 }
 
-resource "aws_lambda_function" "processor" {
+resource "aws_lambda_function" "orders" {
   function_name = "order-processor"
   role          = aws_iam_role.lambda.arn
 
-  # IAM changes can take seconds to propagate globally.
-  # The reference to aws_iam_role.lambda.arn creates an implicit dependency,
-  # but the policy attachment is a separate resource that isn't referenced here.
-  depends_on = [aws_iam_role_policy_attachment.lambda_exec]
+  # IAM changes can take seconds to
+  # propagate.
+  # Nothing here references the attachment.
+  depends_on = [
+    aws_iam_role_policy_attachment.exec,
+  ]
 }
 ```
 
-`depends_on` accepts a list of resource or module references. It forces the listed objects to be fully applied before the annotated resource is touched.
+`depends_on` takes a list of resource or module references. Terraform applies every listed object completely before it touches the resource.
 
-### When NOT to use `depends_on`
+### A reference is better than `depends_on`
 
-If you can express the dependency through a reference (e.g., `subnet_id = aws_subnet.app.id`), do that instead. `depends_on` is coarser — it blocks the entire resource, not just the attribute. Overusing it creates unnecessary serialization and slows apply times.
-
-## vs other tools
-
-| Tool | Explicit dependency handling |
-|------|----------------------------|
-| **CloudFormation** | `DependsOn:` attribute — same idea, string-based resource logical IDs |
-| **Pulumi** | `opts=ResourceOptions(depends_on=[...])` — equivalent, code-native |
-| **Ansible** | Task ordering is explicit by default; `when:` for conditional execution |
-
-The difference from CloudFormation: Terraform's implicit graph is usually smarter, so `depends_on` is needed far less often than CF's `DependsOn`.
+If a reference can show the dependency, such as `subnet_id = aws_subnet.app.id`, use the reference. `depends_on` blocks the whole resource, not one attribute. Too many make the apply serial and slow. CloudFormation has `DependsOn` too, but Terraform's implicit graph needs it far less often.
 
 ## Watch out
 
-- **`local.x`, never `locals.x`.** The block keyword is plural (`locals { ... }`) but the reference is always singular (`local.name_prefix`). Writing `locals.name_prefix` is a reference to an undeclared resource, not a typo Terraform silently fixes.
-- **Locals can reference other locals**, including ones defined earlier in the same block — `is_prod = local.environment == "production"` works fine as long as `environment` is a local too. There's no forward-reference restriction based on file order, only genuine circular dependencies fail.
-- **`depends_on` takes a list of resource/module *references*, not strings.** `depends_on = ["aws_iam_role_policy_attachment.app_basic"]` (quoted) is wrong — it must be `depends_on = [aws_iam_role_policy_attachment.app_basic]`, an actual expression.
-- **Reach for `depends_on` last.** If the dependency can be expressed by referencing an attribute (`role = aws_iam_role.app.arn`), that reference alone is enough to order the graph correctly — you don't also need `depends_on` for the same relationship. Use `depends_on` only for dependencies with no attribute to reference, like IAM eventual consistency.
+- Write `local.x`, never `locals.x`. `locals.name_prefix` is a reference to an undeclared resource.
+- A local can reference other locals in any order. Only a circular dependency fails.
+- `depends_on` takes references, not strings. Write `[aws_iam_role_policy_attachment.app_basic]` with no quotes.
+- Do not add `depends_on` next to a reference for the same dependency. The reference already orders the graph.
 
 ## The task
 
-You're wiring a Lambda function to an IAM role, where the role's policy attachment must complete before the function is created — a dependency that exists in AWS reality but isn't expressed through any attribute reference.
+Connect a Lambda function to an IAM role. The policy attachment must finish first, but no attribute reference shows this.
+
+1. Declare `variable "project"` with type string and default `"myapp"`.
+2. Declare `variable "environment"` with type string and default `"production"`.
+3. `local.name_prefix` is `"${var.project}-${var.environment}"`.
+4. `local.is_prod` is `true` only when `var.environment == "production"`.
+5. `local.common_tags` is a map with `Project` and `Environment` keys from the variables.
+6. `resource "aws_iam_role" "app"` sets `name = local.name_prefix` and `tags = local.common_tags`.
+7. The role sets `assume_role_policy = "{}"`. This is a placeholder for `data.aws_iam_policy_document`.
+8. `resource "aws_iam_role_policy_attachment" "app_basic"` sets `role = aws_iam_role.app.name`.
+9. The attachment sets a `policy_arn`. Any ARN string is correct.
+10. `resource "aws_lambda_function" "app"` sets `role = aws_iam_role.app.arn`.
+11. The function sets `depends_on = [aws_iam_role_policy_attachment.app_basic]`.
+
+A valid `policy_arn`:
 
 ```hcl
+# arn:aws:iam::aws:policy/service-role/
+#   AWSLambdaBasicExecutionRole
+# (one string, no spaces)
+
 variable "project" {
-  # type = string, default = "myapp"
+  # type, default
 }
 
 variable "environment" {
-  # type = string, default = "production"
+  # type, default
 }
 
 locals {
-  name_prefix = "..."  # combines project + environment
-  is_prod     = ...    # true when environment is "production"
-  common_tags = {}     # Project and Environment keys
+  # name_prefix, is_prod, common_tags
 }
 
 resource "aws_iam_role" "app" {
-  # name (from name_prefix), assume_role_policy = "{}", tags (from common_tags)
+  # name, assume_role_policy, tags
 }
 
 resource "aws_iam_role_policy_attachment" "app_basic" {
-  # role (a reference to aws_iam_role.app), policy_arn
+  # role, policy_arn
 }
 
 resource "aws_lambda_function" "app" {
-  function_name = "${local.name_prefix}-handler"
-  # role (a reference to aws_iam_role.app's arn), depends_on
+  # function_name is set in the stub
+  # role, depends_on
 }
 ```
-
-Fill it in so that:
-
-1. `variable "project"` (string, default `"myapp"`) and `variable "environment"` (string, default `"production"`) are declared.
-2. `locals.name_prefix = "${var.project}-${var.environment}"`, `locals.is_prod` is `true` exactly when `var.environment == "production"`, and `locals.common_tags` is a map with at least `Project` and `Environment` keys sourced from the variables.
-3. `resource "aws_iam_role" "app"` sets `name = local.name_prefix`, `assume_role_policy = "{}"` (a placeholder — real configs use `data.aws_iam_policy_document`), and `tags = local.common_tags`.
-4. `resource "aws_iam_role_policy_attachment" "app_basic"` sets `role = aws_iam_role.app.name` and a `policy_arn` (any ARN string, e.g. `"arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"`).
-5. `resource "aws_lambda_function" "app"` sets `role = aws_iam_role.app.arn` and `depends_on = [aws_iam_role_policy_attachment.app_basic]` — this is the explicit dependency, since nothing in the Lambda resource references the attachment's attributes directly.

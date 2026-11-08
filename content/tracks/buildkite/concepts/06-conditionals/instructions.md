@@ -1,18 +1,12 @@
-# Conditionals
+## What you build
 
-## What you'll learn
-
-Builds on **step dependencies and gates**: you can already control *order*.
-Now control *whether a step exists in the build at all*, based on branch,
-tag, commit message, or pull-request state — without writing a script to
-decide it for you (that's a later concept, dynamic pipelines).
+You write four steps that each use a different condition: branch, tag, pull-request state and commit message. A condition decides if a step is in the build at all, with no script. This lesson builds on **Step Dependencies and Gates**.
 
 ## Key concepts
 
-**`if:` — a boolean expression, evaluated at upload time.** Every step type
-accepts `if:`. If the expression evaluates `false`, the step is omitted
-from the build entirely (it shows as "broken," not "skipped" — a distinct
-state meaning the step's own configuration excluded it).
+### `if:` decides if a step is in the build
+
+Every step type accepts `if:`, a boolean expression. If it is false, Buildkite leaves the step out of the build. The step shows as "broken", not "skipped": its own configuration excluded it.
 
 ```yaml
 steps:
@@ -21,18 +15,17 @@ steps:
     if: build.message !~ /skip tests/
 ```
 
-Conditions are evaluated once, when the pipeline is uploaded — **not** at
-step runtime, and not re-evaluated based on other steps' results. You
-cannot write `if: some-step.outcome == "passed"` directly; that requires a
-dynamic pipeline upload gated on the earlier step's result (see the
-**dynamic pipelines** concept).
+### Buildkite evaluates `if:` once, at upload
 
-**Available variables.** The expression language is C-like and covers the
-build context: `build.branch`, `build.tag`, `build.message`,
-`build.commit`, `pipeline.slug`, and pull-request-specific fields like
-`build.pull_request.id`, `build.pull_request.draft`,
-`build.pull_request.base_branch`. Operators include `==`, `!=`, `=~`
-(regex match), `!~` (regex non-match), `&&`, `||`, `!`.
+The condition runs when you upload the pipeline. It does not run again at step runtime, and it cannot see other steps' results. You cannot write `if: some-step.outcome == "passed"`. For that, use a dynamic pipeline upload after the earlier step, a later concept.
+
+GitHub Actions and GitLab CI also evaluate conditions before any job runs.
+
+### The expression language reads the build context
+
+The language is C-like. Variables include `build.branch`, `build.tag`, `build.message`, `build.commit` and `pipeline.slug`. Pull-request fields include `build.pull_request.id`, `build.pull_request.draft` and `build.pull_request.base_branch`.
+
+Operators: `==`, `!=`, `=~` (regex match), `!~` (regex non-match), `&&`, `||` and `!`.
 
 ```yaml
 steps:
@@ -42,13 +35,14 @@ steps:
 
   - label: ":test_tube: Extended tests"
     command: "make test-extended"
-    if: "build.pull_request.id == null && build.branch == 'main'"
+    if: |
+      build.pull_request.id == null &&
+      build.branch == 'main'
 ```
 
-**Quoting matters.** YAML gives special meaning to many characters used in
-these expressions (`!`, `:`, quotes). Quote the whole expression as a
-string to avoid YAML misparsing it, or use the `|` block form for
-multi-line conditions (which sidesteps quoting entirely):
+### Quote the expression or use a `|` block
+
+YAML gives special meaning to many characters in these expressions, such as `!`, `:` and quotes. Quote the whole expression as a string. For a long condition, use the `|` block form, which needs no quotes.
 
 ```yaml
 steps:
@@ -57,10 +51,9 @@ steps:
       build.branch =~ /^feature\//
 ```
 
-**`branches:` — the simpler, older mechanism.** For the common case of
-"only run on these branches," `branches:` takes a space-separated pattern
-string and is simpler than an equivalent `if: build.branch =~ ...`
-expression:
+### `branches:` is the simple branch filter
+
+`branches:` is the older mechanism. It takes a space-separated string of branch patterns. It is simpler than the same `if: build.branch =~ ...` expression.
 
 ```yaml
 steps:
@@ -69,66 +62,33 @@ steps:
     branches: "main"
 ```
 
-You cannot combine `branches:` and `if:` on the same step — pick one.
-`branches:` fits simple branch allow-lists; reach for `if:` when the
-condition involves tags, PR state, commit message, or boolean combinations
-`branches:` can't express.
-
-**When each mechanism fits:**
+You cannot use `branches:` and `if:` on the same step. Use `branches:` for a simple branch allow-list. Use `if:` for tags, PR state, the commit message, or combinations that `branches:` cannot express.
 
 | Need | Use |
 |---|---|
-| Step only runs on `main` / `release/*` | `branches:` |
-| Step only runs on tagged builds | `if: build.tag != null` |
-| Step skipped when commit message says so | `if: build.message !~ /skip ci/` |
-| Step only runs outside pull requests | `if: build.pull_request.id == null` |
-| Combining several of the above | `if:` with `&&` / `||` |
-
-## vs other tools
-
-| | Buildkite | GitHub Actions | GitLab CI |
-|---|---|---|---|
-| Step-level condition | `if:` expression language | `if:` (GitHub Actions expression syntax, `${{ }}`) | `rules:` with `if:` (CI/CD variable expressions) |
-| Branch-only shortcut | `branches:` pattern string | `on: push: branches:` (workflow-level, not step-level) | `rules: - if: $CI_COMMIT_BRANCH == "main"` |
-| Evaluated when | Pipeline upload time | Workflow trigger time | Pipeline creation time |
-
-All three evaluate conditions before any job runs, not mid-build — this is
-a common surprise across CI systems, not unique to Buildkite: none of them
-let you branch on "did the previous step pass" via a static conditional;
-that always requires either job dependency graphs or a dynamic
-generation step.
+| Only on `main` or `release/*` | `branches:` |
+| Only on tagged builds | `if: build.tag != null` |
+| Skip on a commit message | `if: build.message !~ /skip ci/` |
+| Only outside pull requests | `if: build.pull_request.id == null` |
+| Several of the above | `if:` with `&&` or `\|\|` |
 
 ## Watch out
 
-- **`if:` and `branches:` are mutually exclusive on the same step** —
-  Buildkite rejects (or silently prioritizes one over the other,
-  depending on version) a step defining both; use one mechanism per step.
-- **Conditions can't see other steps' outcomes** — `if:` is evaluated at
-  upload time, before any job runs. "Run this step only if that step
-  passed" is a `depends_on` relationship (steps still run, but skip
-  internally) or a dynamic pipeline upload, not an `if:` expression.
-- **Unquoted expressions starting with `!` are the most common YAML
-  footgun here** — `if: !build.pull_request.draft` without quotes can be
-  misparsed as a YAML tag. Quote it: `if: "!build.pull_request.draft"`.
+- A step cannot have both `if:` and `branches:`. Use one mechanism per step.
+- `if:` cannot see other steps' outcomes. Use `depends_on` or a dynamic pipeline upload for "only if that step passed".
+- An unquoted expression that starts with `!` can parse as a YAML tag. Write `if: "!build.pull_request.draft"`.
 
 ## The task
 
-Write a `pipeline.yml` with four command steps, each demonstrating a
-different conditional mechanism:
+Write a pipeline in `stub.yaml` with four command steps. Each step uses a different condition.
 
-1. **Deploy to staging** — `label: ":rocket: Deploy to staging"`,
-   `key: "deploy-staging"`, `command: "make deploy ENV=staging"`,
-   `branches: "main"`.
-2. **Deploy to production** — `label: ":shipit: Deploy to production"`,
-   `key: "deploy-production"`, `command: "make deploy ENV=production"`,
-   `if: build.tag != null`.
-3. **Extended tests** — `label: ":test_tube: Extended tests"`,
-   `key: "extended-tests"`, `command: "make test-extended"`,
-   `if: "build.pull_request.id == null && build.branch == 'main'"`.
-4. **Lint (skippable)** — `label: ":mag: Lint"`, `key: "lint"`,
-   `command: "make lint"`, `if: build.message !~ /skip ci/`.
+1. Deploy to staging: `label: ":rocket: Deploy to staging"`, `key: "deploy-staging"`, `command: "make deploy ENV=staging"`, `branches: "main"`.
+2. Deploy to production: `label: ":shipit: Deploy to production"`, `key: "deploy-production"`, `command: "make deploy ENV=production"`, `if: build.tag != null`.
+3. Extended tests: `label: ":test_tube: Extended tests"`, `key: "extended-tests"`, `command: "make test-extended"`.
+4. Give Extended tests the condition `"build.pull_request.id == null && build.branch == 'main'"` on one line.
+5. Lint: `label: ":mag: Lint"`, `key: "lint"`, `command: "make lint"`, `if: build.message !~ /skip ci/`.
 
-Expected shape:
+Write the production and lint conditions unquoted, as shown.
 
 ```yaml
 steps:

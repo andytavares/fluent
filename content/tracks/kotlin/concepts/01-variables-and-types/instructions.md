@@ -1,25 +1,26 @@
-# Variables & Types
+## What you build
 
-## What you'll learn
-
-How Kotlin's type system works: immutable vs mutable bindings, type inference, the primitive-free type hierarchy, nullable types, and string templates.
+You write four small functions that use read-only bindings, nullable types, string templates and explicit number conversions. Kotlin checks nullability at compile time, as part of the type.
 
 ## Key concepts
 
-**`val` vs `var`**
+### `val` is read-only, `var` can change
 
-`val` is a read-only binding (like `final` in Java or `const`/`let` in Swift). `var` is reassignable. Prefer `val` everywhere — the compiler will tell you when you actually need `var`.
+A `val` binding cannot get a new value. A `var` binding can. Use `val` by default; the compiler tells you when you need `var`.
 
 ```kotlin
-val name: String = "Ada"   // explicit type
-val age = 30               // inferred as Int
+// Explicit type
+val name: String = "Ada"
+// Inferred as Int
+val age = 30
 var score = 0
-score += 10                // ok — score is var
+// OK: score is a var
+score += 10
 ```
 
-**The type hierarchy**
+### Kotlin has no primitive types in the language
 
-Kotlin has no primitives at the language level. `Int`, `Double`, `Boolean`, `Char` are all regular classes. The compiler emits JVM primitives under the hood when possible, but you never write `int` vs `Integer`.
+`Int`, `Double`, `Boolean` and `Char` are regular classes. The compiler emits JVM primitives where it can, so you never choose between `int` and `Integer`.
 
 | Kotlin | JVM bytecode |
 |--------|-------------|
@@ -27,68 +28,82 @@ Kotlin has no primitives at the language level. `Int`, `Double`, `Boolean`, `Cha
 | `Double` | `double` / `Double` |
 | `Boolean` | `boolean` / `Boolean` |
 | `String` | `String` |
-| `Unit` | `void` (but Unit is a real type with one value) |
+| `Unit` | `void`, but `Unit` is a real type with one value |
 | `Any` | `Object` |
-| `Nothing` | — (uninhabited type; return type of functions that never return) |
+| `Nothing` | No values. It is the return type of a function that never returns. |
 
-**Nullable types**
+### A type allows `null` only with `?`
 
-Every type in Kotlin is non-nullable by default. To allow `null`, append `?`:
+Every type is non-nullable by default. Add `?` to allow `null`. Java's `@Nullable` is only an annotation, but Kotlin's compiler enforces `?`.
 
 ```kotlin
 val a: String = "hello"
-val b: String? = null     // ok
-val c: String = null      // compile error
+// OK
+val b: String? = null
+// Compile error
+val c: String = null
 ```
 
-Safe operators for working with nullables:
+Three operators handle a nullable value:
 
 ```kotlin
-val len: Int? = b?.length          // null if b is null
-val len2: Int = b?.length ?: 0     // Elvis: use 0 if null
-val len3: Int = b!!.length         // throws NullPointerException if null — avoid in production
+// null if b is null
+val len: Int? = b?.length
+// Elvis: 0 if b is null
+val len2: Int = b?.length ?: 0
+// Throws NullPointerException if b is
+// null. Avoid it in production code.
+val len3: Int = b!!.length
 ```
 
-**String templates**
+### String templates insert values
+
+Write `$name` for a variable and `${...}` for any expression.
 
 ```kotlin
 val city = "Tokyo"
-println("Hello from $city!")                    // simple reference
-println("Name has ${name.length} characters")   // arbitrary expression in ${}
+// Hello from Tokyo!
+println("Hello from $city!")
+println("Length: ${name.length}")
 ```
 
-**Type conversions**
+### Number conversions are explicit
 
-Kotlin does not do implicit numeric widening. You must call explicit conversion functions:
+Kotlin does not widen numbers for you. Call a conversion function such as `toLong()` or `toDouble()`.
 
 ```kotlin
 val x: Int = 42
-val y: Long = x.toLong()   // explicit
+val y: Long = x.toLong()
 val z: Double = x.toDouble()
 ```
 
-## vs other languages
-
-| Language | Immutable binding | Nullable | Primitives |
-|----------|------------------|----------|------------|
-| Java | `final` | `@Nullable` (not enforced) | `int`, `double`, etc. |
-| Swift | `let` | `Optional<T>` / `T?` | None (same as Kotlin) |
-| Go | none (only `const` for literals) | pointers can be nil | `int`, `float64`, etc. |
-| TypeScript | `const` | `T \| null` / strict null checks | None |
-
-The key Kotlin distinction: **nullability is part of the type system and checked at compile time**. You cannot pass a `String?` where a `String` is required without handling the null case first.
-
 ## Watch out
 
-- `val` prevents *reassignment*, not mutation — `val list = mutableListOf(1, 2)` still lets you `list.add(3)`. Only the binding itself is fixed.
-- There's no implicit widening: `val x: Long = 5` (an `Int` literal) is a compile error — you need `5L` or `5.toLong()`. This trips up engineers coming from Java/C/Go, where `int` silently promotes to `long`.
-- `isNullOrBlank()` treats a whitespace-only string the same as an empty one; `isEmpty()` does not. Pick the right check for the "no meaningful content" case.
+- `val` stops reassignment, not mutation. `val list = mutableListOf(1, 2)` still lets you call `list.add(3)`.
+- Kotlin has no implicit widening. Assigning an `Int` variable to a `Long` is a compile error. Call `toLong()`.
+- `isNullOrBlank()` treats a whitespace-only string as empty. `isEmpty()` does not.
 
 ## The task
 
-Implement the following top-level functions in `stub.kt`:
+Write four top-level functions in `stub.kt`.
 
-- `celsiusToFahrenheit(celsius: Double): Double` — converts Celsius to Fahrenheit using the formula `(celsius * 9.0 / 5.0) + 32.0`
-- `greet(name: String?): String` — returns `"Hello, <name>!"` if name is non-null and non-blank, otherwise returns `"Hello, stranger!"`
-- `describeNumber(n: Int): String` — returns `"positive"`, `"negative"`, or `"zero"` based on the value of `n`
-- `initials(fullName: String): String` — given a full name like `"Ada Lovelace"`, returns the initials like `"A.L."`. Assume words are separated by single spaces and the input is non-empty.
+1. `celsiusToFahrenheit(celsius: Double): Double` returns `(celsius * 9.0 / 5.0) + 32.0`.
+2. `greet(name: String?): String` returns `"Hello, <name>!"`. If `name` is null, empty or blank, it returns `"Hello, stranger!"`.
+3. `describeNumber(n: Int): String` returns `"positive"`, `"negative"` or `"zero"`.
+4. `initials(fullName: String): String` returns the first letter of each word, each one followed by a dot.
+
+For `initials`, one space separates the words. The input is never empty. A single word gives one initial.
+
+```kotlin
+celsiusToFahrenheit(0.0)   // 32.0
+celsiusToFahrenheit(100.0) // 212.0
+celsiusToFahrenheit(-40.0) // -40.0
+greet("Ada")      // "Hello, Ada!"
+greet(null)       // "Hello, stranger!"
+greet("  ")       // "Hello, stranger!"
+describeNumber(5)  // "positive"
+describeNumber(-1) // "negative"
+describeNumber(0)  // "zero"
+initials("Ada Lovelace") // "A.L."
+initials("Kotlin")       // "K."
+```

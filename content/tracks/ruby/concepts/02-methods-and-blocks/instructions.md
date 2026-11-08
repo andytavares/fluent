@@ -1,12 +1,12 @@
-# Methods & Blocks
+## What you build
 
-## What you'll learn
-
-How Ruby defines methods with optional, keyword, and splat arguments — and how blocks make Ruby's iteration and callback model work.
+You write four methods that use keyword arguments, `yield` and blocks captured as `Proc` objects. This lesson builds on **Variables & Types**.
 
 ## Key concepts
 
-### Method definition
+### A method returns its last expression
+
+Idiomatic Ruby uses an explicit `return` only for an early exit. Unlike JavaScript, Python and Go, Ruby needs no `return` at the end.
 
 ```ruby
 def greet(name)
@@ -14,13 +14,12 @@ def greet(name)
 end
 ```
 
-Ruby methods return the value of their last expression. An explicit `return` is valid but idiomatic Ruby only uses it for early exits.
+### Parameters can have defaults and keywords
 
-### Optional and default arguments
+A positional parameter can have a default value. The caller names a keyword parameter (`ssl:`) at the call site.
 
 ```ruby
 def connect(host, port = 5432, ssl: false)
-  # host is required, port defaults to 5432, ssl is a keyword arg
 end
 
 connect("db.example.com")
@@ -28,54 +27,58 @@ connect("db.example.com", 3306)
 connect("db.example.com", ssl: true)
 ```
 
-### Splat and double-splat
+### Splats collect the remaining arguments
 
-`*args` collects remaining positional arguments into an array. `**kwargs` collects remaining keyword arguments into a hash.
+`*args` collects the remaining positional arguments into an array. `**kwargs` collects the remaining keyword arguments into a hash.
 
 ```ruby
 def log(level, *messages)
-  messages.each { |m| puts "[#{level}] #{m}" }
+  messages.each do |m|
+    puts "[#{level}] #{m}"
+  end
 end
-
-log(:info, "started", "ready")  # two messages
+log(:info, "started", "ready")
 
 def tag(name, **attrs)
-  attr_str = attrs.map { |k, v| "#{k}=\"#{v}\"" }.join(" ")
-  "<#{name} #{attr_str}>"
+  pairs = attrs.map do |k, v|
+    "#{k}=\"#{v}\""
+  end
+  "<#{name} #{pairs.join(" ")}>"
 end
 
-tag(:a, href: "/home", class: "nav")  # => '<a href="/home" class="nav">'
+# Returns <a href="/home" class="nav">
+tag(:a, href: "/home", class: "nav")
 ```
 
-### Blocks
+### A method calls its block with `yield`
 
-A block is an anonymous chunk of code you pass to a method. The method invokes it with `yield`. This is the backbone of Ruby's iteration idioms.
+A block is an anonymous piece of code that you pass to a method, outside the argument list. The method runs it with `yield`, and the caller never names it. JavaScript has no match for this: there, you pass a callback as an argument.
 
 ```ruby
 def repeat(n)
   n.times { yield }
 end
 
+# Prints "hi" three times
 repeat(3) { puts "hi" }
-# hi
-# hi
-# hi
 ```
 
-Use `block_given?` to make the block optional:
+### `block_given?` makes the block optional
+
+`block_given?` returns `true` when the caller passed a block.
 
 ```ruby
 def maybe_transform(value)
   block_given? ? yield(value) : value
 end
 
-maybe_transform(5)          # => 5
-maybe_transform(5) { |v| v * 2 }  # => 10
+maybe_transform(5)              # => 5
+maybe_transform(5) { |v| v * 2 } # => 10
 ```
 
-### Capturing a block as a Proc
+### `&` captures the block as a `Proc`
 
-Prefix the last parameter with `&` to capture the block as a named Proc object. You can then call it with `.call`, `.(...)`, or `yield`.
+Put `&` before the last parameter to capture the block as a named `Proc` object. Run it with `.call`, `.()` or `yield`.
 
 ```ruby
 def apply(value, &transformer)
@@ -85,66 +88,66 @@ end
 apply(4) { |n| n ** 2 }  # => 16
 ```
 
-Passing a named Proc or method as a block uses the same `&` sigil at the call site:
+### `&` at the call site passes a callable as a block
+
+The same `&` passes a `Proc` or a symbol as the block. `&:strip` works because `Symbol#to_proc` makes a proc that calls `.strip` on its argument.
 
 ```ruby
 doubler = ->(n) { n * 2 }
-[1, 2, 3].map(&doubler)  # => [2, 4, 6]
+[1, 2, 3].map(&doubler)
+# => [2, 4, 6]
 
-[" a ", " b "].map(&:strip)  # => ["a", "b"]  — Symbol#to_proc
+[" a ", " b "].map(&:strip)
+# => ["a", "b"]
 ```
-
-`&:strip` works because `Symbol#to_proc` converts `:strip` into a proc that calls `.strip` on its argument.
-
-## vs other languages
-
-| | Ruby | JavaScript | Python | Go |
-|---|---|---|---|---|
-| Implicit return | Yes — last expression | No — need `return` | No | No |
-| Anonymous callable | Block / Proc / Lambda | Arrow function | Lambda / def | func literal |
-| Named keyword args | Built-in (`key:`) | Destructured object | `**kwargs` or explicit | Struct param |
-| Yield mechanism | `yield` keyword | No — pass function explicitly | `yield` (generators only) | No equivalent |
-
-The block mechanism has no direct parallel in most languages. In JavaScript you pass a callback function explicitly as an argument. Ruby's blocks sit outside the argument list and are passed implicitly — the called method can `yield` to them without the caller ever naming them.
 
 ## Watch out
 
-- `yield` without `block_given?` raises `LocalJumpError: no block given` if the caller didn't pass one. Always guard with `block_given?` (or capture with `&block` and check `block.nil?`) when the block is optional.
-- A method can only capture **one** block — `&block` must be the last parameter, and there's no way to accept two separate blocks.
-- Required keyword arguments (`name:` with no default) raise `ArgumentError: missing keyword` if omitted — unlike positional defaults, there's no silent `nil` fallback.
-- `&block` inside the method is a real `Proc` object; you must call it with `.call` (or `.()`), not invoke it like a bare `block(x)`.
+- `yield` with no block raises `LocalJumpError: no block given`. Check `block_given?` or `block.nil?` when the block is optional.
+- A method can capture only one block. `&block` must be the last parameter.
+- A missing required keyword argument raises `ArgumentError: missing keyword`. It does not become `nil`.
+- `&block` is a `Proc` object. Run it with `block.call(x)` or `block.(x)`, not `block(x)`.
 
 ## The task
 
-Implement four methods that exercise splat/keyword arguments, `yield`, and capturing blocks as `Proc`s.
+Write four methods in `stub.rb`. They use splat and keyword arguments, `yield` and captured blocks.
 
-**`repeat_call(n, &block)`** — calls `block` exactly `n` times, passing the 0-based iteration index each time. Returns `nil` regardless of what the block returns.
+1. `repeat_call(n, &block)` calls `block` exactly `n` times. It passes the iteration index, from 0, each time.
+2. `repeat_call` returns `nil`, whatever the block returns.
+3. `transform_all(values, &block)` applies `block` to each element of `values`.
+4. `transform_all` returns a new array of the results and does not change `values`.
+5. With no block, `transform_all` returns `values` unchanged.
+6. `build_logger(prefix)` returns a `Proc`. Called with a message, the `Proc` returns `"#{prefix}: #{message}"`.
+7. `keyword_summary(name:, age:, city: "Unknown")` returns `"#{name}, age #{age}, from #{city}"`.
+8. In `keyword_summary`, the caller must pass `name` and `age`. `city` defaults to `"Unknown"`.
 
-```ruby
-repeat_call(3) { |i| puts i }   # prints 0, 1, 2 — returns nil
-repeat_call(0) { |i| puts i }   # prints nothing — returns nil
-```
-
-**`transform_all(values, &block)`** — applies `block` to each element of the `values` array and returns a **new** array of the results, leaving `values` untouched. If no block is given, returns `values` unchanged.
-
-```ruby
-transform_all([1, 2, 3]) { |n| n * 2 }      # => [2, 4, 6]
-transform_all(["a", "b"]) { |s| s.upcase }  # => ["A", "B"]
-transform_all([1, 2, 3])                    # => [1, 2, 3]  — no block given
-transform_all([])          { |n| n }        # => []
-```
-
-**`build_logger(prefix)`** — returns a `Proc` that, when called with a message string, returns `"#{prefix}: #{message}"`.
+When `n` is 0, `repeat_call` never calls the block. An empty array gives an empty array.
 
 ```ruby
+seen = []
+repeat_call(3) { |i| seen << i }
+# => nil, and seen is [0, 1, 2]
+repeat_call(0) { |i| seen << i }
+# => nil, and the block never runs
+
+transform_all([1, 2, 3]) { |n| n * 2 }
+# => [2, 4, 6]
+transform_all(["a", "b"]) { |s| s.upcase }
+# => ["A", "B"]
+transform_all([1, 2, 3])
+# => [1, 2, 3]
+transform_all([]) { |n| n }
+# => []
+
 info = build_logger("INFO")
-info.call("server started")  # => "INFO: server started"
-info.call("")                # => "INFO: "
-```
+info.call("server started")
+# => "INFO: server started"
+info.call("")
+# => "INFO: "
 
-**`keyword_summary(name:, age:, city: "Unknown")`** — `name` and `age` are required keyword arguments; `city` defaults to `"Unknown"`. Returns `"#{name}, age #{age}, from #{city}"`.
-
-```ruby
-keyword_summary(name: "Alice", age: 30, city: "Portland")  # => "Alice, age 30, from Portland"
-keyword_summary(name: "Bob", age: 25)                      # => "Bob, age 25, from Unknown"
+keyword_summary(name: "Bob", age: 25)
+# => "Bob, age 25, from Unknown"
+# Returns "Alice, age 30, from Portland":
+keyword_summary(name: "Alice", age: 30,
+                city: "Portland")
 ```

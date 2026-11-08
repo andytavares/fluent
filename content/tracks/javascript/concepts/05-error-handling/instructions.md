@@ -1,23 +1,27 @@
-# Error Handling
+## What you build
 
-## What you'll learn
-
-JavaScript uses exceptions for error signaling: `throw` raises an exception, `try/catch/finally` handles it. The `Error` class and its subclasses carry a message and stack trace; you can subclass `Error` for domain-specific errors. This lesson also uses the closure patterns from lesson 4 — wrapping a fallible function (as `retry` does below) is closures plus try/catch.
+You write a strict integer parser, a JSON parser that returns errors as values, and a retry helper. `retry` wraps a function that can fail, so it combines a closure with `try`/`catch`. This lesson builds on **Closures**.
 
 ## Key concepts
 
-**try / catch / finally:**
+### `throw` raises, `try`/`catch` handles
+
+`throw` raises an exception. `catch` handles it, and `finally` always runs, so use it for cleanup. `Error` and its subclasses carry a message and a stack trace.
+
 ```js
 try {
   JSON.parse("invalid json");
 } catch (e) {
-  console.error(e.message);  // SyntaxError: Unexpected token i...
+  console.error(e.message);
 } finally {
-  // always runs — use for cleanup
+  // Always runs
 }
 ```
 
-**Custom error classes:**
+### Subclass `Error` for domain errors
+
+Call `super` with the message and set `name`.
+
 ```js
 class NotFoundError extends Error {
   constructor(resource) {
@@ -27,20 +31,30 @@ class NotFoundError extends Error {
 }
 
 throw new NotFoundError("User 42");
-// message: "User 42 not found", name: "NotFoundError"
+// message: "User 42 not found"
+// name: "NotFoundError"
 ```
 
-**Narrowing caught errors** — check the type before acting, re-throw what you can't handle:
+### Narrow a caught error, then rethrow the rest
+
+Check the type before you act. Throw again what you cannot handle.
+
 ```js
 try {
   // ...
 } catch (e) {
-  if (e instanceof TypeError) { /* ... */ }
-  else throw e;
+  if (e instanceof TypeError) {
+    // handle it
+  } else {
+    throw e;
+  }
 }
 ```
 
-**Error as a value (functional style)** — sometimes a try/catch wrapper that returns `{ok, value, error}` is cleaner than scattering try/catch everywhere:
+### An error can be a value
+
+A wrapper that returns `{ ok, value, error }` can be cleaner than many `try`/`catch` blocks. Go's `err` return is not in JavaScript, but this shape does the same job.
+
 ```js
 function tryCatch(fn) {
   try {
@@ -51,62 +65,81 @@ function tryCatch(fn) {
 }
 ```
 
-**Validating numbers** — `Number(s)` converts a whole string (returning `NaN` on garbage), while `parseInt` stops at the first invalid character. That difference matters for strict validation:
+### `Number` converts the whole string
+
+`Number(s)` converts the full string and gives `NaN` for bad input. `parseInt` stops at the first bad character. That difference matters for strict validation.
+
 ```js
-Number("12x");      // NaN       — whole string must be numeric
-parseInt("12x");    // 12        — silently truncates! avoid for validation
-Number("3.5");      // 3.5       — valid number, but not an integer
+// The whole string must be numeric
+Number("12x");   // NaN
+// Silently truncates: avoid it here
+parseInt("12x"); // 12
+// A number, but not an integer
+Number("3.5");   // 3.5
 Number.isInteger(Number("3.5")); // false
-Number("");         // 0         — the empty-string trap
+// The empty-string trap
+Number("");      // 0
 ```
 
-**vs other languages:** JavaScript has no checked exceptions (like Java). `throw` can throw anything — not just `Error` instances. Convention says you should always throw `Error` objects so callers get a stack trace. Go engineers: there is no `err` return convention in the language itself, but the `{ok, value, error}` shape above is the JS equivalent when you want errors as values.
+### JavaScript has no checked exceptions
+
+Unlike Java, no signature declares its exceptions. `throw` accepts any value, not only `Error` objects. Always throw `Error` objects, so callers get a stack trace.
 
 ## Watch out
 
-- `Number("")` and `Number("   ")` are `0`, not `NaN` — empty and whitespace-only strings coerce to zero. Strict parsers must reject them explicitly.
-- `parseInt("12abc")` returns `12` — it silently ignores trailing garbage. Use `Number()` + `Number.isInteger()` for strict validation.
-- `catch (e)` catches *everything*, including programming errors like `TypeError`. Re-throw what you didn't intend to handle.
-- An error thrown inside `finally` swallows the original error.
+- `Number("")` and `Number("   ")` give `0`, not `NaN`. Strict parsers must reject them explicitly.
+- `parseInt("12abc")` gives `12` and ignores the trailing characters. Use `Number()` with `Number.isInteger()` instead.
+- `catch (e)` catches everything, including bugs like `TypeError`. Rethrow what you did not intend to handle.
+- An error thrown inside `finally` replaces the original error.
 
 ## The task
 
-You're building three fault-tolerant utilities: a strict parser, a JSON wrapper that returns errors as values, and a retry helper.
+Write three fault-tolerant functions in `stub.js`: a strict parser, a JSON wrapper and a retry helper.
 
-**`safeParseInt(s)`** — strictly parses the string `s` as a base-10 integer. Returns the number if `s` is a valid integer string (an optional leading `-` followed by digits); returns `null` for anything else — floats, letters, mixed digit/letter strings, and empty or whitespace-only strings. (Beware `parseInt`'s truncation and `Number("")` returning `0`; `Number()` + `Number.isInteger()` is a solid approach.)
+1. `safeParseInt(s)` parses the string `s` as a base-10 integer.
+2. A valid integer string is an optional leading `-` followed by digits.
+3. `safeParseInt` returns the number for a valid string, and `null` for anything else.
+4. `safeJsonParse(text)` parses `text` as JSON and never lets the exception escape.
+5. On success, `safeJsonParse` returns `{ ok: true, value }` with the parsed result.
+6. On failure, it returns `{ ok: false, error }`. `error` is the non-empty message string.
+7. `retry(fn, times)` calls the function `fn()`, with no arguments, up to `times` times.
+8. `retry` returns the result of the first call that does not throw.
+9. If all calls throw, `retry` throws the error from the last call.
 
-```js
-safeParseInt("42");    // 42
-safeParseInt("-7");    // -7
-safeParseInt("0");     // 0
-safeParseInt("3.5");   // null — not an integer
-safeParseInt("abc");   // null
-safeParseInt("12x");   // null — trailing garbage is invalid
-safeParseInt("");      // null — empty string is NOT 0
-safeParseInt("   ");   // null — whitespace-only is NOT 0
-```
+`safeParseInt` returns `null` for decimals, letters and mixed digits and letters. It also returns `null` for empty and whitespace-only strings.
 
-**`safeJsonParse(text)`** — parses `text` as JSON without letting the exception escape. On success, returns `{ ok: true, value }` where `value` is the parsed result. On failure, returns `{ ok: false, error }` where `error` is the thrown error's **message string** (non-empty).
-
-```js
-safeJsonParse('{"a":1}');   // { ok: true, value: { a: 1 } }
-safeJsonParse('[1,2,3]');   // { ok: true, value: [1, 2, 3] }
-safeJsonParse("{bad json}"); // { ok: false, error: "Unexpected token b ..." }
-```
-
-**`retry(fn, times)`** — calls the zero-argument function `fn()` up to `times` attempts. Returns the result of the first call that does not throw; stops retrying as soon as one succeeds (a first-try success means exactly one call). If all `times` attempts throw, re-throws the error from the **last** attempt. Assume `times >= 1`.
+`retry` stops at the first success. A success on the first try means exactly one call. You can assume `times >= 1`.
 
 ```js
+safeParseInt("42")  // 42
+safeParseInt("-7")  // -7
+safeParseInt("0")   // 0
+safeParseInt("3.5") // null
+safeParseInt("abc") // null
+safeParseInt("12x") // null
+safeParseInt("")    // null
+safeParseInt("   ") // null
+
+safeJsonParse('{"a":1}')
+// { ok: true, value: { a: 1 } }
+safeJsonParse("{bad json}")
+// { ok: false, error: "<message>" }
+
 let calls = 0;
 const flaky = () => {
   calls++;
-  if (calls < 3) throw new Error("not yet");
+  if (calls < 3) {
+    throw new Error("not yet");
+  }
   return "success";
 };
-retry(flaky, 5);  // "success" — fn was called exactly 3 times
+// fn runs exactly 3 times
+retry(flaky, 5) // "success"
+// fn runs exactly 1 time
+retry(() => "instant", 5) // "instant"
 
-retry(() => "instant", 5);  // "instant" — called exactly once
-
-retry(() => { throw new Error("always fails"); }, 3);
-// throws Error("always fails") after 3 attempts
+// Throws Error("always fails")
+retry(() => {
+  throw new Error("always fails");
+}, 3);
 ```

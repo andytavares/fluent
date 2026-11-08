@@ -1,7 +1,7 @@
 {
   "slug": "ruby",
   "title": "Ruby Essentials",
-  "description": "Learn Ruby — an expressive, object-oriented language built for developer happiness. Master blocks, modules, metaprogramming, and Ruby's elegant standard library.",
+  "description": "Learn Ruby, an expressive, object-oriented language built for developer happiness. Study blocks, modules, metaprogramming and the Ruby standard library.",
   "language": "ruby",
   "status": "published"
 }

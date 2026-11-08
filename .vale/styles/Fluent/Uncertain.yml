@@ -1,0 +1,7 @@
+extends: existence
+message: "'%s' can mean permission or chance. Use 'can' or 'must' when that is the meaning."
+level: warning
+ignorecase: true
+tokens:
+  - may
+  - could

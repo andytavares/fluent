@@ -1,9 +1,8 @@
 # Step 5 — Comments
 
-Posts don't stand alone — readers comment on them. This step adds a
-second table with a foreign key back to `posts`, and two endpoints:
-adding a comment and listing a post's comments in the order they were
-made.
+Readers comment on posts. This step adds a second table with a foreign
+key to `posts`. It also adds two endpoints: one adds a comment, and one
+lists the comments of a post in the order readers wrote them.
 
 ## The task
 
@@ -31,42 +30,68 @@ Add two handlers:
 
 ### `GET /posts/:id/comments` — list a post's comments
 
-**Response:** `200 OK` with an array ordered **oldest first**:
+**Response:** `200 OK` with an array, **oldest first**:
 
 ```json
 [
-  { "id": 1, "post_id": 1, "author": "Grace", "body": "Nice writeup.", "created_at": "2026-07-01T09:00:00+00:00" },
-  { "id": 2, "post_id": 1, "author": "Ada", "body": "Great post!", "created_at": "2026-07-01T09:05:00+00:00" }
+  {
+    "id": 1,
+    "post_id": 1,
+    "author": "Grace",
+    "body": "Nice writeup.",
+    "created_at":
+      "2026-07-01T09:00:00+00:00"
+  },
+  {
+    "id": 2,
+    "post_id": 1,
+    "author": "Ada",
+    "body": "Great post!",
+    "created_at":
+      "2026-07-01T09:05:00+00:00"
+  }
 ]
 ```
 
 Requirements:
 
-- Your server should create the `comments` table itself on startup if it
-  doesn't already exist:
+- Your server must create the `comments` table on startup if it does not
+  exist:
 
-  ```sql
-  CREATE TABLE IF NOT EXISTS comments (
-    id SERIAL PRIMARY KEY,
-    post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-    author TEXT NOT NULL,
-    body TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-  );
-  ```
+```sql
+CREATE TABLE IF NOT EXISTS comments (
+  id SERIAL PRIMARY KEY,
+  post_id INTEGER NOT NULL
+    REFERENCES posts(id)
+    ON DELETE CASCADE,
+  author TEXT NOT NULL,
+  body TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
 
-  `ON DELETE CASCADE` means deleting a post also deletes its comments —
-  useful to know even though no delete endpoint exists in this capstone.
+- `ON DELETE CASCADE` means: when you delete a post, Postgres also
+  deletes its comments. This capstone has no delete endpoint, but the
+  rule is useful to know.
 
-- `POST /posts/:id/comments`: validate that both `author` and `body` are
-  present in the parsed JSON body — if either is missing, return
-  `400 Bad Request`. If the post `id` in the path doesn't exist, return
-  `404 Not Found` with body `{"error": "not found"}` (a foreign key
-  violation from inserting against a missing `post_id` is not an
-  acceptable way to produce this — check for the post first).
-- `GET /posts/:id/comments`: return `SELECT * FROM comments WHERE post_id
-  = $1 ORDER BY created_at ASC` as a JSON array. A post with zero
-  comments returns an empty array `[]`, not a 404 — only a missing post
-  itself is a 404.
-- Parse the path segment (the post id) as an integer in both handlers.
-  If it isn't numeric, return `400 Bad Request`.
+- `POST /posts/:id/comments`: both `author` and `body` must be in the
+  parsed JSON body. If one of them is missing, return
+  `400 Bad Request`. If the post `id` in the path does not exist, return
+  `404 Not Found` with body `{"error": "not found"}`. Check for the post
+  first. Do not rely on the foreign key violation from an insert with a
+  missing `post_id` to produce the 404.
+
+- `GET /posts/:id/comments`: return the result of this query as a JSON
+  array:
+
+```sql
+SELECT * FROM comments
+WHERE post_id = $1
+ORDER BY created_at ASC
+```
+
+- A post with zero comments returns an empty array `[]`, not a 404. Only
+  a missing post returns 404.
+
+- In both handlers, parse the path segment (the post id) as an integer.
+  If it is not numeric, return `400 Bad Request`.

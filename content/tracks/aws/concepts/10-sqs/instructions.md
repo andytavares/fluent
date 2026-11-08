@@ -1,128 +1,174 @@
-# SQS
+## What you build
 
-## What you'll learn
-
-SQS is a managed message queue, and its entire failure-handling model hinges on one mechanism: visibility timeout. This concept teaches that mechanism through a concrete failure walkthrough, standard vs FIFO queue semantics, long polling, and dead-letter queues — the foundation the next two concepts (SNS/EventBridge fan-out, and Lambda's SQS event source mapping) build directly on.
+You write `stub.sh`, a script that creates standard, FIFO and dead-letter queues, sends a message and receives one with long polling. SQS failure handling rests on one mechanism: the visibility timeout. This lesson builds on **Lambda Event Sources**.
 
 ## Key concepts
 
-### Standard vs FIFO — precisely
+The examples leave out `--endpoint-url http://localhost:4566`. They use `$QUEUES` for `http://localhost:4566/000000000000`, the queue URL prefix in LocalStack.
 
-| | Standard | FIFO (`.fifo` name suffix) |
+### Standard queues scale, FIFO queues keep order
+
+| | Standard | FIFO |
 |---|---|---|
-| Ordering | Best-effort, not guaranteed | Strict, per message group |
-| Delivery | At-least-once (duplicates possible) | Exactly-once processing (dedup within a 5-minute window) |
-| Throughput | Nearly unlimited | 300 msg/s per API call without batching, 3,000/s with batching (or effectively unlimited with high-throughput mode) |
-| Requires | Nothing special | `MessageGroupId` on every message; `MessageDeduplicationId` (or content-based dedup) |
+| Order | Best effort | Strict, per message group |
+| Delivery | At least once | Exactly once, 5-minute dedup window |
+| Throughput | Nearly unlimited | 300 msg/s, 3,000 with batching |
+| Needs | Nothing | `MessageGroupId`, dedup ID |
+
+High-throughput mode raises the FIFO limit far above 3,000. A FIFO queue name ends in `.fifo`. Every FIFO message needs a `MessageGroupId`. It also needs a `MessageDeduplicationId`, unless the queue uses content-based deduplication.
 
 ```bash
-aws --endpoint-url http://localhost:4566 sqs create-queue --queue-name orders-queue
+aws sqs create-queue \
+  --queue-name orders-queue
 
-aws --endpoint-url http://localhost:4566 sqs create-queue \
+aws sqs create-queue \
   --queue-name orders-queue.fifo \
-  --attributes FifoQueue=true,ContentBasedDeduplication=true
+  --attributes FifoQueue=true,\
+ContentBasedDeduplication=true
 ```
 
-Default to standard queues. Reach for FIFO only when strict ordering *and* exactly-once delivery are actual application requirements (e.g., "these three events for this one entity must be processed in the order they happened") — FIFO's throughput ceiling and mandatory group/dedup IDs are real constraints, not free upgrades.
+Use standard queues by default. Use FIFO only when the application needs strict order and exactly-once delivery. An example: three events for one entity must run in the order they happened. The FIFO throughput limit and the required IDs are real costs.
 
-### Visibility timeout — the core concept, via a failure walkthrough
+### A received message becomes invisible, not deleted
 
-When a consumer calls `ReceiveMessage`, SQS does **not** delete the message — it makes the message **invisible** to other consumers for a configurable window (the visibility timeout, default 30s), on the assumption that the consumer that just received it is about to process and delete it.
+`ReceiveMessage` does not delete the message. SQS hides it from other consumers for the visibility timeout, 30 seconds by default. SQS assumes the consumer processes the message and deletes it in that time.
 
-Walk through what happens when processing fails:
+Here is what happens when processing runs long:
 
-1. Consumer A calls `receive-message`. Message becomes invisible for 30 seconds.
-2. Consumer A starts processing — say, calling a downstream API that's currently slow.
-3. 30 seconds pass. Consumer A is *still* processing (it didn't finish, and didn't extend the timeout).
-4. The message becomes visible again, **automatically**, with no error, no notification to consumer A. SQS doesn't know or care that A is still working on it.
-5. Consumer B calls `receive-message` and gets the **same message** — now two consumers are processing the same logical work simultaneously.
-6. If A eventually finishes and calls `delete-message`, the message is gone — but B is (or already has) processed it too.
+1. Consumer A calls `receive-message`. The message is invisible for 30 seconds.
+2. Consumer A calls a downstream API that is slow.
+3. 30 seconds pass. Consumer A is still working. It did not extend the timeout.
+4. The message becomes visible again. SQS sends no error and does not tell consumer A.
+5. Consumer B calls `receive-message` and gets the same message. Two consumers now do the same work.
+6. Consumer A finishes and calls `delete-message`. The message is gone, but consumer B processes it too.
 
-This is why redelivery under normal operation (not just outright consumer failure) is a routine occurrence for any consumer whose processing time can approach the visibility timeout — see `lambda-event-sources` for why this makes idempotency mandatory, not optional, for any real consumer.
+So redelivery is routine for any consumer whose processing time can reach the visibility timeout. It does not need a crash. **Lambda Event Sources** explains why this makes idempotency mandatory.
+
+### Extend the timeout for a long job
 
 ```bash
-# Extend the timeout for a specific in-flight message once you know a job will run long
-aws --endpoint-url http://localhost:4566 sqs change-message-visibility \
-  --queue-url http://localhost:4566/000000000000/orders-queue \
+aws sqs change-message-visibility \
+  --queue-url "$QUEUES/orders-queue" \
   --receipt-handle "$RECEIPT_HANDLE" \
   --visibility-timeout 120
 ```
 
-The fix for step 3–4 above, when you can predict a long-running job, is calling `change-message-visibility` partway through processing to buy more time before the default window expires — a "heartbeat" pattern.
+When you know that a job runs long, call `change-message-visibility` during processing. It buys more time before the window expires. This is the heartbeat pattern, and it fixes steps 3 and 4 above.
 
-### Long polling
+### Long polling waits for a message
 
 ```bash
-aws --endpoint-url http://localhost:4566 sqs receive-message \
-  --queue-url http://localhost:4566/000000000000/orders-queue \
+aws sqs receive-message \
+  --queue-url "$QUEUES/orders-queue" \
   --wait-time-seconds 20 \
   --max-number-of-messages 10
 ```
 
-Without `--wait-time-seconds` (or a queue-level `ReceiveMessageWaitTimeSeconds` attribute), `receive-message` returns **immediately**, even if the queue is empty — you get an empty response and have to poll again right away (short polling), burning API calls and money for no benefit. `--wait-time-seconds` (up to 20) makes the call **block** on the server side until a message arrives or the wait expires, whichever comes first. Always use long polling for any consumer that isn't Lambda's own event-source-mapping poller (which handles this internally) — it's strictly better: fewer empty responses, lower cost, no downside.
+Without `--wait-time-seconds`, `receive-message` returns at once, even from an empty queue. This is short polling. You poll again at once and pay for empty responses.
 
-### Dead-letter queues and `maxReceiveCount`
+`--wait-time-seconds` (20 at most) makes the server wait until a message arrives or the time runs out. The queue attribute `ReceiveMessageWaitTimeSeconds` does the same. Always use long polling. It gives fewer empty responses and lower cost, with no downside. The Lambda event source mapping poller does this for you.
 
-A DLQ is an ordinary queue designated to receive messages that have failed processing too many times — the mechanism that stops a permanently-broken message ("poison pill") from being redelivered forever:
+### A dead-letter queue catches poison messages
+
+A dead-letter queue (DLQ) is an ordinary queue that receives messages after too many failed attempts. It stops a broken message, a "poison pill", from coming back forever.
 
 ```bash
-aws --endpoint-url http://localhost:4566 sqs create-queue --queue-name orders-dlq
+aws sqs create-queue \
+  --queue-name orders-dlq
 
-aws --endpoint-url http://localhost:4566 sqs set-queue-attributes \
-  --queue-url http://localhost:4566/000000000000/orders-queue \
-  --attributes '{
-    "RedrivePolicy": "{\"deadLetterTargetArn\":\"arn:aws:sqs:us-east-1:000000000000:orders-dlq\",\"maxReceiveCount\":\"5\"}"
-  }'
+aws sqs set-queue-attributes \
+  --queue-url "$QUEUES/orders-queue" \
+  --attributes file://redrive.json
 ```
 
-`maxReceiveCount` is the number of times a message may be received (not necessarily *fail* — SQS only tracks receive count, not why a consumer didn't delete it) before it's automatically moved to the DLQ instead of back to the source queue. Set this deliberately: too low, and transient slowness dead-letters healthy messages; too high, and a genuinely broken message clogs the source queue's throughput for a long time before finally being pulled aside.
+`redrive.json` holds a `RedrivePolicy` with `deadLetterTargetArn` and `maxReceiveCount`. The policy value is a JSON string inside JSON, so its quotes need escapes. The task shows the full value.
 
-### Deduplication and group IDs on FIFO
+`maxReceiveCount` is the number of receives before SQS moves the message to the DLQ. SQS counts receives, not failures. It does not know why a consumer did not delete a message. Choose the value with care. Too low, and slow periods send healthy messages to the DLQ. Too high, and a broken message blocks the source queue for a long time.
+
+### FIFO group IDs set order, dedup IDs drop duplicates
 
 ```bash
-aws --endpoint-url http://localhost:4566 sqs send-message \
-  --queue-url http://localhost:4566/000000000000/orders-queue.fifo \
+aws sqs send-message \
+  --queue-url "$QUEUES/orders-queue.fifo" \
   --message-body '{"orderId": "456"}' \
-  --message-group-id "customer-123" \
-  --message-deduplication-id "order-456-v1"
+  --message-group-id customer-123 \
+  --message-deduplication-id order-456-v1
 ```
 
-- **`MessageGroupId`**: messages within the same group are strictly ordered and processed one-at-a-time (per group) — different groups *can* be processed in parallel, so a well-chosen group ID (e.g., per-customer) is how you get both strict per-entity ordering and overall parallelism.
-- **`MessageDeduplicationId`**: if a message with the same dedup ID is sent again within the 5-minute deduplication window, SQS silently discards the duplicate rather than enqueuing it a second time. If you don't supply one, `ContentBasedDeduplication=true` derives it as a SHA-256 hash of the body instead.
+- **`MessageGroupId`**: SQS delivers the messages in one group in strict order, one at a time. Different groups run in parallel. A group ID per customer gives strict order per entity and parallelism overall.
+- **`MessageDeduplicationId`**: SQS discards a message with the same ID sent again within 5 minutes. With `ContentBasedDeduplication=true`, SQS uses a SHA-256 hash of the body when you give no ID.
 
-## vs other tools
+### The visibility timeout matches a RabbitMQ requeue
 
-| | SQS | RabbitMQ | Kafka |
-|---|---|---|---|
-| Consumption model | Pull (poll or Lambda's managed poller) | Push (broker delivers) or pull | Pull, consumer tracks its own offset |
-| "Redelivery" mechanism | Visibility timeout expiry | Unacked message requeue | Consumer group offset not committed |
-| Ordering | Best-effort (standard) or per-group (FIFO) | Per-queue, configurable | Strict per-partition |
-| Message retention after consume | Deleted on ack | Deleted on ack | Retained per topic retention policy regardless of consumption |
-
-SQS's visibility timeout and RabbitMQ's unacked-message requeue solve the identical problem the identical way conceptually — if you've operated RabbitMQ, the "why did I get this message again" mental model transfers directly, just with different API names (`ack`/`nack` vs. deleting or letting the timeout expire).
+RabbitMQ requeues an unacked message, and SQS makes it visible again: the same idea with different API names. Kafka is different: the consumer tracks its own offset, and the topic keeps records after consumption. SQS deletes a message only when the consumer deletes it.
 
 ## Watch out
 
-- **A visibility timeout that's shorter than your actual processing time guarantees duplicate delivery under normal (non-error) operation** — this isn't a bug, it's exactly how the mechanism is specified to work. Size the timeout to your p99 processing time, or use `change-message-visibility` heartbeats for variable-length jobs.
-- **Deleting a message requires the receipt handle from the *most recent* `receive-message` call, not the message ID.** The receipt handle changes every time the message is received again — an old, stale receipt handle's `delete-message` call silently fails to delete (or deletes nothing meaningful) if the message has since been redelivered.
-- **`maxReceiveCount` counts receives, not failures** — a message that's received, and the consumer crashes before calling `delete-message` (for any reason, including a deploy interrupting it), still counts toward the DLQ threshold even though "the code never even ran."
-- **FIFO's `MessageGroupId` is what limits your throughput**, not the queue itself — a single group ID for all messages serializes every single message account-wide; spread load across meaningfully distinct group IDs (e.g., per customer or per shard) to get real parallelism.
+- A visibility timeout shorter than processing time causes duplicates in normal operation. Size it to your p99 processing time.
+- For jobs of variable length, use `change-message-visibility` heartbeats.
+- `delete-message` needs the receipt handle from the latest receive, not the message ID.
+- Each receive gives a new receipt handle. After a redelivery, a delete with the old handle does not remove the message.
+- `maxReceiveCount` counts receives. A consumer that crashes before `delete-message`, even during a deploy, still adds to the count.
+- `MessageGroupId` limits FIFO throughput. One group ID for all messages runs them one at a time.
+- Spread FIFO load over distinct group IDs, for example per customer or per shard.
 
 ## The task
 
-Fill in `stub.sh` so it, in order:
+Write `stub.sh` to build an order queue with a DLQ and a FIFO twin. Pass `--endpoint-url "$ENDPOINT_URL"` on every `aws` call.
 
-1. Creates a standard queue named `orders-queue`.
-2. Creates a FIFO queue named `orders-queue.fifo` with `FifoQueue=true` and `ContentBasedDeduplication=true`.
-3. Creates a DLQ named `orders-dlq`.
-4. Sets a redrive policy on `orders-queue` pointing at the `orders-dlq` ARN with `maxReceiveCount` of `5`.
-5. Sends a message to `orders-queue.fifo` with body `{"orderId": "456"}`, `--message-group-id customer-123`, and `--message-deduplication-id order-456-v1`.
-6. Receives a message from `orders-queue` using long polling (`--wait-time-seconds 20`).
-7. Adds a comment `# answer: <one sentence>` explaining, in terms of visibility timeout, why a second consumer can receive the exact same message that a first, still-working consumer already has.
+The script does these steps, in order:
+
+1. Create a standard queue. The line ends with `--queue-name orders-queue`.
+2. Create `orders-queue.fifo` with `FifoQueue=true` and `ContentBasedDeduplication=true`.
+3. Create a DLQ named `orders-dlq`.
+4. Set a `RedrivePolicy` on `orders-queue`. It points at the `orders-dlq` ARN with `maxReceiveCount` 5.
+5. Send `{"orderId": "456"}` to `orders-queue.fifo` with `--message-group-id customer-123`.
+6. Give that message `--message-deduplication-id order-456-v1`.
+7. Receive a message from `orders-queue` with `--wait-time-seconds 20`.
+8. Add a comment that starts with `# answer:`. In one sentence, explain why a second consumer gets the same message.
+
+The answer must use the words "visibility timeout". The DLQ ARN is `arn:aws:sqs:us-east-1:000000000000:orders-dlq`.
+
+The finished script makes these calls:
+
+```bash
+QUEUES="$ENDPOINT_URL/000000000000"
+
+aws sqs create-queue \
+  --queue-name orders-queue
+
+aws sqs create-queue \
+  --queue-name orders-queue.fifo \
+  --attributes FifoQueue=true,\
+ContentBasedDeduplication=true
+
+aws sqs create-queue \
+  --queue-name orders-dlq
+
+aws sqs set-queue-attributes \
+  --queue-url "$QUEUES/orders-queue" \
+  --attributes '{"RedrivePolicy":
+  "{\"deadLetterTargetArn\":\"arn:aws:sqs:us-east-1:000000000000:orders-dlq\",\"maxReceiveCount\":\"5\"}"}'
+
+aws sqs send-message \
+  --queue-url "$QUEUES/orders-queue.fifo" \
+  --message-body '{"orderId": "456"}' \
+  --message-group-id customer-123 \
+  --message-deduplication-id order-456-v1
+
+aws sqs receive-message \
+  --queue-url "$QUEUES/orders-queue" \
+  --wait-time-seconds 20
+
+# answer: the visibility timeout expired
+# while the first consumer still worked,
+# so SQS showed the message again.
+```
 
 ### Run it for real
 
 ```bash
-docker run -d --name localstack -p 4566:4566 localstack/localstack
-bash stub.sh   # once filled in
+docker run -d --name localstack \
+  -p 4566:4566 localstack/localstack
+bash stub.sh
 ```

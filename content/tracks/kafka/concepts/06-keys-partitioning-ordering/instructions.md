@@ -1,51 +1,62 @@
-# Keys, Partitioning, and Ordering
+## What you build
 
-## What you'll learn
-
-Which partition a record lands in isn't random — it's a deterministic function of the key, and that determinism is the entire mechanism behind Kafka's ordering guarantee. This lesson covers exactly how keys map to partitions, why "ordering" only ever means "within a partition," and the two operational traps that catch people who assume otherwise: hot-key skew and partition-count changes silently breaking key routing.
+You record the partitioning design for an `orders` topic in `stub.properties`. The key decides the partition, and the partition decides the order. This lesson builds on **Topics, Partitions, and Offsets** and **Producers**.
 
 ## Key concepts
 
-**The default partitioner hashes the key to choose a partition, deterministically.** With a non-null key, `DefaultPartitioner` computes `murmur2(key) % numPartitions` (roughly — modern versions add a small amount of extra logic, but the core is a stable hash mod partition count). The same key **always** maps to the same partition, as long as the partition count doesn't change. This is what gives you ordering: every record with key `customer-42` goes to the same partition, in the order it was produced, so a consumer reading that partition sees `customer-42`'s events in order.
+### The key picks the partition
+
+The default partitioner hashes the key with murmur2. It divides the hash by the partition count and uses the remainder. The same key always goes to the same partition while the partition count stays the same.
 
 ```
-key "customer-42"  --murmur2 hash--> partition 7   (always, while partitions=12)
-key "customer-99"  --murmur2 hash--> partition 2   (always, while partitions=12)
+# 12 partitions
+customer-42 -> murmur2 -> partition 7
+customer-99 -> murmur2 -> partition 2
 ```
 
-**Ordering is per-partition, full stop — there is no cross-partition ordering guarantee, ever.** Two records with different keys landing on different partitions have no defined relative order, even if they were produced by the same producer, back to back, with `acks=all`. If your application logic implicitly assumes "the order I called `send()` in is the order everything downstream sees globally," that assumption breaks the moment two different keys are involved. The only way to get global ordering is a single partition for the whole topic — which caps your throughput and consumer parallelism at 1 (see the topics lesson).
+A consumer of partition 7 gets the events for `customer-42` in the order the producer sent them. SQS FIFO scopes order to a message group id in the same way.
 
-**Null keys use round-robin-ish "sticky" partitioning, not a hash.** When a record has no key, there's nothing to hash — modern Kafka producers (since KIP-480) use the **sticky partitioner**: it picks one partition and sends an entire *batch* of null-key records to it before switching to another partition (rather than round-robining per-record), which improves batching efficiency. Null-keyed records have no ordering relationship to each other at all — they're explicitly unordered by design, so this is safe.
+### Order exists only inside one partition
 
-**Hot keys cause partition skew — one key with disproportionate volume overloads one partition (and the consumer assigned to it), while every other partition/consumer sits comfortably under load.** This is a data-distribution problem, not a Kafka bug — some real-world key distributions genuinely are skewed (a small number of extremely active accounts, a viral piece of content, a large customer tenant). Mitigations:
+Kafka gives no order across partitions. Two records with different keys can arrive in any order, even from one producer with `acks=all`. For one global order, the topic needs one partition. That limits throughput and consumer parallelism to 1.
 
-- **Composite/salted keys** — append a shard suffix to spread one hot logical key across N physical partitions (e.g., `customer-42#3` instead of `customer-42`), at the cost of losing strict per-entity ordering (you now only get ordering within each shard).
-- **A custom partitioner** — override `partitioner.class` to implement key-aware logic beyond a plain hash (e.g., explicitly route known-hot keys to a dedicated pool of partitions).
-- **Accept the skew and size for it** — if it's a handful of keys, sometimes the simplest fix is over-provisioning partitions and consumer capacity for the worst case, rather than adding partitioning complexity.
+### Records with no key use the sticky partitioner
 
-**Changing partition count remaps every key.** `murmur2(key) % numPartitions` depends on `numPartitions` — increase the partition count and the modulo changes, so keys that used to land on partition 3 may now land on partition 9. This isn't a gradual migration; it's instantaneous and total for all *new* writes the moment the partition count changes, while all the *old* data for that key sits wherever it was written before, on the old partition. Any code or operational assumption relying on "this key's history is all in one partition" breaks retroactively for any key whose new hash target differs from its old one. This is the single strongest argument for provisioning partition count generously up front (see the topics lesson) rather than planning to grow it later for a topic where per-key ordering matters.
+A record with no key has nothing to hash. Since KIP-480, the producer sends a full batch to one partition, then moves to the next. This improves batching. Records with no key have no order between them.
 
-## vs other systems
+### A hot key overloads one partition
 
-Traditional queue systems with "FIFO" modes (SQS FIFO, for instance) typically scope ordering to a "message group id," which is directly analogous to Kafka's partition key — the same principle (ordering only within a shard/group, parallelism across shards/groups) shows up anywhere a system needs both ordering and horizontal scale simultaneously. What's distinctly Kafka is that the *mapping itself* (hash mod partition count) is exposed and stable, rather than hidden — which is powerful (you can reason about and even predict routing) but also the reason partition-count changes have the blast radius they do.
+One key with very high volume sends all its records to one partition. That partition and its consumer fall behind, while the others stay idle. Three fixes:
+
+- **Salt the key.** Add a shard suffix, for example `customer-42#3`. The order then holds only inside each shard.
+- **Write a custom partitioner.** Set `partitioner.class` to send known hot keys to a reserved set of partitions.
+- **Size for the skew.** If only a few keys are hot, add partitions and consumers for the worst case.
+
+### More partitions move every key
+
+The partition is `hash % partitionCount`. Change the count and most keys go to a new partition. Old records stay on the old partition, so the history of one key splits in two. Create enough partitions at the start.
 
 ## Watch out
 
-- **"It's ordered" without saying "within a partition, for a given key" is always an incomplete (and usually wrong) claim.**
-- **Don't increase partition count on a topic where per-key history-in-one-partition matters**, without a deliberate migration plan — it silently and permanently changes where new records for existing keys land, while old records stay put.
-- **A custom partitioner is a footgun if it isn't deterministic and pure** — any partitioner logic that depends on wall-clock time, external state, or randomness breaks the "same key always same partition" guarantee that ordering depends on.
+- "It's ordered" is incomplete. Say "ordered within a partition, for one key."
+- Do not add partitions to a topic that needs per-key history. Plan a migration first.
+- A custom partitioner must give the same result for the same key every time. Do not read the clock, random values or external state.
+- Kafka 3.3 deprecated `DefaultPartitioner` (KIP-794), and Kafka 4.0 removed it. This task targets a 3.x client, where the class still loads. On 4.0 or later, leave `partitioner.class` unset for key hashing.
 
 ## The task
 
-You're documenting the partitioning design for the `orders` topic, keyed by `customer_id`, at **12** partitions, where a handful of very large customers produce disproportionately more order events than everyone else (hot-key skew).
+The `orders` topic has 12 partitions and uses `customer_id` as the key. A few large customers produce most of the events.
 
-Write `stub.properties` recording:
+Write `stub.properties` with these six lines:
 
-- The producer uses the standard hash-based default partitioner (no custom partitioner class).
-- Three commented design-answer lines stating: the key field used for partitioning, the true scope of the ordering guarantee this setup provides, and the chosen mitigation for the hot-key skew problem described above (a salted/composite key approach).
-- A commented metadata line recording the topic's partition count, since it's directly relevant to why the ordering guarantee and hot-key mitigation are scoped the way they are.
+1. A comment with the topic name.
+2. A comment with the key field.
+3. A comment with the partition count.
+4. `partitioner.class` set to the default partitioner, as a Kafka 3.x client needs.
+5. A comment with the scope of the order guarantee.
+6. A comment with the hot-key fix: a salted composite key.
 
-Use exactly this shape:
+Use exactly this content:
 
 ```properties
 # topic=orders

@@ -1,13 +1,13 @@
 # Step 5 — DELETE /users/:id
 
-The last single-resource operation: removing a user. This closes out the
-single-record CRUD surface before Step 6 adds a collection endpoint.
+This step adds the last single-record operation: remove a user. After this
+step, Step 6 adds a collection endpoint.
 
 ## The task
 
-Add a handler for `DELETE /users/:id` that deletes a user by id.
+Add a handler for `DELETE /users/:id`. It deletes a user by id.
 
-**Sample request/response (deleted):**
+**Sample request and response (deleted):**
 
 ```
 DELETE /users/2
@@ -15,7 +15,7 @@ DELETE /users/2
 204 No Content
 ```
 
-**Sample request/response (not found):**
+**Sample request and response (not found):**
 
 ```
 DELETE /users/9999
@@ -28,10 +28,10 @@ Content-Type: application/json
 
 Requirements:
 
-- Return `204 No Content` on success, with an empty response body.
-- Return `404` with body `{"error": "not found"}` if no user with that id
-  exists.
-- Check the number of rows affected by the delete; if it's zero, the id
-  wasn't found.
-- Parse the path parameter as an integer. If it isn't numeric, return
+- On success, return `204 No Content` with an empty response body.
+- If no user has that id, return `404` with the body
+  `{"error": "not found"}`.
+- Check the number of rows that the delete affects. Zero rows means that
+  the id does not exist.
+- Parse the path parameter as an integer. If it is not numeric, return
   `400 Bad Request`.

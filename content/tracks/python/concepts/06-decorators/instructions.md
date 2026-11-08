@@ -1,29 +1,32 @@
-# Decorators
+## What you build
 
-## What you'll learn
-
-Decorators are functions (or classes) that wrap other functions to extend their behavior without modifying their source. Python's `@` syntax is pure syntactic sugar for `fn = decorator(fn)`. You'll build decorators from scratch, use `functools.wraps` correctly, write decorator factories, and stack multiple decorators.
+You write two decorators: the factory `retry` and the plain decorator `memoize`. This lesson builds on **Functions**.
 
 ## Key concepts
 
-**A decorator is a callable that takes a callable and returns a callable:**
+### A decorator takes a callable and returns a callable
+
+A decorator wraps a function to extend its behavior without a change to its source. The `@` syntax is sugar for `fn = decorator(fn)`. A decorator can be a function or a class.
+
 ```python
 def loudly(fn):
     def wrapper(*args, **kwargs):
         print(f"calling {fn.__name__}")
         result = fn(*args, **kwargs)
-        print(f"done")
+        print("done")
         return result
     return wrapper
 
 @loudly
 def add(a, b):
     return a + b
-# equivalent to: add = loudly(add)
+# The same as: add = loudly(add)
 ```
 
-**`functools.wraps` — preserve metadata:**
-Without `@wraps`, the wrapper hides the original function's `__name__`, `__doc__`, and signature. Always use it:
+### `functools.wraps` keeps the metadata
+
+Without `@wraps`, the wrapper hides the `__name__`, `__doc__` and signature of the original function. Always use it.
+
 ```python
 from functools import wraps
 
@@ -35,15 +38,17 @@ def loudly(fn):
     return wrapper
 ```
 
-**Decorator factory — decorator with arguments:**
-A factory returns the actual decorator. It adds one extra layer:
+### A decorator factory takes arguments
+
+A factory returns the real decorator, so it adds one more level. `@repeat(3)` first calls `repeat(3)`, then applies the decorator it returns.
+
 ```python
 def repeat(n: int):
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kw):
             for _ in range(n):
-                result = fn(*args, **kwargs)
+                result = fn(*args, **kw)
             return result
         return wrapper
     return decorator
@@ -51,25 +56,30 @@ def repeat(n: int):
 @repeat(3)
 def say(msg: str) -> None:
     print(msg)
-# equivalent to: say = repeat(3)(say)
+# The same as: say = repeat(3)(say)
 ```
 
-**Stacking decorators — applied bottom-up:**
+### Stacked decorators apply from the bottom up
+
+The decorator nearest the `def` wraps the function first. The decorator above it wraps the result.
+
 ```python
 @decorator_a
 @decorator_b
 def fn():
     ...
-# equivalent to: fn = decorator_a(decorator_b(fn))
+# fn = decorator_a(decorator_b(fn))
 ```
 
-`decorator_b` wraps `fn` first, then `decorator_a` wraps the result.
+### A class can be a decorator
 
-**Class-based decorators:**
+The class receives the function in `__init__`. Each call to the decorated name runs `__call__`. The instance can keep state, such as a call count.
+
 ```python
 class CountCalls:
     def __init__(self, fn):
-        wraps(fn)(self)   # copy metadata
+        # Copy the metadata of fn
+        wraps(fn)(self)
         self.fn = fn
         self.count = 0
 
@@ -78,68 +88,78 @@ class CountCalls:
         return self.fn(*args, **kwargs)
 ```
 
-## vs other languages
+### Python decorators run code, and Java annotations do not
 
-| Feature | Python | Java | TypeScript | Go |
-|---|---|---|---|---|
-| Decorator syntax | `@decorator` | `@Annotation` (compile-time metadata) | `@decorator` (stage 3) | No |
-| Runtime modification | Yes — full code wrapping | No — annotations are metadata | Yes (but limited) | Manual wrapper functions |
-| Argument access | `*args, **kwargs` forwarding | N/A | N/A | Manual |
+A Python decorator runs when Python defines the function and replaces the decorated object. A Java `@Annotation` is metadata that frameworks read through reflection.
 
-Java `@Annotation` and Python `@decorator` look similar but are fundamentally different. Java annotations are compile-time metadata read by frameworks via reflection — they don't modify behavior at runtime. Python decorators execute at import time and completely replace the decorated object.
+```python
+@loudly       # runs loudly(add) now
+def add(a, b):
+    return a + b
+```
 
 ## Watch out
 
-- Forgetting to `return wrapper` (or accidentally calling `fn()` instead of returning the wrapper) is the most common decorator bug — the function silently stops being decorated, or gets called at decoration time instead of call time.
-- Forgetting `@wraps(fn)` doesn't break behavior, but it breaks introspection: `help()`, debuggers, and other decorators that inspect `__name__`/`__doc__` all see `wrapper` instead of the real function.
-- A decorator factory (`repeat(n)`) needs **three** levels of nesting — factory → decorator → wrapper. Forgetting one level is a common off-by-one: `@repeat(3)` calls `repeat(3)` first (must return a decorator), then applies that decorator to the function.
-- Stacking order matters and reads bottom-up: `@a` above `@b` above `def f` means `a(b(f))` — `b` sees the raw `f`, `a` sees `b`'s wrapper.
+- If the decorator does not `return wrapper`, the decorated name becomes `None`.
+- If the decorator calls `fn()` in place of returning the wrapper, `fn` runs at definition time, not at call time.
+- Without `@wraps(fn)`, behavior still works, but `help()`, debuggers and other decorators see `wrapper` as the name.
+- A decorator factory needs three levels: factory, decorator and wrapper. With one level missing, the decorator breaks.
+- `@a` above `@b` above `def f` gives `a(b(f))`. `b` gets the raw `f`, and `a` gets the wrapper of `b`.
 
 ## The task
 
-Implement two decorators.
+Write two decorators in `stub.py`. Both use `@wraps`, so the wrapper keeps the `__name__` of the original function.
 
-**`retry(times: int, exceptions: tuple = (Exception,))`** — a decorator **factory** (a function that returns a decorator). The decorated function is called up to `times` attempts. If it raises one of the exception types in `exceptions`, it's retried; if it succeeds on any attempt, that result is returned immediately with no further calls. If every attempt raises, the exception from the **last** attempt is re-raised. Exceptions not in `exceptions` propagate immediately without retrying. Use `@wraps` so the wrapper preserves the original function's metadata.
+`retry(times: int, exceptions: tuple = (Exception,))` is a decorator factory: a function that returns a decorator.
+
+1. The wrapper calls the decorated function at most `times` times.
+2. If a call raises an exception type from `exceptions`, the wrapper tries again.
+3. If a call succeeds, the wrapper returns its result at once. It makes no more calls.
+4. If every call raises, the wrapper raises the exception from the last call.
+5. An exception type not in `exceptions` propagates at once, with no retry.
+
+`memoize` is a plain decorator. You apply it as `@memoize`, with no arguments.
+
+1. The wrapper caches each return value. The key is the tuple of positional arguments.
+2. A call with the same arguments returns the cached value. It does not call the original function.
+3. The wrapper exposes the cache as a `.cache` dict attribute.
 
 ```python
-attempts = 0
+@retry(times=3)
+def ok():
+    return "done"
+ok()  # "done", after 1 call
 
-@retry(times=3, exceptions=(ValueError,))
-def flaky():
-    global attempts
-    attempts += 1
-    if attempts < 3:
-        raise ValueError("not yet")
-    return "ok"
-
-flaky()       # "ok" — succeeded on the 3rd attempt; called exactly 3 times
+# Fails once, then returns "ok"
+@retry(times=3)
+def flaky(): ...
+flaky()  # "ok", after 2 calls
 
 @retry(times=3)
 def always_fails():
     raise RuntimeError("boom")
-
-always_fails()  # raises RuntimeError after 3 attempts — last exception re-raised
+always_fails()
+# RuntimeError, after 3 calls
 
 @retry(times=3, exceptions=(ValueError,))
-def wrong_type():
-    raise TypeError("not a ValueError")
-
-wrong_type()    # raises TypeError immediately — not in `exceptions`, no retry
-```
-
-**`memoize`** — a decorator (not a factory — applied directly as `@memoize`) that caches a function's return value keyed by its positional arguments. Calling the wrapped function again with the same arguments returns the cached value without calling the underlying function. The wrapper must expose the cache as a `.cache` dict attribute (keyed by the argument tuple) for inspection. Use `@wraps`.
-
-```python
-calls = []
+def wrong_exc():
+    raise TypeError("wrong type")
+wrong_exc()  # TypeError, after 1 call
 
 @memoize
 def compute(n):
-    calls.append(n)
     return n * 2
+compute(5)  # 10: calls compute
+compute(5)  # 10: from the cache
+compute(3)  # 6: calls compute
+compute(4)  # 8: calls compute
 
-compute(5)        # 10 — computed, calls == [5]
-compute(5)        # 10 — cached, calls still == [5]
-compute(3)        # 6  — new args, calls == [5, 3]
-
-compute.cache      # {(5,): 10, (3,): 6}
+@memoize
+def square(n):
+    return n ** 2
+square(3)
+square(4)
+square.cache[(3,)]  # 9
+square.cache[(4,)]  # 16
+square.__name__     # "square"
 ```

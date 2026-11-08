@@ -1,12 +1,16 @@
-# GenServer
+## What you build
 
-## What you'll learn
-
-`GenServer` is OTP's generic server behaviour. It packages the spawn/receive loop from concept 05 into a structured contract: you implement a handful of callbacks, and the framework handles process lifecycle, message dispatch, error recovery hooks, and integration with supervisors.
+You write a `Stack` GenServer: a last-in-first-out stack whose state lives in its own process. `GenServer` wraps the `spawn`/`receive` loop in a fixed set of callbacks. This lesson builds on **Error Handling**.
 
 ## Key concepts
 
-**The basic shape:**
+### `GenServer` is a generic server behaviour
+
+You write a few callbacks. OTP handles the process lifecycle, the message dispatch, the error recovery hooks and the link to supervisors.
+
+### A GenServer has a client API and callbacks
+
+The client API functions run in the caller's process and send messages. The callbacks run in the server process and handle them.
 
 ```elixir
 defmodule Counter do
@@ -14,100 +18,97 @@ defmodule Counter do
 
   # Client API
   def start_link(initial \\ 0) do
-    GenServer.start_link(__MODULE__, initial, name: __MODULE__)
+    GenServer.start_link(__MODULE__,
+      initial)
   end
 
-  def increment(pid), do: GenServer.cast(pid, :increment)
-  def value(pid),     do: GenServer.call(pid, :value)
+  def increment(pid),
+    do: GenServer.cast(pid, :increment)
+
+  def value(pid),
+    do: GenServer.call(pid, :value)
 
   # Server callbacks
   @impl GenServer
   def init(initial), do: {:ok, initial}
 
   @impl GenServer
-  def handle_cast(:increment, state), do: {:noreply, state + 1}
+  def handle_cast(:increment, state),
+    do: {:noreply, state + 1}
 
   @impl GenServer
-  def handle_call(:value, _from, state), do: {:reply, state, state}
+  def handle_call(:value, _from, state),
+    do: {:reply, state, state}
 end
 ```
 
-**`call` vs `cast`:**
+### `call` waits, `cast` does not
 
-- `GenServer.call/2` is synchronous — it sends a message and blocks until the server replies. Use for queries and operations where the caller needs a result.
-- `GenServer.cast/2` is fire-and-forget — it sends a message and returns `:ok` immediately. Use for updates where the caller doesn't need confirmation.
+`GenServer.call/2` sends a message and blocks until the server replies. Use it when the caller needs a result. `GenServer.cast/2` sends a message and returns `:ok` at once. Use it for updates that need no confirmation.
 
-**State:**
+### State is a plain value
 
-State is a plain Elixir value — integer, map, struct, list. `init/1` sets the initial state. Each callback returns a new state (or the same one). There is no shared mutable object; the state lives inside the process and is updated by returning new values from callbacks.
+The state can be an integer, a map, a struct or a list. `init/1` sets the first state. Each callback returns the next state. No other process can change it.
 
-**Return tuples:**
+### Callbacks return tuples
+
+The first element of the tuple tells the server what to do next.
 
 ```elixir
-# from handle_call:
+# From handle_call:
 {:reply, reply_value, new_state}
-{:noreply, new_state}            # no response sent to caller
-
-# from handle_cast / handle_info:
+# Sends no reply to the caller
 {:noreply, new_state}
-{:stop, reason, new_state}       # terminate the server
+
+# From handle_cast or handle_info:
+{:noreply, new_state}
+# Stops the server
+{:stop, reason, new_state}
 ```
 
-**`handle_info/2`** catches any message that isn't routed through `call`/`cast` — including raw `send/2` messages and timer signals (`:erlang.send_after`).
+### `handle_info/2` gets other messages
 
-## vs other languages
+`handle_info/2` receives every message that does not come through `call` or `cast`. Examples are raw `send/2` messages and timer messages from `:erlang.send_after`.
 
-| | Elixir GenServer | Go service goroutine | Java actor (Akka) | Node.js EventEmitter |
-|---|---|---|---|---|
-| State location | Inside process | Inside goroutine / struct | Inside actor | Closure variable |
-| Call semantics | Synchronous future | Channel send/receive | `ask` pattern | Callback |
-| Cast semantics | Async message | Channel send | `tell` pattern | emit |
-| Supervision | OTP Supervisor tree | Manual | Akka supervision | Manual |
+### A GenServer is a supervised loop
 
-The closest mental model if you're coming from Go is a goroutine with a select loop that reads from an input channel. GenServer formalizes that pattern and integrates it with the OTP supervision tree so it can be automatically restarted.
+In Go terms, a GenServer is a goroutine with a `select` loop on one input channel. OTP adds supervision, so a supervisor can restart the server.
 
 ## Watch out
 
-- `push` uses `cast` (fire-and-forget). Because casts don't wait for the server, a `push` immediately followed by `size` from a *different* process isn't guaranteed to see the update — but from the *same* caller, the server processes its mailbox in order, so a `push` then `size` from the same client always observes the pushed value.
-- Every `handle_call` clause must return a 3-tuple starting with `:reply` (or `:noreply`/`:stop`). Forgetting the reply tuple — e.g. accidentally returning just the value — crashes the server with a `FunctionClauseError` you'll see on the *client* side as `{:error, ...}` or a timeout, not as a clear message about the server's return shape.
-- `push`/`pop` naturally form a LIFO (last-in-first-out) stack: the most recently pushed value is the first one popped.
+- A `cast` from one process and a `call` from another have no fixed order.
+- From the same caller, the server handles messages in order. A `push` then a `size` sees the pushed value.
+- A `handle_call` must return a tuple such as `{:reply, value, state}`.
+- A bare return value stops the server with `{:bad_return_value, value}`. The `call` then exits in the caller too.
+- `push` and `pop` form a LIFO stack. The last value pushed is the first value popped.
 
 ## The task
 
-Implement a `Stack` GenServer — a last-in-first-out (LIFO) stack whose state lives inside a dedicated process — with the following client API.
+Write a `Stack` GenServer. Its state is a list in a dedicated process. It has this client API:
 
-**`start_link()`** — starts the server with an empty list as initial state. Returns `{:ok, pid}`.
+1. `start_link()` starts the server with an empty list as its state. It returns `{:ok, pid}`.
+2. `push(pid, value)` puts `value` on top of the stack. Use a `cast`.
+3. `pop(pid)` removes the top value and returns it. Use a `call`.
+4. `peek(pid)` returns the top value and does not remove it.
+5. `size(pid)` returns the number of values on the stack.
 
-```elixir
-{:ok, pid} = Stack.start_link()
-```
-
-**`push(pid, value)`** — pushes `value` onto the stack. Implemented as a `cast` (no reply).
-
-```elixir
-Stack.push(pid, 1)
-Stack.push(pid, 2)
-```
-
-**`pop(pid)`** — removes and returns the top value, or `{:error, :empty}` if the stack has nothing in it. Implemented as a `call` (synchronous).
-
-```elixir
-Stack.pop(pid)  # => 2   (the most recently pushed value)
-Stack.pop(pid)  # => 1
-Stack.pop(pid)  # => {:error, :empty}
-```
-
-**`peek(pid)`** — returns the top value without removing it, or `{:error, :empty}`.
-
-```elixir
-Stack.push(pid, 42)
-Stack.peek(pid)  # => 42
-Stack.size(pid)  # => 1   — peek did not remove the element
-```
-
-**`size(pid)`** — returns the number of elements currently on the stack.
+`pop/1` and `peek/1` return `{:error, :empty}` when the stack is empty. Each `start_link/0` call starts a new, separate stack.
 
 ```elixir
 {:ok, pid} = Stack.start_link()
 Stack.size(pid)  # => 0
+Stack.pop(pid)   # => {:error, :empty}
+Stack.peek(pid)  # => {:error, :empty}
+
+Stack.push(pid, 1)
+Stack.push(pid, 2)
+Stack.push(pid, 3)
+Stack.size(pid)  # => 3
+Stack.peek(pid)  # => 3
+Stack.size(pid)  # => 3
+Stack.pop(pid)   # => 3
+Stack.size(pid)  # => 2
+Stack.pop(pid)   # => 2
+Stack.pop(pid)   # => 1
+Stack.pop(pid)   # => {:error, :empty}
 ```
