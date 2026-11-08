@@ -1,0 +1,36 @@
+content/tracks/helm/concepts/02-templates-and-values/instructions.md
+  s_4312bdd443949d::t_f571a02150350e 44,52
+  s_4312bdd443949d::t_4e4df00d1100dd 72
+content/tracks/terraform/concepts/10-workspaces-and-environments/instructions.md
+  s_4312bdd443949d::t_4ca78f6f2d9b00 33-35,47-48
+content/tracks/terraform/concepts/09-backends-and-remote-state/instructions.md
+  s_4312bdd443949d::t_4ca78f6f2d9b00 88-89
+content/tracks/helm/concepts/04-control-flow/instructions.md
+  s_4312bdd443949d::t_f571a02150350e 98
+content/tracks/helm/concepts/03-built-in-objects/instructions.md
+  s_4312bdd443949d::t_f571a02150350e 35,37,75
+content/tracks/buildkite/concepts/08-plugins/instructions.md
+  s_4312bdd443949d::t_5f42c62d808d9a 81
+content/tracks/buildkite/concepts/07-matrix-and-parallelism/instructions.md
+  s_4312bdd443949d::t_5f42c62d808d9a 89
+content/tracks/buildkite/concepts/10-production-patterns/instructions.md
+  s_4312bdd443949d::t_5f42c62d808d9a 113
+content/tracks/helm/concepts/05-named-templates/instructions.md
+  s_4312bdd443949d::t_f571a02150350e 15,34,44,71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cc51a87c27b1c945352fa665303ed86f9e9a435c",
+  "prompts": {},
+  "sessions": {
+    "s_4312bdd443949d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34ee8d8d-5ae0-4e48-8e14-e3d4c8e3f0af",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
