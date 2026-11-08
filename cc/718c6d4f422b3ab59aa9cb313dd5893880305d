@@ -1,0 +1,31 @@
+content/tracks/cpp/concepts/08-exception-handling/instructions.md
+  s_4312bdd443949d::t_15cae7fdc74d53 80
+content/tracks/assembly/concepts/04-the-stack/instructions.md
+  s_4312bdd443949d::t_15cae7fdc74d53 113
+content/tracks/ruby/concepts/08-metaprogramming/instructions.md
+  s_4312bdd443949d::t_15cae7fdc74d53 139
+content/tracks/c/concepts/10-linked-lists/instructions.md
+  s_4312bdd443949d::t_15cae7fdc74d53 112-115
+content/tracks/rust/concepts/10-concurrency/instructions.md
+  s_4312bdd443949d::t_15cae7fdc74d53 99
+content/tracks/elixir/concepts/10-macros/instructions.md
+  s_4312bdd443949d::t_15cae7fdc74d53 109,112,114,116
+content/tracks/ruby/concepts/03-collections/instructions.md
+  s_4312bdd443949d::t_15cae7fdc74d53 123
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cc718c6d4f422b3ab59aa9cb313dd5893880305d",
+  "prompts": {},
+  "sessions": {
+    "s_4312bdd443949d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34ee8d8d-5ae0-4e48-8e14-e3d4c8e3f0af",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
