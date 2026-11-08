@@ -1,0 +1,45 @@
+packages/ui/src/components/TestOutModal.tsx
+  s_4312bdd443949d::t_b3716a629507d9 7,89-90,99,129
+packages/ui/src/components/LessonMarkdown.tsx
+  s_4312bdd443949d::t_b3716a629507d9 1-29
+packages/ui/src/components/PlacementTask.tsx
+  s_4312bdd443949d::t_b3716a629507d9 6,89-90,105
+packages/ui/src/components/LessonMarkdown.stories.tsx
+  s_4312bdd443949d::t_b3716a629507d9 1-22
+packages/ui/src/components/PlacementTask.test.tsx
+  s_4312bdd443949d::t_f98c730f47af21 1-34
+packages/ui/src/components/LessonMarkdown.test.tsx
+  s_4312bdd443949d::t_f98c730f47af21 1-32
+packages/ui/src/components/TestOutModal.test.tsx
+  s_4312bdd443949d::t_db0d0fb9a8b09c 12,14
+  s_4312bdd443949d::t_83219dfdedf53b 1,3,7-8,10-11,13,15-37
+  s_4312bdd443949d::t_eb04b18cf348be 2,9
+  s_4312bdd443949d::t_f98c730f47af21 4
+  s_4312bdd443949d::t_4c3bbbfb0e5728 5-6,38-41
+apps/web/src/app/tracks/[trackSlug]/concepts/[conceptSlug]/page.tsx
+  s_4312bdd443949d::t_b3716a629507d9 5,97
+packages/ui/package.json
+  s_4312bdd443949d::t_59c1a0dee839e0 25,31,45-47
+packages/ui/src/index.ts
+  s_4312bdd443949d::t_b3716a629507d9 12
+packages/ui/vitest.config.ts
+  s_4312bdd443949d::t_604935855d40e3 3,5,7
+pnpm-lock.yaml
+  s_4312bdd443949d::t_6d79cb29e43bad 372-377
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9199eb560971db25c7fe5f713ca644c3873cf6df",
+  "prompts": {},
+  "sessions": {
+    "s_4312bdd443949d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34ee8d8d-5ae0-4e48-8e14-e3d4c8e3f0af",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
