@@ -1,0 +1,59 @@
+tools/content-linter/src/cli.ts
+  s_4312bdd443949d::t_eca6989225e98e 47,71
+tools/content-linter/src/validator.test.ts
+  s_4312bdd443949d::t_341942ef350b34 6-24,32,118,126-163,166-202
+  s_4312bdd443949d::t_9c4a1f8d0cacd9 164-165
+tools/content-linter/src/lint-all.ts
+  s_4312bdd443949d::t_9c4a1f8d0cacd9 52
+  s_4312bdd443949d::t_eca6989225e98e 38-39,42,53
+  s_4312bdd443949d::t_ac9639968ab28f 8,12,15-16,23-34
+tools/content-linter/tests/integration/linter.test.ts
+  s_4312bdd443949d::t_0c5825cc905684 25
+tools/content-linter/src/validator.ts
+  s_4312bdd443949d::t_9c4a1f8d0cacd9 4,98,103-162
+.vale/styles/Fluent/Hedges.yml
+  s_4312bdd443949d::t_bcb649b31e1e2b 1-10
+.vale.ini
+  s_4312bdd443949d::t_bcb649b31e1e2b 1-5
+.vale/styles/Fluent/Verbs.yml
+  s_4312bdd443949d::t_bcb649b31e1e2b 1-13
+.github/workflows/content-lint.yml
+  s_4312bdd443949d::t_78aaa2d401ab06 13-14
+  s_4312bdd443949d::t_04af4dd122f95e 35-52
+  s_7a27f124c1e8e3::t_f024a121ea96ba 53
+content/AUTHORING.md
+  s_4312bdd443949d::t_97e744167e0ee3 71
+  s_4312bdd443949d::t_7ddd98e981821b 3-12,18-24,26,29-31,34-35,37-38,41-44,47-70,72-86,90-95,99,101-104,108-110
+.vale/styles/Fluent/Passive.yml
+  s_4312bdd443949d::t_bcb649b31e1e2b 1-6
+.vale/styles/Fluent/Uncertain.yml
+  s_4312bdd443949d::t_bcb649b31e1e2b 1-7
+.vale/styles/Fluent/Filler.yml
+  s_4312bdd443949d::t_bcb649b31e1e2b 1-16
+.vale/styles/Fluent/SentenceLength.yml
+  s_4312bdd443949d::t_bcb649b31e1e2b 1-6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2ebfa78f7d91671a4b907af553b4b4a17b325674",
+  "prompts": {},
+  "sessions": {
+    "s_4312bdd443949d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34ee8d8d-5ae0-4e48-8e14-e3d4c8e3f0af",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    },
+    "s_7a27f124c1e8e3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2a59f4fb-4b55-4106-86e1-3343ce7a6038",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
