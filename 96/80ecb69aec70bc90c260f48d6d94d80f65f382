@@ -1,0 +1,27 @@
+apps/web/src/app/dashboard/page.tsx
+  s_4312bdd443949d::t_19f0ff1d2c5f71 5-6,44
+apps/web/src/components/navbar.tsx
+  s_4312bdd443949d::t_19f0ff1d2c5f71 7-13,19-20,22
+apps/web/src/components/track-list.tsx
+  s_4312bdd443949d::t_19f0ff1d2c5f71 1-32
+apps/web/src/app/page.tsx
+  s_4312bdd443949d::t_19f0ff1d2c5f71 2,24,84
+apps/web/src/components/capstone-card.tsx
+  s_4312bdd443949d::t_19f0ff1d2c5f71 1-30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9680ecb69aec70bc90c260f48d6d94d80f65f382",
+  "prompts": {},
+  "sessions": {
+    "s_4312bdd443949d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34ee8d8d-5ae0-4e48-8e14-e3d4c8e3f0af",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
