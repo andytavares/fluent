@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { TrackList } from "@/components/track-list";
 
-export const dynamic = "force-dynamic";
-
 const FEATURES = [
   {
     eyebrow: "Placement",

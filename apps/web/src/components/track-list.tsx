@@ -1,12 +1,12 @@
-import { prisma } from "@/lib/db";
+"use client";
+
+import { trpc } from "@/lib/trpc/client";
 import { LANG_COLORS } from "@/lib/track-colors";
 
-export async function TrackList() {
-  const tracks = await prisma.track.findMany({
-    where: { status: "published" },
-    orderBy: { createdAt: "asc" },
-    select: { slug: true, title: true, language: true },
-  });
+export function TrackList() {
+  const tracksQuery = trpc.tracks.listTracks.useQuery();
+  const tracks = (tracksQuery.data ?? []).filter((track) => track.status === "published");
+  if (tracks.length === 0) return null;
 
   return (
     <>

@@ -11,16 +11,15 @@ export function CapstoneCard({ trackSlug, session }: { trackSlug: string; sessio
   const options = { enabled: trackSlug !== "" };
   const projectQuery = trpc.capstone.getProject.useQuery({ trackSlug }, options);
   const stepsQuery = trpc.capstone.getSteps.useQuery({ trackSlug }, options);
-  if (!projectQuery.data) return null;
+  if (!projectQuery.data || !stepsQuery.data) return null;
 
   const openCapstone = () => router.push(`/tracks/${trackSlug}/capstone`);
   return (
     <div className="mt-8">
       <ContinueBuildingCard
         capstoneTitle={projectQuery.data.title}
-        stepCount={stepsQuery.data?.length ?? 0}
-        sessionId={session?.sessionId ?? null}
-        currentStep={session?.currentStep ?? null}
+        stepCount={stepsQuery.data.length}
+        {...session}
         trackSlug={trackSlug}
         onResume={openCapstone}
         onStart={openCapstone}
