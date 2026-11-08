@@ -1,69 +1,70 @@
-# Modules
+## What you build
 
-## What you'll learn
-
-How Terraform modules package reusable infrastructure patterns, how to call them with `module` blocks, and how data flows in (variables) and out (outputs).
+You write a root module that uses two VPC modules: a local one and one from the public Terraform Registry. Modules package reusable infrastructure; variables go in and outputs come out. This lesson builds on **count & for_each**.
 
 ## Key concepts
 
-### What a module is
+### A module is a directory of `.tf` files
 
-Any directory containing `.tf` files is a module. The directory you run `terraform apply` in is the **root module**. Subdirectories you call with `module` blocks are **child modules**.
-
-A well-structured module looks like:
+The directory where you run `terraform apply` is the **root module**. A directory that a `module` block calls is a **child module**.
 
 ```
 modules/
   vpc/
-    main.tf       # resources
-    variables.tf  # input variables
-    outputs.tf    # output values
+    # resources
+    main.tf
+    # input variables
+    variables.tf
+    # output values
+    outputs.tf
 ```
 
-### Calling a module
+### A `module` block calls a module
 
 ```hcl
 module "network" {
   source = "./modules/vpc"
 
-  # Pass values to the module's variables
+  # Values for the module's variables
   cidr_block  = "10.0.0.0/16"
   environment = var.environment
   project     = var.project
 }
 ```
 
-After calling the module, access its outputs with `module.<name>.<output_name>`:
+Read an output of the module with `module.<name>.<output_name>`.
 
 ```hcl
 resource "aws_instance" "app" {
-  subnet_id = module.network.public_subnet_id
-  vpc_security_group_ids = [module.network.app_sg_id]
+  subnet_id = module.network.subnet_id
+  vpc_security_group_ids = [
+    module.network.app_sg_id,
+  ]
 }
 ```
 
-### Module sources
+### `source` says where the module comes from
 
 ```hcl
-# Local path
+# A local path
 source = "./modules/vpc"
 
-# Public Terraform Registry (namespace/module/provider)
+# The public registry:
+# namespace/name/provider
 source  = "terraform-aws-modules/vpc/aws"
 version = "~> 5.0"
-
-# Git
-source = "git::https://github.com/myorg/tf-modules.git//vpc?ref=v2.1.0"
 
 # GitHub shorthand
 source = "github.com/myorg/tf-modules//vpc"
 ```
 
-Registry modules work exactly like local ones — `module` block, pass variables, consume outputs. The `version` constraint follows the same semver syntax as provider versions.
+A Git source names the repository, a subdirectory after `//` and a tag in `ref`: `git::https://github.com/myorg/tf-modules.git//vpc?ref=v2.1.0`.
 
-### Module composition
+You use a registry module the same way as a local one. The `version` constraint has the same syntax as a provider version.
 
-Modules can call other modules. A common pattern stacks a low-level `vpc` module under a higher-level `network` module:
+### A module can call other modules
+
+A common pattern puts a low-level `vpc` module under a higher-level `network` module.
 
 ```hcl
 # modules/network/main.tf
@@ -82,57 +83,53 @@ output "vpc_id" {
 }
 ```
 
-### Module versioning discipline
+### Pin every registry module
 
-- Always pin registry modules with `version`. Unpinned modules will upgrade on `terraform init -upgrade` and break unexpectedly.
-- Use `~>` for minor-version ranges: `"~> 5.1"` allows `5.x` but not `6.0`.
-- Local modules don't need version pinning — they're versioned with your repo.
+- Always set `version` on a registry module. Without it, `terraform init -upgrade` installs a new version that can break the configuration.
+- `"~> 5.1"` allows any `5.x` from `5.1`, but not `6.0`.
+- A local module needs no version. Your repository versions it.
 
-## vs other tools
-
-| Tool | Reuse mechanism |
-|------|----------------|
-| **CloudFormation** | Nested stacks (an S3 URL per template) — stateful, harder to test in isolation |
-| **Pulumi** | Component resources (classes in your language) — natural for devs, less portable |
-| **Helm** | Charts — package Kubernetes manifests; no resource graph, no plan |
-| **Ansible** | Roles — good for configuration management, not declarative infra |
-
-Terraform's module registry (`registry.terraform.io`) is the largest catalog of vetted, community-maintained infra patterns. Most teams start there before writing modules from scratch.
+Most teams look in the registry at `registry.terraform.io` before they write a module. CloudFormation reuses templates with nested stacks; Helm charts package Kubernetes manifests with no plan.
 
 ## Watch out
 
-- **`module` blocks have one label, not two.** `module "network" { ... }` — unlike `resource`/`data`, there's no separate "type" label; the module's identity comes entirely from its `source`.
-- **`version` is only valid (and only meaningful) for registry sources.** A local path (`./modules/vpc`) has no version — it's whatever's on disk. Adding `version` to a local module source is a no-op at best, an error in some Terraform versions.
-- **You must `terraform init` after adding or changing a module block** — Terraform downloads/copies the module source into `.terraform/modules/` during init, not during plan.
-- **A module's outputs must be declared inside the module itself** to be readable from the caller. `module.network.vpc_id` only resolves if `modules/vpc/outputs.tf` has `output "vpc_id" { ... }` — the caller can't reach into the module's resources directly.
+- A `module` block has one label, not two. The `source` gives the module its identity.
+- `version` works only with a registry source. A module from a local path does not support it.
+- Run `terraform init` after you add or change a `module` block. Init copies the source into `.terraform/modules/`.
+- The caller reads only the outputs the module declares. `module.network.vpc_id` needs `output "vpc_id"` inside the module.
 
 ## The task
 
-You're writing a root module that composes two VPCs: one from a local module your team maintains, one from the public Terraform Registry.
+Write a root module that uses two VPC modules. One is local; your team maintains it. One comes from the public registry.
+
+1. Declare `variable "environment"` with type string and default `"staging"`.
+2. Declare `variable "project"` with type string and default `"myapp"`.
+3. `module "network"` has `source = "./modules/vpc"`.
+4. It passes `cidr_block = "10.0.0.0/16"`, `environment = var.environment` and `project = var.project`.
+5. `module "managed_vpc"` has `source = "terraform-aws-modules/vpc/aws"` and `version = "~> 5.0"`.
+6. It passes `name = "managed"` and `cidr = "10.1.0.0/16"`.
+7. `output "vpc_id"` has `value = module.network.vpc_id`.
+8. `output "managed_vpc_id"` has `value = module.managed_vpc.vpc_id`.
 
 ```hcl
 variable "environment" {
-  # type = string, default = "staging"
+  # type, default
 }
 
 variable "project" {
-  # type = string, default = "myapp"
+  # type, default
 }
 
 module "network" {
-  source = "..." # local path
-
-  cidr_block  = "..."
-  environment = ...
-  project     = ...
+  # source: a local path
+  # cidr_block, environment, project
 }
 
 module "managed_vpc" {
-  source  = "..." # registry source
-  version = "..."
-
+  # source: a registry address
+  # version
   name = "managed"
-  cidr = "..."
+  # cidr
 }
 
 output "vpc_id" {
@@ -143,11 +140,3 @@ output "managed_vpc_id" {
   # value from module.managed_vpc
 }
 ```
-
-Fill it in so that:
-
-1. `module "network"` has `source = "./modules/vpc"` and passes `cidr_block = "10.0.0.0/16"`, `environment = var.environment`, `project = var.project`.
-2. `module "managed_vpc"` has `source = "terraform-aws-modules/vpc/aws"`, `version = "~> 5.0"`, and passes `name = "managed"`, `cidr = "10.1.0.0/16"`.
-3. `variable "environment"` (string, default `"staging"`) and `variable "project"` (string, default `"myapp"`) are declared.
-4. `output "vpc_id"` has `value = module.network.vpc_id`.
-5. `output "managed_vpc_id"` has `value = module.managed_vpc.vpc_id`.

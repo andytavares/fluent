@@ -1,20 +1,12 @@
-# Volumes & Persistence
+## What you build
 
-## What you'll learn
-
-A container's writable filesystem dies with the container. Volumes give a
-Pod storage that outlives a container restart (and, with the right kind,
-outlives the Pod itself). This lesson covers the full spectrum: ephemeral
-scratch space, the PV/PVC abstraction that decouples "I need storage" from
-"here's the actual disk," and the reclaim-policy detail that decides whether
-your data survives a claim deletion.
+You write a PersistentVolumeClaim and a Pod that mounts it next to an `emptyDir` scratch volume. The writable filesystem of a container dies with the container, and volumes give a Pod storage that lives longer. This lesson builds on **ConfigMaps & Secrets**.
 
 ## Key concepts
 
-**`emptyDir`** — scratch space created fresh when the Pod is scheduled,
-deleted when the Pod is removed from the node. Shared between all
-containers in the Pod (this is how a sidecar and a main container exchange
-files):
+### `emptyDir` lives as long as the Pod
+
+Kubernetes creates an `emptyDir` volume when it schedules the Pod. It deletes the volume when it removes the Pod from the node. All containers in the Pod share it, so a sidecar and a main container can exchange files.
 
 ```yaml
 volumes:
@@ -25,28 +17,18 @@ volumeMounts:
     mountPath: /cache
 ```
 
-Survives container *restarts* within the same Pod (the volume isn't
-recreated, only the container process is) but not Pod deletion/rescheduling.
+The volume survives a container restart, because only the container process restarts. It does not survive Pod deletion or rescheduling.
 
-**`hostPath`** — mounts a path from the *node's* filesystem directly into
-the Pod. Useful for node-level agents (log collectors, CNI plugins) that
-need access to host state; a poor choice for application data, because the
-Pod is now implicitly pinned to whatever happens to be on that specific
-node — there's no portability, and most clusters restrict it via policy for
-security reasons (a Pod with hostPath access can often read/write
-arbitrary host files).
+### `hostPath` mounts a node directory
 
-**The PV/PVC model** — the abstraction for storage that must outlive a
-Pod:
+`hostPath` mounts a path from the filesystem of the node into the Pod. Node-level agents, such as log collectors and CNI plugins, use it to read host state. It is a poor choice for application data, because the Pod depends on the contents of one node. Most clusters restrict `hostPath` by policy, because a Pod with it can often read and write any host file.
 
-- **PersistentVolume (PV)** — a piece of real storage (an EBS volume, an
-  NFS export, a Ceph RBD image) represented as a cluster-level object. Admins
-  either provision these manually, or (more commonly) a **StorageClass**
-  provisions them **dynamically**, on demand, when a claim asks for one.
-- **PersistentVolumeClaim (PVC)** — a Pod-facing *request* for storage:
-  "give me 10Gi, ReadWriteOnce, from the `standard` class." The claim binds
-  to a matching PV (existing or dynamically created); the Pod mounts the
-  claim, never the PV directly.
+### A PVC requests storage, a PV is the storage
+
+The PV/PVC model gives storage that outlives a Pod.
+
+- A **PersistentVolume (PV)** is a cluster object for real storage: an EBS volume, an NFS export or a Ceph RBD image. An admin creates it by hand, or a **StorageClass** provisions it dynamically when a claim asks.
+- A **PersistentVolumeClaim (PVC)** is a request for storage, for example "10Gi, `ReadWriteOnce`, class `standard`". The claim binds to a matching PV. The Pod mounts the claim, never the PV.
 
 ```yaml
 apiVersion: v1
@@ -72,88 +54,50 @@ volumeMounts:
     mountPath: /data
 ```
 
-This indirection is the entire point: your Pod spec says "mount
-`data-pvc`" — completely portable across a laptop cluster (where the
-`standard` class might be `hostPath`-backed), a cloud cluster (where it's
-EBS/PD-backed), and an on-prem cluster (where it's Ceph-backed). Nothing in
-the Pod spec changes.
+The Pod spec stays the same on every cluster. On a laptop, `standard` can use `hostPath`. In a cloud, it can use EBS or PD. On premises, it can use Ceph. Docker named volumes give the same "mount by name" use, but each one belongs to one Docker host.
 
-**`accessModes`** — what the underlying storage supports, not what you
-want:
+### Access modes state what the storage supports
 
 | Mode | Meaning |
 |---|---|
-| `ReadWriteOnce` (RWO) | mountable read-write by a single node at a time (most block storage — EBS, GCE PD) |
-| `ReadOnlyMany` (ROX) | mountable read-only by many nodes |
-| `ReadWriteMany` (RWX) | mountable read-write by many nodes (needs a network filesystem — NFS, EFS, Filestore) |
-| `ReadWriteOncePod` (RWOP) | read-write by a single **Pod** (stricter than RWO, which allows multiple Pods on the same node) |
+| `ReadWriteOnce` (RWO) | Read-write by one node at a time. Most block storage, such as EBS and GCE PD. |
+| `ReadOnlyMany` (ROX) | Read-only by many nodes. |
+| `ReadWriteMany` (RWX) | Read-write by many nodes. It needs a network filesystem, such as NFS, EFS or Filestore. |
+| `ReadWriteOncePod` (RWOP) | Read-write by one Pod. RWO allows many Pods on the same node. |
 
-Most cloud block storage is RWO-only — this is why a Deployment with
-`replicas > 1` sharing one PVC on EBS-backed storage will fail to schedule
-past the first replica; RWX (NFS/EFS) or per-replica claims (StatefulSets,
-next lesson) are the fixes.
+Most cloud block storage supports only RWO. A Deployment with `replicas > 1` that shares one EBS-backed PVC cannot schedule replicas on other nodes. Use RWX storage, or one claim per replica with a StatefulSet.
 
-**Reclaim policy** — what happens to the underlying storage when its PVC is
-deleted:
+### The reclaim policy decides what happens to the data
 
-- `Delete` (the usual default for dynamically-provisioned volumes) — the PV
-  *and* the backing storage (the actual EBS volume, etc.) are deleted.
-- `Retain` — the PV object and backing storage survive PVC deletion, but the
-  PV becomes `Released` and won't automatically bind to a new claim until
-  an admin manually intervenes. Use this for anything where accidental PVC
-  deletion must not mean data loss.
+The reclaim policy acts when you delete the PVC:
 
-## vs other tools
+- `Delete` is the usual default for dynamically provisioned volumes. Kubernetes deletes the PV and the backing storage, such as the EBS volume.
+- `Retain` keeps the PV and the backing storage. The PV becomes `Released` and does not bind to a new claim until an admin acts.
 
-| | Kubernetes PV/PVC | Docker named volumes | Cloud-native disk (raw EBS) |
-|---|---|---|---|
-| Provisioning | Dynamic, via StorageClass | Manual (`docker volume create`) | Manual, or via IaC |
-| Portability across environments | Yes — same PVC spec, different backing StorageClass | No — tied to the Docker host | No — tied to the cloud provider |
-| Reclaim behavior | Configurable (`Delete`/`Retain`) | Manual (`docker volume rm`) | Manual |
-
-The PV/PVC split exists precisely to give you Docker-named-volume-like
-ergonomics ("just mount `data-pvc`") while the actual backing implementation
-is swappable per cluster/environment.
+Use `Retain` for data that must survive an accidental PVC deletion.
 
 ## Watch out
 
-- **A PVC stuck `Pending` forever** usually means no StorageClass matches,
-  or (on a cluster with only RWO storage) two Pods are trying to mount the
-  same PVC RWO on different nodes simultaneously.
-- **`emptyDir` is not persistent** — a common mistake is treating it as
-  durable storage; it vanishes the moment the Pod is deleted or rescheduled
-  to another node.
-- **Reclaim policy is set on the PV, not the PVC** — if your StorageClass
-  defaults to `Delete` and that's wrong for your data, you must override
-  `reclaimPolicy` on the StorageClass (or the resulting PV) before, not
-  after, you need it.
-- **`hostPath` breaks Pod portability** — a Pod using it can only run
-  correctly on nodes that actually have that path populated, defeating the
-  scheduler's freedom to place it anywhere.
+- A PVC stays `Pending` when no StorageClass matches. Check the `storageClassName`.
+- Two Pods on different nodes cannot mount one RWO PVC. The second Pod does not start.
+- `emptyDir` is not durable. Its data goes when you delete the Pod or it moves to another node.
+- The reclaim policy is on the PV, not the PVC. Set `reclaimPolicy` on the StorageClass before you need it.
+- `hostPath` breaks portability. The Pod works only on nodes that have that path.
 
 ## The task
 
-Produce two YAML documents separated by `---`.
+Write two YAML documents in `stub.yaml`, separated by a `---` line.
 
-**Document 1** — a PersistentVolumeClaim for durable app data:
-
-- `apiVersion: v1`, `kind: PersistentVolumeClaim`
-- `metadata.name: data-pvc`
-- `spec.accessModes`: `[ReadWriteOnce]`
-- `spec.storageClassName: standard`
-- `spec.resources.requests.storage: 10Gi`
-
-**Document 2** — a Pod using both `emptyDir` scratch space and the PVC
-above:
-
-- `apiVersion: v1`, `kind: Pod`, `metadata.name: app`
-- one container: `name: app`, `image: app:1.0`
-- `volumeMounts` with two entries: `name: cache`, `mountPath: /cache`; and
-  `name: data`, `mountPath: /data`
-- `spec.volumes` with two entries: `name: cache` with `emptyDir: {}`; and
-  `name: data` with `persistentVolumeClaim.claimName: data-pvc`
-
-Expected shape:
+1. Document 1 is a PersistentVolumeClaim named `data-pvc`.
+2. Its `accessModes` list has one entry: `ReadWriteOnce`.
+3. Its `storageClassName` is `standard`.
+4. It requests `storage: 10Gi`.
+5. Document 2 is a Pod named `app`.
+6. Its container `app` uses `image: app:1.0`.
+7. The container mounts volume `cache` at `/cache`.
+8. The container mounts volume `data` at `/data`.
+9. Volume `cache` is `emptyDir: {}`.
+10. Volume `data` uses the claim `data-pvc`.
 
 ```yaml
 apiVersion: v1
@@ -167,7 +111,6 @@ spec:
   resources:
     requests:
       storage: 10Gi
-
 ---
 apiVersion: v1
 kind: Pod

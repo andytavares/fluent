@@ -1,47 +1,40 @@
-# Step Dependencies and Gates
+## What you build
 
-## What you'll learn
-
-Builds on **pipeline basics** and **agents and targeting**: you now know
-`key` uniquely names a step. This concept is about what you do with that
-key — controlling *order* and inserting *human approval* into a pipeline,
-instead of relying on Buildkite's default (parallel-everything) scheduling.
+You write a five-step pipeline that orders its steps with `depends_on` and pauses for a person at a `block` step. You use each step's `key` to control order and add human approval. This lesson builds on **Pipeline Basics** and **Agents and Targeting**.
 
 ## Key concepts
 
-**Default scheduling: everything runs at once.** Unless told otherwise,
-Buildkite tries to run every step in a build simultaneously, subject only to
-agent availability. This surprises people coming from tools that default to
-sequential jobs. You must opt in to ordering.
+### Steps run in parallel by default
 
-**Implicit ordering with `wait`.** A `wait` step is a barrier: every step
-above it must finish (and pass) before any step below it starts.
+Buildkite tries to run every step in a build at the same time. Only agent availability limits it. Tools that run jobs in sequence by default work the other way. In Buildkite, you must ask for order.
+
+### A `wait` step is a barrier
+
+Every step above a `wait` must finish and pass before any step below it starts. `wait: ~` (YAML null) is the standalone form.
 
 ```yaml
 steps:
   - command: "make build"
   - wait: ~
-  - command: "make deploy"   # only runs after build passes
+  # runs only after build passes
+  - command: "make deploy"
 ```
 
-`wait: ~` (YAML null) is the standalone form. By default a failed step
-*upstream* of a `wait` halts everything after it — add
-`continue_on_failure: true` to let the pipeline proceed past the wait even
-if something earlier failed (useful for "always run cleanup/notify steps"):
+By default, a failed step above a `wait` stops all steps after it. Add `continue_on_failure: true` to go past the `wait` after a failure. Use it for cleanup or notify steps that must always run.
 
 ```yaml
 steps:
-  - command: "make test"      # suppose this fails
+  # suppose this fails
+  - command: "make test"
   - wait: ~
     continue_on_failure: true
-  - command: "./notify-slack.sh"   # still runs
+  # still runs
+  - command: "./notify-slack.sh"
 ```
 
-**Explicit ordering with `depends_on` + `key`.** `wait` is coarse — it's an
-all-or-nothing gate across the *entire* build. `depends_on` lets a step name
-exactly which keyed step(s) it needs, which unlocks fine-grained DAGs:
-steps with no shared dependency run in parallel automatically, without a
-`wait` between them.
+### `depends_on` names the exact steps a step needs
+
+A `wait` gates the whole build. `depends_on` names the keyed steps that one step needs. Steps with no shared dependency then run in parallel, with no `wait` between them.
 
 ```yaml
 steps:
@@ -54,28 +47,26 @@ steps:
     command: "make test-unit"
     depends_on: "lint"
 
+  # same dependency as unit-tests:
+  # both run in parallel after lint
   - label: "Integration tests"
     key: "integration-tests"
     command: "make test-integration"
-    depends_on: "lint"          # same dependency as unit-tests
-                                 # → these two run in PARALLEL after lint
+    depends_on: "lint"
 ```
 
-`depends_on` accepts a single key, a list of keys, and can be attached to
-any step type (`command`, `block`, `input`, `wait`, `trigger`). A step with
-an explicit `depends_on` runs as soon as its named dependencies pass — it
-does **not** implicitly wait on any `wait` step positioned before it in the
-YAML, unless that `wait` step is itself named in `depends_on`.
+`depends_on` takes one key or a list of keys. Any step type can have it: `command`, `block`, `input`, `wait` and `trigger`.
 
-**`block` vs `input` — manual gates.** Both pause the build for a human.
-The difference is *what* they imply about ordering:
+A step with `depends_on` starts as soon as the named steps pass. It does not wait for a `wait` step above it in the YAML, unless `depends_on` names that `wait` step.
 
-- **`block`** creates *implicit* dependencies on the steps immediately
-  around it in the YAML — like a `wait`, but requiring a person (or API
-  call) to click "Continue" instead of just steps passing.
-- **`input`** collects data (via `fields`) *without* implying any ordering
-  dependency on surrounding steps — use it purely to gather information,
-  not to gate.
+This model is close to a build graph, as in Bazel or Nx. Do not put a `wait` between steps that do not depend on each other.
+
+### `block` gates order, and `input` only collects data
+
+Both step types pause the build for a person. They differ in what they do to order:
+
+- `block` depends on the steps around it in the YAML, like a `wait`. A person or an API call must click "Continue".
+- `input` collects data with `fields`. It adds no dependency on the steps around it. Use it to gather data, not to gate.
 
 ```yaml
 steps:
@@ -85,7 +76,8 @@ steps:
     fields:
       - text: "Release name"
         key: "release-name"
-    blocked_state: "failed"       # build shows red while paused, not green
+    # build shows red while paused
+    blocked_state: "failed"
     depends_on:
       - "unit-tests"
       - "integration-tests"
@@ -96,56 +88,33 @@ steps:
     depends_on: "deploy-gate"
 ```
 
-`blocked_state` controls how the paused build appears in external systems
-(like a GitHub status check) while waiting — `passed` (default), `failed`,
-or `running`. Setting it to `failed` is common for deploy gates so a
-paused-for-approval PR doesn't show as green in GitHub.
+### `blocked_state` sets the status while paused
 
-## vs other tools
-
-| | Buildkite | GitHub Actions | Jenkins |
-|---|---|---|---|
-| Default step order | Parallel unless declared otherwise | Sequential within a job unless matrix'd | Sequential unless parallel stages used |
-| Ordering primitive | `wait` (coarse) / `depends_on`+`key` (fine DAG) | `needs:` between jobs | `stage`/`parallel` blocks |
-| Manual approval | `block` / `input` step types, in-pipeline | `environment` protection rules, external to the YAML | `input` step (Pipeline DSL) |
-
-Buildkite's `depends_on` DAG model is closer to a build graph (like Bazel or
-Nx) than to the flat sequential-stage model many CI tools default to — take
-advantage of it: steps with no shared dependency should simply not declare
-one, rather than being artificially serialized behind a `wait`.
+`blocked_state` sets how a paused build shows in external systems, such as a GitHub status check. The values are `passed` (the default), `failed` and `running`. Deploy gates often use `failed`, so a PR that waits for approval does not show green.
 
 ## Watch out
 
-- **`depends_on` bypasses `wait`/`block` unless explicitly named.** If a
-  step has `depends_on: "lint"` and there's an unrelated `wait` step above
-  it in the YAML, that step does not wait for the `wait` step — only for
-  `lint`. This trips people who assume position in the file matters once
-  `depends_on` is present.
-- **A missing `key` on a dependency target is a silent typo risk** —
-  `depends_on: "linnt"` (typo) simply never resolves to a step; treat key
-  names as an API, not a label.
-- **`block` steps requiring `fields` can only be defined in `pipeline.yml`**,
-  not through the web UI form editor.
+- `depends_on` skips `wait` and `block` steps it does not name. Position in the file then has no effect.
+- A typo in `depends_on`, such as `"linnt"`, never resolves to a step. Treat keys as an API.
+- You can define a `block` step with `fields` only in `pipeline.yml`, not in the web UI form editor.
+- A failed step above a `wait` stops the steps below it. Use `continue_on_failure: true` for steps that must always run.
 
 ## The task
 
-Write a `pipeline.yml` with five steps, in this order, forming this DAG:
-`lint` → (`unit-tests`, `integration-tests` in parallel) → `deploy-gate`
-(block) → `deploy`.
+Write a pipeline in `stub.yaml` with five steps, in this order. They form this graph:
 
-1. **Lint** — `label: ":mag: Lint"`, `key: "lint"`, `command: "make lint"`.
-2. **Unit Tests** — `label: ":test_tube: Unit Tests"`, `key: "unit-tests"`,
-   `command: "make test-unit"`, `depends_on: "lint"`.
-3. **Integration Tests** — `label: ":test_tube: Integration Tests"`,
-   `key: "integration-tests"`, `command: "make test-integration"`,
-   `depends_on: "lint"`.
-4. **Deploy gate** — a `block` step: `block: ":rocket: Deploy to production?"`,
-   `key: "deploy-gate"`, `blocked_state: "failed"`,
-   `depends_on: ["unit-tests", "integration-tests"]` (a list — it needs both).
-5. **Deploy** — `label: ":shipit: Deploy"`, `key: "deploy"`,
-   `command: "make deploy"`, `depends_on: "deploy-gate"`.
+```
+lint -> unit-tests, integration-tests
+     -> deploy-gate (block) -> deploy
+```
 
-Expected shape:
+1. Lint: `label: ":mag: Lint"`, `key: "lint"`, `command: "make lint"`.
+2. Unit Tests: `label: ":test_tube: Unit Tests"`, `key: "unit-tests"`, `command: "make test-unit"`, `depends_on: "lint"`.
+3. Integration Tests: `label: ":test_tube: Integration Tests"`, `key: "integration-tests"`, `command: "make test-integration"`, `depends_on: "lint"`.
+4. Deploy gate: a `block` step with `block: ":rocket: Deploy to production?"`, `key: "deploy-gate"` and `blocked_state: "failed"`.
+5. Deploy: `label: ":shipit: Deploy"`, `key: "deploy"`, `command: "make deploy"`, `depends_on: "deploy-gate"`.
+
+The deploy gate needs both test steps. Write its `depends_on` as a YAML list with one quoted key per line. `depends_on: "lint"` appears exactly twice.
 
 ```yaml
 steps:

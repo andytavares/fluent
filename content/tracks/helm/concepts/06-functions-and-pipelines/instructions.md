@@ -1,116 +1,135 @@
-# Functions & Pipelines
+## What you build
 
-## What you'll learn
-
-Helm templates have access to Go's built-in template functions plus the entire [Sprig](http://masterminds.github.io/sprig/) library — over 70 additional functions. The pipeline operator `|` chains them left-to-right, passing the output of each function as the last argument to the next. This concept covers the functions you'll use in every real chart.
+You write a Secret template that builds its name with `printf`, fails on missing credentials with `required` and encodes data with `b64enc`. This lesson builds on **Named Templates**.
 
 ## Key concepts
 
-**The pipeline `|`**
+### Helm has Go and Sprig functions
+
+Helm templates have the Go built-in template functions and the [Sprig](http://masterminds.github.io/sprig/) library, with more than 70 more functions. This lesson covers the functions that real charts use most.
+
+### `|` chains functions from left to right
+
+The pipe passes the output of each function as the last argument of the next one. It replaces deeply nested function calls.
 
 ```yaml
-{{ .Values.image.tag | default "latest" | quote }}
+{{ .Values.image.tag
+   | default "latest" | quote }}
 ```
 
-Reads left to right: take `.Values.image.tag`, pass it to `default "latest"` (returns `"latest"` if the value is falsy), then pass the result to `quote` (wraps in double quotes). The pipeline replaces the need for deeply nested function calls.
+This takes `.Values.image.tag` and gives it to `default "latest"`, which returns `"latest"` for a false value. Then `quote` puts the result in double quotes.
 
-**String functions:**
+### String functions change text
 
 ```yaml
-{{ .Values.name | upper }}          # "MYAPP"
-{{ .Values.name | lower }}          # "myapp"
-{{ .Values.name | title }}          # "Myapp"
-{{ .Values.name | replace "-" "_" }} # "my_app"
-{{ .Values.name | trunc 63 | trimSuffix "-" }}  # truncate safely
-{{ .Values.name | quote }}          # "myapp"  — always use for string values in YAML
-{{ .Values.name | b64enc }}         # base64 encode (useful for Secrets)
+# Input: "my-app"
+# "MY-APP"
+{{ .Values.name | upper }}
+# "my-app"
+{{ .Values.name | lower }}
+# "My-App"
+{{ .Values.name | title }}
+# "my_app"
+{{ .Values.name | replace "-" "_" }}
+# Cut to 63 chars, no trailing "-"
+{{ .Values.name | trunc 63
+   | trimSuffix "-" }}
+# "my-app" with the quotes: use for
+# string values in YAML
+{{ .Values.name | quote }}
+# Base64, for Secrets
+{{ .Values.name | b64enc }}
 ```
 
-**`indent` and `nindent`** — the most-used formatting functions:
+### `indent` and `nindent` format blocks
+
+`indent N` adds N spaces to every line. `nindent N` adds a newline first. Use `nindent` after `{{-`.
 
 ```yaml
-# indent N — adds N spaces to every line (no leading newline)
 data:
   config: |
-    {{ .Files.Get "app.conf" | indent 4 }}
+    {{- .Files.Get "app.conf"
+        | nindent 4 }}
 
-# nindent N — prepends a newline then indents (correct after {{-)
 spec:
-  {{- toYaml .Values.affinity | nindent 2 }}
+  {{- toYaml .Values.affinity
+      | nindent 2 }}
 ```
 
-**`toYaml` and `fromYaml`** — serialize/deserialize Go values to/from YAML strings. `toYaml` is essential for passing arbitrary structured values through templates:
+### `toYaml` passes structured values through
+
+`toYaml` turns a Go value into a YAML string, and `fromYaml` does the reverse. With `toYaml`, the operator can put any `resources:` map in the values file. The chart author does not hardcode every field.
 
 ```yaml
 resources:
-  {{- toYaml .Values.resources | nindent 2 }}
+  {{- toYaml .Values.resources
+      | nindent 2 }}
 ```
 
-This pattern lets operators put an arbitrary `resources:` map in their values file without the chart author hardcoding every possible field.
+### `required` stops the render on a missing value
 
-**`required`** — fails the render with a clear message if a value is missing:
+Use `required` for values that have no good default. The error shows at `helm install` time, not at pod start.
 
 ```yaml
-image: {{ required "image.repository is required" .Values.image.repository }}
+image: {{ required
+  "image.repository is required"
+  .Values.image.repository }}
 ```
 
-Use `required` on values that have no sensible default and must be set by the operator. The error message surfaces at `helm install` time, not at pod start.
+### `tpl` renders a string as a template
 
-**`tpl`** — renders a string as a template (double-evaluation):
+`tpl` lets the operator put template expressions in values files. That is powerful, but it makes charts harder to read, so use it rarely. It is the right tool when a value from an external configuration needs the release name.
 
 ```yaml
 # values.yaml
-fullnameOverride: "{{ .Release.Name }}-custom"
+fullnameOverride: "{{ .Release.Name }}-x"
 
 # template
 name: {{ tpl .Values.fullnameOverride . }}
 ```
 
-Use `tpl` sparingly — it lets operators embed template expressions in values files, which is powerful but makes charts harder to reason about. It's the right tool when you need the release name inside a value that comes from an external config.
+### `lookup` reads the live cluster
 
-**`lookup`** — queries the live cluster state (covered in production patterns):
+The Production Patterns concept covers `lookup`.
 
 ```yaml
-{{- $secret := lookup "v1" "Secret" .Release.Namespace "my-secret" -}}
+{{- $secret := lookup "v1" "Secret"
+    .Release.Namespace "my-secret" -}}
 ```
 
-## vs other tools
+### Helm functions fail at render time
 
-Terraform has built-in functions (`format`, `toset`, `merge`, etc.) and a similar pipeline feeling via function composition. The difference is that Helm functions operate on the string output of templates, while Terraform functions operate on typed values in a type-safe expression language. In Helm, type errors (like calling `upper` on an integer) fail at render time with opaque errors — use `| toString` to coerce before piping to string functions.
-
-Kustomize has no functions. Period.
+Terraform functions run on typed values in a type-safe language, while Kustomize has no functions. In Helm, a type error, like `upper` on an integer, fails the render with an unclear error.
 
 ## Watch out
 
-- **`required` only guards against missing/empty values — it doesn't validate type or format.** `required "db.host is required" .Values.db.host` passes as long as `db.host` is any non-empty string; it won't catch a typo'd hostname. Combine with `values.schema.json` (covered in production patterns) for real validation.
-- **`b64enc` operates on the string, not the YAML-decoded value.** `.Values.db.password | b64enc` encodes whatever string `password` holds — if `password: "12345"` was written unquoted and YAML parsed it as a number, piping a number into `b64enc` still works (Sprig coerces it to a string first), but a nested map or list passed to `b64enc` errors, because there's no sensible string form.
-- **Pipeline order matters and reads left-to-right, but nesting reads inside-out.** `{{ .Values.db.name | default "appdb" | b64enc | quote }}` is *not* the same as `{{ quote (b64enc (default "appdb" .Values.db.name)) }}` written differently — they're the same computation, but the pipeline form is idiomatic Helm and the nested-call form is rare outside of Sprig's own docs. Prefer pipelines; they're what every real chart uses.
-- **`toString` matters more than it looks.** Piping a Go `int` or `bool` value into a function that expects a string (like `upper` or `b64enc`) sometimes works because Sprig auto-converts, but relying on it is fragile across Sprig versions — pipe through `toString` explicitly when the source value's type isn't guaranteed to be a string.
+- `required` checks only for a missing or empty value. It does not check the type or the format.
+- `required` passes any non-empty `db.host`, with a typo or not. Add `values.schema.json` for real validation.
+- `b64enc` and `upper` take a string. An integer fails with `wrong type for value; expected string`.
+- YAML reads an unquoted `password: 12345` as a number. Quote it in `values.yaml`.
+- Pipe through `toString` when you cannot be sure the source value is a string.
+- A map or a list has no string form, so `b64enc` fails on it.
+- The pipeline reads left to right. A nested call reads inside out.
+- `.Values.db.name | default "appdb" | b64enc | quote` equals `quote (b64enc (default "appdb" .Values.db.name))`. Real charts use the pipeline form.
 
 ## The task
 
-Write a `templates/secret.yaml` that demonstrates the key functions:
+Write `templates/secret.yaml` in `stub.yaml`. The Secret holds database credentials. It keeps `type: Opaque`.
 
-1. `metadata.name`: use `printf` to combine `.Release.Name` and `"db-credentials"`, then pipe through `trunc 63 | trimSuffix "-"`
-2. `metadata.namespace`: use `.Release.Namespace`
-3. In `data`, store a `DB_HOST` key: take `.Values.db.host`, use `required` with the message `"db.host is required"`, then `b64enc`
-4. Store a `DB_PASSWORD` key: take `.Values.db.password`, use `required "db.password is required"`, then `b64enc`
-5. Store a `DB_NAME` key: take `.Values.db.name | default "appdb"` then `b64enc | quote`
-6. In `metadata.labels`, apply a label `environment` set to `.Values.global.env | default "production" | lower`
+1. Set `metadata.name` to `printf "%s-db-credentials" .Release.Name | trunc 63 | trimSuffix "-"`.
+2. Set `metadata.namespace` to `{{ .Release.Namespace }}`.
+3. Set the label `environment` to `.Values.global.env | default "production" | lower`.
+4. Set `DB_HOST` to `required "db.host is required" .Values.db.host | b64enc`.
+5. Set `DB_PASSWORD` to `required "db.password is required" .Values.db.password | b64enc`.
+6. Set `DB_NAME` to `.Values.db.name | default "appdb" | b64enc | quote`.
+7. Remove every `TODO` comment.
 
-For example, given a release named `myapp` and this `values.yaml`:
-
-```yaml
-db:
-  host: "db.internal"
-  password: "s3cr3t"
-global:
-  env: "PRODUCTION"
-```
-
-(note: `db.name` is intentionally omitted), the rendered Secret is:
+`db.name` is optional and falls back to `appdb`. If `db.host` or `db.password` is missing, the render fails with the `required` message. The label is lowercase for any input case.
 
 ```yaml
+# Release myapp. Values: db.host
+# "db.internal", db.password "s3cr3t",
+# global.env "PRODUCTION". No db.name.
 apiVersion: v1
 kind: Secret
 metadata:
@@ -120,9 +139,13 @@ metadata:
     environment: production
 type: Opaque
 data:
+  # base64 of "db.internal"
   DB_HOST: ZGIuaW50ZXJuYWw=
+  # base64 of "s3cr3t"
   DB_PASSWORD: czNjcjN0
+  # base64 of "appdb"
   DB_NAME: "YXBwZGI="
-```
 
-`DB_HOST` and `DB_PASSWORD` are the base64 encodings of `db.internal` and `s3cr3t`; `DB_NAME` falls back to `appdb` (base64: `YXBwZGI=`) because `db.name` wasn't set. `environment` is lowercased from `"PRODUCTION"` to `production` regardless of how the operator capitalized it in `values.yaml`. If `db.host` or `db.password` is missing entirely, the chart must fail to render with the exact `required` message rather than producing a Secret with an empty credential.
+# No db.host: the render fails with
+# db.host is required
+```

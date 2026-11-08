@@ -1,33 +1,26 @@
-# Dynamic Pipelines
+## What you build
 
-## What you'll learn
-
-Builds on **conditionals**: `if:` can only decide, at upload time, whether
-a *known* step runs. Dynamic pipelines answer a different question — "what
-steps should exist at all?" — computed by a script, at build time. This is
-Buildkite's superpower over static-YAML-only CI systems, and the mechanism
-every advanced pattern in this track (monorepos, per-step-outcome
-branching, generated matrices) ultimately relies on.
+You write a bootstrap pipeline with one step that runs a generator script, plus a commented example of what the script prints. `if:` decides at upload if a known step runs. A dynamic pipeline decides which steps exist at all, with a script at build time. This lesson builds on **Conditionals**.
 
 ## Key concepts
 
-**`buildkite-agent pipeline upload` — inject new steps into the running
-build.** Any command step can run a script that prints YAML (or JSON) to
-stdout and pipes it into this command. The uploaded steps are inserted into
-the *same build*, immediately after the uploading step, and scheduled like
-any other step — different generated steps can still land on different
-agents:
+### `buildkite-agent pipeline upload` adds steps to the running build
+
+Any command step can run a script that prints YAML or JSON to stdout and pipes it into this command. Buildkite inserts the uploaded steps into the same build, right after the uploading step. It schedules them like any other step, so they can land on different agents.
 
 ```yaml
 steps:
   - label: ":pipeline: Generate pipeline"
-    command: ".buildkite/generate-pipeline.sh | buildkite-agent pipeline upload"
+    command: >-
+      .buildkite/generate-pipeline.sh |
+      buildkite-agent pipeline upload
 ```
 
-**The bootstrap-to-generate pattern.** The most common shape: your
-committed `pipeline.yml` contains *only* this one step. Everything else is
-computed by a script, in any language that can print YAML to stdout
-(Bash, Python, Ruby, Go — whatever your team already uses):
+The `>-` folds the two lines into one command string. Monorepos, branching on a step's outcome and generated matrices all depend on this mechanism.
+
+### The bootstrap step generates everything else
+
+In the most common shape, your committed `pipeline.yml` has only this one step. A script computes all other steps. Use any language that can print YAML to stdout: Bash, Python, Ruby or Go.
 
 ```bash
 #!/bin/bash
@@ -44,19 +37,17 @@ YAML
 done
 ```
 
-Add a new `tests/<suite>/` directory and the next build picks it up with
-zero `pipeline.yml` changes — the pipeline definition tracks your
-repository's actual structure instead of drifting from it.
+Add a new `tests/<suite>/` directory, and the next build runs it with no `pipeline.yml` change. The pipeline follows the repository's real structure and does not drift from it.
 
-**Conditional step injection at runtime.** Because the generator is a real
-script, it can make decisions `if:` cannot — like branching on another
-step's *result*, which static `if:` expressions are structurally
-forbidden from doing (they're evaluated at upload time, before any step
-runs):
+### A generator can branch on another step's result
+
+The generator is a real script, so it can decide what `if:` cannot. `if:` runs at upload, before any step runs, so it cannot read another step's result. A script can.
 
 ```bash
-if [ "$(buildkite-agent step get "outcome" --step "validation-check")" = "passed" ]; then
-  cat <<YAML | buildkite-agent pipeline upload
+outcome=$(buildkite-agent step get \
+  "outcome" --step "validation-check")
+if [ "$outcome" = "passed" ]; then
+  buildkite-agent pipeline upload <<YAML
 steps:
   - label: "Run regression suite"
     command: ./scripts/regression_tests.sh
@@ -64,15 +55,16 @@ YAML
 fi
 ```
 
-**Monorepo diff-based pipelines.** In a monorepo, a generator script can
-inspect which files changed (`git diff` against the target branch, or the
-`if_changed` step attribute for the simple single-service case) and emit
-steps only for the affected services — instead of running every service's
-full pipeline on every commit:
+### A monorepo generator tests only changed services
+
+In a monorepo, a generator can check which files changed with `git diff` against the target branch. It then adds steps only for the affected services. For one service, the `if_changed` step attribute is simpler.
 
 ```bash
-if git diff --name-only "$BUILDKITE_COMMIT" origin/main | grep -q '^services/api/'; then
-  cat <<YAML | buildkite-agent pipeline upload
+changed=$(git diff --name-only \
+  "$BUILDKITE_COMMIT" origin/main)
+if echo "$changed" |
+  grep -q '^services/api/'; then
+  buildkite-agent pipeline upload <<YAML
 steps:
   - label: ":test_tube: Test api service"
     command: "make -C services/api test"
@@ -80,58 +72,35 @@ YAML
 fi
 ```
 
-## vs other tools
-
-| | Buildkite | GitHub Actions | GitLab CI |
-|---|---|---|---|
-| Generate steps at runtime | `buildkite-agent pipeline upload` from any script | Not natively — requires a separate workflow-dispatch trick or reusable workflows with static inputs | `dynamic child pipelines` via a generated `.gitlab-ci.yml` artifact + `trigger: include:` |
-| Language for generation | Any language producing YAML/JSON | N/A | Any language producing YAML |
-| Injected into the current build | Yes — same build, immediately | N/A | Yes, as a child pipeline |
-
-GitLab's dynamic child pipelines are the closest analog — both treat "the
-pipeline is a program's output" as a first-class pattern. GitHub Actions
-has no equivalent primitive; teams simulate it with matrix strategies
-computed by an earlier job, which is far more constrained than arbitrary
-generated YAML.
+GitLab's dynamic child pipelines are the closest match. GitHub Actions has no equal: teams use a matrix computed by an earlier job, which is much more limited.
 
 ## Watch out
 
-- **Environment variable interpolation happens at upload time, on the
-  agent, before generated steps run.** `$FOO` in generated YAML is
-  substituted immediately by the uploading agent; escape it (`$$FOO`) or
-  pass `--no-interpolation` if you need the *step's own* `env:` to resolve
-  it later instead.
-- **Multiple uploads from one step insert in reverse order** by default —
-  if a single script calls `pipeline upload` more than once, don't assume
-  the first call's steps appear first; use `depends_on` if order matters.
-- **This is not a substitute for `if:`.** If a step's exclusion depends
-  only on static build metadata (branch, tag, message), a plain `if:`
-  expression is simpler and doesn't require a script; reach for dynamic
-  generation when the decision needs a live git diff, another step's
-  outcome, or external state.
+- The uploading agent replaces `$FOO` in generated YAML at upload time. Write `$$FOO` to let the step resolve it later.
+- `--no-interpolation` also turns off upload-time replacement for the whole upload.
+- Several uploads from one step insert in reverse order by default. Use `depends_on` if order matters.
+- Do not use a generator where `if:` works. Branch, tag and message conditions need no script.
+- Use a generator when the decision needs a live git diff, another step's outcome or external state.
 
 ## The task
 
-Write a `pipeline.yml` implementing the bootstrap-to-generate pattern, with
-one real step and a commented example of the YAML a generator script would
-emit:
+Write a bootstrap pipeline in `stub.yaml`. It has one real step and a commented example of the generator's output.
 
-1. A single command step: `label: ":pipeline: Generate pipeline"`,
-   `key: "generate"`, `command: ".buildkite/generate-pipeline.sh | buildkite-agent pipeline upload"`.
-2. Below it, as YAML comments (each line starting with `#`), include an
-   example of the pipeline the generator script produces at runtime: a
-   `# steps:` block with a test step and a conditional deploy step guarded
-   by `if: build.branch == "main"`.
-
-Expected shape:
+1. Add one command step: `label: ":pipeline: Generate pipeline"`, `key: "generate"`.
+2. Its command runs `.buildkite/generate-pipeline.sh` and pipes the output to `buildkite-agent pipeline upload`.
+3. Below the step, add YAML comments that show the generated pipeline. Start each comment line with `#`.
+4. The comment has a `# steps:` line, a `":test_tube: Test unit"` step and a `":rocket: Deploy"` step.
+5. Guard the deploy step with `if: build.branch == "main"`.
 
 ```yaml
 steps:
   - label: ":pipeline: Generate pipeline"
     key: "generate"
-    command: ".buildkite/generate-pipeline.sh | buildkite-agent pipeline upload"
+    command: >-
+      .buildkite/generate-pipeline.sh |
+      buildkite-agent pipeline upload
 
-# --- Example: generate-pipeline.sh emits YAML like this at runtime ---
+# Example output of generate-pipeline.sh:
 # steps:
 #   - label: ":test_tube: Test unit"
 #     command: "make test SUITE=unit"

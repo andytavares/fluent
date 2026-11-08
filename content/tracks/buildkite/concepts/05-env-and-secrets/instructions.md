@@ -1,18 +1,12 @@
-# Env and Secrets
+## What you build
 
-## What you'll learn
-
-Builds on **step dependencies and gates**: your pipeline now has a
-meaningful shape. This concept covers the environment every step runs
-in — where variables come from, in what order they're layered, and why
-`pipeline.yml` (which lives in your source repo, gets logged, and is
-visible to anyone who can read the pipeline) is the *wrong* place to put a
-secret, no matter how convenient `env:` looks.
+You write a pipeline that sets non-secret config with `env:` and gets a secret with `secrets:`. You learn where variables come from and in what order they apply. This lesson builds on **Step Dependencies and Gates**.
 
 ## Key concepts
 
-**`env:` at the pipeline level.** A top-level `env:` map applies to every
-step in the build:
+### Pipeline-level `env:` applies to every step
+
+A top-level `env:` map sets variables for every step in the build.
 
 ```yaml
 env:
@@ -20,107 +14,84 @@ env:
   APP_NAME: "webapp"
 
 steps:
-  - command: "npm test"   # sees NODE_ENV=test, APP_NAME=webapp
+  # sees NODE_ENV=test, APP_NAME=webapp
+  - command: "npm test"
 ```
 
-**`env:` at the step level.** A step's own `env:` map is layered on top —
-step-level values win for keys defined at both levels; pipeline-level
-values pass through untouched for any key the step doesn't override:
+### Step-level `env:` wins over pipeline-level `env:`
+
+A step's own `env:` map applies on top of the pipeline map. For a key in both maps, the step value wins. Keys that the step does not set keep their pipeline values.
 
 ```yaml
 steps:
   - label: ":hammer: Build"
     command: "make build"
     env:
-      NODE_ENV: "production"   # this step only sees NODE_ENV=production
+      # this step sees NODE_ENV=production
+      NODE_ENV: "production"
 ```
 
-**Precedence, in increasing priority:** agent-level environment (set by
-whoever configured the machine) → pipeline-level `env:` → step-level `env:`
-→ variables exported by agent hooks that run late in the job lifecycle
-(`pre-command`, etc.). When debugging "why is this variable not what I set
-in `pipeline.yml`," check step-level `env:` and agent hooks before assuming
-the pipeline YAML is wrong.
+### Variables apply in a fixed order
 
-**`BUILDKITE_*` built-ins.** The agent injects dozens of variables into
-every job describing the build itself — no configuration needed:
-`BUILDKITE_BRANCH`, `BUILDKITE_COMMIT`, `BUILDKITE_BUILD_NUMBER`,
-`BUILDKITE_PIPELINE_SLUG`, `BUILDKITE_MESSAGE`, `BUILDKITE_PULL_REQUEST`.
-These are how scripts adapt behavior to the build context without you
-threading data through `env:` yourself:
+From lowest to highest priority:
+
+1. The agent-level environment, set by the person who configured the machine.
+2. Pipeline-level `env:`.
+3. Step-level `env:`.
+4. Variables that agent hooks export late in the job, such as `pre-command`.
+
+If a variable is not what `pipeline.yml` sets, check step-level `env:` and agent hooks first.
+
+### The agent sets `BUILDKITE_*` variables
+
+The agent adds many variables about the build to every job, with no configuration. Examples: `BUILDKITE_BRANCH`, `BUILDKITE_COMMIT`, `BUILDKITE_BUILD_NUMBER`, `BUILDKITE_PIPELINE_SLUG`, `BUILDKITE_MESSAGE` and `BUILDKITE_PULL_REQUEST`. Scripts read them to adapt to the build, and you do not pass that data through `env:`.
 
 ```yaml
 steps:
   - command: |
-      echo "Building commit $BUILDKITE_COMMIT on branch $BUILDKITE_BRANCH"
+      echo "Commit: $BUILDKITE_COMMIT"
+      echo "Branch: $BUILDKITE_BRANCH"
 ```
 
-**Why secrets do not belong in `env:`.** `pipeline.yml` is source code: it's
-committed to git history, visible to anyone with repo read access, and
-rendered in the Buildkite UI's pipeline settings. An `env:` value is also
-echoed into every job's environment and can leak into build logs the moment
-a script does `env` or `set -x`. None of that is acceptable for an API
-token or database password.
+### Secrets do not belong in `env:`
 
-**The right pattern: fetch secrets at runtime, never store them in YAML.**
-Buildkite's `secrets:` step attribute references a secret stored in
-Buildkite's own secret store (or your existing secrets manager) by name,
-injecting it as an environment variable *without* the value ever appearing
-in `pipeline.yml`:
+`pipeline.yml` is source code. Git history keeps it, anyone with repo read access sees it, and the Buildkite UI shows it in pipeline settings. An `env:` value goes into every job's environment. It leaks into build logs when a script runs `env` or `set -x`.
+
+### `secrets:` gets a secret at job start
+
+The `secrets:` step attribute names a secret in Buildkite's secret store or your secrets manager. The agent sets it as an environment variable. The value never appears in `pipeline.yml`.
 
 ```yaml
 steps:
   - label: ":closed_lock_with_key: Deploy"
     command: "make deploy"
     secrets:
-      - API_ACCESS_TOKEN   # value fetched at job start, never in this file
+      # fetched at job start
+      - API_ACCESS_TOKEN
 ```
 
-The equivalent, more explicit pattern for teams using an external secrets
-manager (Vault, AWS Secrets Manager, etc.) is an agent `pre-command` hook,
-or a script step, that fetches the secret and exports it — again, the
-*value* never touches `pipeline.yml`, only the *reference* (a secret name
-or ARN) does.
+With an external secrets manager, such as Vault or AWS Secrets Manager, use an agent `pre-command` hook or a script step. It fetches the secret and exports it. Only the reference, a secret name or ARN, is in `pipeline.yml`.
 
-## vs other tools
-
-| | Buildkite | GitHub Actions | GitLab CI |
-|---|---|---|---|
-| Non-secret config | `env:` (pipeline or step level) | `env:` (workflow, job, or step level) | `variables:` |
-| Secrets | `secrets:` step attribute → Buildkite secret store, or external manager fetched at runtime | Encrypted repo/org secrets, injected via `secrets.NAME` | CI/CD variables marked "Protected"/"Masked" |
-| Where secret values live | Never in `pipeline.yml` | Never in workflow YAML | Never in `.gitlab-ci.yml` |
-
-The pattern is universal across CI systems for a reason: pipeline
-definitions are code, and code is read by more people (and stored in more
-places — caches, forks, logs) than a secret should ever reach.
+GitHub Actions and GitLab CI follow the same rule: secret values never go in the pipeline YAML.
 
 ## Watch out
 
-- **A hardcoded value in `env:` is a secret leak the moment it's committed** —
-  git history is forever, even after you delete the line in a later commit.
-- **`echo $SOME_VAR` in a script prints secrets straight into build logs** —
-  build logs are often more widely readable than the pipeline settings
-  page. Avoid debugging secrets by printing them, even redacted-looking
-  ones (Buildkite's log redaction is best-effort string matching, not a
-  guarantee).
-- **Step-level `env:` silently shadows pipeline-level `env:` for the same
-  key** — if a step behaves unexpectedly, check its own `env:` block before
-  assuming the pipeline-level default applies everywhere.
+- A secret value in `env:` leaks when you commit it. Git history keeps it after you delete the line.
+- `echo $SOME_VAR` prints a secret into the build log. More people can often read logs than pipeline settings.
+- Do not print secrets to debug them. Buildkite's log redaction is best-effort string matching, not a guarantee.
+- Step-level `env:` hides pipeline-level `env:` for the same key. Check the step's own `env:` block first.
 
 ## The task
 
-Write a `pipeline.yml` with a pipeline-level `env:` block and two command
-steps, correctly separating non-secret config from a secret reference:
+Write a pipeline in `stub.yaml`. Keep non-secret config in `env:` and refer to the secret by name only.
 
-1. Pipeline-level `env:` with `NODE_ENV: "test"` and `APP_NAME: "webapp"`.
-2. **Build** — `label: ":hammer: Build"`, `key: "build"`,
-   `command: "make build"`, with a step-level `env:` overriding
-   `NODE_ENV: "production"` for this step only.
-3. **Deploy** — `label: ":closed_lock_with_key: Deploy"`, `key: "deploy"`,
-   `command: "make deploy"`, `depends_on: "build"`, and a `secrets:` list
-   containing `API_ACCESS_TOKEN` (never a literal value).
+1. Add a pipeline-level `env:` block with `NODE_ENV: "test"` and `APP_NAME: "webapp"`.
+2. Build: `label: ":hammer: Build"`, `key: "build"`, `command: "make build"`.
+3. Give Build a step-level `env:` that sets `NODE_ENV: "production"` for this step only.
+4. Deploy: `label: ":closed_lock_with_key: Deploy"`, `key: "deploy"`, `command: "make deploy"`, `depends_on: "build"`.
+5. Give Deploy a `secrets:` list with one entry: `API_ACCESS_TOKEN`, unquoted.
 
-Expected shape:
+Never write a value for `API_ACCESS_TOKEN`. A line such as `API_ACCESS_TOKEN: "..."` fails the task.
 
 ```yaml
 env:

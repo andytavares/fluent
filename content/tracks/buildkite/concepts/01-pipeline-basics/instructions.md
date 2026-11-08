@@ -1,48 +1,41 @@
-# Pipeline Basics
+## What you build
 
-## What you'll learn
-
-Buildkite splits into two halves that never touch each other's disk: a hosted
-**control plane** that schedules work, and **your own agents** that actually
-run it. Every other concept in this track — targeting, secrets, dynamic
-pipelines — falls out of that split. You'll also learn the core unit of a
-Buildkite pipeline: the `steps` array, and the handful of attributes every
-command step needs.
+You write a Buildkite pipeline with three command steps: lint, test and build. You learn the `steps` array and the attributes every command step needs.
 
 ## Key concepts
 
-**Control plane vs. your agents.** When you push code, Buildkite's SaaS
-service reads `.buildkite/pipeline.yml` (or a pipeline defined in its UI) and
-creates a *build* — a graph of *jobs* waiting to run. It does **not** run any
-of your code. Instead, the `buildkite-agent` binary — a small Go process you
-install on your own VM, container, or Kubernetes cluster — polls Buildkite,
-claims a job it's eligible for, checks out your repo, and executes the step's
-command. Results stream back over the API.
+### Buildkite schedules jobs, and your agents run them
 
-This matters immediately:
+Buildkite has two halves that never share a disk. The hosted control plane reads `.buildkite/pipeline.yml` and creates a build: a graph of jobs. It does not run your code.
 
-- Your source code and secrets never enter Buildkite's infrastructure — they
-  stay on hardware you control.
-- Nothing runs until an agent is online to claim it. A pipeline with zero
-  connected agents queues forever; it doesn't run "in the cloud" like GitHub
-  Actions' hosted runners do by default.
-- You can run wildly different environments (GPU boxes, macOS, mainframes)
-  as agents, because Buildkite only ever schedules — it never provisions.
+The `buildkite-agent` binary runs your code. It is a small Go process on your own VM, container or Kubernetes cluster. It polls Buildkite, claims a job it can run, checks out your repo and runs the command. Results stream back over the API.
 
-**The `steps` array.** A `pipeline.yml` is a YAML document with one required
-top-level key: `steps`. Each entry is a step — most commonly a *command
-step*, which runs a shell command on an agent:
+```
+push -> control plane -> build (jobs)
+agent polls -> claims job -> runs it
+agent -> results -> control plane
+```
+
+Three results of this split:
+
+- Your source code and secrets stay on hardware you control.
+- Nothing runs until an agent is online. With zero agents, the build waits for an agent and never starts.
+- Any machine can be an agent: GPU boxes, macOS, mainframes, air-gapped networks. Buildkite only schedules. It never provisions.
+
+GitHub Actions and CircleCI hide this split behind hosted runners. Buildkite makes you own the agents.
+
+### A pipeline is a `steps` array
+
+A `pipeline.yml` has one required top-level key: `steps`. Each entry is a step. The most common is a command step, which runs a shell command on an agent.
 
 ```yaml
 steps:
   - command: "make test"
 ```
 
-**`command` vs `commands`.** `command` takes one shell command (or a `|`
-block of several piped as one string). `commands` takes a YAML list — each
-entry runs in sequence, in the same job, on the same agent, in the same
-working directory. If any command in the list fails, the rest are skipped
-and the step fails:
+### `commands` runs a list in one job
+
+`command` takes one shell command. `commands` takes a YAML list. The commands run in order, in one job, on one agent, in one working directory. If one command fails, Buildkite skips the rest and the step fails.
 
 ```yaml
 steps:
@@ -52,61 +45,34 @@ steps:
       - "make test"
 ```
 
-Don't confuse this with separate *steps* — those aren't guaranteed to share
-a machine (or even a working directory) unless you move data between them
-with artifacts (a later concept).
+Separate steps can run on different agents, in different working directories. To move files between steps, you use artifacts, a later concept.
 
-**`label` and emoji.** `label` is what renders in the Buildkite build page —
-unlike `command`, it's just cosmetic. Buildkite renders `:name:` emoji
-shortcodes (the same set GitHub and Slack use), so pipelines are scannable
-at a glance: `:hammer:`, `:test_tube:`, `:rocket:`, `:package:`, `:shipit:`.
-`name` is an accepted alias for `label`.
+### `label` is only for people
 
-**`key`.** A unique, stable identifier for a step. Unlike `label`, `key`
-must never change once other steps reference it — it's how you build
-dependency graphs (`depends_on`, covered next concept) and how a step's
-result is looked up later (`buildkite-agent step get`). Keys can't look like
-a UUID. Prefer short, kebab-case, purpose-named keys (`lint`, `unit-tests`)
-over labels-as-keys — labels are free text meant for humans and change
-often.
+`label` is the text on the build page. It has no effect on how the step runs. Buildkite shows `:name:` emoji shortcodes, for example `:hammer:`, `:test_tube:` and `:package:`. `name` is an alias for `label`.
 
-## vs other tools
+### `key` identifies a step
 
-| | Buildkite | GitHub Actions | CircleCI |
-|---|---|---|---|
-| Executes your code | Your own agent (self-hosted or Buildkite-hosted) | GitHub-hosted runner by default | CircleCI-hosted executor by default |
-| Pipeline definition location | `.buildkite/pipeline.yml` in-repo, or pipeline settings UI | `.github/workflows/*.yml` in-repo | `.circleci/config.yml` in-repo |
-| What the control plane stores | Build/job metadata only — never your source | Workflow run metadata | Build metadata |
-| Step ordering primitive | Steps array, `wait`, `depends_on` | `jobs` + `needs` | `jobs` + `requires` |
+`key` is a unique, stable ID for a step. Other steps use it in `depends_on`, the next concept. `buildkite-agent step get` uses it to read a step's result. A key cannot look like a UUID.
 
-The practical consequence: a Buildkite pipeline can sit idle showing
-"waiting for available agent" even though your YAML is perfectly valid —
-that's not a bug, it's the architecture. GitHub Actions and CircleCI hide
-this distinction behind hosted runners; Buildkite makes you own it (and, in
-return, lets you run agents anywhere: air-gapped networks, GPU fleets,
-on-prem hardware).
+Do not change a key after other steps use it. Use short, kebab-case names such as `lint` and `unit-tests`. Do not copy the label into the key, because labels change often.
 
 ## Watch out
 
-- **`commands` (plural) is not the same as multiple `command` steps.** A
-  `commands` list runs sequentially in *one* job on *one* agent. Separate
-  steps may land on different agents entirely.
-- **`label` is not an identifier.** Two steps can have the identical label;
-  Buildkite doesn't care. Only `key` needs to be unique.
-- **YAML makes `:` a hazard in emoji-free labels containing colons** —
-  always quote labels and commands that contain `:` or start with special
-  YAML characters.
+- A `commands` list runs in one job on one agent. Separate steps can land on different agents.
+- `label` is not an ID. Two steps can have the same label. Only `key` must be unique.
+- A colon in an unquoted YAML value can break the parse. Quote labels and commands that contain `:`.
+- A build that waits for an agent is not a YAML error. No agent is online to claim the job.
 
 ## The task
 
-Write a `pipeline.yml` with exactly three command steps, in this order:
+Write a Buildkite pipeline in `stub.yaml`. It has a top-level `steps` key and exactly three command steps, in this order:
 
-1. **Lint** — `label: ":mag: Lint"`, `key: "lint"`, `command: "make lint"`.
-2. **Test** — `label: ":test_tube: Test"`, `key: "test"`, using the plural
-   `commands:` list form to run, in order: `"make deps"` then `"make test"`.
-3. **Build** — `label: ":package: Build"`, `key: "build"`, `command: "make build"`.
+1. Lint: `label: ":mag: Lint"`, `key: "lint"`, `command: "make lint"`.
+2. Test: `label: ":test_tube: Test"`, `key: "test"`. Use a `commands:` list that runs `"make deps"`, then `"make test"`.
+3. Build: `label: ":package: Build"`, `key: "build"`, `command: "make build"`.
 
-Expected shape:
+Quote every value. The file contains exactly three `label:` lines.
 
 ```yaml
 steps:

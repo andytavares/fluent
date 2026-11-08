@@ -1,18 +1,12 @@
-# Production Patterns
+## What you build
 
-## What you'll learn
-
-This concept ties together every prior one — dependencies, env, plugins,
-conditionals — into the set of attributes that separate a pipeline that
-merely works from one safe to run against production: retry policy,
-soft failure, concurrency serialization, cross-pipeline fan-out, and
-notifications. Treat this as the checklist you apply before any pipeline
-touches a production deploy.
+You write a four-step deploy chain with retry policy, soft failure, a concurrency limit, a trigger and a failure notification. These attributes make a working pipeline safe to run against production. This lesson builds on **Step Dependencies and Gates**, **Env and Secrets**, **Conditionals** and **Plugins**.
 
 ## Key concepts
 
-**`retry.automatic` — recover from transient failures without a human.**
-Configure which exit statuses get retried, and how many times:
+### `retry.automatic` recovers from transient failures
+
+`retry.automatic` sets which exit statuses Buildkite retries, and how many times.
 
 ```yaml
 steps:
@@ -24,13 +18,11 @@ steps:
           limit: 2
 ```
 
-`exit_status: "*"` matches any non-zero exit; scope it to specific codes
-(`exit_status: [-1, 255]`, matching lost-agent and OOM-kill signals, is a
-common narrower policy) when you don't want to blindly retry genuine
-failures. Default limit is 2 if omitted; the maximum is 10.
+`exit_status: "*"` matches any non-zero exit. To avoid a retry of real failures, list specific codes. A common narrow policy is `exit_status: [-1, 255]`: a lost agent and a forced agent shutdown. With no `limit`, the default is 2. The maximum is 10.
 
-**`retry.manual` — control whether (and why not) a human can rerun a job.**
-Deploy steps are the classic case where you *don't* want a casual retry:
+### `retry.manual` controls if a person can rerun a job
+
+A deploy step is the classic case where you do not want a casual retry.
 
 ```yaml
 steps:
@@ -39,28 +31,28 @@ steps:
     retry:
       manual:
         allowed: false
-        reason: "Deploys can't be retried; roll forward instead"
+        reason: "Roll forward instead"
 ```
 
-**`soft_fail` — let a step fail without failing the build.** For flaky or
-non-blocking checks (a nightly benchmark, an experimental linter), scope
-which exit codes are allowed to fail softly:
+### `soft_fail` lets a step fail without failing the build
+
+Use `soft_fail` for flaky or non-blocking checks, such as a nightly benchmark or an experimental linter. List the exit codes that can fail softly.
 
 ```yaml
 steps:
-  - label: ":test_tube: Flaky integration tests"
+  - label: ":test_tube: Integration tests"
     command: "make test-integration"
     soft_fail:
       - exit_status: 1
 ```
 
-The build shows the step failed (visually distinct — not hidden), but the
-overall build can still pass. This is different from `retry` — soft fail
-accepts the failure; retry tries again hoping for a different result.
+The build page shows the step as failed, but the build can still pass. `soft_fail` accepts the failure. `retry` tries again for a different result.
 
-**`concurrency` + `concurrency_group` — serialize access to a shared
-resource.** Deploys to the same environment must never run concurrently,
-even from different builds or pipelines:
+GitHub Actions has `continue-on-error`, which applies to all exit codes. Buildkite's per-exit-status `soft_fail` accepts a known flaky exit code and still fails hard on a crash.
+
+### `concurrency` and `concurrency_group` serialize a shared resource
+
+Two deploys to the same environment must never run at the same time, even from different builds or pipelines.
 
 ```yaml
 steps:
@@ -70,28 +62,23 @@ steps:
     concurrency_group: "myapp/deploy"
 ```
 
-`concurrency_group` names are global across your organization — reuse a
-name deliberately (to share a limit across pipelines targeting the same
-resource) and pick a unique, resource-scoped name (`myapp/deploy`, not
-`deploy`) everywhere else, or unrelated pipelines will serialize against
-each other by accident.
+`concurrency_group` names are global across your organization. Reuse a name on purpose, to share a limit across pipelines for one resource. Everywhere else, use a unique name scoped to the resource, such as `myapp/deploy`.
 
-**`trigger` — fan out to another pipeline.** Splits concerns (e.g., a
-shared "smoke tests" pipeline triggered by many upstream deploy
-pipelines) and lets each pipeline evolve independently:
+### `trigger` starts a build of another pipeline
+
+A trigger step splits concerns. For example, many deploy pipelines can trigger one shared smoke-test pipeline. Each pipeline then changes on its own.
 
 ```yaml
 steps:
   - trigger: "downstream-smoke-tests"
-    label: ":arrow_forward: Trigger smoke tests"
+    label: ":arrow_forward: Smoke tests"
     build:
       branch: "main"
 ```
 
-**`notify` — tell people when it matters.** Pipeline-level `notify:`
-sends alerts on build events, filterable with the same `if:` conditional
-syntax used on steps (build-state conditions like `build.state == "failed"`
-are only available at this pipeline level, not per-step):
+### `notify` alerts people on build events
+
+Pipeline-level `notify:` sends alerts on build events. It filters with the same `if:` syntax as steps. Build-state conditions such as `build.state == "failed"` work only at this pipeline level, not per step.
 
 ```yaml
 notify:
@@ -100,76 +87,43 @@ notify:
     if: build.state == "failed"
 ```
 
-**`timeout_in_minutes` — bound every job.** A hung job otherwise runs
-until someone notices; every production step should declare an explicit
-ceiling.
+### `timeout_in_minutes` limits every job
 
-**The production checklist**, applied to every deploy-adjacent step:
+Without a timeout, a hung job runs until someone notices. Give every production step an explicit limit.
 
-- Does it need `retry.automatic` (transient infra) or should retries be
-  blocked (`retry.manual: { allowed: false }`) because reruns aren't safe?
-- Is failure here allowed to be soft (`soft_fail`), or must it block?
-- Does it touch a shared, non-parallelizable resource — add
-  `concurrency`/`concurrency_group`.
-- Does it need to kick off work in another pipeline — use `trigger`,
-  not a copy-pasted step.
-- Will the right people find out if it fails — add `notify`.
-- Is there a `timeout_in_minutes` so a hang doesn't block the queue
-  indefinitely?
+### Check every deploy step against this list
 
-## vs other tools
-
-| | Buildkite | GitHub Actions | CircleCI |
-|---|---|---|---|
-| Automatic retry | `retry.automatic` per exit status | `retry` not native; third-party actions wrap steps | Not native at the job level |
-| Non-blocking failure | `soft_fail` (per exit status) | `continue-on-error: true` (job-wide, no exit-status filtering) | N/A |
-| Serialize a resource | `concurrency` + `concurrency_group` | `concurrency:` group at workflow/job level | N/A (workflow-level `sequential` execution only) |
-| Fan out to another pipeline | `trigger` step | `workflow_call` / `repository_dispatch` | API-triggered pipelines |
-
-Buildkite's `soft_fail` being scoped to specific exit statuses (rather than
-GitHub's all-or-nothing `continue-on-error`) is the detail worth
-internalizing — it lets you accept a known flaky-test exit code while
-still failing hard on an unexpected crash from the same step.
+- Does it need `retry.automatic` for transient infrastructure failures?
+- Or must you block reruns with `retry.manual: { allowed: false }`, because a rerun is not safe?
+- Can this failure be soft (`soft_fail`), or must it block?
+- Does it touch a shared resource that cannot run in parallel? Add `concurrency` and `concurrency_group`.
+- Does it start work in another pipeline? Use `trigger`, not a copied step.
+- Do the right people learn about a failure? Add `notify`.
+- Does it have `timeout_in_minutes`, so a hang does not block the queue?
 
 ## Watch out
 
-- **`concurrency_group` names are org-wide, not pipeline-scoped** — a
-  generic name like `deploy` silently serializes unrelated pipelines
-  against each other. Always scope by app/resource: `myapp/deploy`.
-- **`block`/`input` steps break concurrency group ordering guarantees** —
-  a paused build doesn't enter the concurrency queue until it's unblocked,
-  at which point its timestamp is the unblock time, not the original
-  queue time.
-- **`soft_fail: true` (bare boolean) accepts *any* non-zero exit** — scope
-  it with `exit_status:` entries unless you genuinely want every failure
-  mode treated as soft.
+- `concurrency_group` names are org-wide. A generic name such as `deploy` serializes unrelated pipelines. Scope it: `myapp/deploy`.
+- A build paused at a `block` or `input` step enters the concurrency queue only when unblocked.
+- Its queue position then uses the unblock time, not the original time. This breaks the group's order.
+- `soft_fail: true` accepts any non-zero exit. Scope it with `exit_status:` entries.
 
 ## The task
 
-Write a `pipeline.yml` with four steps forming a production-hardened
-deploy chain:
+Write a pipeline in `stub.yaml` with four steps and a pipeline-level `notify:`. Together they form a hardened deploy chain. Step labels are free text: the checks do not read them, so a label can differ from the stub's comment.
 
-1. **Build** — `label: ":hammer: Build"`, `key: "build"`,
-   `command: "make build"`, `timeout_in_minutes: 10`, and
-   `retry.automatic` with one entry: `exit_status: "*"`, `limit: 2`.
-2. **Flaky integration tests** — `label: ":test_tube: Flaky integration tests"`,
-   `key: "integration-tests"`, `command: "make test-integration"`,
-   `depends_on: "build"`, `timeout_in_minutes: 15`, and
-   `soft_fail` with one entry: `exit_status: 1`.
-3. **Deploy** — `label: ":rocket: Deploy to production"`, `key: "deploy"`,
-   `command: "make deploy"`, `depends_on: "build"`,
-   `concurrency: 1`, `concurrency_group: "myapp/deploy"`,
-   `timeout_in_minutes: 20`, and `retry.manual` with `allowed: false`
-   and `reason: "Deploys can't be retried; roll forward instead"`.
-4. **Trigger smoke tests** — a trigger step:
-   `trigger: "downstream-smoke-tests"`,
-   `label: ":arrow_forward: Trigger smoke tests"`, `key: "trigger-smoke"`,
-   `depends_on: "deploy"`, `build.branch: "main"`.
+1. Build: `label: ":hammer: Build"`, `key: "build"`, `command: "make build"`, `timeout_in_minutes: 10`.
+2. Give Build a `retry.automatic` list with one entry: `exit_status: "*"`, `limit: 2`.
+3. Integration tests: `label: ":test_tube: Integration tests"`, `key: "integration-tests"`, `command: "make test-integration"`.
+4. Give Integration tests `depends_on: "build"`, `timeout_in_minutes: 15` and a `soft_fail` list with one entry: `exit_status: 1`.
+5. Deploy: `label: ":rocket: Deploy to production"`, `key: "deploy"`, `command: "make deploy"`, `depends_on: "build"`.
+6. Give Deploy `concurrency: 1`, `concurrency_group: "myapp/deploy"` and `timeout_in_minutes: 20`.
+7. Give Deploy a `retry.manual` with `allowed: false` and a quoted `reason`.
+8. Trigger: `trigger: "downstream-smoke-tests"`, `label: ":arrow_forward: Smoke tests"`, `key: "trigger-smoke"`, `depends_on: "deploy"`.
+9. Give the trigger step a `build:` map with `branch: "main"`.
+10. Add a top-level `notify:` that sends a Slack message to `#deploys` only `if: build.state == "failed"`.
 
-Also add a pipeline-level `notify:` that sends a Slack message to
-`#deploys` only `if: build.state == "failed"`.
-
-Expected shape:
+`depends_on: "build"` appears exactly twice.
 
 ```yaml
 steps:
@@ -182,7 +136,7 @@ steps:
         - exit_status: "*"
           limit: 2
 
-  - label: ":test_tube: Flaky integration tests"
+  - label: ":test_tube: Integration tests"
     key: "integration-tests"
     command: "make test-integration"
     depends_on: "build"
@@ -200,10 +154,10 @@ steps:
     retry:
       manual:
         allowed: false
-        reason: "Deploys can't be retried; roll forward instead"
+        reason: "Roll forward instead"
 
   - trigger: "downstream-smoke-tests"
-    label: ":arrow_forward: Trigger smoke tests"
+    label: ":arrow_forward: Smoke tests"
     key: "trigger-smoke"
     depends_on: "deploy"
     build:

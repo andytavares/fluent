@@ -1,18 +1,12 @@
-# Resources & QoS
+## What you build
 
-## What you'll learn
-
-`resources.requests` and `resources.limits` look like a single "how much
-does this need" setting but they control two completely different
-mechanisms — one drives the scheduler, the other drives the kernel-level
-enforcement on a running container. Get this distinction wrong and you'll
-either under-provision the cluster (Pods failing to schedule) or
-over-provision it (Pods getting throttled or OOM-killed despite "enough"
-resources being configured).
+You write two Pods in `stub.yaml`: one in the `Guaranteed` QoS class and one in the `Burstable` QoS class. Requests and limits look like one setting, but they control two different mechanisms. This lesson builds on **Probes**.
 
 ## Key concepts
 
-**Requests: what the scheduler reserves.**
+### Requests drive the scheduler
+
+The scheduler subtracts `requests` from the allocatable capacity of a node to decide if a Pod fits. Scheduling is request-based bin-packing, not real-time use.
 
 ```yaml
 resources:
@@ -24,128 +18,80 @@ resources:
     memory: "256Mi"
 ```
 
-`requests` is what the scheduler subtracts from a node's allocatable
-capacity when deciding if a Pod fits. A node with 2 CPUs allocatable and
-existing Pods requesting 1.5 CPUs has 0.5 CPU of *request* headroom left —
-regardless of how idle those existing Pods' CPUs actually are right now.
-Scheduling is a **request-based bin-packing problem**, not a real-time
-utilization problem.
+A node has 2 CPUs allocatable, and its Pods request 1.5 CPUs. It has 0.5 CPU of request headroom, even when those Pods are idle.
 
-**Limits: what the kernel enforces on a running container.**
+### Limits drive the kernel
 
-- **CPU limits → throttling, not killing.** CPU is a compressible resource:
-  exceeding `limits.cpu` doesn't kill the container, it gets CPU-throttled
-  by the kernel's CFS bandwidth controller — the container simply gets
-  scheduled less, making it slower, not dead. `cpu: "500m"` means half a
-  core's worth of time per scheduling period.
-- **Memory limits → OOMKill.** Memory is incompressible — you can't
-  "slow down" a container that wants more memory than it's allowed.
-  Exceeding `limits.memory` gets the container killed by the kernel OOM
-  killer (visible as `OOMKilled` in `kubectl describe pod`), and the kubelet
-  restarts it per `restartPolicy`.
+The kernel enforces `limits` on a running container. The result depends on the resource:
 
-This asymmetry is the most important fact in this lesson: **a
-CPU-starved container degrades; a memory-starved container dies.** Size
-memory limits with real headroom — a CPU limit set too low costs latency,
-a memory limit set too low costs availability.
+- **CPU is compressible.** Above `limits.cpu`, the CFS bandwidth controller throttles the container. The container runs slower, but it does not die.
+- **Memory is incompressible.** Above `limits.memory`, the kernel OOM killer kills the container. The kubelet then restarts it according to `restartPolicy`.
 
-**Units:** CPU is measured in cores; `"500m"` = 500 millicores = half a
-core; `"1"` = one full core. Memory uses power-of-two suffixes (`Mi`, `Gi`)
-or power-of-ten (`M`, `G`) — `256Mi` (268,435,456 bytes) ≠ `256M`
-(256,000,000 bytes). Always use `Mi`/`Gi` unless you specifically mean
-decimal SI units.
+`kubectl describe pod` shows the kill as `OOMKilled`. A CPU-starved container degrades, and a memory-starved container dies. A CPU limit that is too low costs latency. A memory limit that is too low costs availability.
 
-**QoS classes** — Kubernetes derives one of three classes per Pod purely
-from how `requests`/`limits` are set, and uses it to decide **eviction
-order** when a node is under memory pressure:
+### CPU uses cores, memory uses bytes
 
-| Class | Condition | Evicted... |
+`"1"` is one core. `"500m"` is 500 millicores, or half a core per scheduling period. Memory uses power-of-two suffixes (`Mi`, `Gi`) or power-of-ten suffixes (`M`, `G`).
+
+```
+256Mi = 268,435,456 bytes
+256M  = 256,000,000 bytes
+```
+
+Use `Mi` and `Gi` unless you mean decimal SI units.
+
+### The QoS class comes from requests and limits
+
+Kubernetes gives each Pod one of three QoS classes. The class sets the eviction order when a node is under memory pressure.
+
+| Class | Condition | Evicted |
 |---|---|---|
-| `Guaranteed` | every container sets `limits == requests` for both CPU and memory | last |
-| `Burstable` | at least one container sets a request or limit, but doesn't qualify as Guaranteed | after BestEffort, before Guaranteed |
-| `BestEffort` | no container sets any request or limit | first |
+| `Guaranteed` | Every container sets `limits` equal to `requests` for CPU and memory | Last |
+| `Burstable` | At least one container sets a request or limit, but the Pod is not `Guaranteed` | Second |
+| `BestEffort` | No container sets a request or limit | First |
 
 ```yaml
 # Guaranteed
-resources:
-  requests: { cpu: "500m", memory: "256Mi" }
-  limits:   { cpu: "500m", memory: "256Mi" }
+requests: { cpu: "500m", memory: "256Mi" }
+limits:   { cpu: "500m", memory: "256Mi" }
 
 # Burstable
-resources:
-  requests: { cpu: "250m", memory: "128Mi" }
-  limits:   { cpu: "500m", memory: "256Mi" }
+requests: { cpu: "250m", memory: "128Mi" }
+limits:   { cpu: "500m", memory: "256Mi" }
 ```
 
-Under node memory pressure, the kubelet evicts `BestEffort` Pods first,
-then `Burstable` Pods (ranked by how far over their *request* they are),
-and only touches `Guaranteed` Pods as an absolute last resort. This is why
-critical, latency-sensitive workloads are usually configured `Guaranteed`
-— it's the only class the eviction controller treats as untouchable.
+The kubelet ranks `Burstable` Pods by how far their use is above their request. It evicts `Guaranteed` Pods only as a last resort. For this reason, teams often run critical, latency-sensitive workloads as `Guaranteed`.
 
-## Right-sizing guidance
+### Size requests for steady state
 
-- **Set requests to your steady-state usage**, not your peak — requests
-  drive bin-packing, and over-requesting wastes cluster capacity nobody
-  else can use even if your Pod never touches it.
-- **Set memory limits with real headroom above requests** (given OOMKill is
-  destructive) but not so much headroom that a leak goes undetected for
-  hours before hitting the ceiling.
-- **CPU limits are optional and often deliberately omitted** for latency-
-  sensitive services — an unset CPU limit lets a Pod burst above its
-  request when the node has spare capacity, at the cost of "noisy neighbor"
-  risk. Whether that trade-off is worth it is a per-workload call; there's
-  no universally correct answer.
-- **Never leave a production Pod with no requests/limits at all**
-  (`BestEffort`) — it's the first thing killed under any memory pressure,
-  and gives the scheduler zero information to bin-pack against.
+- Set requests to steady-state use, not peak use. A request reserves capacity that no other Pod can use, even when your Pod is idle.
+- Set memory limits with real headroom above requests, because an OOM kill is destructive. Too much headroom lets a leak run for hours before it hits the limit.
+- CPU limits are optional. Teams often omit them for latency-sensitive services. With no CPU limit, a Pod can use spare node CPU, but it can disturb its neighbors.
+- Do not run a production Pod as `BestEffort`. It is the first Pod to go under memory pressure, and the scheduler has no data to bin-pack against.
 
-## vs other tools
-
-| | Kubernetes requests/limits | Docker `--memory`/`--cpus` | AWS ECS task CPU/memory |
-|---|---|---|---|
-| Scheduling input | `requests` only | N/A (single host) | Task-level CPU/memory reservation |
-| Enforcement | `limits`, per-container | `--memory` (OOM), `--cpus` (CFS quota) — same underlying mechanism | Task-level hard limit |
-| Derived priority class | QoS class (Guaranteed/Burstable/BestEffort) | None | None built-in |
-
-The underlying cgroup mechanisms (CFS bandwidth for CPU, cgroup memory
-limits for OOM) are identical to plain Docker — Kubernetes just adds the
-scheduling layer and the QoS-driven eviction policy on top.
+The cgroup mechanisms are the same as in plain Docker; Kubernetes adds the scheduling layer and the QoS eviction policy on top.
 
 ## Watch out
 
-- **A Pod stuck `Pending` forever** almost always means its `requests`
-  don't fit on any node — check `kubectl describe pod` for
-  `Insufficient cpu`/`Insufficient memory` events.
-- **"My container has memory to spare but keeps getting OOMKilled"** — check
-  if the *limit* (not just usage) is set too low; the kernel kills based on
-  the limit, not on whether the node itself has free memory.
-- **CPU throttling is invisible unless you look for it** — a slow but not-
-  crashing container under a tight CPU limit shows no errors, just elevated
-  latency; check `container_cpu_cfs_throttled_seconds_total` if requests
-  are latency-sensitive.
+- A Pod stays `Pending` when its `requests` fit on no node. Look for `Insufficient cpu` events in `kubectl describe pod`.
+- A container gets `OOMKilled` while the node has free memory. The kernel kills based on the limit, not on node memory.
+- CPU throttling shows no errors, only higher latency. Check `container_cpu_cfs_throttled_seconds_total` for latency-sensitive workloads.
 
 ## The task
 
-Produce two YAML documents separated by `---`, one Pod in each QoS class.
+Write two Pods in `stub.yaml`, one in each QoS class. Separate the two YAML documents with a `---` line.
 
-**Document 1** — a `Guaranteed` Pod:
+1. Document 1 is a Pod named `guaranteed-app`.
+2. Its container `app` uses `image: app:1.0`.
+3. Its requests are `cpu: "500m"` and `memory: "256Mi"`.
+4. Its limits are equal to its requests. This makes the Pod `Guaranteed`.
+5. Document 2 is a Pod named `burstable-app`.
+6. Its container `app` uses `image: app:1.0`.
+7. Its requests are `cpu: "250m"` and `memory: "128Mi"`.
+8. Its limits are `cpu: "500m"` and `memory: "256Mi"`.
+9. Limits above requests make the Pod `Burstable`.
 
-- `apiVersion: v1`, `kind: Pod`, `metadata.name: guaranteed-app`
-- one container: `name: app`, `image: app:1.0`
-- `resources.requests`: `cpu: "500m"`, `memory: "256Mi"`
-- `resources.limits`: `cpu: "500m"`, `memory: "256Mi"` (identical to
-  requests — this equality is what makes it Guaranteed)
-
-**Document 2** — a `Burstable` Pod:
-
-- `apiVersion: v1`, `kind: Pod`, `metadata.name: burstable-app`
-- one container: `name: app`, `image: app:1.0`
-- `resources.requests`: `cpu: "250m"`, `memory: "128Mi"`
-- `resources.limits`: `cpu: "500m"`, `memory: "256Mi"` (limits above
-  requests — this gap is what makes it Burstable, not Guaranteed)
-
-Expected shape:
+Quote every CPU and memory value.
 
 ```yaml
 apiVersion: v1
@@ -163,7 +109,6 @@ spec:
         limits:
           cpu: "500m"
           memory: "256Mi"
-
 ---
 apiVersion: v1
 kind: Pod

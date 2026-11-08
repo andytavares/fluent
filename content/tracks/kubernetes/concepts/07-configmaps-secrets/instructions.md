@@ -1,17 +1,10 @@
-# ConfigMaps & Secrets
+## What you build
 
-## What you'll learn
-
-Hardcoding config and credentials into a container image means rebuilding
-the image for every environment and every credential rotation. ConfigMaps
-and Secrets decouple configuration from the image: same image, different
-config injected at deploy time. This lesson covers both objects, the three
-ways to consume them, and the base64 misconception that catches almost
-everyone once.
+You write an immutable ConfigMap, a Secret and a Pod that reads both in three ways. Config in the image means a new build for each environment and each credential rotation. ConfigMaps and Secrets let one image get different config at deploy time. This lesson builds on **Pods** and **Rollout Strategies**.
 
 ## Key concepts
 
-**ConfigMap** — plain-text key/value config, no special handling:
+### A ConfigMap holds plain-text key/value config
 
 ```yaml
 apiVersion: v1
@@ -24,17 +17,17 @@ data:
   FEATURE_X: "enabled"
 ```
 
-`immutable: true` (GA since 1.21) tells the API server to reject any update
-to `data`/`binaryData` — attempting one is an error, not a silent no-op.
-This buys two things: the kubelet stops watching this object for changes
-(lower apiserver load at scale), and you get a hard guarantee nobody
-mutated shared config out from under a running Deployment. The trade-off:
-to change a value, you create a *new* ConfigMap (commonly suffixed with a
-content hash, e.g. `app-config-a1b2c3`) and update the Pod template to
-reference it — which is exactly the *rollout-on-change* pattern below.
+### `immutable: true` blocks every change to the data
 
-**Secret** — same shape as ConfigMap, but with two differences: values are
-stored as base64 under `data`, and the object is typed:
+The field is GA since Kubernetes 1.21. The API server rejects updates to `data` and `binaryData` with an error. The kubelet stops watching the object, which lowers API server load at scale. Nobody can change shared config under a running Deployment.
+
+### To change an immutable ConfigMap, create a new one
+
+Name the new ConfigMap with a content hash, for example `app-config-a1b2c3`. Then point the Pod template at it. That change starts a rollout.
+
+### A Secret has a type and base64 values
+
+A Secret has the same shape as a ConfigMap, with two differences. Values under `data` are base64, and the object has a `type`.
 
 ```yaml
 apiVersion: v1
@@ -43,31 +36,33 @@ metadata:
   name: app-secret
 type: Opaque
 data:
-  DB_PASSWORD: czNjcjN0        # base64("s3cr3t")
+  # base64("s3cr3t")
+  DB_PASSWORD: czNjcjN0
 stringData:
   API_KEY: "plaintext-key-here"
 ```
 
-- `data` — values must already be base64-encoded strings. `stringData` — a
-  write-only convenience field: put plaintext in, and the API server
-  base64-encodes it into `data` for you on write. You'll see both in the
-  wild; `stringData` is friendlier for hand-authored manifests, `data` is
-  what tooling (`kubectl create secret`, Helm) usually produces.
-- `type: Opaque` is the generic type (arbitrary key/value). Kubernetes also
-  defines structured types like `kubernetes.io/tls` (expects `tls.crt` +
-  `tls.key`) and `kubernetes.io/dockerconfigjson` (registry credentials) that
-  some controllers validate against.
+### `data` takes base64 and `stringData` takes plain text
 
-**Base64 is encoding, not encryption.** `echo czNjcjN0 | base64 -d` recovers
-`s3cr3t` instantly — no key required. A Secret object is *not* cryptographically
-protected at rest by default; anyone who can `kubectl get secret -o yaml` or
-read the underlying etcd data can read it. Real protection requires
-encryption at rest for etcd (a cluster-level admin config, not something you
-set per-Secret) and tight RBAC on `get`/`list` for `secrets` (covered in the
-RBAC lesson). Treat "it's a Secret object" as an access-control label, not a
-cryptographic guarantee.
+Values under `data` must already be base64 strings. `stringData` is write-only: the API server encodes its plain text into `data` on write. `stringData` is easier to write by hand. Tools such as `kubectl create secret` and Helm usually produce `data`.
 
-**Three ways to consume either object in a Pod:**
+### `type` tells controllers what keys to expect
+
+`Opaque` is the generic type for any key/value pairs. Some controllers validate the structured types. `kubernetes.io/tls` expects `tls.crt` and `tls.key`. `kubernetes.io/dockerconfigjson` holds registry credentials.
+
+### Base64 is an encoding, not encryption
+
+`echo czNjcjN0 | base64 -d` prints `s3cr3t`, with no key. By default, anyone who can run `kubectl get secret -o yaml` or read etcd can read a Secret.
+
+### Real protection needs encryption at rest and RBAC
+
+A cluster admin turns on etcd encryption at rest for the whole cluster, not per Secret. Tight RBAC on `get` and `list` for `secrets` limits who reads them. A later concept covers RBAC. Treat a Secret as an access-control label, not a cryptographic guarantee.
+
+### Secrets store config but do not manage it
+
+Kubernetes Secrets have no built-in rotation. Teams with rotation or audit needs sync from Vault, AWS Secrets Manager or External Secrets Operator into Secrets.
+
+### A Pod can read config in three ways
 
 ```yaml
 spec:
@@ -92,100 +87,70 @@ spec:
         name: app-config
 ```
 
-- **`envFrom`** — dumps *every* key in the ConfigMap/Secret as an env var.
-  Fast to wire up; also means an unrelated key added later silently becomes
-  a new env var in your container — no filtering.
-- **`env` + `valueFrom.configMapKeyRef`/`secretKeyRef`** — pulls exactly one
-  named key as one named env var. More verbose, but explicit and safe when
-  you only want a subset, or need to rename a key on the way in.
-- **Volume mount** — each key becomes a *file* in the mount directory (file
-  name = key, contents = value). Required for anything that expects a
-  config file on disk rather than an env var (TLS certs, `nginx.conf`,
-  `application.yaml`). Volume-mounted ConfigMaps/Secrets **update
-  automatically** (via kubelet sync, typically within ~60s) when the
-  underlying object's `data` changes — env vars from `envFrom`/`env` do
-  **not** update in a running container; you must restart the Pod.
+### `envFrom` loads every key
 
-## Rollout-on-change pattern
+Each key in the ConfigMap or Secret becomes an environment variable. It is fast to set up, but has no filter. A key that someone adds later becomes a new variable in your container.
 
-Because env vars don't hot-reload and `immutable: true` blocks in-place
-edits anyway, the standard pattern is to force a new rollout whenever config
-changes: hash the ConfigMap's contents into an annotation on the Pod
-template so a config-only change still produces a new template (and
-therefore a rollout):
+### `env` with `valueFrom` loads one key
+
+`configMapKeyRef` or `secretKeyRef` loads one named key into one named variable. It is longer, but explicit. Use it for a subset of keys, or to rename a key.
+
+### A volume mount turns each key into a file
+
+The file name is the key, and the contents are the value. Use it for apps that read a config file, such as TLS certificates, `nginx.conf` or `application.yaml`.
+
+### Only volume mounts update in a running Pod
+
+The kubelet updates mounted files when the object's `data` changes, typically within about 60 seconds. Variables from `envFrom` and `env` do not change in a running container. You must restart the Pod.
+
+### A checksum annotation starts a rollout on config change
+
+Variables do not reload, and `immutable: true` blocks edits. So the usual pattern puts a hash of the ConfigMap contents in a Pod template annotation. A config-only change then changes the template, which starts a rolling update, as an image change does.
 
 ```yaml
 spec:
   template:
     metadata:
       annotations:
-        checksum/config: "a1b2c3..."   # recomputed by CI/CD from the ConfigMap's contents
+        # CI/CD computes the hash
+        checksum/config: "a1b2c3..."
 ```
-
-Since the annotation lives under `template.metadata`, changing it alone
-triggers a normal rolling update — no different from changing the image tag.
-
-## vs other tools
-
-| | ConfigMap/Secret | `.env` file | Vault/SSM | Docker Compose `environment:` |
-|---|---|---|---|---|
-| Decoupled from image | Yes | Yes (if not baked into image) | Yes | Yes |
-| Encrypted at rest | Only if etcd encryption is enabled cluster-wide | No | Yes, by design | No |
-| Dynamic secret rotation | No (built-in) — needs external tooling | No | Yes, native | No |
-| Access control | RBAC on the Secret/ConfigMap object | Filesystem permissions | Fine-grained policies | None |
-
-Kubernetes Secrets are a storage/delivery mechanism, not a secrets-management
-platform — teams with real rotation/audit requirements typically layer
-Vault, AWS Secrets Manager, or External Secrets Operator on top, syncing
-into Kubernetes Secrets rather than hand-authoring them.
 
 ## Watch out
 
-- **`stringData` is write-only** — reading the Secret back
-  (`kubectl get secret -o yaml`) always shows `data` (base64), never
-  `stringData`, even if that's what you wrote.
-- **`immutable: true` + trying to `kubectl apply` a changed `data` block
-  fails outright** — this is by design, not a bug; create a new object.
-- **Volume-mounted updates are eventually-consistent, not instant** — don't
-  assume a ConfigMap edit is visible to the Pod the instant `kubectl apply`
-  returns.
-- **`envFrom` has no allowlist** — auditing "what env vars does this
-  container actually get" requires reading the referenced ConfigMap/Secret,
-  not just the Pod spec.
+- `stringData` is write-only. `kubectl get secret -o yaml` always shows `data` in base64, never `stringData`.
+- A `kubectl apply` that changes `data` on an immutable ConfigMap fails. That is by design: create a new object.
+- Mounted updates are eventually consistent. A change is not visible in the Pod when `kubectl apply` returns.
+- `envFrom` has no allowlist. To audit a container's variables, read the referenced ConfigMap or Secret too.
 
 ## The task
 
-Produce three YAML documents separated by `---`.
+Write three YAML documents in `stub.yaml`, separated by `---` lines.
 
-**Document 1** — an immutable ConfigMap:
+Document 1 is an immutable ConfigMap:
 
-- `apiVersion: v1`, `kind: ConfigMap`, `metadata.name: app-config`
-- `immutable: true`
-- `data`: `LOG_LEVEL: "info"`, `FEATURE_X: "enabled"`
+1. Set `apiVersion: v1`, `kind: ConfigMap` and `metadata.name: app-config`.
+2. Set the top-level `immutable` field to `true`.
+3. Set `data` to `LOG_LEVEL: "info"` and `FEATURE_X: "enabled"`.
 
-**Document 2** — a Secret:
+Document 2 is a Secret:
 
-- `apiVersion: v1`, `kind: Secret`, `metadata.name: app-secret`
-- `type: Opaque`
-- `data.DB_PASSWORD: czNjcjN0` (already base64-encoded — this is
-  base64("s3cr3t"))
-- `stringData.API_KEY: "plaintext-key-here"`
+1. Set `apiVersion: v1`, `kind: Secret` and `metadata.name: app-secret`.
+2. Set the top-level `type` field to `Opaque`.
+3. Set `data.DB_PASSWORD` to `czNjcjN0`. That is the base64 encoding of `s3cr3t`.
+4. Set `stringData.API_KEY` to `"plaintext-key-here"`.
 
-**Document 3** — a Pod that consumes both, exercising all three
-consumption patterns:
+Document 3 is a Pod that reads both, in all three ways:
 
-- `apiVersion: v1`, `kind: Pod`, `metadata.name: app`
-- one container `name: app`, `image: app:1.0`
-- `envFrom` with one entry: `configMapRef.name: app-config`
-- `env` with one entry: `name: DB_PASSWORD`,
-  `valueFrom.secretKeyRef.name: app-secret`,
-  `valueFrom.secretKeyRef.key: DB_PASSWORD`
-- `volumeMounts` with one entry: `name: config-volume`,
-  `mountPath: /etc/config`
-- `spec.volumes` with one entry: `name: config-volume`,
-  `configMap.name: app-config`
+1. Set `apiVersion: v1`, `kind: Pod` and `metadata.name: app`.
+2. Add one container with `name: app` and `image: app:1.0`.
+3. Add one `envFrom` entry with `configMapRef.name: app-config`.
+4. Add one `env` entry named `DB_PASSWORD`.
+5. Load it from `secretKeyRef` with `name: app-secret` and `key: DB_PASSWORD`.
+6. Add one `volumeMounts` entry with `name: config-volume` and `mountPath: /etc/config`.
+7. Add one `spec.volumes` entry with `name: config-volume` and `configMap.name: app-config`.
 
-Expected shape:
+The file must match this content:
 
 ```yaml
 apiVersion: v1

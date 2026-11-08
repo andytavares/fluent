@@ -1,19 +1,12 @@
-# DaemonSets, Jobs & CronJobs
+## What you build
 
-## What you'll learn
-
-Not every workload fits the "N interchangeable replicas" model. Some things
-need exactly one instance per node (log shippers, node monitoring agents).
-Some things need to run to completion and stop, not stay alive
-(migrations, batch processing). Some things need to run on a schedule.
-Three purpose-built controllers cover these: DaemonSet, Job, and CronJob.
+You write a DaemonSet log shipper, a database migration Job and a nightly backup CronJob. Some workloads need one Pod per node, some run to completion, and some run on a schedule. This lesson builds on **StatefulSets**.
 
 ## Key concepts
 
-**DaemonSet — one Pod per matching node, automatically.** No `replicas`
-field at all; the controller schedules exactly one Pod on every node
-(or every node matching a `nodeSelector`), and automatically adds a Pod
-when a new node joins the cluster:
+### A DaemonSet runs one Pod per node
+
+A DaemonSet has no `replicas` field. The controller schedules one Pod on every node, or on every node that matches a `nodeSelector`. When a new node joins the cluster, the controller adds a Pod to it.
 
 ```yaml
 apiVersion: apps/v1
@@ -34,11 +27,9 @@ spec:
           image: fluentd:1.16
 ```
 
-Canonical uses: log collectors (Fluentd/Fluent Bit), node monitoring
-(node-exporter), CNI/CSI node plugins — anything that must exist
-per-node rather than per-replica-count.
+Typical uses are log collectors (Fluentd, Fluent Bit), node monitoring (node-exporter) and CNI or CSI node plugins. The closest analog is an Ansible or Chef "run on every host" play.
 
-**Job — run to completion, then stop.**
+### A Job runs to completion, then stops
 
 ```yaml
 apiVersion: batch/v1
@@ -58,21 +49,13 @@ spec:
           image: migrate:1.0
 ```
 
-- `completions` — how many Pods must **successfully complete** (exit 0) for
-  the Job to be considered done.
-- `parallelism` — how many Pods may run concurrently while working toward
-  `completions`.
-- `backoffLimit` — how many Pod failures are tolerated (with exponential
-  backoff between retries) before the Job is marked `Failed` outright.
-- `ttlSecondsAfterFinished` — auto-delete the Job (and its Pods) this many
-  seconds after it finishes — without it, completed Jobs and their Pods
-  accumulate forever, cluttering `kubectl get pods`.
-- **`restartPolicy` must be `OnFailure` or `Never`** inside a Job's Pod
-  template — `Always` (the Pod/Deployment default) is invalid here, because
-  a Job Pod is *supposed* to exit; `Always` would fight the completion
-  model.
+- `completions` is the number of Pods that must exit 0 for the Job to be done.
+- `parallelism` is the number of Pods that can run at the same time.
+- `backoffLimit` is the number of Pod failures before the Job is `Failed`. Retries use exponential backoff.
+- `ttlSecondsAfterFinished` deletes the Job and its Pods that many seconds after it finishes. Without it, finished Jobs and Pods stay forever.
+- `restartPolicy` must be `OnFailure` or `Never`. A Job Pod must exit, so `Always`, the Pod default, is not valid.
 
-**CronJob — a Job on a schedule.**
+### A CronJob creates a Job on a schedule
 
 ```yaml
 apiVersion: batch/v1
@@ -93,83 +76,40 @@ spec:
               image: backup:1.0
 ```
 
-- `schedule` — standard 5-field cron syntax (minute, hour, day-of-month,
-  month, day-of-week), evaluated in the **kube-controller-manager's**
-  configured timezone (UTC by default, unless the CronJob's `.spec.timeZone`
-  field is set, GA since 1.27).
-- `concurrencyPolicy` — what happens if the previous run's Job hasn't
-  finished when the next scheduled time arrives: `Allow` (default — run
-  concurrently), `Forbid` (skip this run entirely), `Replace` (kill the
-  still-running Job and start the new one).
-- `startingDeadlineSeconds` — how late a scheduled run is allowed to start
-  before being counted as **missed** entirely (not run at all). If the
-  controller manager was down, or the cluster was under load, and this
-  deadline passes, that scheduled invocation is simply skipped — no
-  automatic catch-up. This matters: CronJob is not a guaranteed-execution
-  system; if reliability matters more than "close enough," build
-  idempotency and monitoring around it.
+- `schedule` uses 5-field cron syntax: minute, hour, day of month, month, day of week. Without `.spec.timeZone`, the schedule uses the local time zone of kube-controller-manager. `.spec.timeZone` is GA since Kubernetes 1.27.
+- `concurrencyPolicy` acts when the previous Job still runs at the next scheduled time. `Allow` (the default) runs both. `Forbid` skips the new run. `Replace` stops the old Job and starts the new one.
+- `startingDeadlineSeconds` is how late a run can start. After the deadline, the controller counts the run as missed and does not run it.
 
-## vs other tools
+Each CronJob run creates a new Job, and the Job retries with its own `backoffLimit`.
 
-| | DaemonSet | Job | CronJob |
-|---|---|---|---|
-| Closest analog | Ansible/Chef "run on every host" | `systemd` oneshot unit / CI job | `crontab` + a job scheduler |
-| Scaling model | Automatic — tracks node count | Fixed `completions`/`parallelism` | Spawns a new Job per scheduled tick |
-| Retry semantics | N/A (long-running) | `backoffLimit`, exponential backoff | Inherited from the Job it creates |
-| Missed-run handling | N/A | N/A | Skipped past `startingDeadlineSeconds` — no automatic backfill |
+### A missed CronJob run is gone
 
-Coming from plain cron: the biggest surprise is that a missed run is simply
-*gone*, not queued or backfilled. If a scheduled backup absolutely must run
-even after an outage, you need external monitoring (alert on "no successful
-Job in the last 25 hours") rather than relying on CronJob to self-heal that
-gap.
+Unlike a queue, a CronJob does not backfill a missed run. A controller outage or a busy cluster can skip a run. For a backup that must run, make the Job idempotent and alert on "no successful Job in the last 25 hours".
 
 ## Watch out
 
-- **Forgetting `restartPolicy: OnFailure`/`Never` on a Job** — the default
-  `Always` is rejected by the API server for Job Pod templates.
-- **No `ttlSecondsAfterFinished`** — completed Jobs and their Pods pile up
-  indefinitely; large clusters running frequent CronJobs without this set
-  can accumulate thousands of dead Pod objects.
-- **`concurrencyPolicy: Allow` (the default) can silently stack overlapping
-  runs** if a Job occasionally runs longer than the schedule interval — for
-  anything non-idempotent (a backup job, a batch write), set `Forbid` or
-  `Replace` deliberately rather than leaving the default.
-- **DaemonSets ignore `replicas`** — there's no such field; Pod count is
-  always "one per matching node," full stop.
+- The API server rejects a Job Pod template with `restartPolicy: Always`. Set `OnFailure` or `Never`.
+- Without `ttlSecondsAfterFinished`, finished Jobs pile up. Frequent CronJobs can leave thousands of dead Pod objects.
+- `concurrencyPolicy: Allow` stacks runs when a Job takes longer than the interval. Set `Forbid` or `Replace` for non-idempotent work.
+- A DaemonSet has no `replicas` field. The Pod count is always one per matching node.
 
 ## The task
 
-Produce three YAML documents separated by `---`.
+Write three YAML documents in `stub.yaml`, separated by `---` lines.
 
-**Document 1** — a DaemonSet log shipper:
-
-- `apiVersion: apps/v1`, `kind: DaemonSet`, `metadata.name: log-agent`
-- `spec.selector.matchLabels`: `app: log-agent`
-- `spec.template.metadata.labels`: `app: log-agent`
-- `spec.template.spec.containers` with one container: `name: log-agent`,
-  `image: fluentd:1.16`
-
-**Document 2** — a one-off database migration Job:
-
-- `apiVersion: batch/v1`, `kind: Job`, `metadata.name: db-migrate`
-- `spec.completions: 1`, `spec.parallelism: 1`, `spec.backoffLimit: 3`,
-  `spec.ttlSecondsAfterFinished: 3600`
-- `spec.template.spec.restartPolicy: OnFailure`
-- `spec.template.spec.containers` with one container: `name: migrate`,
-  `image: migrate:1.0`
-
-**Document 3** — a nightly backup CronJob:
-
-- `apiVersion: batch/v1`, `kind: CronJob`, `metadata.name: nightly-backup`
-- `spec.schedule: "0 2 * * *"`
-- `spec.concurrencyPolicy: Forbid`
-- `spec.startingDeadlineSeconds: 300`
-- `spec.jobTemplate.spec.template.spec.restartPolicy: OnFailure`
-- `spec.jobTemplate.spec.template.spec.containers` with one container:
-  `name: backup`, `image: backup:1.0`
-
-Expected shape:
+1. Document 1 is a DaemonSet named `log-agent`.
+2. Its selector and Pod template use the label `app: log-agent`.
+3. It has one container `log-agent` with `image: fluentd:1.16`.
+4. Document 2 is a Job named `db-migrate`.
+5. It sets `completions: 1`, `parallelism: 1` and `backoffLimit: 3`.
+6. It sets `ttlSecondsAfterFinished: 3600`.
+7. Its Pod template sets `restartPolicy: OnFailure`.
+8. It has one container `migrate` with `image: migrate:1.0`.
+9. Document 3 is a CronJob named `nightly-backup`.
+10. It sets `schedule: "0 2 * * *"`, with the quotes.
+11. It sets `concurrencyPolicy: Forbid` and `startingDeadlineSeconds: 300`.
+12. Its Job template sets `restartPolicy: OnFailure`.
+13. It has one container `backup` with `image: backup:1.0`.
 
 ```yaml
 apiVersion: apps/v1
@@ -188,7 +128,6 @@ spec:
       containers:
         - name: log-agent
           image: fluentd:1.16
-
 ---
 apiVersion: batch/v1
 kind: Job
@@ -205,7 +144,6 @@ spec:
       containers:
         - name: migrate
           image: migrate:1.0
-
 ---
 apiVersion: batch/v1
 kind: CronJob

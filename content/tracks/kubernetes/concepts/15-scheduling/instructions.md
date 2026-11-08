@@ -1,18 +1,12 @@
-# Scheduling
+## What you build
 
-## What you'll learn
-
-The default scheduler already does bin-packing by requests (previous
-lesson) — but real clusters need finer control: pin work to specific
-hardware, spread replicas across failure domains, keep certain workloads
-off certain nodes entirely, or trade "must" for "prefer" when constraints
-get tight. This lesson covers the five mechanisms, roughly from bluntest to
-most nuanced.
+You write one Pod spec that uses all five scheduling controls. The default scheduler bin-packs by requests, but real clusters need finer control over where Pods run. This lesson builds on **Resources & QoS**.
 
 ## Key concepts
 
-**`nodeSelector` — the blunt instrument.** Exact-match against node labels,
-nothing fancier:
+### `nodeSelector` matches node labels exactly
+
+`nodeSelector` is the simplest control. It has no partial match and no "prefer" mode.
 
 ```yaml
 spec:
@@ -20,69 +14,60 @@ spec:
     disktype: ssd
 ```
 
-If no node has `disktype: ssd`, the Pod stays `Pending` forever. No partial
-matching, no "prefer but don't require."
+When no node has `disktype: ssd`, the Pod stays `Pending` forever.
 
-**Node affinity — `nodeSelector` with real logic.** Supports set-based
-operators (`In`, `NotIn`, `Exists`, `DoesNotExist`, `Gt`, `Lt`) and, unlike
-`nodeSelector`, a **soft** ("prefer") variant alongside the hard one:
+### Node affinity adds operators and a soft mode
 
-```yaml
-spec:
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-          - matchExpressions:
-              - key: kubernetes.io/arch
-                operator: In
-                values: [amd64]
-      preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 50
-          preference:
-            matchExpressions:
-              - key: zone
-                operator: In
-                values: [us-east-1a]
-```
-
-`required...` is a hard constraint (Pod won't schedule without a match, same
-as `nodeSelector` but with richer expressions). `preferred...` is a ranked
-hint: the scheduler tries to honor it (weighted 1–100, summed across
-multiple preferred terms) but will schedule elsewhere rather than leave the
-Pod `Pending`. The verbose name (`...IgnoredDuringExecution`) is
-deliberate: it tells you this is checked only at scheduling time — if node
-labels change after the Pod is already running, nothing evicts it.
-
-**Pod affinity/anti-affinity — schedule relative to *other Pods*, not
-node labels:**
+Node affinity supports the operators `In`, `NotIn`, `Exists`, `DoesNotExist`, `Gt` and `Lt`. Unlike `nodeSelector`, it has a soft variant next to the hard one.
 
 ```yaml
-spec:
-  affinity:
-    podAntiAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        - labelSelector:
-            matchLabels:
-              app: web
-          topologyKey: kubernetes.io/hostname
+# Under spec.affinity
+nodeAffinity:
+  requiredDuringSchedulingIgnoredDuringExecution:
+    nodeSelectorTerms:
+      - matchExpressions:
+          - key: kubernetes.io/arch
+            operator: In
+            values: [amd64]
+  preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 50
+      preference:
+        matchExpressions:
+          - key: zone
+            operator: In
+            values: [us-east-1a]
 ```
 
-This says "don't co-locate this Pod with another Pod labeled `app: web`
-on the same node" (`topologyKey: kubernetes.io/hostname` scopes "same" to
-node; using `topology.kubernetes.io/zone` instead scopes it to "same
-availability zone"). **Its cost matters**: pod (anti-)affinity requires the
-scheduler to evaluate every other Pod's labels against every candidate
-node, which is measurably more expensive than node affinity (a per-node,
-not per-pod, check) — avoid it at very large Pod counts unless you actually
-need anti-collocation guarantees (typically for HA of a stateful or
-singleton-per-node workload).
+- `required...` is a hard rule. With no match, the Pod does not schedule.
+- `preferred...` is a hint. Each term has a weight from 1 to 100, and the scheduler sums the weights per node. With no match, the Pod still schedules on another node.
 
-**Taints and tolerations — the inverse of affinity.** A taint on a *node*
-repels Pods unless they explicitly tolerate it:
+`IgnoredDuringExecution` means the scheduler checks the rule only at scheduling time. A label change on the node later does not evict a running Pod.
+
+### Pod affinity places Pods next to other Pods
+
+Pod affinity and anti-affinity use the labels of other Pods, not node labels.
+
+```yaml
+# Under spec.affinity
+podAntiAffinity:
+  requiredDuringSchedulingIgnoredDuringExecution:
+    - labelSelector:
+        matchLabels:
+          app: web
+      topologyKey: kubernetes.io/hostname
+```
+
+This rule keeps the Pod off any node that runs another `app: web` Pod. `topologyKey: kubernetes.io/hostname` makes "same" mean the same node. `topology.kubernetes.io/zone` makes it mean the same zone.
+
+The scheduler checks the labels of every other Pod against every candidate node. Node affinity is a per-node check, so it is much cheaper. At very large Pod counts, use pod anti-affinity only for HA of a stateful or one-per-node workload.
+
+### A taint keeps Pods off a node
+
+A taint on a node repels every Pod that does not tolerate it.
 
 ```
-kubectl taint nodes gpu-node-1 dedicated=gpu:NoSchedule
+kubectl taint nodes gpu-node-1 \
+  dedicated=gpu:NoSchedule
 ```
 
 ```yaml
@@ -94,96 +79,55 @@ spec:
       effect: NoSchedule
 ```
 
-Effects:
+- `NoSchedule` stops new Pods without the toleration. Running Pods stay.
+- `PreferNoSchedule` is the soft version. The scheduler tries to avoid the node.
+- `NoExecute` stops new Pods and evicts running Pods without the toleration.
 
-- `NoSchedule` — new Pods without a matching toleration won't be scheduled
-  here; existing Pods already running are unaffected.
-- `PreferNoSchedule` — soft version; the scheduler tries to avoid it.
-- `NoExecute` — new Pods won't schedule *and* existing Pods without the
-  toleration are **evicted** from the node.
+Use taints for dedicated GPU nodes, spot instances and control-plane nodes. A toleration only permits a Pod on the node; it does not pull the Pod there. To place Pods on tainted nodes, give them a toleration and node affinity.
 
-Taints/tolerations answer "keep most things off this node" (dedicated GPU
-nodes, spot instances, control-plane nodes); node affinity answers "pull
-this Pod toward specific nodes." They're commonly paired: taint the
-specialized nodes, then use both a toleration (to be allowed on them) and
-node affinity (to actually prefer landing there) on the Pods meant for them
-— a toleration alone doesn't attract a Pod to a node, it only permits it.
+### Topology spread constraints balance Pods across domains
 
-**`topologySpreadConstraints` — even distribution across a failure
-domain**, the modern replacement for stacking multiple pod anti-affinity
-rules to get "spread evenly across zones":
+`topologySpreadConstraints` spreads Pods evenly across a failure domain. It replaces a stack of pod anti-affinity rules.
 
 ```yaml
-spec:
-  topologySpreadConstraints:
-    - maxSkew: 1
-      topologyKey: topology.kubernetes.io/zone
-      whenUnsatisfiable: DoNotSchedule
-      labelSelector:
-        matchLabels:
-          app: web
+# Entry of spec.topologySpreadConstraints
+- maxSkew: 1
+  topologyKey: topology.kubernetes.io/zone
+  whenUnsatisfiable: DoNotSchedule
+  labelSelector:
+    matchLabels:
+      app: web
 ```
 
-`maxSkew: 1` caps the difference between the zone with the most matching
-Pods and the zone with the fewest to at most 1. `whenUnsatisfiable:
-DoNotSchedule` makes this a hard constraint (`ScheduleAnyway` makes it a
-soft preference instead, mirroring the required/preferred split above).
+`maxSkew: 1` allows a difference of at most 1 matching Pod between the fullest zone and the emptiest zone. `DoNotSchedule` makes the rule hard, and `ScheduleAnyway` makes it soft.
 
-## vs other tools
+### Hard and soft modes recur
 
-| | Kubernetes scheduling constraints | Nomad constraints/affinities | AWS ASG placement (AZ balancing) |
-|---|---|---|---|
-| Hard vs soft | `required`/`preferred` (affinity), `DoNotSchedule`/`ScheduleAnyway` (spread) | `constraint` (hard) / `affinity` (soft, weighted) | AZ-balanced by default, limited tuning |
-| Node exclusion | Taints + tolerations | Node class / constraints | Not directly analogous |
-| Even spread across zones/hosts | `topologySpreadConstraints` | Spread stanza | Built-in AZ balancing only |
-
-The required/preferred split recurs across every one of these mechanisms —
-once you've internalized it for node affinity, the same mental model
-applies to pod affinity and topology spread.
+Node affinity has `required` and `preferred`. Pod affinity has the same pair. Topology spread has `DoNotSchedule` and `ScheduleAnyway`. Nomad has the same split with `constraint` and `affinity`.
 
 ## Watch out
 
-- **A toleration does not attract a Pod to a tainted node** — it only lifts
-  the repulsion. Pair it with node affinity if you actually want the Pod to
-  land there, not just be allowed to.
-- **`requiredDuringSchedulingIgnoredDuringExecution` is checked once, at
-  scheduling time** — if the node's labels change afterward, already-running
-  Pods are not re-evaluated or evicted. This surprises people expecting
-  live enforcement.
-- **Pod anti-affinity is expensive at scale** — a `required` anti-affinity
-  rule across thousands of Pods materially slows scheduling; reach for
-  `topologySpreadConstraints` for "spread evenly" instead of stacking
-  several anti-affinity rules.
-- **`nodeSelector` has no soft mode** — if you need "prefer but don't
-  require," you must use node affinity's `preferred...` block, not
-  `nodeSelector`.
+- A toleration does not attract a Pod to a tainted node. Add node affinity to place it there.
+- The scheduler checks `required...` affinity once. A later node label change does not evict running Pods.
+- `required` pod anti-affinity across thousands of Pods slows scheduling. Use `topologySpreadConstraints` for an even spread.
+- `nodeSelector` has no soft mode. Use the `preferred...` block of node affinity for a preference.
 
 ## The task
 
-Write a single Pod spec for a web replica that must run on amd64 nodes,
-prefers a specific zone, must not share a node with another `app: web`
-Pod, tolerates the `dedicated=gpu` taint, and spreads evenly across zones:
+Write one Pod in `stub.yaml` for a web replica. It needs an SSD and amd64, prefers one zone, and avoids other web Pods. It also tolerates a GPU taint and spreads across zones.
 
-- `apiVersion: v1`, `kind: Pod`, `metadata.name: web`
-- `metadata.labels`: `app: web`
-- one container: `name: web`, `image: web:1.0`
-- `spec.nodeSelector`: `disktype: ssd`
-- `spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms`
-  with one entry: `matchExpressions` — `key: kubernetes.io/arch`,
-  `operator: In`, `values: [amd64]`
-- `spec.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution`
-  with one entry: `weight: 50`, `preference.matchExpressions` — `key: zone`,
-  `operator: In`, `values: [us-east-1a]`
-- `spec.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution`
-  with one entry: `labelSelector.matchLabels: app: web`,
-  `topologyKey: kubernetes.io/hostname`
-- `spec.tolerations` with one entry: `key: dedicated`, `operator: Equal`,
-  `value: gpu`, `effect: NoSchedule`
-- `spec.topologySpreadConstraints` with one entry: `maxSkew: 1`,
-  `topologyKey: topology.kubernetes.io/zone`,
-  `whenUnsatisfiable: DoNotSchedule`, `labelSelector.matchLabels: app: web`
+1. Name the Pod `web` and give it the label `app: web`.
+2. It has one container `web` with `image: web:1.0`.
+3. `nodeSelector` requires `disktype: ssd`.
+4. Required node affinity: `kubernetes.io/arch` `In` `[amd64]`.
+5. Preferred node affinity, `weight: 50`: `zone` `In` `[us-east-1a]`.
+6. Required pod anti-affinity selects `app: web`.
+7. The anti-affinity uses `topologyKey: kubernetes.io/hostname`.
+8. A toleration matches `dedicated` `Equal` `gpu`, effect `NoSchedule`.
+9. One spread constraint has `maxSkew: 1` and `DoNotSchedule`.
+10. It uses `topologyKey: topology.kubernetes.io/zone` and selects `app: web`.
 
-Expected shape:
+Write each `values` list in flow form, such as `[amd64]`.
 
 ```yaml
 apiVersion: v1
