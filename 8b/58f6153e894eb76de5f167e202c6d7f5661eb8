@@ -1,0 +1,31 @@
+tools/content-linter/src/cli.ts
+  s_4312bdd443949d::t_eca6989225e98e 45,69
+tools/content-linter/src/validator.test.ts
+  s_4312bdd443949d::t_341942ef350b34 5-24,32,118,126-163,166-202
+  s_4312bdd443949d::t_eca6989225e98e 2
+  s_4312bdd443949d::t_9c4a1f8d0cacd9 164-165
+tools/content-linter/src/lint-all.ts
+  s_4312bdd443949d::t_9c4a1f8d0cacd9 52
+  s_4312bdd443949d::t_eca6989225e98e 38-39,42,53
+  s_4312bdd443949d::t_ac9639968ab28f 8,12,15-16,23-34
+tools/content-linter/tests/integration/linter.test.ts
+  s_4312bdd443949d::t_0c5825cc905684 25
+tools/content-linter/src/validator.ts
+  s_4312bdd443949d::t_9c4a1f8d0cacd9 4,98,103-162
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8b58f6153e894eb76de5f167e202c6d7f5661eb8",
+  "prompts": {},
+  "sessions": {
+    "s_4312bdd443949d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34ee8d8d-5ae0-4e48-8e14-e3d4c8e3f0af",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
