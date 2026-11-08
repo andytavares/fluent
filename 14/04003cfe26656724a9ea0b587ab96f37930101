@@ -1,0 +1,19 @@
+tools/content-linter/src/validator.test.ts
+  s_4312bdd443949d::t_98ed094c944064 203-205,218-219,226-227
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1404003cfe26656724a9ea0b587ab96f37930101",
+  "prompts": {},
+  "sessions": {
+    "s_4312bdd443949d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34ee8d8d-5ae0-4e48-8e14-e3d4c8e3f0af",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
