@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v3
         with:
@@ -30,14 +32,38 @@ jobs:
       - name: Build content linter
         run: pnpm --filter @fluent/content-linter build
 
+      - name: Install Vale
+        env:
+          VALE_VERSION: 3.25.1
+          VALE_SHA256: 4bf5c5176b682b1da0830f471584d3494f1c2e27ee3029e1ad6f6661d4962182
+        run: |
+          curl -fsSLo vale.tar.gz "https://github.com/vale-cli/vale/releases/download/v${VALE_VERSION}/vale_${VALE_VERSION}_Linux_64-bit.tar.gz"
+          echo "${VALE_SHA256}  vale.tar.gz" | sha256sum -c -
+          tar xzf vale.tar.gz vale
+          sudo mv vale /usr/local/bin/vale
+
+      - name: Run Vale on changed lessons
+        run: |
+          FILES=$(git diff --name-only --diff-filter=d origin/${{ github.base_ref }}...HEAD -- 'content/**/instructions.md')
+          if [ -z "$FILES" ]; then
+            echo "No lesson text changed"
+            exit 0
+          fi
+          vale --minAlertLevel error $FILES
+
       - name: Get changed exercise folders
         id: changed
         run: |
           CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD \
-            | grep '^content/tracks/' \
+            | grep -E '^content/tracks/[^/]+/concepts/[^/]+/' \
             | awk -F'/' '{print $1"/"$2"/"$3"/"$4"/"$5}' \
             | sort -u)
-          echo "folders=${CHANGED}" >> $GITHUB_OUTPUT
+          # A multi-line value needs the delimiter form of GITHUB_OUTPUT.
+          {
+            echo "folders<<EOF"
+            echo "$CHANGED"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Run linter on changed exercises
         run: |

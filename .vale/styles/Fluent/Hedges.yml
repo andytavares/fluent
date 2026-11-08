@@ -1,0 +1,10 @@
+extends: existence
+message: "Use 'can' or 'must', not '%s'."
+level: error
+ignorecase: true
+tokens:
+  - should
+  - might
+  - perhaps
+  - probably
+  - possibly

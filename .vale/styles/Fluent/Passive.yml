@@ -1,0 +1,6 @@
+extends: existence
+message: "'%s' looks passive. Name who does the action."
+level: warning
+ignorecase: true
+raw:
+  - '\b(?:is|are|was|were|be|been|being)\s+(?:\w+ly\s+)?\w+(?:ed|en)\b'
