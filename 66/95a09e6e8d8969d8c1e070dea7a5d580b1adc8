@@ -1,0 +1,27 @@
+content/tracks/aws/concepts/03-s3-advanced/instructions.md
+  s_4312bdd443949d::t_8130f9b037352f 143
+content/tracks/kafka/concepts/06-keys-partitioning-ordering/instructions.md
+  s_4312bdd443949d::t_e6a7b59b2cbca3 44,55
+content/tracks/kafka/concepts/14-production-tuning/instructions.md
+  s_4312bdd443949d::t_e6a7b59b2cbca3 27-28,32,58,60,62,64,66
+content/tracks/kafka/concepts/11-schema-management/instructions.md
+  s_4312bdd443949d::t_3892726189c871 42
+content/tracks/observability/concepts/08-recording-rules/instructions.md
+  s_4312bdd443949d::t_277a4a2952e467 34,37-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6695a09e6e8d8969d8c1e070dea7a5d580b1adc8",
+  "prompts": {},
+  "sessions": {
+    "s_4312bdd443949d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34ee8d8d-5ae0-4e48-8e14-e3d4c8e3f0af",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andrew <andrew.tavaes87@gmail.com>"
+    }
+  }
+}
