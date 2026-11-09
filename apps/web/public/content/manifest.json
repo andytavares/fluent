@@ -2,7 +2,7 @@
   "assembly": {
     "slug": "assembly",
     "title": "x86-64 Assembly",
-    "description": "Learn x86-64 assembly — the language of the machine. Understand registers, the stack, calling conventions, and how high-level code maps to hardware.",
+    "description": "Learn x86-64 assembly, the language the CPU runs. Study registers, the stack, calling conventions and how high-level code maps to hardware.",
     "language": "assembly",
     "status": "published",
     "concepts": [
@@ -81,7 +81,7 @@
   "aws": {
     "slug": "aws",
     "title": "AWS (LocalStack)",
-    "description": "Core AWS services from first principles to production patterns — S3, IAM, DynamoDB, Lambda, SQS/SNS, API Gateway — practiced locally against LocalStack.",
+    "description": "Learn core AWS services: S3, IAM, DynamoDB, Lambda, SQS, SNS and API Gateway. You practice each one locally against LocalStack, from first principles to production patterns.",
     "language": "aws",
     "status": "published",
     "concepts": [
@@ -188,7 +188,7 @@
   "buildkite": {
     "slug": "buildkite",
     "title": "Buildkite",
-    "description": "Buildkite pipelines from first steps to production CI/CD — agents, artifacts, conditionals, matrices, plugins, and dynamic pipelines.",
+    "description": "Build Buildkite pipelines from the first step to production CI/CD. Use agents, artifacts, conditionals, matrices, plugins and dynamic pipelines.",
     "language": "buildkite",
     "status": "published",
     "concepts": [
@@ -267,7 +267,7 @@
   "c": {
     "slug": "c",
     "title": "C Foundations",
-    "description": "Learn C — the language closest to the machine. Understand memory, pointers, and systems programming from first principles.",
+    "description": "Learn C, the language closest to the machine. Study memory, pointers and systems programming from first principles.",
     "language": "c",
     "status": "published",
     "concepts": [
@@ -346,7 +346,7 @@
   "cpp": {
     "slug": "cpp",
     "title": "Modern C++",
-    "description": "Learn C++ with a modern mindset — RAII, smart pointers, templates, and the STL. Write expressive, efficient, safe C++.",
+    "description": "Learn modern C++: RAII, smart pointers, templates and the STL. Write C++ that is clear, fast and safe.",
     "language": "cpp",
     "status": "published",
     "concepts": [
@@ -425,7 +425,7 @@
   "dsa-java": {
     "slug": "dsa-java",
     "title": "DSA Patterns: Java",
-    "description": "Master the 16 core algorithmic patterns that appear in nearly every technical interview — implemented in Java. Two pointers, sliding window, BFS/DFS, dynamic programming, backtracking, and more.",
+    "description": "Learn 23 algorithm patterns in Java, such as two pointers, sliding window, BFS, DFS, dynamic programming and backtracking. Together they cover all 150 problems of the Top Interview 150 list.",
     "language": "java",
     "status": "published",
     "concepts": [
@@ -595,7 +595,7 @@
   "dsa-javascript": {
     "slug": "dsa-javascript",
     "title": "DSA Patterns: JavaScript",
-    "description": "Master the 16 core algorithmic patterns that appear in nearly every technical interview — implemented in JavaScript. Two pointers, sliding window, BFS/DFS, dynamic programming, backtracking, and more.",
+    "description": "Learn 23 algorithm patterns in JavaScript, such as two pointers, sliding window, BFS, DFS, dynamic programming and backtracking. Together they cover all 150 problems of the Top Interview 150 list.",
     "language": "javascript",
     "status": "published",
     "concepts": [
@@ -765,7 +765,7 @@
   "dsa-python": {
     "slug": "dsa-python",
     "title": "DSA Patterns: Python",
-    "description": "Master the 16 core algorithmic patterns that appear in nearly every technical interview — implemented in Python. Two pointers, sliding window, BFS/DFS, dynamic programming, backtracking, and more.",
+    "description": "Learn 23 algorithm patterns in Python, such as two pointers, sliding window, BFS, DFS, dynamic programming and backtracking. Together they cover all 150 problems of the Top Interview 150 list.",
     "language": "python",
     "status": "published",
     "concepts": [
@@ -935,7 +935,7 @@
   "dsa-typescript": {
     "slug": "dsa-typescript",
     "title": "DSA Patterns: TypeScript",
-    "description": "Master the 16 core algorithmic patterns that appear in nearly every technical interview — implemented in TypeScript with full type annotations. Two pointers, sliding window, BFS/DFS, dynamic programming, backtracking, and more.",
+    "description": "Learn 23 algorithm patterns in TypeScript with full type annotations, such as two pointers, sliding window, BFS, DFS, dynamic programming and backtracking. Together they cover all 150 problems of the Top Interview 150 list.",
     "language": "typescript",
     "status": "published",
     "concepts": [
@@ -1105,7 +1105,7 @@
   "elixir": {
     "slug": "elixir",
     "title": "Elixir Essentials",
-    "description": "Learn Elixir — a functional, concurrent language built on the Erlang VM. Master pattern matching, processes, OTP, and fault-tolerant system design.",
+    "description": "Learn Elixir, a functional, concurrent language on the Erlang VM. Study pattern matching, processes, OTP and fault-tolerant system design.",
     "language": "elixir",
     "status": "published",
     "concepts": [
@@ -1184,7 +1184,7 @@
   "go": {
     "slug": "go",
     "title": "Go Fundamentals",
-    "description": "Learn Go from first principles — syntax, types, concurrency, and the standard library — culminating in a real CRUD API capstone project.",
+    "description": "Learn Go from first principles: syntax, types, concurrency and the standard library. The track ends with a capstone: a CRUD API against a live database.",
     "language": "go",
     "status": "published",
     "concepts": [
@@ -1263,7 +1263,7 @@
   "helm": {
     "slug": "helm",
     "title": "Helm",
-    "description": "Learn Helm — the Kubernetes package manager. Write reusable, parameterized charts that deploy complex applications reliably across environments.",
+    "description": "Learn Helm, the Kubernetes package manager. Write reusable, parameterized charts that deploy complex applications reliably across environments.",
     "language": "helm",
     "status": "published",
     "concepts": [
@@ -1342,7 +1342,7 @@
   "java": {
     "slug": "java",
     "title": "Java Essentials",
-    "description": "Learn Java — a statically typed, object-oriented language built for large-scale systems. Master classes, interfaces, generics, and the streams API.",
+    "description": "Learn Java, a statically typed, object-oriented language for large systems. Study classes, interfaces, generics and the streams API.",
     "language": "java",
     "status": "published",
     "concepts": [
@@ -1421,7 +1421,7 @@
   "javascript": {
     "slug": "javascript",
     "title": "JavaScript Fundamentals",
-    "description": "Master modern JavaScript — the language of the web. Learn the syntax, idioms, and async patterns every JS engineer uses daily.",
+    "description": "Learn modern JavaScript, the language of the web. Study the syntax, idioms and async patterns that JavaScript engineers use every day.",
     "language": "javascript",
     "status": "published",
     "concepts": [
@@ -1500,7 +1500,7 @@
   "kafka": {
     "slug": "kafka",
     "title": "Kafka",
-    "description": "Apache Kafka from first principles to production — partitions, delivery semantics, replication, and the configuration patterns behind reliable event streaming.",
+    "description": "Learn Apache Kafka from first principles to production. Study partitions, delivery semantics, replication and the configuration that makes event streaming reliable.",
     "language": "kafka",
     "status": "published",
     "concepts": [
@@ -1607,7 +1607,7 @@
   "kotlin": {
     "slug": "kotlin",
     "title": "Kotlin Essentials",
-    "description": "Learn Kotlin — a modern, concise JVM language with null safety, coroutines, and a powerful type system. The primary language for Android and a great Java alternative.",
+    "description": "Learn Kotlin, a concise JVM language with null safety, coroutines and a strong type system. It is the primary language for Android and an alternative to Java.",
     "language": "kotlin",
     "status": "published",
     "concepts": [
@@ -1686,7 +1686,7 @@
   "kubernetes": {
     "slug": "kubernetes",
     "title": "Kubernetes",
-    "description": "Learn Kubernetes from first principles to production patterns — pods to autoscaling, written for app developers deploying real services.",
+    "description": "Learn Kubernetes from first principles to production patterns, from pods to autoscaling. The track is for app developers who deploy real services.",
     "language": "kubernetes",
     "status": "published",
     "concepts": [
@@ -1807,7 +1807,7 @@
   "observability": {
     "slug": "observability",
     "title": "Observability",
-    "description": "Metrics, dashboards, alerts, and traces with Prometheus, Grafana, and OpenTelemetry — what to measure, how to capture it, and how to graph what matters.",
+    "description": "Learn metrics, dashboards, alerts and traces with Prometheus, Grafana and OpenTelemetry. Decide what to measure, capture it and graph what matters.",
     "language": "observability",
     "status": "published",
     "concepts": [
@@ -1914,7 +1914,7 @@
   "python": {
     "slug": "python",
     "title": "Python Essentials",
-    "description": "Learn Python — the language of data science, scripting, and rapid prototyping. Master Pythonic idioms, the standard library, and async patterns.",
+    "description": "Learn Python, the language of data science, scripting and fast prototypes. Study Pythonic idioms, the standard library and async patterns.",
     "language": "python",
     "status": "published",
     "concepts": [
@@ -1993,7 +1993,7 @@
   "ruby": {
     "slug": "ruby",
     "title": "Ruby Essentials",
-    "description": "Learn Ruby — an expressive, object-oriented language built for developer happiness. Master blocks, modules, metaprogramming, and Ruby's elegant standard library.",
+    "description": "Learn Ruby, an expressive, object-oriented language built for developer happiness. Study blocks, modules, metaprogramming and the Ruby standard library.",
     "language": "ruby",
     "status": "published",
     "concepts": [
@@ -2072,7 +2072,7 @@
   "rust": {
     "slug": "rust",
     "title": "Rust Essentials",
-    "description": "Learn Rust — a systems language with memory safety without garbage collection. Master ownership, borrowing, lifetimes, and fearless concurrency.",
+    "description": "Learn Rust, a systems language that is memory safe without garbage collection. Study ownership, borrowing, lifetimes and safe concurrency.",
     "language": "rust",
     "status": "published",
     "concepts": [
@@ -2151,7 +2151,7 @@
   "shell": {
     "slug": "shell",
     "title": "Shell Scripting",
-    "description": "Master Bash scripting — the glue of every Unix system. Write robust scripts for automation, text processing, and system administration.",
+    "description": "Learn Bash scripting, the glue of every Unix system. Write reliable scripts for automation, text processing and system administration.",
     "language": "shell",
     "status": "published",
     "concepts": [
@@ -2230,7 +2230,7 @@
   "terraform": {
     "slug": "terraform",
     "title": "Terraform",
-    "description": "Learn Terraform — the infrastructure-as-code standard. Define, plan, and provision cloud infrastructure with HCL across any provider.",
+    "description": "Learn Terraform, the standard tool for infrastructure as code. Define, plan and provision cloud infrastructure with HCL on any provider.",
     "language": "terraform",
     "status": "published",
     "concepts": [
@@ -2309,7 +2309,7 @@
   "typescript": {
     "slug": "typescript",
     "title": "TypeScript Essentials",
-    "description": "Add static types to JavaScript. Learn TypeScript's type system, generics, and tooling to write safer, more maintainable code.",
+    "description": "Add static types to JavaScript. Learn the TypeScript type system, generics and tooling to write safer code that is easier to maintain.",
     "language": "typescript",
     "status": "published",
     "concepts": [
